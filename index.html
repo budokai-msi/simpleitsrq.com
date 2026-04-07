@@ -1,0 +1,95 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0F6CBD" />
+
+    <title>Simple IT SRQ | Managed IT Services in Sarasota & Bradenton, FL</title>
+    <meta name="description" content="Enterprise-grade managed IT services, cybersecurity, and cloud solutions for businesses in Sarasota, Bradenton, and the SRQ region. 24/7 monitoring, HIPAA compliant, 100% local team. Email hello@simpleitsrq.com for a free IT audit." />
+    <meta name="keywords" content="managed IT services Sarasota, IT support Bradenton, MSP Florida, HIPAA compliance, cybersecurity Sarasota, cloud migration, vCIO services, IT consulting SRQ" />
+    <meta name="author" content="Simple IT SRQ" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://simpleitsrq.com/" />
+    <link rel="alternate" type="application/rss+xml" title="Simple IT SRQ Blog RSS" href="/rss.xml" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+    <meta property="og:site_name" content="Simple IT SRQ" />
+    <meta property="article:publisher" content="https://simpleitsrq.com" />
+    <!-- Open Graph image generation note: per-post OG images expected at /og-blog-{slug}.png; default at /og-image.png -->
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://simpleitsrq.com/" />
+    <meta property="og:title" content="Simple IT SRQ | Managed IT Services in Sarasota & Bradenton" />
+    <meta property="og:description" content="Enterprise-grade managed IT for Sarasota & Bradenton businesses. 24/7 support, HIPAA compliant, 100% local." />
+    <meta property="og:image" content="https://simpleitsrq.com/og-image.png" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Simple IT SRQ | Managed IT Services" />
+    <meta name="twitter:description" content="Enterprise-grade managed IT for Sarasota & Bradenton businesses." />
+    <meta name="twitter:image" content="https://simpleitsrq.com/og-image.png" />
+
+    <meta name="geo.region" content="US-FL" />
+    <meta name="geo.placename" content="Bradenton, Sarasota" />
+    <meta name="geo.position" content="27.4989;-82.5748" />
+    <meta name="ICBM" content="27.4989, -82.5748" />
+
+    <link rel="preload" href="/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin />
+
+    <script>
+      // Theme bootstrap — runs before paint to prevent FOUC.
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = stored || (prefersDark ? "dark" : "light");
+          document.documentElement.dataset.theme = theme;
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", theme === "dark" ? "#0B0D10" : "#0F6CBD");
+        } catch (e) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "Simple IT SRQ",
+      "image": "https://simpleitsrq.com/logo.png",
+      "email": "hello@simpleitsrq.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Bradenton",
+        "addressRegion": "FL",
+        "addressCountry": "US"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 27.4989,
+        "longitude": -82.5748
+      },
+      "url": "https://simpleitsrq.com",
+      "areaServed": ["Sarasota", "Bradenton", "Lakewood Ranch", "Venice", "Palmetto"],
+      "priceRange": "$$",
+      "serviceType": ["Managed IT Services", "Cybersecurity", "Cloud Migration", "HIPAA Compliance", "Disaster Recovery", "vCIO Services"],
+      "description": "Enterprise-grade managed IT services for businesses in Sarasota, Bradenton, and the SRQ region.",
+      "openingHours": "Mo-Fr 08:00-18:00",
+      "founder": {
+        "@type": "Person",
+        "name": "Dancho Ivanov"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+

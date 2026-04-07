@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Simple IT SRQ Blog</title>
+    <link>https://simpleitsrq.com/blog</link>
+    <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml"/>
+    <description>Insights for Sarasota and Bradenton businesses on cybersecurity, AI, cloud, and compliance.</description>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 07 Apr 2026 02:09:43 GMT</lastBuildDate>
+    <item>
+      <title>AI Comprehension Debt: A Hidden Risk for SRQ IT Teams</title>
+      <link>https://simpleitsrq.com/blog/ai-comprehension-debt-sarasota-it-teams</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-comprehension-debt-sarasota-it-teams</guid>
+      <pubDate>Sun, 05 Apr 2026 00:00:00 GMT</pubDate>
+      <category>AI &amp; Productivity</category>
+      <description>AI coding tools speed teams up, but quietly erode understanding. Heres how Sarasota and Bradenton businesses can avoid comprehension debt.</description>
+    </item>
+    <item>
+      <title>Gamified Tech Training: A Smarter Way to Onboard SRQ Staff</title>
+      <link>https://simpleitsrq.com/blog/gamified-tech-training-sarasota-onboarding</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/gamified-tech-training-sarasota-onboarding</guid>
+      <pubDate>Sat, 04 Apr 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>An interactive browser game teaches users to build a GPU from logic gates up. Heres how Sarasota businesses can borrow the format for IT onboarding.</description>
+    </item>
+    <item>
+      <title>AI Vendor Lock-In: Update Your Bradenton Procurement Playbook</title>
+      <link>https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</guid>
+      <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>Anthropic blocked third-party tools from paid Claude Code accounts. Heres what that means for AI vendor risk in your Bradenton business.</description>
+    </item>
+    <item>
+      <title>LinkedIn Is Fingerprinting Your Browser. Heres What to Do.</title>
+      <link>https://simpleitsrq.com/blog/linkedin-browser-fingerprinting-privacy-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/linkedin-browser-fingerprinting-privacy-sarasota</guid>
+      <pubDate>Thu, 02 Apr 2026 00:00:00 GMT</pubDate>
+      <category>Privacy</category>
+      <description>Researchers caught LinkedIn probing browser extensions for fingerprinting. What it means for SRQ businesses and how to harden client browsers.</description>
+    </item>
+    <item>
+      <title>Evaluating Agentic Coding Tools: A Visual Primer for IT</title>
+      <link>https://simpleitsrq.com/blog/claude-code-internals-it-evaluation-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/claude-code-internals-it-evaluation-sarasota</guid>
+      <pubDate>Wed, 01 Apr 2026 00:00:00 GMT</pubDate>
+      <category>AI &amp; Productivity</category>
+      <description>A new visual guide unpacks how Claude Codes agent loop, tool use, and context window actually work. Heres how SRQ IT teams should use it for evaluation.</description>
+    </item>
+    <item>
+      <title>The Claude Code Source Map Leak: Clean Up Your Build Pipeline</title>
+      <link>https://simpleitsrq.com/blog/source-map-leak-build-pipeline-cleanup-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/source-map-leak-build-pipeline-cleanup-sarasota</guid>
+      <pubDate>Tue, 31 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Cybersecurity</category>
+      <description>A source map shipped with an NPM package exposed Anthropics Claude Code internals. Heres what every Sarasota dev shop should add to their CI pipeline.</description>
+    </item>
+    <item>
+      <title>AI Assistants Now Inject Ads. Audit Your Supply Chain.</title>
+      <link>https://simpleitsrq.com/blog/copilot-ad-injection-ai-supply-chain-risk</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/copilot-ad-injection-ai-supply-chain-risk</guid>
+      <pubDate>Mon, 30 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Cybersecurity</category>
+      <description>A developer caught GitHub Copilot inserting promotional language into a PR comment. Heres how Sarasota businesses should treat AI output in code review.</description>
+    </item>
+    <item>
+      <title>Bot Detections Hidden Privacy Cost for SRQ SaaS Users</title>
+      <link>https://simpleitsrq.com/blog/bot-detection-privacy-cost-sarasota-saas-users</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/bot-detection-privacy-cost-sarasota-saas-users</guid>
+      <pubDate>Sun, 29 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Privacy</category>
+      <description>ChatGPTs Cloudflare Turnstile inspects React state before letting you type. Heres what bot detection is costing your Sarasota SaaS privacy.</description>
+    </item>
+    <item>
+      <title>Founder Succession Planning for Bradenton Small Businesses</title>
+      <link>https://simpleitsrq.com/blog/founder-succession-planning-bradenton-smb</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/founder-succession-planning-bradenton-smb</guid>
+      <pubDate>Sat, 28 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>GitLabs founder went public about his cancer diagnosis. Heres what owner-dependency risk looks like for Bradenton SMBs and how IT plays a role.</description>
+    </item>
+    <item>
+      <title>Opt Out by April 24: GitHub Copilot Training on Private Repos</title>
+      <link>https://simpleitsrq.com/blog/github-copilot-private-repo-training-opt-out-april-24</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/github-copilot-private-repo-training-opt-out-april-24</guid>
+      <pubDate>Fri, 27 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Compliance</category>
+      <description>GitHub will train Copilot on private repos by default unless you opt out by April 24, 2026. Heres what Sarasota businesses need to do this week.</description>
+    </item>
+    <item>
+      <title>EU Rejects Chat Control: A Big Privacy Win, Briefly</title>
+      <link>https://simpleitsrq.com/blog/eu-rejects-chat-control-end-to-end-encryption-win</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/eu-rejects-chat-control-end-to-end-encryption-win</guid>
+      <pubDate>Thu, 26 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Privacy</category>
+      <description>The EU Parliament rejected mandatory client-side scanning. Heres what that means for end-to-end encryption and Sarasota businesses with EU customers.</description>
+    </item>
+    <item>
+      <title>Why Encryption Backdoors Break Security for SRQ Businesses</title>
+      <link>https://simpleitsrq.com/blog/chat-control-encryption-backdoors-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/chat-control-encryption-backdoors-sarasota</guid>
+      <pubDate>Wed, 25 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Privacy</category>
+      <description>The Fight Chat Control campaign explains why mandated scanning breaks security for everyone. Heres the SRQ-business version of that argument.</description>
+    </item>
+    <item>
+      <title>Wine 11 Closes the Gap: Cheaper Workstation Refreshes for SMBs</title>
+      <link>https://simpleitsrq.com/blog/wine-11-linux-windows-workstation-refresh</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/wine-11-linux-windows-workstation-refresh</guid>
+      <pubDate>Tue, 24 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>Wine 11 brings native-class performance to Linux workstations running Windows software. Heres what that means for SRQ businesses planning a refresh.</description>
+    </item>
+    <item>
+      <title>Data Sovereignty: When Florida Businesses Look to EU Hosting</title>
+      <link>https://simpleitsrq.com/blog/data-sovereignty-eu-migration-florida-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/data-sovereignty-eu-migration-florida-business</guid>
+      <pubDate>Mon, 23 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Cloud</category>
+      <description>A founder documented moving infrastructure to EU providers. Heres how Sarasota businesses should think about data sovereignty and US vendor risk.</description>
+    </item>
+    <item>
+      <title>Post-Git Version Control: Should SRQ Engineering Teams Care?</title>
+      <link>https://simpleitsrq.com/blog/post-git-version-control-engineering-leaders</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/post-git-version-control-engineering-leaders</guid>
+      <pubDate>Sun, 22 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>Bram Cohen lays out what should come after Git: better merges, content addressing, large files. Heres what it means for SRQ engineering leaders.</description>
+    </item>
+    <item>
+      <title>Ubuntu 26.04 Breaks 46 Years of Sudo Habit. Test Before Upgrade.</title>
+      <link>https://simpleitsrq.com/blog/ubuntu-26-04-sudo-change-bradenton-sysadmins</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ubuntu-26-04-sudo-change-bradenton-sysadmins</guid>
+      <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>Ubuntu 26.04 changes sudo to provide audible password feedback. A small UX change that breaks ancient automation. Test your provisioning scripts.</description>
+    </item>
+    <item>
+      <title>OpenCode and the Case for Open-Source AI in SRQ Workshops</title>
+      <link>https://simpleitsrq.com/blog/opencode-open-source-ai-coding-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/opencode-open-source-ai-coding-sarasota</guid>
+      <pubDate>Fri, 20 Mar 2026 00:00:00 GMT</pubDate>
+      <category>AI &amp; Productivity</category>
+      <description>OpenCode is a fully open-source alternative to Claude Code and Cursor. Heres why SRQ businesses should consider it when data cant leave the building.</description>
+    </item>
+    <item>
+      <title>When Beloved OSS Gets Acquired: Vendor Risk for Sarasota IT</title>
+      <link>https://simpleitsrq.com/blog/oss-acquisitions-vendor-risk-it-procurement</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/oss-acquisitions-vendor-risk-it-procurement</guid>
+      <pubDate>Thu, 19 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>Astral, the team behind uv and ruff, was acquired by OpenAI. Heres how SRQ businesses should think about OSS acquisitions and pinning tools.</description>
+    </item>
+    <item>
+      <title>Rob Pikes 1989 Rules That Still Drive Smart IT Decisions</title>
+      <link>https://simpleitsrq.com/blog/rob-pike-rules-modern-it-decisions</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/rob-pike-rules-modern-it-decisions</guid>
+      <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>Rob Pikes five rules of programming resurfaced this week. Heres how they apply to modern IT decisions for Sarasota and Bradenton businesses.</description>
+    </item>
+    <item>
+      <title>Style-Transfer LLMs Have Arrived. Now What for SRQ Marketing?</title>
+      <link>https://simpleitsrq.com/blog/style-transfer-llm-marketing-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/style-transfer-llm-marketing-sarasota</guid>
+      <pubDate>Tue, 17 Mar 2026 00:00:00 GMT</pubDate>
+      <category>AI &amp; Productivity</category>
+      <description>Kagis joke translator that converts plain English to LinkedIn Speak is also a real demo of style transfer. Heres what it means for Sarasota marketing teams.</description>
+    </item>
+    <item>
+      <title>Prediction Markets, Information Warfare, and Your Brand Risk</title>
+      <link>https://simpleitsrq.com/blog/prediction-markets-information-warfare-business-risk</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/prediction-markets-information-warfare-business-risk</guid>
+      <pubDate>Mon, 16 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>A reporter received death threats from prediction-market traders trying to sway his coverage. Heres what that means for SRQ businesses doing public research.</description>
+    </item>
+    <item>
+      <title>Cross-Border Data Rules: Why SRQ Companies Should Care</title>
+      <link>https://simpleitsrq.com/blog/surveillance-laws-cross-border-data-msp</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/surveillance-laws-cross-border-data-msp</guid>
+      <pubDate>Sun, 15 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Privacy</category>
+      <description>Canadas Bill C-22 returns with surveillance backdoor risks. Heres what cross-border data rules mean for Sarasota and Bradenton businesses.</description>
+    </item>
+    <item>
+      <title>Locked-Down Linux for Front-Desk and Kiosk Deployments</title>
+      <link>https://simpleitsrq.com/blog/kiosk-linux-locked-down-deployments-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/kiosk-linux-locked-down-deployments-sarasota</guid>
+      <pubDate>Sat, 14 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>Ageless Linux is designed for non-technical users with large fonts and tamper resistance. Heres how SRQ businesses can use it for kiosk deployments.</description>
+    </item>
+    <item>
+      <title>Can You Run AI On-Prem? A Practical Guide for Bradenton SMBs</title>
+      <link>https://simpleitsrq.com/blog/run-ai-locally-bradenton-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/run-ai-locally-bradenton-small-business</guid>
+      <pubDate>Fri, 13 Mar 2026 00:00:00 GMT</pubDate>
+      <category>AI &amp; Productivity</category>
+      <description>A new tool detects your hardware and tells you which open-weight models you can run locally. Heres a practical guide for Bradenton SMBs.</description>
+    </item>
+    <item>
+      <title>Breaking Free from Legacy Vendor Lock-In: Clean-Room Migrations</title>
+      <link>https://simpleitsrq.com/blog/clean-room-reverse-engineering-legacy-vendor-lockin</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/clean-room-reverse-engineering-legacy-vendor-lockin</guid>
+      <pubDate>Thu, 12 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>A new service productizes clean-room reverse engineering for OSS interop. Heres what that means for SRQ businesses migrating off legacy vendors.</description>
+    </item>
+    <item>
+      <title>Drawing the Line on AI-Generated Content at Work</title>
+      <link>https://simpleitsrq.com/blog/ai-content-policy-sarasota-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-content-policy-sarasota-business</guid>
+      <pubDate>Wed, 11 Mar 2026 00:00:00 GMT</pubDate>
+      <category>AI &amp; Productivity</category>
+      <description>Hacker News updated its guidelines to ban AI-generated comments. Heres what an AI content policy looks like for a Sarasota or Bradenton business.</description>
+    </item>
+    <item>
+      <title>Tony Hoares Lessons That Still Matter for SRQ IT Leaders</title>
+      <link>https://simpleitsrq.com/blog/tony-hoare-quicksort-lessons-it-leaders</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/tony-hoare-quicksort-lessons-it-leaders</guid>
+      <pubDate>Tue, 10 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Business Tech</category>
+      <description>Tony Hoare passed away at 91. Heres what his work on Quicksort, null references, and CSP still teaches Sarasota and Bradenton IT leaders.</description>
+    </item>
+    <item>
+      <title>Are AI Coding Tools Really a Money Pit? A Sarasota Reality Check</title>
+      <link>https://simpleitsrq.com/blog/ai-coding-cost-myth-smb-budgeting</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-coding-cost-myth-smb-budgeting</guid>
+      <pubDate>Mon, 09 Mar 2026 00:00:00 GMT</pubDate>
+      <category>AI &amp; Productivity</category>
+      <description>A detailed cost analysis pushed back on viral claims that Anthropic loses thousands per Claude Code user. Heres what it means for SMB AI budgeting.</description>
+    </item>
+    <item>
+      <title>Sandboxing AI Coding Agents: A Safer Default for SRQ Teams</title>
+      <link>https://simpleitsrq.com/blog/sandboxing-ai-agents-mac-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sandboxing-ai-agents-mac-sarasota</guid>
+      <pubDate>Sun, 08 Mar 2026 00:00:00 GMT</pubDate>
+      <category>AI &amp; Productivity</category>
+      <description>Agent Safehouse wraps AI coding agents in macOS sandboxing. Heres why SRQ businesses should sandbox every agent that touches files or shells.</description>
+    </item>
+    <item>
+      <title>A Decade of Docker: What Containers Mean for Bradenton SMBs</title>
+      <link>https://simpleitsrq.com/blog/decade-docker-containers-bradenton-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/decade-docker-containers-bradenton-business</guid>
+      <pubDate>Sat, 07 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Cloud</category>
+      <description>A CACM retrospective on how Docker containers reshaped software delivery. Heres what containerization means for Sarasota and Bradenton SMBs in 2026.</description>
+    </item>
+    <item>
+      <title>Tech Layoffs Mean Better IT Hiring for Sarasota Businesses</title>
+      <link>https://simpleitsrq.com/blog/tight-tech-job-market-sarasota-msp-hiring</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/tight-tech-job-market-sarasota-msp-hiring</guid>
+      <pubDate>Fri, 06 Mar 2026 00:00:00 GMT</pubDate>
+      <category>Industry News</category>
+      <description>Tech sector job losses now exceed the 2008 and 2020 recessions. Heres what that means for Sarasota and Bradenton businesses hiring IT talent in 2026.</description>
+    </item>
+  </channel>
+</rss>
