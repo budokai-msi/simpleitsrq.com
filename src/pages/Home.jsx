@@ -5,10 +5,88 @@
   Loader2, CheckCircle2, AlertCircle, Send
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSEO } from "../lib/seo";
 import { posts } from "../data/posts";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
+
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
+const TURNSTILE_SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+/**
+ * Loads the Turnstile script (once) and renders the widget into a container.
+ * The token is pushed back to the form via `onToken`. When `VITE_TURNSTILE_SITE_KEY`
+ * is not set (local dev without a .env.local), the widget silently no-ops so
+ * the form still works.
+ */
+function useTurnstile(onToken) {
+  const containerRef = useRef(null);
+  const widgetIdRef = useRef(null);
+  const onTokenRef = useRef(onToken);
+
+  useEffect(() => { onTokenRef.current = onToken; }, [onToken]);
+
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY || !containerRef.current) return;
+
+    let cancelled = false;
+
+    const loadScript = () =>
+      new Promise((resolve, reject) => {
+        if (window.turnstile) return resolve();
+        const existing = document.querySelector(
+          `script[data-turnstile="1"]`
+        );
+        if (existing) {
+          existing.addEventListener("load", () => resolve(), { once: true });
+          existing.addEventListener("error", reject, { once: true });
+          return;
+        }
+        const s = document.createElement("script");
+        s.src = TURNSTILE_SCRIPT_SRC;
+        s.async = true;
+        s.defer = true;
+        s.dataset.turnstile = "1";
+        s.onload = () => resolve();
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+
+    loadScript()
+      .then(() => {
+        if (cancelled || !containerRef.current || !window.turnstile) return;
+        widgetIdRef.current = window.turnstile.render(containerRef.current, {
+          sitekey: TURNSTILE_SITE_KEY,
+          callback: (token) => onTokenRef.current?.(token),
+          "error-callback": () => onTokenRef.current?.(null),
+          "expired-callback": () => onTokenRef.current?.(null),
+          theme: "auto",
+          size: "normal",
+          action: "contact",
+        });
+      })
+      .catch((err) => {
+        console.warn("[turnstile] script failed to load", err);
+      });
+
+    return () => {
+      cancelled = true;
+      if (widgetIdRef.current && window.turnstile) {
+        try { window.turnstile.remove(widgetIdRef.current); } catch { /* noop */ }
+        widgetIdRef.current = null;
+      }
+    };
+  }, []);
+
+  const reset = useCallback(() => {
+    if (widgetIdRef.current && window.turnstile) {
+      try { window.turnstile.reset(widgetIdRef.current); } catch { /* noop */ }
+    }
+  }, []);
+
+  return { containerRef, reset };
+}
 
 function Hero() {
   return (
@@ -298,6 +376,7 @@ const ERROR_MESSAGES = {
   invalid_body: "Something went wrong with that request. Please try again.",
   invalid_json: "Something went wrong with that request. Please try again.",
   method_not_allowed: "Something went wrong with that request. Please try again.",
+  captcha_required: "Please complete the security check before sending.",
 };
 
 const initialForm = { name: "", company: "", email: "", phone: "", message: "", _hp: "" };
@@ -306,6 +385,10 @@ function Contact() {
   const [form, setForm] = useState(initialForm);
   const [status, setStatus] = useState("idle"); // idle | submitting | success | error
   const [errorMsg, setErrorMsg] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+
+  const { containerRef: turnstileRef, reset: resetTurnstile } =
+    useTurnstile(setTurnstileToken);
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -313,12 +396,22 @@ function Contact() {
     setForm(initialForm);
     setStatus("idle");
     setErrorMsg("");
+    setTurnstileToken("");
+    resetTurnstile();
     selectionHaptic();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (status === "submitting") return;
+
+    // If Turnstile is configured (prod) but no token yet, prompt the user.
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      errorHaptic();
+      setStatus("error");
+      setErrorMsg(ERROR_MESSAGES.captcha_required);
+      return;
+    }
 
     selectionHaptic();
     setStatus("submitting");
@@ -328,7 +421,7 @@ function Contact() {
       const r = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, turnstileToken }),
       });
       const data = await r.json().catch(() => ({}));
 
@@ -341,10 +434,15 @@ function Contact() {
       errorHaptic();
       setStatus("error");
       setErrorMsg(ERROR_MESSAGES[data?.error] || "Something went wrong. Please try again in a moment.");
+      // Turnstile tokens are single-use — get a fresh one for the retry.
+      setTurnstileToken("");
+      resetTurnstile();
     } catch {
       errorHaptic();
       setStatus("error");
       setErrorMsg(ERROR_MESSAGES.network_error);
+      setTurnstileToken("");
+      resetTurnstile();
     }
   };
 
@@ -431,6 +529,15 @@ function Contact() {
                   onChange={update("_hp")}
                 />
               </div>
+
+              {/* Cloudflare Turnstile — renders only when VITE_TURNSTILE_SITE_KEY is set. */}
+              {TURNSTILE_SITE_KEY && (
+                <div
+                  ref={turnstileRef}
+                  className="turnstile-widget"
+                  style={{ margin: "8px 0" }}
+                />
+              )}
 
               <button
                 type="submit"
