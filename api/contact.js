@@ -12,14 +12,19 @@
 // Env vars (set in Vercel → Settings → Environment Variables):
 //   RESEND_API_KEY         — required in prod
 //   TURNSTILE_SECRET_KEY   — required in prod
-// If either is missing (e.g. local dev without .env.local), the function
-// "fails open" on that layer so the form is still usable in development.
+//   CONTACT_TO_EMAIL       — optional, overrides the inbox submissions land in.
+//                            Defaults to hello@simpleitsrq.com. Set this to a
+//                            real mailbox (e.g. a Gmail address) until the
+//                            apex MX records for simpleitsrq.com are wired up.
+// If RESEND_API_KEY / TURNSTILE_SECRET_KEY are missing (e.g. local dev without
+// .env.local) the function "fails open" on that layer so the form is still
+// usable in development.
 
 import { checkBotId } from "botid/server";
 import { Resend } from "resend";
 
 const CONTACT_FROM = "Simple IT SRQ Website <contact@simpleitsrq.com>";
-const CONTACT_TO = "hello@simpleitsrq.com";
+const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
 const TURNSTILE_VERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -208,10 +213,11 @@ export async function POST(request) {
   }
 
   const resend = new Resend(apiKey);
+  const contactTo = process.env.CONTACT_TO_EMAIL || CONTACT_TO_DEFAULT;
   try {
     const { data, error } = await resend.emails.send({
       from: CONTACT_FROM,
-      to: [CONTACT_TO],
+      to: [contactTo],
       replyTo: email,
       subject,
       text: textBody,
