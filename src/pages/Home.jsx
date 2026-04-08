@@ -5,88 +5,11 @@
   Loader2, CheckCircle2, AlertCircle, Send
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useSEO } from "../lib/seo";
 import { posts } from "../data/posts";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
-
-const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
-const TURNSTILE_SCRIPT_SRC =
-  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-
-/**
- * Loads the Turnstile script (once) and renders the widget into a container.
- * The token is pushed back to the form via `onToken`. When `VITE_TURNSTILE_SITE_KEY`
- * is not set (local dev without a .env.local), the widget silently no-ops so
- * the form still works.
- */
-function useTurnstile(onToken) {
-  const containerRef = useRef(null);
-  const widgetIdRef = useRef(null);
-  const onTokenRef = useRef(onToken);
-
-  useEffect(() => { onTokenRef.current = onToken; }, [onToken]);
-
-  useEffect(() => {
-    if (!TURNSTILE_SITE_KEY || !containerRef.current) return;
-
-    let cancelled = false;
-
-    const loadScript = () =>
-      new Promise((resolve, reject) => {
-        if (window.turnstile) return resolve();
-        const existing = document.querySelector(
-          `script[data-turnstile="1"]`
-        );
-        if (existing) {
-          existing.addEventListener("load", () => resolve(), { once: true });
-          existing.addEventListener("error", reject, { once: true });
-          return;
-        }
-        const s = document.createElement("script");
-        s.src = TURNSTILE_SCRIPT_SRC;
-        s.async = true;
-        s.defer = true;
-        s.dataset.turnstile = "1";
-        s.onload = () => resolve();
-        s.onerror = reject;
-        document.head.appendChild(s);
-      });
-
-    loadScript()
-      .then(() => {
-        if (cancelled || !containerRef.current || !window.turnstile) return;
-        widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          sitekey: TURNSTILE_SITE_KEY,
-          callback: (token) => onTokenRef.current?.(token),
-          "error-callback": () => onTokenRef.current?.(null),
-          "expired-callback": () => onTokenRef.current?.(null),
-          theme: "auto",
-          size: "normal",
-          action: "contact",
-        });
-      })
-      .catch((err) => {
-        console.warn("[turnstile] script failed to load", err);
-      });
-
-    return () => {
-      cancelled = true;
-      if (widgetIdRef.current && window.turnstile) {
-        try { window.turnstile.remove(widgetIdRef.current); } catch { /* noop */ }
-        widgetIdRef.current = null;
-      }
-    };
-  }, []);
-
-  const reset = useCallback(() => {
-    if (widgetIdRef.current && window.turnstile) {
-      try { window.turnstile.reset(widgetIdRef.current); } catch { /* noop */ }
-    }
-  }, []);
-
-  return { containerRef, reset };
-}
+import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 
 function Hero() {
   return (
@@ -356,8 +279,8 @@ function CtaBanner() {
           <h2 className="title-2">Ready to simplify your IT?</h2>
           <p>Schedule a free 30-minute consultation with a local engineer. No pressure, no jargon - just clarity.</p>
           <div className="cta-actions">
-            <a href="#contact" className="btn btn-primary btn-lg">Book a Free Audit</a>
-            <a href="mailto:hello@simpleitsrq.com" className="btn btn-secondary btn-lg">Email Us</a>
+            <Link to="/book" className="btn btn-primary btn-lg">Book a Free Consultation</Link>
+            <Link to="/support" className="btn btn-secondary btn-lg">File a Support Ticket</Link>
           </div>
         </div>
       </div>

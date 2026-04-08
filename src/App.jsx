@@ -12,6 +12,8 @@ import "./App.css";
 const BlogIndex = lazy(() => import("./pages/BlogIndex"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Book = lazy(() => import("./pages/Book"));
+const Support = lazy(() => import("./pages/Support"));
 const PrivacyPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
@@ -81,7 +83,7 @@ function Navbar() {
           <Link to="/#industries">Industries</Link>
           <Link to="/#compliance">Compliance</Link>
           <Link to="/blog">Blog</Link>
-          <Link to="/#contact">Contact</Link>
+          <Link to="/support">Support</Link>
         </nav>
         <div className="nav-actions">
           <ThemeToggle />
@@ -93,7 +95,7 @@ function Navbar() {
           >
             Client Portal
           </a>
-          <Link to="/#contact" className="btn btn-primary">Get Started</Link>
+          <Link to="/book" className="btn btn-primary">Book a Call</Link>
         </div>
         <div className="nav-mobile-actions">
           <ThemeToggle />
@@ -108,6 +110,7 @@ function Navbar() {
           <Link to="/#industries" onClick={() => setOpen(false)}>Industries</Link>
           <Link to="/#compliance" onClick={() => setOpen(false)}>Compliance</Link>
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
+          <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#contact" onClick={() => setOpen(false)}>Contact</Link>
           <a
             href="https://billing.stripe.com/p/login/5kQ7sE7oL9OEgIM2nPak000"
@@ -117,7 +120,7 @@ function Navbar() {
           >
             Client Portal
           </a>
-          <Link to="/#contact" className="btn btn-primary" onClick={() => setOpen(false)}>Get Started</Link>
+          <Link to="/book" className="btn btn-primary" onClick={() => setOpen(false)}>Book a Call</Link>
         </div>
       )}
     </header>
@@ -152,6 +155,8 @@ function Footer() {
             <li><Link to="/#industries">Industries</Link></li>
             <li><Link to="/#compliance">Compliance</Link></li>
             <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/book">Book a Call</Link></li>
+            <li><Link to="/support">Support</Link></li>
             <li><Link to="/#contact">Contact</Link></li>
           </ul>
         </div>
@@ -215,6 +220,8 @@ export default function App() {
             <Route path="/" element={<main id="main"><Home /></main>} />
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/book" element={<Book />} />
+            <Route path="/support" element={<Support />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/accessibility" element={<AccessibilityPage />} />
