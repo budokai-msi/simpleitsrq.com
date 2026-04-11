@@ -1,24 +1,6 @@
-/* ============================================================
-   Geist — Vercel's official type system
-   Self-hosted variable fonts so we don't ship Google Fonts on
-   the critical path. Both files combined: ~140KB woff2.
-   ============================================================ */
-@font-face {
-  font-family: "Geist";
-  src: url("/fonts/Geist-Variable.woff2") format("woff2-variations"),
-       url("/fonts/Geist-Variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Geist Mono";
-  src: url("/fonts/GeistMono-Variable.woff2") format("woff2-variations"),
-       url("/fonts/GeistMono-Variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
+/* No web fonts — we use the OS system stack so the page renders
+   instantly with whatever sans-serif the user already has (Segoe UI
+   on Windows, San Francisco on macOS / iOS, Roboto on Android). */
 
 /* ============================================================
    Theme tokens — light + dark
@@ -133,15 +115,11 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Type — Geist Sans primary, Inter as graceful fallback while font loads,
-     then system fonts so the page never shows tofu. */
-  font-family: "Geist", "Inter", "Inter Variable", -apple-system, BlinkMacSystemFont,
-               "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
-  font-feature-settings: "ss01", "ss03", "cv11";
-  font-optical-sizing: auto;
+  /* Type — system stack first, no web font download. */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+               Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 15px;
   line-height: 1.55;
-  letter-spacing: -0.005em;
   color: var(--text-1);
   background: var(--bg);
 
@@ -158,7 +136,11 @@ html, body {
   color: var(--text-1);
   transition: background-color 280ms var(--ease-out), color 280ms var(--ease-out);
 }
-img, svg { display: block; max-width: 100%; }
+img { display: block; max-width: 100%; }
+/* Only apply display:block to svgs outside Fluent UI — Fluent's inline
+   icons break if forced to block. The .fluent-root class is set on the
+   FluentProvider wrapper in ClientPortal. */
+svg:not(.fluent-root svg) { display: block; max-width: 100%; }
 a { color: var(--brand); text-decoration: none; }
 a:hover { color: var(--brand-hover); }
 
@@ -203,10 +185,9 @@ svg { stroke-width: 1.75; }
 /* Tabular figures for stats and KPI displays */
 .tabular { font-variant-numeric: tabular-nums; }
 
-/* Geist Mono utility — for code, IDs, timestamps, IP addresses */
+/* Mono utility — for code, IDs, timestamps, IP addresses */
 .mono {
-  font-family: "Geist Mono", "JetBrains Mono", "SF Mono", Consolas, monospace;
-  font-feature-settings: "ss02";
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   font-variant-numeric: tabular-nums;
 }
 
@@ -214,6 +195,112 @@ svg { stroke-width: 1.75; }
   outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: var(--r-sm);
+}
+
+/* ============================================================
+   Scroll-reveal animation system
+   Pair with useScrollReveal() hook. Elements start invisible
+   and animate in when they enter the viewport.
+   ============================================================ */
+
+/* Base: hidden state */
+.reveal-up,
+.reveal-down,
+.reveal-left,
+.reveal-right,
+.reveal-fade,
+.reveal-scale {
+  opacity: 0;
+  will-change: opacity, transform;
+  transition:
+    opacity 600ms var(--ease-out),
+    transform 600ms var(--ease-out);
+}
+.reveal-up    { transform: translateY(28px); }
+.reveal-down  { transform: translateY(-28px); }
+.reveal-left  { transform: translateX(28px); }
+.reveal-right { transform: translateX(-28px); }
+.reveal-scale { transform: scale(0.96); }
+
+/* Revealed state */
+.reveal-up.revealed,
+.reveal-down.revealed,
+.reveal-left.revealed,
+.reveal-right.revealed,
+.reveal-fade.revealed,
+.reveal-scale.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* Stagger children: add data-reveal-delay="1" through "5" */
+[data-reveal-delay="1"] { transition-delay: 80ms; }
+[data-reveal-delay="2"] { transition-delay: 160ms; }
+[data-reveal-delay="3"] { transition-delay: 240ms; }
+[data-reveal-delay="4"] { transition-delay: 320ms; }
+[data-reveal-delay="5"] { transition-delay: 400ms; }
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up, .reveal-down, .reveal-left, .reveal-right,
+  .reveal-fade, .reveal-scale {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================================
+   Subtle card hover lift — use .card-hover on any card/tile
+   ============================================================ */
+.card-hover {
+  transition:
+    transform 240ms var(--ease-out),
+    box-shadow 240ms var(--ease-out),
+    border-color 240ms var(--ease-out);
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow8);
+  border-color: var(--border-strong);
+}
+.card-hover:active {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow4);
+}
+
+/* ============================================================
+   Subtle shimmer — decorative glow pulse on hero elements
+   ============================================================ */
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+.shimmer {
+  animation: shimmer 3s var(--ease-in-out) infinite;
+}
+
+/* ============================================================
+   Float — gentle y-axis bob for decorative SVGs/icons
+   ============================================================ */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+.float {
+  animation: float 4s var(--ease-in-out) infinite;
+}
+
+/* ============================================================
+   Pulse ring — subtle brand-colored pulse behind CTAs
+   ============================================================ */
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 var(--brand-glow); }
+  70%  { box-shadow: 0 0 0 10px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.pulse-ring {
+  animation: pulse-ring 2.5s var(--ease-out) infinite;
 }
 
 /* Selection */

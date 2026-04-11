@@ -1,3 +1,26 @@
-﻿User-agent: *
+User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /portal
+
 Sitemap: https://simpleitsrq.com/sitemap.xml
+
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /portal
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Disallow: /portal
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+Disallow: /portal
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+Disallow: /portal

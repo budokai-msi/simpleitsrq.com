@@ -89,7 +89,11 @@ function BookingEmbed({ calLink }) {
 function BookingPlaceholder() {
   return (
     <div className="form-shell" style={{ textAlign: "center", padding: "3rem 1.5rem" }}>
-      <Calendar size={40} color="#0F6CBD" style={{ marginBottom: "0.75rem" }} />
+      <Calendar
+        size={40}
+        color="#0F6CBD"
+        style={{ display: "block", margin: "0 auto 0.75rem" }}
+      />
       <h3 className="title-2" style={{ marginTop: 0 }}>Online booking launching soon</h3>
       <p className="section-sub" style={{ maxWidth: "42ch", margin: "0.5rem auto 1.5rem" }}>
         While we finish wiring up self-service scheduling, the fastest way to get a free IT consultation is to email us directly. We'll reply within one business hour.

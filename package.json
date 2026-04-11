@@ -8,13 +8,17 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate:images": "node scripts/generate-images.mjs"
+    "generate:images": "node scripts/generate-images.mjs",
+    "db:push": "node --env-file=.env.local scripts/db/push.mjs"
   },
   "dependencies": {
+    "@fluentui/react-components": "^9.73.7",
+    "@fluentui/react-icons": "^2.0.323",
+    "@neondatabase/serverless": "^1.0.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "botid": "^1.5.11",
-    "geist": "^1.7.0",
+    "jose": "^6.2.2",
     "lucide-react": "^1.7.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

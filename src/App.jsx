@@ -1,19 +1,26 @@
 ﻿import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
-import { useEffect, useState, lazy, Suspense } from "react";
-import { Globe, AtSign, Share2, Menu, Sun, Moon } from "lucide-react";
+import { useEffect, useState, useMemo, lazy, Suspense } from "react";
+import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from "./pages/Home";
 import { selectionHaptic } from "./lib/haptics";
+import { ThemeContext, useTheme } from "./lib/theme";
+import { AuthProvider } from "./lib/auth.jsx";
+import { useAuth } from "./lib/authContext.js";
+import CookieConsent from "./components/CookieConsent.jsx";
+import VisitorTracker from "./components/VisitorTracker.jsx";
 import "./App.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
 // small. The homepage is the most-visited route and stays eager.
 const BlogIndex = lazy(() => import("./pages/BlogIndex"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const LocalLanding = lazy(() => import("./pages/LocalLanding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Book = lazy(() => import("./pages/Book"));
 const Support = lazy(() => import("./pages/Support"));
+const ClientPortal = lazy(() => import("./pages/ClientPortal"));
 const PrivacyPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
@@ -27,24 +34,7 @@ function RouteFallback() {
 }
 
 function ThemeToggle() {
-  const [theme, setTheme] = useState(() =>
-    typeof document !== "undefined"
-      ? document.documentElement.dataset.theme || "light"
-      : "light"
-  );
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    try { localStorage.setItem("theme", theme); } catch {}
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#0B0D10" : "#0F6CBD");
-  }, [theme]);
-
-  const toggle = () => {
-    selectionHaptic();
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
-  };
-
+  const { theme, toggle } = useTheme();
   return (
     <button
       type="button"
@@ -74,6 +64,23 @@ function Logo() {
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const { user, loading } = useAuth();
+
+  // Signed-in pill (avatar + first name) or a "Sign In" button.
+  const portalCta = loading ? null : user ? (
+    <Link to="/portal" className="link-btn nav-user" title={`Signed in as ${user.email}`}>
+      {user.avatarUrl
+        ? <img src={user.avatarUrl} alt="" className="nav-avatar" />
+        : <UserIcon size={16} />}
+      <span>{user.name ? user.name.split(" ")[0] : "Portal"}</span>
+    </Link>
+  ) : (
+    <Link to="/portal" className="link-btn">
+      <LogIn size={16} style={{ marginRight: 6 }} />
+      Sign In
+    </Link>
+  );
+
   return (
     <header className="navbar" role="banner">
       <div className="container nav-inner">
@@ -87,14 +94,7 @@ function Navbar() {
         </nav>
         <div className="nav-actions">
           <ThemeToggle />
-          <a
-            href="https://billing.stripe.com/p/login/5kQ7sE7oL9OEgIM2nPak000"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="link-btn"
-          >
-            Client Portal
-          </a>
+          {portalCta}
           <Link to="/book" className="btn btn-primary">Book a Call</Link>
         </div>
         <div className="nav-mobile-actions">
@@ -112,14 +112,9 @@ function Navbar() {
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
           <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#contact" onClick={() => setOpen(false)}>Contact</Link>
-          <a
-            href="https://billing.stripe.com/p/login/5kQ7sE7oL9OEgIM2nPak000"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setOpen(false)}
-          >
-            Client Portal
-          </a>
+          <Link to="/portal" onClick={() => setOpen(false)}>
+            {user ? "My Portal" : "Sign In"}
+          </Link>
           <Link to="/book" className="btn btn-primary" onClick={() => setOpen(false)}>Book a Call</Link>
         </div>
       )}
@@ -133,7 +128,7 @@ function Footer() {
       <div className="container footer-grid">
         <div>
           <Logo />
-          <p className="footer-desc">Managed IT, cybersecurity, and cloud services for the Suncoast. SentinelOne, Microsoft Defender, Intune, Fortinet and Meraki - delivered locally.</p>
+          <p className="footer-desc">Local IT support, cybersecurity, and cloud services for Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
           <div className="socials" aria-label="Social media">
             <a href="#" aria-label="LinkedIn"><Globe size={18} /></a>
             <a href="#" aria-label="Facebook"><AtSign size={18} /></a>
@@ -141,12 +136,12 @@ function Footer() {
           </div>
         </div>
         <div>
-          <h4>Solutions</h4>
+          <h4>What We Do</h4>
           <ul>
-            <li><Link to="/#solutions">Managed IT</Link></li>
-            <li><Link to="/#solutions">Cybersecurity and MDR</Link></li>
-            <li><Link to="/#solutions">Microsoft 365 and Azure</Link></li>
-            <li><Link to="/#solutions">Backup and DR</Link></li>
+            <li><Link to="/#solutions">Everyday IT support</Link></li>
+            <li><Link to="/#solutions">Cybersecurity</Link></li>
+            <li><Link to="/#solutions">Microsoft 365 and cloud</Link></li>
+            <li><Link to="/#solutions">Backups and recovery</Link></li>
           </ul>
         </div>
         <div>
@@ -155,6 +150,9 @@ function Footer() {
             <li><Link to="/#industries">Industries</Link></li>
             <li><Link to="/#compliance">Compliance</Link></li>
             <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/sarasota-it-support">Sarasota IT Support</Link></li>
+            <li><Link to="/bradenton-it-support">Bradenton IT Support</Link></li>
+            <li><Link to="/lakewood-ranch-it-support">Lakewood Ranch IT</Link></li>
             <li><Link to="/book">Book a Call</Link></li>
             <li><Link to="/support">Support</Link></li>
             <li><Link to="/#contact">Contact</Link></li>
@@ -203,32 +201,76 @@ function Layout({ children }) {
     <>
       <Navbar />
       <ScrollToHash />
+      <VisitorTracker />
       {children}
       <Footer />
+      <CookieConsent />
       <Analytics />
       <SpeedInsights />
     </>
   );
 }
 
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState(() =>
+    typeof document !== "undefined"
+      ? document.documentElement.dataset.theme || "light"
+      : "light"
+  );
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // localStorage may be disabled (private mode, sandboxed iframe) — that's
+      // fine, the theme just won't persist across sessions.
+    }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", theme === "dark" ? "#0B0D10" : "#0F6CBD");
+  }, [theme]);
+
+  const value = useMemo(() => ({
+    theme,
+    toggle: () => {
+      selectionHaptic();
+      setTheme((t) => (t === "dark" ? "light" : "dark"));
+    },
+  }), [theme]);
+
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
 export default function App() {
   return (
-    <BrowserRouter>
-      <Layout>
-        <Suspense fallback={<RouteFallback />}>
-          <Routes>
-            <Route path="/" element={<main id="main"><Home /></main>} />
-            <Route path="/blog" element={<BlogIndex />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/book" element={<Book />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/accessibility" element={<AccessibilityPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </Layout>
-    </BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+      <BrowserRouter>
+        <Layout>
+          <Suspense fallback={<RouteFallback />}>
+            <Routes>
+              <Route path="/" element={<main id="main"><Home /></main>} />
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/sarasota-it-support" element={<LocalLanding />} />
+              <Route path="/bradenton-it-support" element={<LocalLanding />} />
+              <Route path="/lakewood-ranch-it-support" element={<LocalLanding />} />
+              <Route path="/book" element={<Book />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/portal" element={<ClientPortal />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/accessibility" element={<AccessibilityPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </Layout>
+      </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

@@ -22,4 +22,25 @@ export default defineConfig({
     port: 3000,
     strictPort: true,
   },
+
+  // --- Production hardening ---
+  build: {
+    // Strip console.*, debugger, and source hint comments.
+    target: 'es2022',
+    minify: true,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        // Anonymize chunk filenames — no component/page names exposed.
+        chunkFileNames: 'assets/c-[hash].js',
+        entryFileNames: 'assets/e-[hash].js',
+        assetFileNames: 'assets/a-[hash][extname]',
+      },
+    },
+  },
+  esbuild: {
+    drop: ['debugger'],
+    pure: ['console.log', 'console.warn', 'console.info', 'console.debug', 'console.trace'],
+    legalComments: 'none',
+  },
 })

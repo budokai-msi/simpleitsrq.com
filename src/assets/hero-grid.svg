@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <!-- Subtle isometric grid pattern representing IT infrastructure -->
+  <defs>
+    <linearGradient id="hg1" x1="0" y1="0" x2="800" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F6CBD" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#0F6CBD" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="hg2" x1="400" y1="0" x2="400" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F6CBD" stop-opacity="0.15"/>
+      <stop offset="0.5" stop-color="#0F6CBD" stop-opacity="0.06"/>
+      <stop offset="1" stop-color="#0F6CBD" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#hg1)"/>
+  <!-- Grid dots -->
+  <g fill="#0F6CBD" opacity="0.12">
+    <circle cx="100" cy="100" r="2"/><circle cx="200" cy="100" r="2"/><circle cx="300" cy="100" r="2"/><circle cx="400" cy="100" r="2"/><circle cx="500" cy="100" r="2"/><circle cx="600" cy="100" r="2"/><circle cx="700" cy="100" r="2"/>
+    <circle cx="100" cy="200" r="2"/><circle cx="200" cy="200" r="2"/><circle cx="300" cy="200" r="2"/><circle cx="400" cy="200" r="2"/><circle cx="500" cy="200" r="2"/><circle cx="600" cy="200" r="2"/><circle cx="700" cy="200" r="2"/>
+    <circle cx="100" cy="300" r="2"/><circle cx="200" cy="300" r="2"/><circle cx="300" cy="300" r="2"/><circle cx="400" cy="300" r="2"/><circle cx="500" cy="300" r="2"/><circle cx="600" cy="300" r="2"/><circle cx="700" cy="300" r="2"/>
+    <circle cx="100" cy="400" r="2"/><circle cx="200" cy="400" r="2"/><circle cx="300" cy="400" r="2"/><circle cx="400" cy="400" r="2"/><circle cx="500" cy="400" r="2"/><circle cx="600" cy="400" r="2"/><circle cx="700" cy="400" r="2"/>
+    <circle cx="100" cy="500" r="2"/><circle cx="200" cy="500" r="2"/><circle cx="300" cy="500" r="2"/><circle cx="400" cy="500" r="2"/><circle cx="500" cy="500" r="2"/><circle cx="600" cy="500" r="2"/><circle cx="700" cy="500" r="2"/>
+  </g>
+  <!-- Connecting lines representing network -->
+  <g stroke="#0F6CBD" stroke-width="1" opacity="0.06">
+    <line x1="200" y1="200" x2="400" y2="200"/><line x1="400" y1="200" x2="600" y2="200"/>
+    <line x1="200" y1="200" x2="300" y2="300"/><line x1="400" y1="200" x2="400" y2="300"/>
+    <line x1="600" y1="200" x2="500" y2="300"/><line x1="300" y1="300" x2="500" y2="300"/>
+    <line x1="300" y1="300" x2="200" y2="400"/><line x1="500" y1="300" x2="600" y2="400"/>
+    <line x1="400" y1="300" x2="400" y2="400"/>
+  </g>
+  <!-- Highlighted nodes — the "active" devices -->
+  <g fill="#0F6CBD" opacity="0.18">
+    <circle cx="400" cy="200" r="6"/><circle cx="300" cy="300" r="5"/><circle cx="500" cy="300" r="5"/>
+    <circle cx="400" cy="300" r="4"/><circle cx="200" cy="200" r="4"/><circle cx="600" cy="200" r="4"/>
+  </g>
+  <!-- Shield icon at center -->
+  <g transform="translate(375, 240)" opacity="0.12">
+    <path d="M25 2 L48 14 V30 C48 42 38 52 25 56 C12 52 2 42 2 30 V14 Z" fill="#0F6CBD"/>
+    <path d="M18 28 L23 33 L34 22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  <!-- Gradient fade at edges -->
+  <rect width="800" height="600" fill="url(#hg2)" opacity="0.5"/>
+</svg>

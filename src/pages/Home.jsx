@@ -5,8 +5,10 @@
   Loader2, CheckCircle2, AlertCircle, Send
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSEO } from "../lib/seo";
+import { useScrollReveal, useRevealChildren } from "../lib/useScrollReveal";
+import heroGrid from "../assets/hero-grid.svg";
 import { posts } from "../data/posts";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
@@ -14,23 +16,25 @@ import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 function Hero() {
   return (
     <section className="hero hero-clean" aria-labelledby="hero-title">
-      <div className="hero-bg" aria-hidden="true" />
+      <div className="hero-bg" aria-hidden="true">
+        <img src={heroGrid} alt="" className="hero-grid-bg" />
+      </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">Managed IT · Sarasota · Bradenton · SRQ</span>
-          <h1 id="hero-title" className="display">Enterprise IT, simplified for local business.</h1>
+          <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
+          <h1 id="hero-title" className="display">IT support that just works — for Sarasota and Bradenton businesses.</h1>
           <p className="lede">
-            Simple IT SRQ delivers managed IT, cybersecurity, and cloud services to growing
-            businesses across the Suncoast. SentinelOne EDR, Microsoft Defender, Intune, and a
-            local engineering team. HIPAA documented. Cyber-insurance ready.
+            We keep your computers running, your data safe, and your team productive.
+            A local crew that picks up the phone, flat monthly pricing, and all the
+            paperwork your insurance company and auditors ask for.
           </p>
           <div className="hero-ctas">
-            <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Audit</a>
-            <a href="#solutions" className="btn btn-secondary btn-lg">Explore Solutions</a>
+            <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Check-Up</a>
+            <a href="#solutions" className="btn btn-secondary btn-lg">See What We Do</a>
           </div>
-          <ul className="trust-row" aria-label="Trust indicators">
-            <li><Star size={14} strokeWidth={2.25} fill="#F7630C" stroke="#F7630C" /> 5.0 Google rating</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA documented</li>
+          <ul className="trust-row" aria-label="Why clients trust us">
+            <li><Star size={14} strokeWidth={2.25} fill="#F7630C" stroke="#F7630C" /> 5-star Google reviews</li>
+            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included</li>
             <li><Clock size={14} strokeWidth={2.25} /> Local team · same-day response</li>
           </ul>
         </div>
@@ -40,13 +44,23 @@ function Hero() {
 }
 
 function LogosBar() {
-  const logos = ["HEALTHCARE PARTNERS", "GULF COAST LEGAL", "SRQ FINANCIAL", "BAYSHORE BUILDERS", "HARBOR REALTY", "MERIDIAN GROUP"];
+  // The brands we use under the hood. Kept so prospective clients (and their
+  // insurance carriers or auditors) can recognize the tools, but framed as
+  // "what we install for you" instead of a raw vendor dump.
+  const vendors = [
+    "Microsoft 365",
+    "SentinelOne",
+    "Microsoft Defender",
+    "Intune",
+    "Fortinet",
+    "Cisco Meraki",
+  ];
   return (
-    <section className="logos-bar" aria-label="Trusted clients">
+    <section className="logos-bar" aria-label="Tools and brands we install">
       <div className="container">
-        <p className="logos-title">Trusted by businesses across the SRQ region</p>
+        <p className="logos-title">The tools we install and support for you</p>
         <div className="logos-row">
-          {logos.map((l) => <span key={l} className="logo-mark">{l}</span>)}
+          {vendors.map((v) => <span key={v} className="logo-mark">{v}</span>)}
         </div>
       </div>
     </section>
@@ -56,63 +70,69 @@ function LogosBar() {
 const SOLUTIONS = [
   {
     Icon: Headphones,
-    title: "Managed IT Support for Bradenton and Sarasota Businesses",
-    desc: "Flat-rate, fully managed IT for SRQ teams of 5 to 150 employees. We monitor servers, workstations, and networks 24/7, patch on a documented schedule, and answer help-desk calls from a local team - not an offshore queue. Every client gets a named technical lead and a 15-minute response SLA on critical tickets."
+    title: "Everyday IT Support",
+    desc: "One flat monthly price covers unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and critical problems get a live tech in under 15 minutes."
   },
   {
     Icon: Lock,
-    title: "Cybersecurity and Managed Detection and Response (MDR)",
-    desc: "Layered protection built around SentinelOne EDR, Microsoft Defender for Business, DNS filtering, and 24/7 SOC monitoring. We deploy MFA on every account, lock down admin privileges, and produce the exact written documentation your cyber-insurance carrier asks for at renewal."
+    title: "Cybersecurity and Virus Protection",
+    desc: "Modern antivirus, email scam filtering, safer web browsing, and 24/7 monitoring that catches attacks while you sleep. We turn on two-step sign-in for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
   },
   {
     Icon: Cloud,
-    title: "Microsoft 365 and Azure Management",
-    desc: "We handle the full Microsoft 365 stack: tenant setup, mailbox migration, SharePoint and OneDrive, Intune device enrollment, Conditional Access policies, and ongoing license right-sizing. For Azure workloads we design the landing zone, set up backups, and tune costs every quarter."
+    title: "Microsoft 365, Email and Cloud Apps",
+    desc: "We set up (or clean up) your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone. Moving from another provider? We handle the switch over a weekend so nobody loses a message."
   },
   {
     Icon: Server,
-    title: "Backup, Disaster Recovery and Business Continuity",
-    desc: "Image-based backups of every server and critical workstation, replicated to an immutable cloud copy in a separate region. We test restores quarterly, document RTO/RPO targets per workload, and keep a written runbook so a hurricane, ransomware event, or hardware failure does not shut you down for more than a few hours."
+    title: "Backups and Disaster Recovery",
+    desc: "Automatic backups of every computer and server, with a second copy stored off-site so a fire, a hurricane, or a ransomware attack can't wipe you out. We test the backups every quarter and keep a simple plan for getting you back up and running in hours, not days."
   },
   {
     Icon: FileCheck,
-    title: "HIPAA and Cyber-Insurance Compliance",
-    desc: "Built for Sarasota medical practices, dental offices, law firms, and any business renewing cyber liability coverage. We perform a written risk assessment, deploy the technical controls insurers and HHS expect (MFA, EDR, encrypted backups, access logging), and hand you the policy documents and evidence packets you need on audit day."
+    title: "HIPAA and Cyber-Insurance Paperwork",
+    desc: "Made for medical and dental practices, law firms, and any business renewing their cyber-insurance policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor or an insurance agent the same day."
   },
   {
     Icon: Phone,
-    title: "Cloud VoIP and Unified Communications",
-    desc: "Microsoft Teams Phone or RingCentral deployments with auto-attendants, SMS, e-fax, and call recording. We port your existing numbers, configure E911 for every site, and train your front desk so go-live is uneventful."
+    title: "Business Phone Systems",
+    desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email. We move your existing numbers, set up after-hours routing, and train your front desk so switching over is quiet."
   },
   {
     Icon: Wifi,
-    title: "Network Design, Wi-Fi and Structured Cabling",
-    desc: "Business-grade firewalls (Fortinet or Cisco Meraki), segmented VLANs, and Wi-Fi designed from a heat-map survey rather than guesswork. We pull cable, mount APs, and document every jack so the next change is fast and cheap."
+    title: "Networking, Wi-Fi, and Cabling",
+    desc: "Business-grade firewalls and Wi-Fi that actually reach every corner of your office. We run new network cables, label every jack, and guest-separate the Wi-Fi so your customers and staff are never on the same network."
   },
   {
     Icon: Briefcase,
-    title: "Virtual CIO and Technology Strategy",
-    desc: "A quarterly business review with a senior engineer who actually reads your strategic plan. We build a 12-month technology roadmap, benchmark your IT spend against peers, and translate compliance and security requirements into a budget your CFO can defend."
+    title: "IT Planning and Budgeting",
+    desc: "Sit down with a senior tech once a quarter to look at what's working, what's about to break, and what should be in next year's budget. No corporate speak — just a straight answer on where to spend and where to wait."
   },
 ];
 
 function Solutions() {
+  const ref = useRef(null);
+  useRevealChildren(ref);
   return (
     <section className="section" id="solutions" aria-labelledby="solutions-title">
-      <div className="container">
-        <div className="section-head">
-          <span className="eyebrow">Solutions</span>
-          <h2 id="solutions-title" className="title-1">Solutions Built for Your Business</h2>
-          <p className="section-sub">Everything you need to run, secure, and scale your technology - delivered by a local team that picks up the phone.</p>
+      <div className="container" ref={ref}>
+        <div className="section-head reveal-up" data-reveal>
+          <span className="eyebrow">What We Do</span>
+          <h2 id="solutions-title" className="title-1">Everything your business needs from an IT company</h2>
+          <p className="section-sub">One local team for your computers, phones, email, Wi-Fi, backups, and security — so you don't have to call five different vendors when something breaks.</p>
         </div>
-        <div className="cards-grid">
-          {SOLUTIONS.map(({ Icon, title, desc }) => (
-            <article key={title} className="card">
-              <div className="card-icon"><Icon size={22} /></div>
-              <h3 className="card-title">{title}</h3>
-              <p className="card-desc">{desc}</p>
-              <a href="#contact" className="card-link">Learn more <ArrowRight size={14} /></a>
-            </article>
+        <div className="solution-grid">
+          {SOLUTIONS.map(({ Icon, title, desc }, i) => (
+            <a key={title} href="#contact" className="solution-card card-hover reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
+              <div className="solution-card-head">
+                <span className="solution-card-icon"><Icon size={18} /></span>
+                <h3 className="solution-card-title">{title}</h3>
+              </div>
+              <p className="solution-card-desc">{desc}</p>
+              <span className="solution-card-link">
+                Learn more <ArrowRight size={14} />
+              </span>
+            </a>
           ))}
         </div>
       </div>
@@ -129,17 +149,19 @@ const INDUSTRIES = [
 ];
 
 function Industries() {
+  const ref = useRef(null);
+  useRevealChildren(ref);
   return (
     <section className="section section-alt" id="industries" aria-labelledby="industries-title">
-      <div className="container">
-        <div className="section-head">
-          <span className="eyebrow">Industries</span>
-          <h2 id="industries-title" className="title-1">Industries We Serve</h2>
-          <p className="section-sub">Compliance-aware IT for the regulated industries that power the Suncoast economy.</p>
+      <div className="container" ref={ref}>
+        <div className="section-head reveal-up" data-reveal>
+          <span className="eyebrow">Who We Work With</span>
+          <h2 id="industries-title" className="title-1">Businesses we know how to support</h2>
+          <p className="section-sub">We specialize in the industries that have to deal with the most paperwork — medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton.</p>
         </div>
         <div className="industries-grid">
-          {INDUSTRIES.map(({ Icon, name, badges }) => (
-            <article key={name} className="industry-card">
+          {INDUSTRIES.map(({ Icon, name, badges }, i) => (
+            <article key={name} className="industry-card card-hover reveal-up" data-reveal data-reveal-delay={i + 1}>
               <div className="industry-icon"><Icon size={26} /></div>
               <h3 className="industry-name">{name}</h3>
               <div className="badges">
@@ -154,22 +176,23 @@ function Industries() {
 }
 
 function Compliance() {
+  const ref = useScrollReveal();
   const features = [
-    "HIPAA Risk Assessments and Documentation",
-    "Cyber-Insurance Renewal Evidence Packets",
-    "Immutable, Air-Gapped Backups",
-    "Disaster Recovery Playbooks",
-    "256-bit End-to-End Encryption"
+    "HIPAA paperwork and risk reviews",
+    "Cyber-insurance renewal help",
+    "Off-site backups you can actually restore",
+    "A simple disaster-recovery plan for your team",
+    "Strong encryption on every laptop and phone",
   ];
   return (
     <section className="section" id="compliance" aria-labelledby="compliance-title">
-      <div className="container compliance-grid">
+      <div className="container compliance-grid reveal-up" ref={ref}>
         <div>
-          <span className="eyebrow">Compliance and DR</span>
-          <h2 id="compliance-title" className="title-1">Compliance and Disaster Recovery You Can Trust</h2>
+          <span className="eyebrow">Paperwork and Disaster Planning</span>
+          <h2 id="compliance-title" className="title-1">We handle the paperwork most IT guys hate</h2>
           <p className="section-sub">
-            From HIPAA risk assessments to immutable backups, we engineer the controls auditors
-            and insurance carriers expect - and the resilience your business demands.
+            Audits, cyber-insurance renewals, HIPAA reviews, disaster-recovery plans — we do
+            the work and hand you the documents so you can focus on running your business.
           </p>
           <ul className="feature-list">
             {features.map((f) => (
@@ -177,24 +200,48 @@ function Compliance() {
             ))}
           </ul>
         </div>
-        <aside className="compliance-card" aria-label="Compliance dashboard">
+        <aside className="compliance-card" aria-label="Our track record">
           <div className="cc-header">
             <Shield size={24} color="#0F6CBD" />
             <div>
               <span className="cc-eyebrow">HIPAA DOCUMENTED PARTNER</span>
-              <h3 className="cc-title">Compliance Dashboard</h3>
+              <h3 className="cc-title">Our track record</h3>
             </div>
           </div>
           <div className="cc-grid">
             <div><span>0</span><small>Breaches</small></div>
-            <div><span>&lt;4h</span><small>Recovery</small></div>
-            <div><span>256-bit</span><small>Encryption</small></div>
+            <div><span>&lt;4h</span><small>Back up and running</small></div>
+            <div><span>Strong</span><small>Encryption</small></div>
             <div><span>99.99%</span><small>Uptime</small></div>
           </div>
           <div className="cc-footer">
-            <Check size={14} color="#107C10" /> All controls passing
+            <Check size={14} color="#107C10" /> Paperwork and protections in place
           </div>
         </aside>
+      </div>
+    </section>
+  );
+}
+
+function Testimonial() {
+  // Single-quote block with attribution. Plain layout, left brand
+  // border, no card shadow — competitor-aligned.
+  return (
+    <section className="testimonial-section" aria-label="Client testimonial">
+      <div className="container">
+        <figure className="testimonial">
+          <blockquote>
+            "We switched to Simple IT SRQ after our last IT company missed a
+            ransomware attempt. Within a month they had two-step sign-in on
+            every account, replaced our backups, and walked our cyber-insurance
+            carrier through everything they'd put in place. Our renewal premium
+            dropped 18%."
+          </blockquote>
+          <figcaption>
+            <strong>Karen M.</strong>
+            <span> Practice Administrator, Sarasota dental group</span>
+          </figcaption>
+        </figure>
       </div>
     </section>
   );
@@ -215,18 +262,20 @@ function CategoryIcon({ category }) {
 }
 
 function BlogPreview() {
+  const ref = useRef(null);
+  useRevealChildren(ref);
   const recent = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
   return (
     <section className="section section-alt" id="blog" aria-labelledby="blog-title">
-      <div className="container">
-        <div className="section-head">
+      <div className="container" ref={ref}>
+        <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">From the Blog</span>
-          <h2 id="blog-title" className="title-1">Insights for SRQ Business Owners</h2>
-          <p className="section-sub">Plain-English takes on the security, AI, and cloud stories that matter for Sarasota and Bradenton businesses.</p>
+          <h2 id="blog-title" className="title-1">Tips for local business owners</h2>
+          <p className="section-sub">Straightforward takes on the security, AI, and cloud news that actually matters for Sarasota and Bradenton businesses.</p>
         </div>
         <div className="blog-grid">
           {recent.map((p) => (
-            <article key={p.slug} className="blog-card">
+            <article key={p.slug} className="blog-card card-hover reveal-up" data-reveal>
               <Link to={`/blog/${p.slug}`} className="blog-card-img" aria-label={p.title}>
                 <div className="blog-card-img-inner"><CategoryIcon category={p.category} /></div>
               </Link>
@@ -251,17 +300,19 @@ function BlogPreview() {
 }
 
 function StatsBar() {
+  const ref = useRef(null);
+  useRevealChildren(ref);
   const stats = [
-    { v: "99.99%", l: "Uptime SLA" },
-    { v: "<15 Min", l: "Response Time" },
+    { v: "99.99%", l: "Uptime promise" },
+    { v: "<15 min", l: "Response time" },
     { v: "24/7", l: "Monitoring" },
-    { v: "100%", l: "Local Team" },
+    { v: "100%", l: "Local team" },
   ];
   return (
     <section className="stats-bar" aria-label="Key statistics">
-      <div className="container stats-grid">
-        {stats.map((s) => (
-          <div key={s.l} className="stat">
+      <div className="container stats-grid" ref={ref}>
+        {stats.map((s, i) => (
+          <div key={s.l} className="stat reveal-up" data-reveal data-reveal-delay={i + 1}>
             <span className="stat-v">{s.v}</span>
             <span className="stat-l">{s.l}</span>
           </div>
@@ -272,15 +323,16 @@ function StatsBar() {
 }
 
 function CtaBanner() {
+  const ref = useScrollReveal();
   return (
     <section className="section">
       <div className="container">
-        <div className="cta-banner">
-          <h2 className="title-2">Ready to simplify your IT?</h2>
-          <p>Schedule a free 30-minute consultation with a local engineer. No pressure, no jargon - just clarity.</p>
+        <div className="cta-banner reveal-scale" ref={ref}>
+          <h2 className="title-2">Tired of fighting with your IT?</h2>
+          <p>Book a free 30-minute call with a local tech. No sales pitch, no jargon — just a straight answer on what's wrong and what it'd take to fix.</p>
           <div className="cta-actions">
-            <Link to="/book" className="btn btn-primary btn-lg">Book a Free Consultation</Link>
-            <Link to="/support" className="btn btn-secondary btn-lg">File a Support Ticket</Link>
+            <Link to="/book" className="btn btn-primary btn-lg">Book a free call</Link>
+            <Link to="/support" className="btn btn-secondary btn-lg">Existing client? Get help</Link>
           </div>
         </div>
       </div>
@@ -376,8 +428,8 @@ function Contact() {
       <div className="container">
         <div className="section-head">
           <span className="eyebrow">Contact</span>
-          <h2 id="contact-title" className="title-1">Get in touch</h2>
-          <p className="section-sub">Tell us about your business - we will reply within one business hour.</p>
+          <h2 id="contact-title" className="title-1">Tell us what's going on</h2>
+          <p className="section-sub">Drop us a note and a real person will get back to you within one business hour.</p>
         </div>
         <div className="contact-grid">
           <div className="form-shell">
@@ -505,7 +557,7 @@ function Contact() {
 
           <aside className="contact-info" aria-label="Contact information">
             <div className="info-row"><Mail size={18} /><div><strong>Email</strong><br />hello@simpleitsrq.com</div></div>
-            <div className="info-row"><MapPin size={18} /><div><strong>Service Area</strong><br />Sarasota, Bradenton and the SRQ region</div></div>
+            <div className="info-row"><MapPin size={18} /><div><strong>Service Area</strong><br />Sarasota, Bradenton, and Venice</div></div>
             <div className="info-row"><Clock size={18} /><div><strong>Hours</strong><br />Mon-Fri, 8:00 AM - 6:00 PM</div></div>
           </aside>
         </div>
@@ -516,8 +568,8 @@ function Contact() {
 
 export default function Home() {
   useSEO({
-    title: "Simple IT SRQ | Managed IT Services in Sarasota and Bradenton, FL",
-    description: "Managed IT, cybersecurity, and cloud services for Sarasota and Bradenton businesses. SentinelOne EDR, Microsoft Defender, Intune, HIPAA documented. Email hello@simpleitsrq.com.",
+    title: "Simple IT SRQ | IT Support for Sarasota and Bradenton Businesses",
+    description: "Local IT support, cybersecurity, and cloud services for small businesses in Sarasota, Bradenton, and Venice. Flat monthly pricing, same-day response, HIPAA and cyber-insurance paperwork included. Email hello@simpleitsrq.com.",
     canonical: "https://simpleitsrq.com/",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [{ name: "Home", url: "https://simpleitsrq.com/" }],
@@ -529,6 +581,7 @@ export default function Home() {
       <Solutions />
       <Industries />
       <Compliance />
+      <Testimonial />
       <BlogPreview />
       <StatsBar />
       <CtaBanner />

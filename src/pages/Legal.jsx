@@ -27,7 +27,7 @@ function LegalShell({ title, lede, children }) {
 export function PrivacyPage() {
   useSEO({
     title: "Privacy Policy | Simple IT SRQ",
-    description: "How Simple IT SRQ collects, uses, and protects information from visitors and clients in Sarasota, Bradenton, and the SRQ region.",
+    description: "How Simple IT SRQ collects, uses, and protects information from visitors and clients in Sarasota, Bradenton, and Venice.",
     canonical: "https://simpleitsrq.com/privacy",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [

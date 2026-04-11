@@ -23,7 +23,15 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // Ignore unused capitalized identifiers in both variable declarations
+      // and function arguments — this covers JSX component references (like
+      // `{ Icon }` destructured from a data array and used as `<Icon />`),
+      // which ESLint's no-unused-vars can't detect as "used" without the
+      // react plugin's jsx-uses-vars rule.
+      'no-unused-vars': [
+        'error',
+        { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^[A-Z_]' },
+      ],
     },
   },
   {
@@ -32,6 +40,15 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2022,
       globals: { ...globals.node, Response: 'readonly' },
+      parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+    },
+  },
+  {
+    // Vercel Edge Middleware — runs in a V8 isolate with process.env available.
+    files: ['middleware.{js,ts}'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: { ...globals.node, Response: 'readonly', URL: 'readonly', crypto: 'readonly' },
       parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
     },
   },

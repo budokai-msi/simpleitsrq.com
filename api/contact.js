@@ -118,15 +118,15 @@ async function verifyTurnstile(token, ip) {
 
 // ---------- Handler ----------
 export async function POST(request) {
-  // 1. Vercel BotID — invisible, server-side challenge verification
+  // 1. Vercel BotID — non-blocking. Log but don't reject — iOS Safari
+  //    often fails client-side verification. Turnstile + rate-limit still apply.
   try {
     const verification = await checkBotId();
     if (verification.isBot) {
-      return json(403, { ok: false, error: "bot_detected" });
+      console.warn("[contact] BotID flagged as bot", { ip: clientIp(request) });
     }
   } catch (err) {
-    console.error("[contact] checkBotId failed", err);
-    // Fail open on BotID errors — don't block legit users if Vercel hiccups.
+    console.warn("[contact] checkBotId failed (non-blocking)", err);
   }
 
   const ip = clientIp(request);

@@ -2,213 +2,248 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://simpleitsrq.com/</loc>
+    <lastmod>2026-04-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog</loc>
+    <lastmod>2026-04-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://simpleitsrq.com/book</loc>
+    <lastmod>2026-04-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://simpleitsrq.com/support</loc>
+    <lastmod>2026-04-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://simpleitsrq.com/privacy</loc>
+    <lastmod>2026-04-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/terms</loc>
+    <lastmod>2026-04-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/accessibility</loc>
+    <lastmod>2026-04-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://simpleitsrq.com/sarasota-it-support</loc>
+    <lastmod>2026-04-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://simpleitsrq.com/bradenton-it-support</loc>
+    <lastmod>2026-04-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://simpleitsrq.com/lakewood-ranch-it-support</loc>
+    <lastmod>2026-04-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/ai-comprehension-debt-sarasota-it-teams</loc>
     <lastmod>2026-04-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/gamified-tech-training-sarasota-onboarding</loc>
     <lastmod>2026-04-04</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</loc>
     <lastmod>2026-04-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/linkedin-browser-fingerprinting-privacy-sarasota</loc>
     <lastmod>2026-04-02</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/claude-code-internals-it-evaluation-sarasota</loc>
     <lastmod>2026-04-01</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/source-map-leak-build-pipeline-cleanup-sarasota</loc>
     <lastmod>2026-03-31</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/copilot-ad-injection-ai-supply-chain-risk</loc>
     <lastmod>2026-03-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/bot-detection-privacy-cost-sarasota-saas-users</loc>
     <lastmod>2026-03-29</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/founder-succession-planning-bradenton-smb</loc>
     <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/github-copilot-private-repo-training-opt-out-april-24</loc>
     <lastmod>2026-03-27</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/eu-rejects-chat-control-end-to-end-encryption-win</loc>
     <lastmod>2026-03-26</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/chat-control-encryption-backdoors-sarasota</loc>
     <lastmod>2026-03-25</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/wine-11-linux-windows-workstation-refresh</loc>
     <lastmod>2026-03-24</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/data-sovereignty-eu-migration-florida-business</loc>
     <lastmod>2026-03-23</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/post-git-version-control-engineering-leaders</loc>
     <lastmod>2026-03-22</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/ubuntu-26-04-sudo-change-bradenton-sysadmins</loc>
     <lastmod>2026-03-21</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/opencode-open-source-ai-coding-sarasota</loc>
     <lastmod>2026-03-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/oss-acquisitions-vendor-risk-it-procurement</loc>
     <lastmod>2026-03-19</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/rob-pike-rules-modern-it-decisions</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/style-transfer-llm-marketing-sarasota</loc>
     <lastmod>2026-03-17</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/prediction-markets-information-warfare-business-risk</loc>
     <lastmod>2026-03-16</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/surveillance-laws-cross-border-data-msp</loc>
     <lastmod>2026-03-15</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/kiosk-linux-locked-down-deployments-sarasota</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/run-ai-locally-bradenton-small-business</loc>
     <lastmod>2026-03-13</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/clean-room-reverse-engineering-legacy-vendor-lockin</loc>
     <lastmod>2026-03-12</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/ai-content-policy-sarasota-business</loc>
     <lastmod>2026-03-11</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/tony-hoare-quicksort-lessons-it-leaders</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/ai-coding-cost-myth-smb-budgeting</loc>
     <lastmod>2026-03-09</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/sandboxing-ai-agents-mac-sarasota</loc>
     <lastmod>2026-03-08</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/decade-docker-containers-bradenton-business</loc>
     <lastmod>2026-03-07</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog/tight-tech-job-market-sarasota-msp-hiring</loc>
     <lastmod>2026-03-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
 </urlset>

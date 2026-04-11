@@ -1,0 +1,2 @@
+# ads.txt placeholder for Simple IT SRQ
+# Populate with certified ad seller entries if/when an ad network is added.

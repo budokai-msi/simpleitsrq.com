@@ -4,6 +4,16 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "trailingSlash": false,
+  "crons": [
+    {
+      "path": "/api/cron/report",
+      "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/cron/agent",
+      "schedule": "15 11 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/a-4-a/c.js",
@@ -24,10 +34,21 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'sha256-s73Ww6tYLJKgSSJJXa6U6kUJkLc849Yhy8mrH2QxT8I=' https://va.vercel-scripts.com https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://embed.cal.com; style-src 'self' 'unsafe-inline' https://vercel.live https://app.cal.com; font-src 'self' data: https://vercel.live https://assets.vercel.com; img-src 'self' data: https://vercel.live https://vercel.com https://cal.com https://app.cal.com; connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com https://api.vercel.com https://challenges.cloudflare.com https://vercel.live wss://ws-us3.pusher.com https://app.cal.com https://cal.com; frame-src 'self' https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://cal.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'sha256-s73Ww6tYLJKgSSJJXa6U6kUJkLc849Yhy8mrH2QxT8I=' https://va.vercel-scripts.com https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://embed.cal.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://vercel.live https://app.cal.com; font-src 'self' data: https://vercel.live https://assets.vercel.com; img-src 'self' data: https://vercel.live https://vercel.com https://cal.com https://app.cal.com https://www.google-analytics.com https://www.googletagmanager.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com; connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com https://api.vercel.com https://challenges.cloudflare.com https://vercel.live wss://ws-us3.pusher.com https://app.cal.com https://cal.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com; frame-src 'self' https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://cal.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://accounts.google.com https://github.com; object-src 'none'; upgrade-insecure-requests" },
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
         { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
-        { "key": "X-DNS-Prefetch-Control", "value": "on" }
+        { "key": "X-DNS-Prefetch-Control", "value": "on" },
+        { "key": "X-Powered-By", "value": "" },
+        { "key": "Server", "value": "" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "X-Powered-By", "value": "" },
+        { "key": "Server", "value": "" },
+        { "key": "Cache-Control", "value": "no-store" }
       ]
     },
     {

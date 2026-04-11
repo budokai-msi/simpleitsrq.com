@@ -17,6 +17,8 @@
 
 import { checkBotId } from "botid/server";
 import { Resend } from "resend";
+import { sql } from "./_lib/db.js";
+import { getSession } from "./_lib/session.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
@@ -132,14 +134,16 @@ async function verifyTurnstile(token, ip) {
 
 // ---------- Handler ----------
 export async function POST(request) {
-  // 1. Vercel BotID
+  // 1. Vercel BotID — non-blocking. Log the result but don't reject real
+  //    users whose browsers fail client-side verification (common on iOS
+  //    Safari). Turnstile + honeypot + rate-limit still catch actual bots.
   try {
     const verification = await checkBotId();
     if (verification.isBot) {
-      return json(403, { ok: false, error: "bot_detected" });
+      console.warn("[ticket] BotID flagged as bot", { ip: clientIp(request) });
     }
   } catch (err) {
-    console.error("[ticket] checkBotId failed", err);
+    console.warn("[ticket] checkBotId failed (non-blocking)", err);
   }
 
   const ip = clientIp(request);
@@ -191,6 +195,33 @@ export async function POST(request) {
   const ticketId = generateTicketId();
   const priorityLabel = PRIORITY_LABELS[priority];
   const priorityColor = PRIORITY_COLORS[priority];
+
+  // Persist to Neon. If the submitter is signed in we link the ticket to
+  // them; otherwise the row carries the email so it can be matched later
+  // when they first sign in.
+  let currentUserId = null;
+  try {
+    const session = await getSession(request);
+    if (session) currentUserId = session.user.id;
+  } catch (err) {
+    console.warn("[ticket] getSession failed", err);
+  }
+
+  try {
+    await sql`
+      INSERT INTO tickets (
+        ticket_code, user_id, email, name, company, phone,
+        priority, category, subject, description, status
+      ) VALUES (
+        ${ticketId}, ${currentUserId}, ${email}, ${name}, ${company || null}, ${phone || null},
+        ${priority}, ${category}, ${subject}, ${description}, 'open'
+      )
+    `;
+  } catch (err) {
+    // Non-fatal: the email still sends even if the DB write fails, so the
+    // client never gets a confusing error after a successful submission.
+    console.error("[ticket] db insert failed", err);
+  }
 
   const mailSubject =
     priority === "critical"
