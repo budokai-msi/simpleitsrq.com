@@ -55,6 +55,10 @@ import {
   DocumentText24Regular,
   Eye24Regular,
   Globe24Regular,
+  DocumentEdit24Regular,
+  Sparkle24Regular,
+  Checkmark24Regular,
+  Dismiss24Regular,
 } from "@fluentui/react-icons";
 import { useTheme } from "../lib/theme";
 import { brandedLightTheme, brandedDarkTheme } from "../lib/fluentTheme";
@@ -1030,6 +1034,207 @@ function ProfilePanel({ styles, user, onSaved }) {
 }
 
 // ---------- admin: visitors panel ----------
+// ---------- admin: blog drafts panel ----------
+function DraftsPanel({ styles }) {
+  const [drafts, setDrafts] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [busyId, setBusyId] = useState(null);
+  const [status, setStatus] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/portal?action=drafts", { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setDrafts(data.drafts || []);
+    } catch (err) {
+      setError(err.message || "Could not load drafts.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const publish = useCallback(async (id) => {
+    setBusyId(id);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/portal?action=publish-draft", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const hint = data.hint ? ` — ${data.hint}` : "";
+        setStatus({ type: "error", msg: `${data.error || "Publish failed"}${hint}` });
+      } else {
+        setStatus({
+          type: "success",
+          msg: data.alreadyInFile
+            ? "Already in posts.js — marked as published."
+            : `Published. Commit: ${data.commitSha ? data.commitSha.slice(0, 7) : "created"}. Vercel will redeploy.`,
+        });
+        await load();
+      }
+    } catch (err) {
+      setStatus({ type: "error", msg: err.message || "Publish failed." });
+    } finally {
+      setBusyId(null);
+    }
+  }, [load]);
+
+  const reject = useCallback(async (id) => {
+    setBusyId(id);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/portal?action=reject-draft", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        setStatus({ type: "error", msg: "Reject failed." });
+      } else {
+        setStatus({ type: "success", msg: "Draft rejected." });
+        await load();
+      }
+    } catch {
+      setStatus({ type: "error", msg: "Reject failed." });
+    } finally {
+      setBusyId(null);
+    }
+  }, [load]);
+
+  if (loading) {
+    return <div style={{ padding: 24 }}><Spinner label="Loading drafts…" /></div>;
+  }
+  if (error) {
+    return (
+      <MessageBar intent="error">
+        <MessageBarBody>{error}</MessageBarBody>
+      </MessageBar>
+    );
+  }
+  if (!drafts || drafts.length === 0) {
+    return (
+      <div className={styles.emptyState}>
+        No drafts yet. The daily cron agent runs at 06:00 ET and writes into the
+        draft_posts table.
+      </div>
+    );
+  }
+
+  const pending = drafts.filter((d) => d.status === "draft" || d.status === "approved");
+  const done    = drafts.filter((d) => d.status === "published" || d.status === "rejected");
+
+  return (
+    <div>
+      {status && (
+        <MessageBar intent={status.type === "success" ? "success" : "error"} style={{ marginBottom: 12 }}>
+          <MessageBarBody>{status.msg}</MessageBarBody>
+        </MessageBar>
+      )}
+
+      <h4 style={{ fontSize: 14, fontWeight: 600, margin: "12px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+        Pending review
+      </h4>
+      {pending.length === 0 && (
+        <div className={styles.emptyState}>Nothing waiting. All caught up.</div>
+      )}
+      <div className={styles.list}>
+        {pending.map((d) => (
+          <div key={d.id} className={styles.listRow} style={{ cursor: "default", alignItems: "flex-start" }}>
+            <div className={styles.listMain}>
+              <p className={styles.listTitle}>{d.title}</p>
+              <div className={styles.listMeta}>
+                <span>#{d.id}</span>
+                <span>·</span>
+                <span>{d.slug}</span>
+                <span>·</span>
+                <span>{d.category}</span>
+                <span>·</span>
+                <span>{formatDateTime(d.createdAt)}</span>
+                {d.model && <><span>·</span><span>{d.model}</span></>}
+              </div>
+              <p style={{ color: tokens.colorNeutralForeground3, fontSize: 13, lineHeight: "20px", margin: "8px 0 0" }}>
+                {d.excerpt}
+              </p>
+              <details style={{ marginTop: 8 }}>
+                <summary style={{ fontSize: 12, cursor: "pointer", color: tokens.colorNeutralForeground3 }}>
+                  Show body ({d.body.length} chars)
+                </summary>
+                <pre style={{
+                  whiteSpace: "pre-wrap",
+                  fontSize: 12,
+                  padding: 12,
+                  marginTop: 6,
+                  border: `1px solid ${tokens.colorNeutralStroke2}`,
+                  borderRadius: tokens.borderRadiusMedium,
+                  backgroundColor: tokens.colorNeutralBackground2,
+                  maxHeight: 320,
+                  overflowY: "auto",
+                }}>{d.body}</pre>
+              </details>
+            </div>
+            <div className={styles.listAside} style={{ flexDirection: "column", gap: 8 }}>
+              <Button
+                appearance="primary"
+                icon={<Checkmark24Regular />}
+                onClick={() => publish(d.id)}
+                disabled={busyId === d.id}
+              >
+                {busyId === d.id ? "Publishing…" : "Publish"}
+              </Button>
+              <Button
+                appearance="subtle"
+                icon={<Dismiss24Regular />}
+                onClick={() => reject(d.id)}
+                disabled={busyId === d.id}
+              >
+                Reject
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {done.length > 0 && (
+        <>
+          <h4 style={{ fontSize: 14, fontWeight: 600, margin: "24px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            History
+          </h4>
+          <div className={styles.list}>
+            {done.map((d) => (
+              <div key={d.id} className={styles.listRow} style={{ cursor: "default" }}>
+                <div className={styles.listMain}>
+                  <p className={styles.listTitle}>{d.title}</p>
+                  <div className={styles.listMeta}>
+                    <span>#{d.id}</span>
+                    <span>·</span>
+                    <span>{d.slug}</span>
+                    <span>·</span>
+                    <span>{d.status === "published" ? `Published ${formatDateTime(d.publishedAt)}` : `Rejected ${formatDateTime(d.reviewedAt)}`}</span>
+                  </div>
+                </div>
+                <Badge appearance="filled" color={d.status === "published" ? "success" : "subtle"}>
+                  {d.status}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function VisitorsPanel({ styles }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1277,7 +1482,16 @@ function VisitorsPanel({ styles }) {
 
 // ---------- dashboard view ----------
 function Dashboard({ styles, user, onLogout, refreshUser }) {
-  const [tab, setTab] = useState("overview");
+  // Deep link: ?tab=drafts jumps straight to the Drafts panel after a review
+  // email click. Only admin tabs are honored — anything else falls back to
+  // overview so a stray query param can't confuse a regular client.
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState(() => {
+    const t = searchParams.get("tab");
+    if (t === "open" || t === "closed" || t === "invoices" || t === "profile") return t;
+    if (user.isAdmin && (t === "drafts" || t === "visitors")) return t;
+    return "overview";
+  });
   const [openTickets, setOpenTickets] = useState(null);
   const [closedTickets, setClosedTickets] = useState(null);
   const [invoices, setInvoices] = useState(null);
@@ -1343,8 +1557,8 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
     loadInvoices();
   }, [loadOpen, loadClosed, loadInvoices]);
 
-  // Only poll while on a tab that actually looks at tickets/invoices. Profile
-  // and Visitors don't need a 20s refresh loop hammering the DB.
+  // Only poll while on a tab that actually looks at tickets/invoices. Profile,
+  // Drafts, and Visitors don't need a 20s refresh loop hammering the DB.
   const shouldPoll = tab === "overview" || tab === "open" || tab === "closed" || tab === "invoices";
 
   useEffect(() => {
@@ -1416,6 +1630,11 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
         <Tab value="closed">Ticket history</Tab>
         <Tab value="invoices">Invoices</Tab>
         <Tab value="profile">Profile</Tab>
+        {user.isAdmin && (
+          <Tab value="drafts" icon={<DocumentEdit24Regular />}>
+            Drafts
+          </Tab>
+        )}
         {user.isAdmin && (
           <Tab value="visitors" icon={<Eye24Regular />}>
             Visitors
@@ -1506,6 +1725,20 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
             user={user}
             onSaved={() => refreshUser()}
           />
+        </div>
+      )}
+      {tab === "drafts" && user.isAdmin && (
+        <div className={styles.panel}>
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: tokens.colorNeutralForeground1 }}>
+            <Sparkle24Regular style={{ verticalAlign: -4, marginRight: 6 }} />
+            Blog drafts
+          </h3>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, lineHeight: "22px", margin: "4px 0 0" }}>
+            Daily Claude Haiku drafts from <code>api/cron/agent.js</code>. Publish commits
+            the post to <code>src/data/posts.js</code> via the GitHub API, which triggers a
+            Vercel redeploy.
+          </p>
+          <DraftsPanel styles={styles} />
         </div>
       )}
       {tab === "visitors" && user.isAdmin && (

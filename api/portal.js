@@ -533,6 +533,280 @@ async function handleVisitors(session) {
   });
 }
 
+// ---------- blog drafts (admin only) ----------
+// These handlers manage the `draft_posts` table populated by the daily
+// cron agent (api/cron/agent.js). They let the admin list pending drafts,
+// reject them, or publish them — publish commits a new entry to
+// src/data/posts.js via the GitHub Contents API and Vercel redeploys.
+
+const DRAFT_STATUSES = ["draft", "approved", "rejected", "published"];
+
+async function requireAdmin(session) {
+  if (!(await resolveAdmin(session))) {
+    return json(403, { ok: false, error: "forbidden" });
+  }
+  return null;
+}
+
+async function handleDrafts(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const statusParam = url.searchParams.get("status") || "";
+  const filter = DRAFT_STATUSES.includes(statusParam) ? statusParam : null;
+
+  const rows = filter
+    ? await sql`
+        SELECT id, ts, title, slug, category, excerpt, body, meta_desc,
+               status, model, reviewed_at, published_at
+        FROM draft_posts
+        WHERE status = ${filter}
+        ORDER BY ts DESC
+        LIMIT 100
+      `
+    : await sql`
+        SELECT id, ts, title, slug, category, excerpt, body, meta_desc,
+               status, model, reviewed_at, published_at
+        FROM draft_posts
+        ORDER BY ts DESC
+        LIMIT 100
+      `;
+
+  return json(200, {
+    drafts: rows.map((r) => ({
+      id: r.id,
+      createdAt: r.ts,
+      title: r.title,
+      slug: r.slug,
+      category: r.category,
+      excerpt: r.excerpt,
+      body: r.body,
+      metaDescription: r.meta_desc,
+      status: r.status,
+      model: r.model,
+      reviewedAt: r.reviewed_at,
+      publishedAt: r.published_at,
+    })),
+  });
+}
+
+// Strip contractions + apostrophes to match the voice already in posts.js.
+// This is intentionally dumb — it is only called when the admin clicks
+// Publish, and runs against a body the admin has already reviewed.
+function strikeApostrophes(text) {
+  return String(text || "").replace(/\u2019|'/g, "");
+}
+
+// Format a draft row into the exact shape the existing posts.js array
+// uses. Keeps schema in lock-step with the hand-authored posts.
+function formatDraftAsPostEntry(draft, overrides = {}) {
+  const slug     = overrides.slug     ?? draft.slug;
+  const title    = strikeApostrophes(overrides.title    ?? draft.title);
+  const metaDesc = strikeApostrophes(overrides.metaDescription ?? draft.metaDescription ?? draft.meta_desc ?? "");
+  const excerpt  = strikeApostrophes(overrides.excerpt  ?? draft.excerpt);
+  const category = overrides.category ?? draft.category;
+  const body     = strikeApostrophes(overrides.body     ?? draft.body);
+  const tags     = Array.isArray(overrides.tags) && overrides.tags.length
+    ? overrides.tags
+    : ["ai", "smb"];
+  const heroAlt  = overrides.heroAlt  ?? `An illustration accompanying ${title}.`;
+  const sourceUrl = overrides.sourceUrl ?? "https://simpleitsrq.com/blog";
+  const today = new Date().toISOString().slice(0, 10);
+
+  const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  const tagList = tags.map((t) => `"${esc(t)}"`).join(", ");
+
+  return `  {
+    slug: "${esc(slug)}",
+    title: "${esc(title)}",
+    metaDescription: "${esc(metaDesc)}",
+    date: "${today}",
+    author: "Dancho Ivanov",
+    category: "${esc(category)}",
+    tags: [${tagList}],
+    excerpt: "${esc(excerpt)}",
+    sourceUrl: "${esc(sourceUrl)}",
+    heroAlt: "${esc(heroAlt)}",
+    content: \`${body.replace(/`/g, "\\`").replace(/\$\{/g, "\\${")}\`
+  },
+`;
+}
+
+// Commit a file change to GitHub via the Contents API. Expects a GitHub
+// fine-grained PAT with contents:write scope on the target repo in the
+// GITHUB_TOKEN env var.
+async function commitPostsFile(newContent, commitMessage) {
+  const token = process.env.GITHUB_TOKEN;
+  const repo  = process.env.GITHUB_REPO  || "budokai-msi/simpleitsrq.com";
+  const branch = process.env.GITHUB_BRANCH || "main";
+  const path  = "src/data/posts.js";
+
+  if (!token) {
+    return { ok: false, error: "github_token_not_set" };
+  }
+
+  const base = `https://api.github.com/repos/${repo}/contents/${path}`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "simpleitsrq-portal",
+  };
+
+  // Fetch current file to get its SHA (required to update).
+  const getRes = await fetch(`${base}?ref=${encodeURIComponent(branch)}`, { headers });
+  if (!getRes.ok) {
+    const txt = await getRes.text().catch(() => "");
+    return { ok: false, error: `github_get_${getRes.status}`, detail: txt.slice(0, 200) };
+  }
+  const meta = await getRes.json();
+  const sha = meta.sha;
+
+  // PUT the new content, base64-encoded.
+  const body = {
+    message: commitMessage,
+    content: Buffer.from(newContent, "utf8").toString("base64"),
+    sha,
+    branch,
+    committer: {
+      name:  "Simple IT SRQ Agent",
+      email: "agent@simpleitsrq.com",
+    },
+  };
+
+  const putRes = await fetch(base, {
+    method: "PUT",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!putRes.ok) {
+    const txt = await putRes.text().catch(() => "");
+    return { ok: false, error: `github_put_${putRes.status}`, detail: txt.slice(0, 200) };
+  }
+  const putData = await putRes.json();
+  return { ok: true, commitSha: putData.commit?.sha, htmlUrl: putData.commit?.html_url };
+}
+
+// Insert a new post entry into the existing posts.js array string by
+// anchoring on the final "];\nexport default posts;" tail. Returns null
+// if the tail is not found (file structure changed).
+function spliceIntoPostsFile(fileContent, entry) {
+  const tail = "];\n\nexport default posts;";
+  const idx = fileContent.lastIndexOf(tail);
+  if (idx === -1) return null;
+  const before = fileContent.slice(0, idx);
+  const after = fileContent.slice(idx);
+  return before + entry + after;
+}
+
+async function handlePublishDraft(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const id = Number(body?.id);
+  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
+
+  // Accept optional overrides so the admin can refine before publishing.
+  const overrides = body.overrides && typeof body.overrides === "object" ? body.overrides : {};
+
+  const rows = await sql`
+    SELECT id, title, slug, category, excerpt, body, meta_desc, status
+    FROM draft_posts
+    WHERE id = ${id}
+    LIMIT 1
+  `;
+  if (rows.length === 0) return json(404, { ok: false, error: "not_found" });
+  const draft = rows[0];
+  if (draft.status === "published") {
+    return json(409, { ok: false, error: "already_published" });
+  }
+
+  // Build the entry, fetch posts.js, splice, commit.
+  const entry = formatDraftAsPostEntry(draft, overrides);
+
+  const token = process.env.GITHUB_TOKEN;
+  const repo  = process.env.GITHUB_REPO  || "budokai-msi/simpleitsrq.com";
+  const branch = process.env.GITHUB_BRANCH || "main";
+  if (!token) {
+    return json(500, { ok: false, error: "github_token_not_set",
+      hint: "Set GITHUB_TOKEN in Vercel env with contents:write on the repo." });
+  }
+
+  // Fetch current posts.js through the Contents API (same path the commit
+  // uses, so we are always in sync).
+  const getUrl = `https://api.github.com/repos/${repo}/contents/src/data/posts.js?ref=${encodeURIComponent(branch)}`;
+  const getRes = await fetch(getUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "User-Agent": "simpleitsrq-portal",
+    },
+  });
+  if (!getRes.ok) {
+    const txt = await getRes.text().catch(() => "");
+    return json(502, { ok: false, error: `github_get_${getRes.status}`, detail: txt.slice(0, 200) });
+  }
+  const meta = await getRes.json();
+  const currentFile = Buffer.from(meta.content, "base64").toString("utf8");
+
+  // Bail if this slug is already in the file (idempotency).
+  if (currentFile.includes(`slug: "${draft.slug}"`)) {
+    await sql`
+      UPDATE draft_posts
+      SET status = 'published',
+          reviewed_at = COALESCE(reviewed_at, now()),
+          published_at = now()
+      WHERE id = ${id}
+    `;
+    return json(200, { ok: true, alreadyInFile: true });
+  }
+
+  const spliced = spliceIntoPostsFile(currentFile, entry);
+  if (!spliced) {
+    return json(500, { ok: false, error: "posts_file_anchor_missing" });
+  }
+
+  const commit = await commitPostsFile(
+    spliced,
+    `Publish blog post: ${draft.title}`,
+  );
+  if (!commit.ok) {
+    return json(502, commit);
+  }
+
+  await sql`
+    UPDATE draft_posts
+    SET status = 'published',
+        reviewed_at = COALESCE(reviewed_at, now()),
+        published_at = now()
+    WHERE id = ${id}
+  `;
+
+  return json(200, { ok: true, commitSha: commit.commitSha, commitUrl: commit.htmlUrl });
+}
+
+async function handleRejectDraft(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const id = Number(body?.id);
+  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
+
+  const rows = await sql`
+    UPDATE draft_posts
+    SET status = 'rejected',
+        reviewed_at = now()
+    WHERE id = ${id}
+    RETURNING id, slug, status
+  `;
+  if (rows.length === 0) return json(404, { ok: false, error: "not_found" });
+  return json(200, { ok: true, draft: rows[0] });
+}
+
 // ---------- entry points ----------
 async function dispatch(request, method) {
   const url = new URL(request.url);
@@ -549,6 +823,9 @@ async function dispatch(request, method) {
   if (action === "ticket-message"  && method === "POST")  return handleTicketMessage(session, request);
   if (action === "invoices"        && method === "GET")   return handleInvoices(session);
   if (action === "visitors"        && method === "GET")   return handleVisitors(session);
+  if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
+  if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
+  if (action === "reject-draft"    && method === "POST")  return handleRejectDraft(session, request);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

@@ -4,7 +4,7 @@
 export const posts = [
   {
     slug: "ai-comprehension-debt-sarasota-it-teams",
-    title: "AI Comprehension Debt: A Hidden Risk for SRQ IT Teams",
+    title: "AI Comprehension Debt: A Hidden Risk for Sarasota IT Teams",
     metaDescription: "AI coding tools speed teams up, but quietly erode understanding. Heres how Sarasota and Bradenton businesses can avoid comprehension debt.",
     date: "2026-04-05",
     author: "Dancho Ivanov",
@@ -50,7 +50,7 @@ If your team has been shipping faster lately and you are not sure what is under 
   },
   {
     slug: "gamified-tech-training-sarasota-onboarding",
-    title: "Gamified Tech Training: A Smarter Way to Onboard SRQ Staff",
+    title: "Gamified Tech Training: A Smarter Way to Onboard Local Staff",
     metaDescription: "An interactive browser game teaches users to build a GPU from logic gates up. Heres how Sarasota businesses can borrow the format for IT onboarding.",
     date: "2026-04-04",
     author: "Dancho Ivanov",
@@ -73,7 +73,7 @@ That is not a willpower problem. It is a design problem. Adults learn the same w
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Three places where gamified training pays off fastest for SRQ teams:
+Three places where gamified training pays off fastest for local teams:
 
 - Phishing simulations that score the user, show them exactly what they missed, and unlock the next scenario when they pass.
 - Microsoft 365 walk-throughs that drop the user into a sandbox tenant and ask them to share a file the right way, set up MFA, or recover a deleted document.
@@ -91,7 +91,7 @@ If you are already running [SentinelOne and Microsoft Defender across your endpo
 
 People remember what they do, not what they read. The viral GPU game is a reminder that even hardware design becomes approachable when it is structured as a series of small wins. Apply that same idea to your security training, your onboarding, and your tabletop exercises and you will see your humans level up - which, as every breach report keeps reminding us, is the layer that matters most.
 
-[Talk to Simple IT SRQ](/#contact) about turning your annual security training into a quarterly drill that people actually finish. You can also browse our other [insights for SRQ business owners](/blog) for more practical changes you can make this quarter.`
+[Talk to Simple IT SRQ](/#contact) about turning your annual security training into a quarterly drill that people actually finish. You can also browse our other [insights for local business owners](/blog) for more practical changes you can make this quarter.`
   },
   {
     slug: "ai-vendor-lockin-procurement-playbook-bradenton",
@@ -140,7 +140,7 @@ The Anthropic news will fade by next week. The pattern will not. AI vendors are 
   {
     slug: "linkedin-browser-fingerprinting-privacy-sarasota",
     title: "LinkedIn Is Fingerprinting Your Browser. Heres What to Do.",
-    metaDescription: "Researchers caught LinkedIn probing browser extensions for fingerprinting. What it means for SRQ businesses and how to harden client browsers.",
+    metaDescription: "Researchers caught LinkedIn probing browser extensions for fingerprinting. What it means for Sarasota businesses and how to harden client browsers.",
     date: "2026-04-02",
     author: "Dancho Ivanov",
     category: "Privacy",
@@ -164,7 +164,7 @@ Most owners hear "fingerprinting" and assume it is a marketing problem. It is no
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-A typical SRQ professional services firm has 20 to 80 staff, all on Microsoft 365 with Edge or Chrome, and all logging into ten or more SaaS apps a day. A handful of those staff also use the same browser for personal accounts. There is no IT control today that prevents fingerprinting at the network layer - the call is happening inside an HTTPS session you have explicitly authorized.
+A typical Sarasota professional services firm has 20 to 80 staff, all on Microsoft 365 with Edge or Chrome, and all logging into ten or more SaaS apps a day. A handful of those staff also use the same browser for personal accounts. There is no IT control today that prevents fingerprinting at the network layer - the call is happening inside an HTTPS session you have explicitly authorized.
 
 What you can do is reduce attack surface and separate identities. That is the work.
 
@@ -186,7 +186,7 @@ LinkedIn will keep doing what it does until enough customers complain or a regul
   {
     slug: "claude-code-internals-it-evaluation-sarasota",
     title: "Evaluating Agentic Coding Tools: A Visual Primer for IT",
-    metaDescription: "A new visual guide unpacks how Claude Codes agent loop, tool use, and context window actually work. Heres how SRQ IT teams should use it for evaluation.",
+    metaDescription: "A new visual guide unpacks how Claude Codes agent loop, tool use, and context window actually work. Heres how Sarasota IT teams should use it for evaluation.",
     date: "2026-04-01",
     author: "Dancho Ivanov",
     category: "AI & Productivity",
@@ -208,7 +208,7 @@ That last point is the one most IT evaluations skip. The model is interesting; t
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Not every SRQ business is going to deploy an autonomous coding agent. But more of them will use the same architecture for back-office automation: invoice processing, claim submission, intake routing, contract review. The same questions apply.
+Not every local business is going to deploy an autonomous coding agent. But more of them will use the same architecture for back-office automation: invoice processing, claim submission, intake routing, contract review. The same questions apply.
 
 - Where does the agent run? On a workstation, a VM, or a vendor cloud?
 - What tools can it call? Shell? File system? Email? Calendar? A customer database?
@@ -259,7 +259,7 @@ Most small dev shops never set up the CI step to strip source maps from their pr
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ businesses are not shipping NPM packages. But many do publish web apps - portals for clients, scheduling tools, intake forms - and many of those are built with the same modern JavaScript toolchains that produce source maps by default.
+Most Sarasota businesses are not shipping NPM packages. But many do publish web apps - portals for clients, scheduling tools, intake forms - and many of those are built with the same modern JavaScript toolchains that produce source maps by default.
 
 If your developer (or a contractor) deployed a web app in the last two years, there is a real chance the production build is shipping a sourcemap right now. You can check in 30 seconds: open your site in Chrome, hit F12, switch to the Sources tab, and look for files in the webpack:// pseudo-folder. If they show up, your application source is browseable to anyone in the world.
 
@@ -304,7 +304,7 @@ Most teams do not audit AI output the way they audit dependencies. They glance a
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ businesses do not run their own dev teams. But they do increasingly use AI assistants for non-code work: drafting emails, summarizing meetings, writing client communications, generating marketing copy. The same risk applies. If your assistant slips a recommendation for a competing service into an email to a client, you will not catch it before it sends.
+Most Sarasota businesses do not run their own dev teams. But they do increasingly use AI assistants for non-code work: drafting emails, summarizing meetings, writing client communications, generating marketing copy. The same risk applies. If your assistant slips a recommendation for a competing service into an email to a client, you will not catch it before it sends.
 
 This is also a brand risk. Imagine a Bradenton law firm whose AI-drafted intake response includes a recommendation for a third-party legal tool the firm has never vetted. The client clicks. Something bad happens. The firm explains.
 
@@ -326,7 +326,7 @@ AI assistants are now part of your software supply chain whether you signed a co
   },
   {
     slug: "bot-detection-privacy-cost-sarasota-saas-users",
-    title: "Bot Detections Hidden Privacy Cost for SRQ SaaS Users",
+    title: "Bot Detections Hidden Privacy Cost for Local SaaS Users",
     metaDescription: "ChatGPTs Cloudflare Turnstile inspects React state before letting you type. Heres what bot detection is costing your Sarasota SaaS privacy.",
     date: "2026-03-29",
     author: "Dancho Ivanov",
@@ -349,7 +349,7 @@ For a normal user, this is a small leak - one more vendor with one more fingerpr
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Three direct impacts for SRQ businesses:
+Three direct impacts for Sarasota businesses:
 
 - **Compliance evidence.** Most cyber-insurance and HIPAA assessments now ask for a list of third-party scripts loaded on customer-facing pages. If you have not inventoried them, this story is your reminder.
 - **Vendor risk creep.** Bot detection runs on the browser, but the data goes to the vendor. You are effectively letting a third party watch your staff use a SaaS app.
@@ -403,7 +403,7 @@ This is not glamorous. It is the most valuable hour of paperwork most owners wil
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Florida demographics make this especially relevant. SRQ has more owner-operated businesses per capita than the national average and an older founder population. The number of SMBs around Bradenton where the entire IT environment depends on a single person in their late 60s is significant. We see it every month at intake.
+Florida demographics make this especially relevant. Sarasota has more owner-operated businesses per capita than the national average and an older founder population. The number of SMBs around Bradenton where the entire IT environment depends on a single person in their late 60s is significant. We see it every month at intake.
 
 The good news: solving the IT side does not require any new technology. It requires writing things down and storing them where another human being can find them. Most of our [vCIO clients](/#solutions) finish this exercise in two sessions.
 
@@ -418,7 +418,7 @@ That is it. Two sessions. The hard part is starting.
 
 Sid Sijbrandijs essay is a reminder that life shows up on its own schedule. The healthiest, most successful business owner you know is one bad week away from needing the documentation they have been meaning to write for ten years. Spend the two hours.
 
-[Talk to Simple IT SRQ](/#contact) about a 2-session continuity planning engagement for your Bradenton or Sarasota business. You can also browse the rest of our [insights for SRQ owners](/blog) for more practical playbooks.`
+[Talk to Simple IT SRQ](/#contact) about a 2-session continuity planning engagement for your Bradenton or Sarasota business. You can also browse the rest of our [insights for Sarasota owners](/blog) for more practical playbooks.`
   },
   {
     slug: "github-copilot-private-repo-training-opt-out-april-24",
@@ -445,7 +445,7 @@ The defaults will not change retroactively for existing customers unless you cro
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Three reasons SRQ businesses should take this seriously:
+Three reasons Sarasota businesses should take this seriously:
 
 - **Confidentiality.** A private repository often contains proprietary business logic, hard-coded API keys (yes, still), database schemas, and customer data fixtures. Once that data is in a training set, it cannot be removed.
 - **Compliance.** HIPAA, GLBA, and PCI all require you to know where regulated data lives. "Possibly in an AI vendors training set" is not an answer that survives an audit.
@@ -459,7 +459,7 @@ Three reasons SRQ businesses should take this seriously:
 - **Review repository contents** for hard-coded secrets. If you find any, rotate them now. Tools like GitGuardian and trufflehog scan for free.
 - **Add the setting to your offboarding checklist** so a future admin change does not silently re-enable the default.
 
-This is the kind of one-day project we run as part of our [compliance and cyber-insurance work](/#solutions) for SRQ clients. If your team does not have time to do it before April 24, that is the highest-priority item we can take off your plate.
+This is the kind of one-day project we run as part of our [compliance and cyber-insurance work](/#solutions) for local clients. If your team does not have time to do it before April 24, that is the highest-priority item we can take off your plate.
 
 ## The Bottom Line
 
@@ -506,7 +506,7 @@ If a client asks "should I be worried about chat encryption?" the answer is: yes
 - Their business uses the messaging platform with a documented retention and access policy.
 - Their incident response plan includes a step for messaging compromise, just like email compromise.
 
-This is the same hardening work we do as part of our [Microsoft 365 and compliance engagements](/#solutions) for SRQ clients.
+This is the same hardening work we do as part of our [Microsoft 365 and compliance engagements](/#solutions) for local clients.
 
 ## The Bottom Line
 
@@ -516,8 +516,8 @@ End-to-end encryption survived another political round in Europe. Use the breath
   },
   {
     slug: "chat-control-encryption-backdoors-sarasota",
-    title: "Why Encryption Backdoors Break Security for SRQ Businesses",
-    metaDescription: "The Fight Chat Control campaign explains why mandated scanning breaks security for everyone. Heres the SRQ-business version of that argument.",
+    title: "Why Encryption Backdoors Break Security for Sarasota Businesses",
+    metaDescription: "The Fight Chat Control campaign explains why mandated scanning breaks security for everyone. Heres the local-business version of that argument.",
     date: "2026-03-25",
     author: "Dancho Ivanov",
     category: "Privacy",
@@ -553,7 +553,7 @@ When a client asks "isnt scanning a good thing?" the most useful answer is concr
 
 For Bradenton law firms, the parallel is attorney-client privilege. For Lakewood Ranch financial advisors, it is GLBA. The principle does not change. Confidentiality only works if the channel is actually confidential.
 
-## A Practical Stance for SRQ Businesses
+## A Practical Stance for Sarasota Businesses
 
 - Choose messaging platforms that publish clear documentation on encryption and content scanning. Microsoft Teams, Signal, and Apple Messages all do.
 - Document your messaging stack as part of your annual risk assessment. Note which channels are end-to-end, which are encrypted in transit only, and which are neither.
@@ -571,12 +571,12 @@ The Fight Chat Control explainer is the clearest non-political defense of end-to
   {
     slug: "wine-11-linux-windows-workstation-refresh",
     title: "Wine 11 Closes the Gap: Cheaper Workstation Refreshes for SMBs",
-    metaDescription: "Wine 11 brings native-class performance to Linux workstations running Windows software. Heres what that means for SRQ businesses planning a refresh.",
+    metaDescription: "Wine 11 brings native-class performance to Linux workstations running Windows software. Heres what that means for Sarasota businesses planning a refresh.",
     date: "2026-03-24",
     author: "Dancho Ivanov",
     category: "Business Tech",
     tags: ["linux", "workstations", "cost-optimization"],
-    excerpt: "Wine 11 introduces a kernel-assisted syscall translation layer that closes most of the gap with native Windows performance. For cost-conscious SRQ refresh cycles, that changes the math.",
+    excerpt: "Wine 11 introduces a kernel-assisted syscall translation layer that closes most of the gap with native Windows performance. For cost-conscious local refresh cycles, that changes the math.",
     sourceUrl: "https://www.xda-developers.com/wine-11-rewrites-linux-runs-windows-games-speed-gains/",
     heroAlt: "A Linux desktop running a Windows application side by side with native apps.",
     content: `## A Quiet Release With Big Implications
@@ -596,7 +596,7 @@ A new mid-range Windows workstation with Microsoft 365 licensing costs roughly $
 We are not telling clients to rip out Windows. We are telling them to ask the right questions when the next refresh cycle hits.
 
 - Which staff actually need Windows-specific apps? Often only a fraction of the team.
-- What Windows apps are the holdouts? In most SRQ offices, the list comes down to one or two: a legacy CAD tool, a vertical app like Dentrix or Clio, or an older Microsoft Office macro template.
+- What Windows apps are the holdouts? In most Sarasota offices, the list comes down to one or two: a legacy CAD tool, a vertical app like Dentrix or Clio, or an older Microsoft Office macro template.
 - Of those holdouts, which run cleanly under Wine 11? You can test in an afternoon. Ours has been pleasantly surprised lately.
 - What does the math look like? Hardware cost, licensing cost, support cost, and security cost.
 
@@ -614,7 +614,7 @@ We help clients work through these tradeoffs as part of our [vCIO and technology
 
 ## The Bottom Line
 
-Wine 11 is not a magic wand. It is, however, the release that finally makes a Linux workstation a real option for cost-conscious SRQ businesses with a well-understood app stack. The next time your workstation lease comes up, ask the question.
+Wine 11 is not a magic wand. It is, however, the release that finally makes a Linux workstation a real option for cost-conscious Sarasota businesses with a well-understood app stack. The next time your workstation lease comes up, ask the question.
 
 [Talk to Simple IT SRQ](/#contact) about a 60-day Linux pilot for your Bradenton or Sarasota office. You can also read our [Ubuntu sudo change post](/blog/ubuntu-26-04-sudo-change-bradenton-sysadmins) and [data sovereignty piece](/blog/data-sovereignty-eu-migration-florida-business) for more on the Linux ecosystem.`
   },
@@ -645,7 +645,7 @@ For most SMBs, "where is your data hosted" used to be a checkbox question in a v
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ businesses do not need to migrate to Hetzner. A few do.
+Most Sarasota businesses do not need to migrate to Hetzner. A few do.
 
 If you operate a SaaS product with EU customers, you should at minimum understand which US vendors process EU personal data on your behalf and have a contingency. If you run a regulated business that handles patient or financial data, you should know whether your backup copies are in a region the carrier accepts. If you sell into Canada or the UK, you should be ready to answer the data residency question on every RFP.
 
@@ -664,7 +664,7 @@ That table is the start of any conversation about sovereignty, vendor risk, or m
 
 ## What Migration Actually Costs
 
-The rz01 post is honest about cost. Migrating a real SaaS product takes weeks of engineering time, requires customer communication, and breaks at least one workflow you did not think to test. For most SRQ businesses the cost-benefit does not pencil out. For the few where it does - usually because of a contract requirement or a regulatory finding - the post is the best practical guide on the internet right now.
+The rz01 post is honest about cost. Migrating a real SaaS product takes weeks of engineering time, requires customer communication, and breaks at least one workflow you did not think to test. For most Sarasota businesses the cost-benefit does not pencil out. For the few where it does - usually because of a contract requirement or a regulatory finding - the post is the best practical guide on the internet right now.
 
 Our [vCIO and cloud strategy work](/#solutions) helps clients make this call without emotion. Sometimes the answer is "stay on AWS, document the controls, move on." Sometimes it is "yes, lets plan a six-month migration." The data tells you which.
 
@@ -676,13 +676,13 @@ Data sovereignty is no longer a niche concern for paranoid founders. It is a pro
   },
   {
     slug: "post-git-version-control-engineering-leaders",
-    title: "Post-Git Version Control: Should SRQ Engineering Teams Care?",
-    metaDescription: "Bram Cohen lays out what should come after Git: better merges, content addressing, large files. Heres what it means for SRQ engineering leaders.",
+    title: "Post-Git Version Control: Should Local Engineering Teams Care?",
+    metaDescription: "Bram Cohen lays out what should come after Git: better merges, content addressing, large files. Heres what it means for local engineering leaders.",
     date: "2026-03-22",
     author: "Dancho Ivanov",
     category: "Business Tech",
     tags: ["devops", "version-control", "engineering"],
-    excerpt: "BitTorrent creator Bram Cohen lays out what should come after Git: better merge semantics, content-addressed history, and first-class large-file support. Heres how SRQ engineering leaders should react.",
+    excerpt: "BitTorrent creator Bram Cohen lays out what should come after Git: better merge semantics, content-addressed history, and first-class large-file support. Heres how local engineering leaders should react.",
     sourceUrl: "https://bramcohen.com/p/manyana",
     heroAlt: "A tree-like diagram showing branching and merging in a version control system.",
     content: `## The Post That Reopened a Tired Debate
@@ -699,7 +699,7 @@ But Git has well-known sharp edges. Merge conflicts are still a regular cause of
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ businesses are not building hyperscale platforms. The relevant question is not "should we switch to Jujutsu next quarter." It is "is our internal version control hygiene actually serving us, and what would we change if we were free to."
+Most Sarasota businesses are not building hyperscale platforms. The relevant question is not "should we switch to Jujutsu next quarter." It is "is our internal version control hygiene actually serving us, and what would we change if we were free to."
 
 Three concrete questions to ask your engineering lead:
 
@@ -745,7 +745,7 @@ The arguments against are also reasonable. Muscle memory is real. And, more impo
 
 ## Why It Matters for Anyone Running Linux
 
-Most SRQ businesses do not run Ubuntu workstations at scale. Plenty run Ubuntu servers somewhere in the stack. A web app on Hetzner. A monitoring host on a cheap VPS. A backup target. A self-hosted Bitwarden. Each one is a potential automation pipeline that touches sudo.
+Most Sarasota businesses do not run Ubuntu workstations at scale. Plenty run Ubuntu servers somewhere in the stack. A web app on Hetzner. A monitoring host on a cheap VPS. A backup target. A self-hosted Bitwarden. Each one is a potential automation pipeline that touches sudo.
 
 If your scripts use Expect, pexpect, ansible-become, sshpass, or anything that programmatically responds to a password prompt, you should test before upgrading. The new behavior is unlikely to break things in catastrophic ways, but it will produce log noise and edge cases at exactly the time you do not want them.
 
@@ -753,18 +753,18 @@ If your scripts use Expect, pexpect, ansible-become, sshpass, or anything that p
 
 The bigger lesson is the one this story always teaches: small UX changes in LTS distros can break ancient automation. The same thing happens with macOS major releases, Windows feature updates, and even minor browser updates. The fix is not to refuse upgrades. It is to test the upgrade in a staging environment first, every single time.
 
-A practical staging plan for SRQ businesses:
+A practical staging plan for Sarasota businesses:
 
 - **Maintain a staging VM** that mirrors your production Linux server, including the version of every script that runs against it.
 - **Subscribe to the release notes** for the LTS distros you depend on. Ubuntu, Debian, Rocky, AlmaLinux all publish them.
 - **Run your provisioning scripts against staging** before you upgrade production. If something breaks, you find out at 10 a.m. on a Tuesday instead of 2 a.m. on a Sunday.
 - **Document the rollback path.** If the upgrade goes sideways, you should have a one-line command to roll back to a known good state.
 
-## Where We See This Trip Up SRQ Clients
+## Where We See This Trip Up Local Clients
 
 The most common breakage we see during LTS upgrades is not sudo. It is something more boring: a configuration file format that changed, a deprecated systemd unit, or a Python 3.x version bump that broke a library. The pattern is identical. Test in staging. Upgrade in production. Save the headache.
 
-We bake this into the [managed infrastructure work](/#solutions) we do for SRQ clients with self-hosted Linux footprints. It is the unglamorous part of MSP work and it is the part that keeps phones from ringing at 3 a.m.
+We bake this into the [managed infrastructure work](/#solutions) we do for local clients with self-hosted Linux footprints. It is the unglamorous part of MSP work and it is the part that keeps phones from ringing at 3 a.m.
 
 ## The Bottom Line
 
@@ -774,8 +774,8 @@ Ubuntu 26.04 is a friendlier release for new users and a small surprise for old 
   },
   {
     slug: "opencode-open-source-ai-coding-sarasota",
-    title: "OpenCode and the Case for Open-Source AI in SRQ Workshops",
-    metaDescription: "OpenCode is a fully open-source alternative to Claude Code and Cursor. Heres why SRQ businesses should consider it when data cant leave the building.",
+    title: "OpenCode and the Case for Open-Source AI in Local Workshops",
+    metaDescription: "OpenCode is a fully open-source alternative to Claude Code and Cursor. Heres why Sarasota businesses should consider it when data cant leave the building.",
     date: "2026-03-20",
     author: "Dancho Ivanov",
     category: "AI & Productivity",
@@ -797,7 +797,7 @@ OpenCode appears to have closed that gap. Whether it stays closed is a question 
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-A few categories of SRQ business have always had a hard time with AI tooling:
+A few categories of local business have always had a hard time with AI tooling:
 
 - **Healthcare.** A Sarasota medical practice cannot ship patient records or related metadata to a third-party AI vendor without a BAA, and most consumer AI vendors do not sign BAAs.
 - **Legal.** Bradenton law firms have privilege concerns that close-vendor AI tools struggle to address.
@@ -808,7 +808,7 @@ For these businesses, an open-source coding agent that runs entirely on a harden
 
 ## A Practical Pilot Plan
 
-If you want to evaluate OpenCode for an SRQ business with sensitivity concerns, do it the boring way:
+If you want to evaluate OpenCode for an local business with sensitivity concerns, do it the boring way:
 
 - **Hardware.** Start with a single workstation that has 24+ GB of unified memory or a discrete GPU with 12+ GB VRAM. Apple Silicon Macs and recent gaming rigs both work.
 - **Model.** Pick a mid-sized open-weight model that fits the hardware. Llama 3.x, Qwen 2.5, and Mistral families all have good options.
@@ -827,7 +827,7 @@ OpenCode is the first credible open-source coding agent for businesses that cann
   {
     slug: "oss-acquisitions-vendor-risk-it-procurement",
     title: "When Beloved OSS Gets Acquired: Vendor Risk for Sarasota IT",
-    metaDescription: "Astral, the team behind uv and ruff, was acquired by OpenAI. Heres how SRQ businesses should think about OSS acquisitions and pinning tools.",
+    metaDescription: "Astral, the team behind uv and ruff, was acquired by OpenAI. Heres how Sarasota businesses should think about OSS acquisitions and pinning tools.",
     date: "2026-03-19",
     author: "Dancho Ivanov",
     category: "Business Tech",
@@ -851,9 +851,9 @@ A permissive license protects the existing code. It does not protect the future 
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ businesses are not running uv and ruff. The pattern, however, applies to every open-source dependency in your stack. It applies to the JavaScript framework your developer chose. It applies to the database driver your line-of-business app uses. It applies to the SQLite library buried in your password manager.
+Most Sarasota businesses are not running uv and ruff. The pattern, however, applies to every open-source dependency in your stack. It applies to the JavaScript framework your developer chose. It applies to the database driver your line-of-business app uses. It applies to the SQLite library buried in your password manager.
 
-When critical OSS gets acquired, three practical questions for an SRQ business:
+When critical OSS gets acquired, three practical questions for an local business:
 
 - Do we know which OSS components our applications depend on? An SBOM (software bill of materials) answers this in a structured way and is increasingly required by both insurers and customers.
 - Are we pinned to specific versions of those components, or are we floating on the latest? Pinned is safer; floating is faster.
@@ -867,7 +867,7 @@ When critical OSS gets acquired, three practical questions for an SRQ business:
 - **Document a fallback for any tool with single-vendor risk.** If uv changed direction tomorrow, what would your developers use? Write it down.
 - **Tie this into your annual cyber-insurance evidence packet.** Carriers increasingly ask for SBOMs.
 
-We do this work as part of [managed cybersecurity engagements](/#solutions) for SRQ clients with in-house development teams. It takes a day to set up and pays for itself the next time a critical dependency surprises you.
+We do this work as part of [managed cybersecurity engagements](/#solutions) for local clients with in-house development teams. It takes a day to set up and pays for itself the next time a critical dependency surprises you.
 
 ## A Word About OpenAI
 
@@ -914,7 +914,7 @@ Substitute "your IT environment" for "a program" and the rules become uncomforta
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Plenty of SRQ businesses get sold complex solutions to simple problems. We see it constantly. The medical practice with a Kubernetes-based intake portal that an outgoing contractor left behind. The Bradenton manufacturer running its own Exchange server because someone in 2014 thought it was cheaper. The Sarasota law firm with a custom-built case management database that nobody knows how to back up.
+Plenty of Sarasota businesses get sold complex solutions to simple problems. We see it constantly. The medical practice with a Kubernetes-based intake portal that an outgoing contractor left behind. The Bradenton manufacturer running its own Exchange server because someone in 2014 thought it was cheaper. The Sarasota law firm with a custom-built case management database that nobody knows how to back up.
 
 In every one of those cases, the right move is to apply Pikes rules in reverse. Measure what is actually being used. Replace fancy with simple. Pick the right data store and let the rest fall into place.
 
@@ -930,7 +930,7 @@ The next time youre facing an IT decision - new tool, new platform, new architec
 
 Five questions. Fifteen minutes. Hundreds of dollars saved per decision.
 
-We use this framework as part of [vCIO and technology strategy work](/#solutions) for SRQ clients. Its not glamorous, and it doesnt require AI to apply.
+We use this framework as part of [vCIO and technology strategy work](/#solutions) for local clients. Its not glamorous, and it doesnt require AI to apply.
 
 ## The Bottom Line
 
@@ -940,13 +940,13 @@ Rob Pikes rules are 37 years old and have aged better than most enterprise softw
   },
   {
     slug: "style-transfer-llm-marketing-sarasota",
-    title: "Style-Transfer LLMs Have Arrived. Now What for SRQ Marketing?",
+    title: "Style-Transfer LLMs Have Arrived. Now What for Sarasota Marketing?",
     metaDescription: "Kagis joke translator that converts plain English to LinkedIn Speak is also a real demo of style transfer. Heres what it means for Sarasota marketing teams.",
     date: "2026-03-17",
     author: "Dancho Ivanov",
     category: "AI & Productivity",
     tags: ["ai", "marketing", "content"],
-    excerpt: "Kagi shipped a tongue-in-cheek translator that converts plain English into LinkedIn-flavored prose. Underneath the joke is a real demo of style-transfer LLM features SRQ marketing teams should know.",
+    excerpt: "Kagi shipped a tongue-in-cheek translator that converts plain English into LinkedIn-flavored prose. Underneath the joke is a real demo of style-transfer LLM features local marketing teams should know.",
     sourceUrl: "https://translate.kagi.com/?from=en&to=LinkedIn+speak",
     heroAlt: "A laptop showing a side-by-side translation of plain text into corporate-speak.",
     content: `## A Joke That Was Also a Demo
@@ -959,7 +959,7 @@ What Kagi shipped is a polished consumer demo of style-transfer - the ability to
 
 For most Sarasota and Bradenton businesses, marketing is a one-person operation. A part-time staffer or a fractional agency writes the blog posts, drafts the emails, and updates the website. Style transfer is exactly the kind of capability that compresses that workflow.
 
-Three concrete uses we have seen at SRQ clients:
+Three concrete uses we have seen at local clients:
 
 - **Repurposing.** A 1,500-word blog post becomes a five-tweet thread, a LinkedIn post, an email newsletter, and an Instagram caption. Without style transfer, this is two hours of work. With it, this is 15 minutes plus editing.
 - **Voice consistency.** A new staff member writing in your companys voice for the first time can use style transfer to rough-in the format and then edit for accuracy.
@@ -977,14 +977,14 @@ Each of these is fixable with a 30-second human edit. But the edit only happens 
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-A practical workflow for SRQ marketing teams that want to use style transfer responsibly:
+A practical workflow for local marketing teams that want to use style transfer responsibly:
 
 - **Always start from your own draft.** Do not generate from scratch. Style-transfer your own writing, not a hallucination.
 - **Edit every output.** Even if it is just one sentence, the human edit is what keeps the voice yours.
 - **Keep a list of required disclosures** for your industry. Run every output against the list before publishing.
 - **Log AI use** in your marketing platform. Most CMSs let you tag posts with metadata; use it.
 
-We help SRQ businesses build these workflows as part of [vCIO and process consulting](/#solutions). It is one of the highest-leverage uses of an MSP relationship for an owner-operated business.
+We help Sarasota businesses build these workflows as part of [vCIO and process consulting](/#solutions). It is one of the highest-leverage uses of an MSP relationship for an owner-operated business.
 
 ## The Bottom Line
 
@@ -995,7 +995,7 @@ The Kagi LinkedIn Speak joke is a one-day laugh and a long-term reminder. Style-
   {
     slug: "prediction-markets-information-warfare-business-risk",
     title: "Prediction Markets, Information Warfare, and Your Brand Risk",
-    metaDescription: "A reporter received death threats from prediction-market traders trying to sway his coverage. Heres what that means for SRQ businesses doing public research.",
+    metaDescription: "A reporter received death threats from prediction-market traders trying to sway his coverage. Heres what that means for Sarasota businesses doing public research.",
     date: "2026-03-16",
     author: "Dancho Ivanov",
     category: "Business Tech",
@@ -1019,11 +1019,11 @@ Most Sarasota and Bradenton business owners do not personally trade on predictio
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ businesses are far from this story. A few are not.
+Most Sarasota businesses are far from this story. A few are not.
 
 - A Bradenton law firm involved in a high-profile case is now indirectly part of a prediction market. The firms public statements move the odds.
 - A Sarasota healthcare company anticipating an FDA decision has the same problem. The decision is a tradable contract; the companys press releases move the price.
-- An SRQ business owner who is publicly visible - on a board, a chamber of commerce, a non-profit - may attract attention they did not invite.
+- An local business owner who is publicly visible - on a board, a chamber of commerce, a non-profit - may attract attention they did not invite.
 
 The right response is not to disengage. It is to understand the new landscape and to be prepared.
 
@@ -1034,30 +1034,30 @@ The right response is not to disengage. It is to understand the new landscape an
 - **Have a prepared communications plan** for newsworthy events. Whether you actually use it is up to you, but the plan should exist.
 - **Train principals** on what to do if they receive harassment or threats. The Times of Israel piece is a useful reference; share it.
 
-These items live in our [vCIO and risk management work](/#solutions) for SRQ clients with public-facing exposure.
+These items live in our [vCIO and risk management work](/#solutions) for local clients with public-facing exposure.
 
 ## The Bottom Line
 
 Prediction markets are reshaping how information flows around real-world events in ways most business owners have not had to think about. The death threats described in the Times of Israel piece are an extreme case. The everyday version is subtler and more common: real money on the line creates real incentives to influence what people read. Be aware. Be prepared.
 
-[Talk to Simple IT SRQ](/#contact) about a reputation and reporting risk review for your Bradenton or Sarasota business. You can also browse our other [insights for SRQ owners](/blog).`
+[Talk to Simple IT SRQ](/#contact) about a reputation and reporting risk review for your Bradenton or Sarasota business. You can also browse our other [insights for Sarasota owners](/blog).`
   },
   {
     slug: "surveillance-laws-cross-border-data-msp",
-    title: "Cross-Border Data Rules: Why SRQ Companies Should Care",
+    title: "Cross-Border Data Rules: Why Local Companies Should Care",
     metaDescription: "Canadas Bill C-22 returns with surveillance backdoor risks. Heres what cross-border data rules mean for Sarasota and Bradenton businesses.",
     date: "2026-03-15",
     author: "Dancho Ivanov",
     category: "Privacy",
     tags: ["regulation", "privacy", "cross-border"],
-    excerpt: "Canadian internet law expert Michael Geist breaks down Bill C-22, which still requires telcos and platforms to build interception capabilities. SRQ businesses with Canadian operations should track this.",
+    excerpt: "Canadian internet law expert Michael Geist breaks down Bill C-22, which still requires telcos and platforms to build interception capabilities. Sarasota businesses with Canadian operations should track this.",
     sourceUrl: "https://www.michaelgeist.ca/2026/03/a-tale-of-two-bills-lawful-access-returns-with-changes-to-warrantless-access-but-dangerous-backdoor-surveillance-risks-remains/",
     heroAlt: "A digital map showing data flows crossing the US-Canada border.",
     content: `## A Familiar Problem in a New Jurisdiction
 
 Canadian internet law professor Michael Geist published a thorough analysis this week of Bill C-22, the latest version of Canadas "lawful access" legislation. The bill rolls back some of the most aggressive warrantless access provisions from earlier drafts, but still requires telcos and online platforms to build interception capabilities into their services. Privacy and security communities remain alarmed.
 
-Why does this matter to a Sarasota or Bradenton business? Because cross-border data rules quietly affect anyone who has a Canadian customer, partner, employee, or vendor. Most SRQ owners have not noticed how many of their relationships actually cross that border.
+Why does this matter to a Sarasota or Bradenton business? Because cross-border data rules quietly affect anyone who has a Canadian customer, partner, employee, or vendor. Most local owners have not noticed how many of their relationships actually cross that border.
 
 ## How Cross-Border Rules Reach Florida Businesses
 
@@ -1065,7 +1065,7 @@ Three common ways:
 
 - **Customers.** A Canadian client of a Bradenton consulting firm. A snowbird patient at a Sarasota medical practice. A Toronto-based subscriber to a SaaS product built by a Lakewood Ranch developer.
 - **Vendors.** A Canadian email service. A Toronto-based design contractor. A Nova Scotia-based hosting provider.
-- **Employees.** A remote worker who moved to Vancouver but still works for an SRQ company. Or a US-based employee who travels frequently to Canada.
+- **Employees.** A remote worker who moved to Vancouver but still works for an Sarasota company. Or a US-based employee who travels frequently to Canada.
 
 Any of these can pull a Florida business inside the orbit of Canadian privacy and surveillance law. PIPEDA already required certain disclosures. Bill C-22 adds another layer.
 
@@ -1077,7 +1077,7 @@ This is the same argument made against the EUs Chat Control proposal. The techni
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-A practical cross-border data hygiene checklist for SRQ businesses:
+A practical cross-border data hygiene checklist for Sarasota businesses:
 
 - **Identify Canadian relationships.** Customers, vendors, employees, contractors. List them.
 - **Document data flows.** What data moves between you and each Canadian relationship? In which direction? In what format?
@@ -1089,7 +1089,7 @@ A practical cross-border data hygiene checklist for SRQ businesses:
 
 Bill C-22 is not unique. Several US bills with similar architecture are in the queue at the federal and state level. The same checklist applies. Track legislation that affects communications providers and platforms; review your vendors when those bills move; document what you know.
 
-We help [SRQ clients with cross-border exposure](/#solutions) maintain this kind of inventory as part of vCIO work. It is a one-day setup and a 30-minute quarterly review.
+We help [local clients with cross-border exposure](/#solutions) maintain this kind of inventory as part of vCIO work. It is a one-day setup and a 30-minute quarterly review.
 
 ## The Bottom Line
 
@@ -1100,12 +1100,12 @@ Surveillance and "lawful access" legislation is a global phenomenon now. A Canad
   {
     slug: "kiosk-linux-locked-down-deployments-sarasota",
     title: "Locked-Down Linux for Front-Desk and Kiosk Deployments",
-    metaDescription: "Ageless Linux is designed for non-technical users with large fonts and tamper resistance. Heres how SRQ businesses can use it for kiosk deployments.",
+    metaDescription: "Ageless Linux is designed for non-technical users with large fonts and tamper resistance. Heres how Sarasota businesses can use it for kiosk deployments.",
     date: "2026-03-14",
     author: "Dancho Ivanov",
     category: "Business Tech",
     tags: ["linux", "kiosk", "endpoint-management"],
-    excerpt: "A new Linux distribution explicitly designed for non-technical users focuses on large fonts, minimal menus, and tamper-resistant defaults. A potential kiosk Linux candidate for SRQ deployments.",
+    excerpt: "A new Linux distribution explicitly designed for non-technical users focuses on large fonts, minimal menus, and tamper-resistant defaults. A potential kiosk Linux candidate for Sarasota deployments.",
     sourceUrl: "https://agelesslinux.org/",
     heroAlt: "A kiosk computer in a clean office lobby with a large simple interface on screen.",
     content: `## A Distribution Built for People, Not Hackers
@@ -1134,7 +1134,7 @@ Ageless Linux addresses the first four out of the box. The fifth - remote manage
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Three concrete deployments where weve seen this work for SRQ clients:
+Three concrete deployments where weve seen this work for local clients:
 
 - **Patient check-in kiosks** at a Sarasota medical practice. Locked to the intake form. No browser, no Office, no surface area.
 - **Conference room displays** at a Bradenton professional services firm. Booted into a dashboard, restarted overnight, no user interaction needed.
@@ -1146,7 +1146,7 @@ In each case, switching from Windows to a locked-down Linux saved licensing cost
 
 - Pick the device class first - kiosk, display, or sign-in. Each has different ergonomics.
 - Test Ageless Linux against your actual use case for a week before committing.
-- Wire up remote management before the first deployment, not after. Ansible plus a wireguard tunnel is enough for most SRQ shops.
+- Wire up remote management before the first deployment, not after. Ansible plus a wireguard tunnel is enough for most local shops.
 - Document the rebuild process. If the device fails, you should be able to redeploy it from a USB stick in 15 minutes.
 - Tie the device into your [endpoint inventory and cyber-insurance documentation](/#solutions). Just because it does not run Windows does not mean you can pretend it does not exist.
 
@@ -1164,7 +1164,7 @@ Ageless Linux is not going to replace your office workstations. It is, however, 
     author: "Dancho Ivanov",
     category: "AI & Productivity",
     tags: ["ai", "on-prem", "smb"],
-    excerpt: "A new tool detects your hardware and tells you which open-weight models you can realistically run locally. Hand this to any SRQ client asking about on-prem AI.",
+    excerpt: "A new tool detects your hardware and tells you which open-weight models you can realistically run locally. Hand this to any local client asking about on-prem AI.",
     sourceUrl: "https://www.canirun.ai/",
     heroAlt: "A workstation with a discrete GPU running an AI inference benchmark.",
     content: `## A Tool That Answers a Common Question
@@ -1177,11 +1177,11 @@ The site is small. The implications for Sarasota and Bradenton businesses are bi
 
 Two years ago, running a useful LLM on your own hardware required a $15,000 server and a part-time engineer to babysit it. Today, mid-tier hardware - a workstation with 24-32 GB of unified memory or a discrete GPU with 12-16 GB of VRAM - can run open-weight models that compare favorably to last years cloud offerings for many tasks. The math has changed.
 
-For an SRQ business with sensitivity concerns - a Sarasota medical practice, a Bradenton law firm, a financial advisor - on-prem AI is no longer a research project. It is a tool that pays for itself in 18 to 24 months when you include the cloud subscription you stop paying for.
+For an local business with sensitivity concerns - a Sarasota medical practice, a Bradenton law firm, a financial advisor - on-prem AI is no longer a research project. It is a tool that pays for itself in 18 to 24 months when you include the cloud subscription you stop paying for.
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-A practical decision framework for SRQ owners considering on-prem AI:
+A practical decision framework for Sarasota owners considering on-prem AI:
 
 - **What is the use case?** Document drafting? Email summarization? Internal Q-and-A? Each has different model requirements.
 - **What data goes in?** PHI, attorney work product, or financial statements all push you toward on-prem. Marketing copy or general research can stay in the cloud.
@@ -1190,7 +1190,7 @@ A practical decision framework for SRQ owners considering on-prem AI:
 
 ## A Realistic Hardware Plan
 
-For a small SRQ business that wants to start, the cheapest viable setup looks like this:
+For a small local business that wants to start, the cheapest viable setup looks like this:
 
 - **Mac Studio with 64 GB unified memory.** Roughly $2,500. Runs most open-weight models that fit in memory at usable speeds.
 - **OR a workstation with an RTX 4090.** Roughly $3,000. Faster inference, more flexible, more setup work.
@@ -1204,7 +1204,7 @@ That investment is enough to give 5 to 20 staff a real on-prem AI experience for
 
 Be honest with yourself. On-prem AI is not a fit for every workload. It is slower than top-tier cloud models on the most demanding tasks. It cannot be auto-scaled. It needs maintenance. And the model ecosystem moves fast - what is best-in-class today is mediocre in six months.
 
-For most SRQ businesses the right answer is a mix: on-prem for sensitive data, cloud for general productivity, and a clear policy that staff understand. We help clients [build that policy and the technical guardrails](/#solutions) that go with it.
+For most Sarasota businesses the right answer is a mix: on-prem for sensitive data, cloud for general productivity, and a clear policy that staff understand. We help clients [build that policy and the technical guardrails](/#solutions) that go with it.
 
 ## The Bottom Line
 
@@ -1215,7 +1215,7 @@ The canirun.ai tool is a great icebreaker for the "can we do AI in-house?" conve
   {
     slug: "clean-room-reverse-engineering-legacy-vendor-lockin",
     title: "Breaking Free from Legacy Vendor Lock-In: Clean-Room Migrations",
-    metaDescription: "A new service productizes clean-room reverse engineering for OSS interop. Heres what that means for SRQ businesses migrating off legacy vendors.",
+    metaDescription: "A new service productizes clean-room reverse engineering for OSS interop. Heres what that means for Sarasota businesses migrating off legacy vendors.",
     date: "2026-03-12",
     author: "Dancho Ivanov",
     category: "Business Tech",
@@ -1237,7 +1237,7 @@ In every case, the question is the same: how do we get our data out and into som
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-The Malus story is a reminder that the migration problem is more solvable than most owners realize. Three concrete patterns we use for SRQ clients:
+The Malus story is a reminder that the migration problem is more solvable than most owners realize. Three concrete patterns we use for local clients:
 
 - **Document the data model.** Before you export anything, write down what data exists, where it lives, and what relationships connect the records. This is the input every migration tool needs.
 - **Use the vendors export formats.** Ugly exports beat custom scrapers. Even an Excel dump and a screen-scraped HTML directory is better than a hand-typed migration.
@@ -1246,13 +1246,13 @@ The Malus story is a reminder that the migration problem is more solvable than m
 
 ## When Clean-Room Matters
 
-For most SRQ businesses, the migration is straightforward enough that clean-room procedures are overkill. You have legitimate access to your own data, the vendor allows export, and you are not reimplementing their software.
+For most Sarasota businesses, the migration is straightforward enough that clean-room procedures are overkill. You have legitimate access to your own data, the vendor allows export, and you are not reimplementing their software.
 
 There are exceptions. If a Bradenton manufacturer needs to integrate with a closed-protocol industrial control system. If a Sarasota healthcare company is replacing a legacy claims-processing tool whose formats are undocumented and whose vendor will not cooperate. In those cases, clean-room procedures and a documented separation between people who looked at the original and people who built the replacement protect the business legally.
 
 ## A Practical Migration Playbook
 
-Most SRQ migrations look like this:
+Most local migrations look like this:
 
 - **Week 1:** Document the data model and the integration points.
 - **Week 2-3:** Stand up the new system and load test data.
@@ -1305,7 +1305,7 @@ Three categories of risk that an AI policy reduces:
 - **Reputation damage.** AI-generated content that goes out to clients without review can be embarrassing, inaccurate, or both.
 - **Compliance exposure.** HIPAA, GLBA, and PCI all care about where data goes. An AI policy is the document an auditor will ask for.
 
-We help SRQ clients build these policies as part of [vCIO and compliance work](/#solutions). The first draft takes about an hour. The hardest part is enforcement, and that is mostly a matter of training and visibility, not technology.
+We help local clients build these policies as part of [vCIO and compliance work](/#solutions). The first draft takes about an hour. The hardest part is enforcement, and that is mostly a matter of training and visibility, not technology.
 
 ## A Practical First-Draft Structure
 
@@ -1327,7 +1327,7 @@ Hacker News drew its line. Your business needs to draw its own. A one-page AI co
   },
   {
     slug: "tony-hoare-quicksort-lessons-it-leaders",
-    title: "Tony Hoares Lessons That Still Matter for SRQ IT Leaders",
+    title: "Tony Hoares Lessons That Still Matter for Sarasota IT Leaders",
     metaDescription: "Tony Hoare passed away at 91. Heres what his work on Quicksort, null references, and CSP still teaches Sarasota and Bradenton IT leaders.",
     date: "2026-03-10",
     author: "Dancho Ivanov",
@@ -1354,13 +1354,13 @@ Hoares career produced more good ideas than most fields produce in a century. Th
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ business owners are not going to read Hoares papers. They will, however, make decisions every quarter that benefit from his way of thinking.
+Most local business owners are not going to read Hoares papers. They will, however, make decisions every quarter that benefit from his way of thinking.
 
 - Before you commit to a new platform, write down three things that should always be true. Revisit them six months later.
 - When designing a workflow that touches multiple systems, design the coordination first and the steps second.
 - When something goes wrong, write down what you would do differently next time - and store it where the next person can find it.
 
-These are not technical skills. They are leadership habits. We try to coach them into [vCIO engagements](/#solutions) for SRQ clients because they pay off long after any specific platform decision has aged out.
+These are not technical skills. They are leadership habits. We try to coach them into [vCIO engagements](/#solutions) for local clients because they pay off long after any specific platform decision has aged out.
 
 ## A Reading List for the Curious
 
@@ -1430,8 +1430,8 @@ The viral $5,000 number was wrong. Most viral AI cost takes are wrong. Trust the
   },
   {
     slug: "sandboxing-ai-agents-mac-sarasota",
-    title: "Sandboxing AI Coding Agents: A Safer Default for SRQ Teams",
-    metaDescription: "Agent Safehouse wraps AI coding agents in macOS sandboxing. Heres why SRQ businesses should sandbox every agent that touches files or shells.",
+    title: "Sandboxing AI Coding Agents: A Safer Default for Sarasota Teams",
+    metaDescription: "Agent Safehouse wraps AI coding agents in macOS sandboxing. Heres why Sarasota businesses should sandbox every agent that touches files or shells.",
     date: "2026-03-08",
     author: "Dancho Ivanov",
     category: "AI & Productivity",
@@ -1453,7 +1453,7 @@ If the agents prompts are hijacked - by a malicious file, a tampered tool defini
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ businesses do not have in-house developers running coding agents. Many have outside developers, contractors, or staff who are starting to experiment with AI tools at home before bringing them to work. The pattern is the same. Three concrete impacts:
+Most Sarasota businesses do not have in-house developers running coding agents. Many have outside developers, contractors, or staff who are starting to experiment with AI tools at home before bringing them to work. The pattern is the same. Three concrete impacts:
 
 - **Contractor risk.** A Bradenton firm hires a contractor to build a small internal tool. The contractor uses an AI agent on the firms repository. The agents access is the contractors access is, by extension, your firms access.
 - **Shadow IT.** A staff member at a Sarasota company starts using a local AI agent on their MacBook to summarize client documents. The agent has full disk access by default.
@@ -1469,7 +1469,7 @@ Whether you use Agent Safehouse, Microsoft Defender Application Guard, a VM, a c
 - **Run as a separate user account.** No shared keychains, no shared SSH keys, no shared browser profiles.
 - **Review the logs weekly** during the first month. Patterns will emerge that tell you what additional restrictions you can apply.
 
-This is the same sandboxing discipline we apply to any new tool we deploy on a [managed Mac or Windows fleet](/#solutions) for SRQ clients.
+This is the same sandboxing discipline we apply to any new tool we deploy on a [managed Mac or Windows fleet](/#solutions) for local clients.
 
 ## When Sandboxing Is Not Enough
 
@@ -1506,7 +1506,7 @@ The result was a step-change in deployment reliability and developer velocity. I
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Most SRQ businesses do not run their own Kubernetes cluster. The relevant question is not "do you use containers?" but "do you understand the parts of your stack that depend on them?" Three patterns we see at SRQ clients:
+Most Sarasota businesses do not run their own Kubernetes cluster. The relevant question is not "do you use containers?" but "do you understand the parts of your stack that depend on them?" Three patterns we see at local clients:
 
 - **Vendor-managed containers.** Your CRM, your accounting software, your patient portal - almost all SaaS apps run on containers behind the scenes. You will never see them. They will affect your uptime, your security posture, and your compliance documentation.
 - **Container-based line-of-business apps.** Some Bradenton businesses run a custom internal tool packaged as a container. If your developer or vendor handed you a Docker file, you have one of these.
@@ -1522,7 +1522,7 @@ If your business has any container-based workloads, these five items belong in y
 - **Run as non-root.** A container that runs as root inside is one OS escape away from running as root outside. Modern best practice is rootless by default.
 - **Document the orchestration.** If you run more than two containers in production, document how they connect, where their persistent data lives, and how a fresh deploy works.
 
-We help [SRQ clients with container-based workloads](/#solutions) maintain this hygiene as part of managed infrastructure work. The time investment is small. The reduction in 2 a.m. surprises is large.
+We help [local clients with container-based workloads](/#solutions) maintain this hygiene as part of managed infrastructure work. The time investment is small. The reduction in 2 a.m. surprises is large.
 
 ## Whats Next
 
@@ -1542,7 +1542,7 @@ Containers are now boring infrastructure, which is the highest praise software g
     author: "Dancho Ivanov",
     category: "Industry News",
     tags: ["hiring", "labor-market", "smb"],
-    excerpt: "BLS data shows tech-sector job losses now exceeding both the dot-com aftermath and the 2008 financial crisis. Heres what that means for SRQ businesses hiring IT talent.",
+    excerpt: "BLS data shows tech-sector job losses now exceeding both the dot-com aftermath and the 2008 financial crisis. Heres what that means for Sarasota businesses hiring IT talent.",
     sourceUrl: "https://twitter.com/JosephPolitano/status/2029916364664611242",
     heroAlt: "A line chart showing tech-sector employment falling sharply over time.",
     content: `## A Real Data Point on a Hard Year
@@ -1553,17 +1553,17 @@ Whatever your view of the macro story, there is a practical implication for Sara
 
 ## What the Old Market Looked Like
 
-For most of the last decade, hiring an experienced IT person at a Sarasota or Bradenton small business was nearly impossible. The good candidates went to remote-first tech companies in San Francisco or New York with compensation packages SRQ businesses could not match. Local SMBs ended up with two options: pay above market for a strong candidate, or hire a junior person and hope they grew into the role.
+For most of the last decade, hiring an experienced IT person at a Sarasota or Bradenton small business was nearly impossible. The good candidates went to remote-first tech companies in San Francisco or New York with compensation packages Sarasota businesses could not match. Local SMBs ended up with two options: pay above market for a strong candidate, or hire a junior person and hope they grew into the role.
 
 Many ended up doing neither - they outsourced everything to a managed services provider and called it a day. That worked for some, less well for others.
 
 ## What the New Market Looks Like
 
-The labor market has flipped. Experienced sysadmins, security engineers, and IT leads are available again. Some are local, some are remote workers who moved to Florida during the pandemic and want to stay. Some are coming out of layoffs at big tech companies and looking for a more stable, less drama-filled environment. SRQ businesses are now competitive employers in a way they were not in 2022.
+The labor market has flipped. Experienced sysadmins, security engineers, and IT leads are available again. Some are local, some are remote workers who moved to Florida during the pandemic and want to stay. Some are coming out of layoffs at big tech companies and looking for a more stable, less drama-filled environment. Sarasota businesses are now competitive employers in a way they were not in 2022.
 
 ## Why This Matters for Sarasota and Bradenton Businesses
 
-Three concrete moves SRQ business owners should consider in the next 12 months:
+Three concrete moves local business owners should consider in the next 12 months:
 
 - **Hire an internal IT lead** if you have been putting it off. The labor pool is the best it has been in years. A strong in-house person paired with a smaller MSP relationship is often the right model for businesses past the 50-employee mark.
 - **Upgrade your existing team.** If you have a junior IT person who has been promoted by default, this is the year to send them to training, certifications, or a structured mentorship - because the alternative pool is now strong.
@@ -1573,9 +1573,9 @@ Three concrete moves SRQ business owners should consider in the next 12 months:
 
 We are an MSP. So this might sound counterintuitive coming from us. It is not. The healthiest client relationships we have are the ones where the client also has internal capacity. They get more value from our specialized work because they have someone in-house who can act as the day-to-day point of contact, run small projects, and make sure our recommendations actually get implemented.
 
-The right model for most SRQ businesses past 50 employees is internal IT plus an MSP. The new labor market makes that model more accessible than it has been in years. We help clients structure that division of labor as part of [vCIO and capacity planning](/#solutions).
+The right model for most Sarasota businesses past 50 employees is internal IT plus an MSP. The new labor market makes that model more accessible than it has been in years. We help clients structure that division of labor as part of [vCIO and capacity planning](/#solutions).
 
-## A Hiring Checklist for SRQ Businesses
+## A Hiring Checklist for Sarasota Businesses
 
 - Define the role clearly. "IT person" is not a role. "Internal IT lead reporting to the operations manager, owning 80 endpoints, M365, Intune, and vendor coordination" is a role.
 - Decide on remote vs. on-site. Remote opens up the national pool. On-site is faster for certain incidents and onboarding.
@@ -1585,9 +1585,60 @@ The right model for most SRQ businesses past 50 employees is internal IT plus an
 
 ## The Bottom Line
 
-The tech labor market is tougher than it has been in two decades for the people in it. For SRQ business owners, that translates to a real opportunity to upgrade their internal capacity. The window may not last forever - it never does - but right now, hiring is easier than it has been in a long time.
+The tech labor market is tougher than it has been in two decades for the people in it. For local business owners, that translates to a real opportunity to upgrade their internal capacity. The window may not last forever - it never does - but right now, hiring is easier than it has been in a long time.
 
 [Talk to Simple IT SRQ](/#contact) about an IT staffing assessment for your Bradenton or Sarasota business. You can also read our posts on [founder succession planning](/blog/founder-succession-planning-bradenton-smb) and [vCIO services](/blog/rob-pike-rules-modern-it-decisions).`
+  },
+  {
+    slug: "sarasota-employees-using-ai-work-policy",
+    title: "Your Sarasota Employees Are Using AI at Work. Here Is the Policy You Should Already Have.",
+    metaDescription: "Your team is probably pasting client data into ChatGPT. Heres a one page AI use policy Sarasota and Bradenton businesses can adopt this week.",
+    date: "2026-04-11",
+    author: "Dancho Ivanov",
+    category: "AI & Productivity",
+    tags: ["ai", "policy", "compliance", "smb"],
+    excerpt: "AI adoption is running ahead of every small business policy manual in town. Heres a practical, one page framework Sarasota and Bradenton owners can hand to their team on Monday.",
+    sourceUrl: "https://openai.com/enterprise-privacy/",
+    heroAlt: "A laptop with a ChatGPT prompt open while a staff handbook sits open next to the keyboard.",
+    content: `## Your Team Is Already Using AI. You Just Have Not Been Told.
+
+Ask around your office this week. Someone on your staff is using ChatGPT, Claude, or Gemini for work - probably several people, probably without running it by anyone. We see this pattern in every size and flavor of local business. A dental practice in Lakewood Ranch. A legal firm off Main Street in Sarasota. A Bradenton general contractor juggling four job sites at once. One person discovers that an AI model can draft an email in thirty seconds or summarize a forty page insurance document, and three weeks later half the team is quietly copy pasting work into a consumer chatbot.
+
+None of this is malicious. It is just what happens when a useful tool appears faster than any official guidance.
+
+The problem is that the free tools most people reach for - the public ChatGPT at chat.openai.com, the public Claude at claude.ai, the free Gemini tier - were not built for business data. Pasting a patient record, a client intake form, or a financial spreadsheet into one of those products can quietly route that data into a training pipeline, depending on the plan and the current terms. The employee is not trying to break the law. They do not know the difference between ChatGPT on a consumer plan and Copilot inside a paid Microsoft 365 tenant.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+There are three risks that actually move the needle for local small businesses.
+
+The first is data leakage. For a healthcare practice that is a HIPAA exposure waiting to surface during an audit. For a law firm it is a privilege problem a plaintiff attorney will happily use. For a CPA or financial advisor it is a compliance violation insurers and regulators will not shrug off. Anything that goes into a consumer AI tool should be assumed to live somewhere else afterward.
+
+The second is liability for bad output. AI models hallucinate. They cite cases that do not exist, generate safety plans that miss a code requirement, draft a lease that omits Floridas specific landlord clauses. When the output has your signature on it, the mistake is yours, not the models. We looked at the edge of this problem in our writeup on [AI comprehension debt](/blog/ai-comprehension-debt-sarasota-it-teams) - speed without review is a slow motion lawsuit.
+
+The third is competitive exposure, and it is the quietest of the three. Pasting proprietary processes, client lists, or pricing spreadsheets into a consumer model hands those details to a vendor whose interests do not line up with yours. Even if the data is not used for training on that particular plan, it is sitting on a server you do not control.
+
+## A Practical Playbook
+
+The fix is not to ban AI. Bans do not work - they just push usage underground and onto personal laptops. The fix is to draw a bright line between approved business AI and personal experimentation, and to make the approved path the easy one.
+
+- Write a one page AI use policy. Name which tools are approved (Microsoft 365 Copilot, Claude for Business, Gemini for Workspace), which are not (anything consumer grade or free tier), and what categories of data can never be pasted into any of them. Put it in your employee handbook and in your security awareness training.
+- Turn on the enterprise version of whatever AI your team actually wants. If you already pay for Microsoft 365 Business Standard, Copilot is an add on that keeps prompts inside your own tenant. If you are on Google Workspace, Gemini Business has the same posture. Consumer tools leak; the business tiers do not.
+- Run a fifteen minute team meeting. Not a lecture. Walk through what is allowed, what is not, and why. Answer questions. Show what happens when a medical record goes into the free ChatGPT. Most people will self correct once they understand the risk.
+- Put AI tool usage on your identity provider. If you use Microsoft Entra ID or Google Workspace, you can already see which SaaS apps your staff are signing into. You do not need to surveil anyone - you just need to know whether the policy is matching reality.
+- Review it every quarter. The vendor landscape moves fast enough that last quarters approved list will be stale. Treat the AI policy like the MFA policy: a living document, not a one time memo.
+
+This is the same posture we take when we harden a Microsoft 365 tenant with Conditional Access or do a [vendor risk review on a new AI procurement](/blog/ai-vendor-lockin-procurement-playbook-bradenton). The tools are new. The principle - know what is touching your data - is old.
+
+## The Opportunity, Not Just the Risk
+
+If you only think of AI as a liability you are going to lose the productivity story to the business down the street that took it seriously. An office manager with Copilot summarizing meeting notes. A paralegal drafting discovery responses in minutes instead of hours. A field supervisor turning job site photos into a punch list. These gains are real. The difference between the businesses that capture them and the ones that do not is the presence of a written policy and a paid enterprise tier, full stop.
+
+## The Bottom Line
+
+Your staff is using AI tools. The only question is whether they are doing it on a business plan under a written policy, or on a free plan with your client data. The answer defaults to the second option unless you make a decision.
+
+[Talk to Simple IT SRQ](/#contact) about a 30 minute AI policy review for your Sarasota, Bradenton, or Venice business. We can help you write the one pager, switch your team to the enterprise tier of whatever model they already want to use, and wire up the identity provider logging that tells you whether the policy is being followed. You can also see our broader [managed services offerings](/#solutions) if you want the policy to land as part of a full security posture, not a standalone memo.`
   },
 ];
 
