@@ -71,6 +71,8 @@ Walk into almost any growing Sarasota or Bradenton business and you will find th
 
 That is not a willpower problem. It is a design problem. Adults learn the same way kids do - by doing the thing, getting feedback, and trying again. Documents alone cannot deliver that loop.
 
+The same logic applies to the back-office side of onboarding. The companies that get day-one right are the ones where payroll, direct deposit, I-9, and W-4 are all wrapped into a single self-serve flow the new hire can finish on their own laptop. Most of our clients route that flow through [[gusto]], which means the day-one IT setup is not gated on someone in HR scanning a paper form.
+
 ## Why This Matters for Sarasota and Bradenton Businesses
 
 Three places where gamified training pays off fastest for local teams:
@@ -1582,6 +1584,7 @@ The right model for most Sarasota businesses past 50 employees is internal IT pl
 - Set a budget that reflects 2026, not 2022. The good news is that a strong mid-career hire now costs what an average hire did three years ago.
 - Use a structured interview. Skip the gotcha questions. Real scenarios matter more than algorithmic puzzles.
 - Plan for the first 90 days. Have a documented onboarding so you are not spending the first month explaining where things are.
+- Have payroll ready before the offer letter goes out, not after. If you are still doing payroll out of QuickBooks Desktop or by hand, the new hire is the right reason to switch. We see most of our SMB clients on [[gusto]], which handles W-2s, 1099s, state tax filing, and direct deposit without a dedicated HR person.
 
 ## The Bottom Line
 

@@ -2,7 +2,11 @@
 import { Link, useParams, Navigate } from "react-router-dom";
 import { ArrowRight, Calendar, User, Tag, ArrowLeft, Lock, Server, Cloud, FileCheck, Shield, Briefcase, Star } from "lucide-react";
 import { posts } from "../data/posts";
+import { resolveAffiliate, postHasAffiliateContent } from "../data/affiliates";
 import { useSEO } from "../lib/seo";
+import LeadCaptureCTA from "../components/LeadCaptureCTA";
+import Newsletter from "../components/Newsletter";
+import AffiliateDisclosure from "../components/AffiliateDisclosure";
 
 function CategoryIcon({ category, size = 28 }) {
   const map = {
@@ -18,25 +22,52 @@ function CategoryIcon({ category, size = 28 }) {
   return <Icon size={size} />;
 }
 
+// [[token]] resolves through the affiliate registry. If the program is not
+// configured (env var missing), the token degrades to a plain-text label so
+// posts written ahead of signup do not break.
+function renderAffiliateToken(raw, key) {
+  const aff = resolveAffiliate(raw);
+  if (!aff) {
+    // Strip any "amazon:ASIN|" prefix and show only the label half. For
+    // single-word tokens like "gusto" we just show the capitalized name.
+    const display = raw.startsWith("amazon:")
+      ? (raw.split("|")[1] || raw.split(":")[1] || raw)
+      : raw.charAt(0).toUpperCase() + raw.slice(1);
+    return <span key={key}>{display}</span>;
+  }
+  return (
+    <a
+      key={key}
+      href={aff.href}
+      target="_blank"
+      rel="sponsored noopener noreferrer"
+      className="affiliate-link"
+      title={aff.blurb}
+    >
+      {aff.label}
+    </a>
+  );
+}
+
 function renderInline(text, key = 0) {
-  // Bold: **text**
   const parts = [];
   let remaining = text;
   let idx = 0;
   const linkRe = /\[([^\]]+)\]\(([^)]+)\)/;
   const boldRe = /\*\*([^*]+)\*\*/;
+  const affRe  = /\[\[([^\]]+)\]\]/;
   while (remaining.length) {
     const linkMatch = linkRe.exec(remaining);
     const boldMatch = boldRe.exec(remaining);
-    let nextIdx = -1;
+    const affMatch  = affRe.exec(remaining);
+
+    // Pick whichever matched pattern starts earliest in the remaining string.
+    let nextIdx = Infinity;
     let which = null;
-    if (linkMatch && (boldMatch == null || linkMatch.index <= boldMatch.index)) {
-      nextIdx = linkMatch.index;
-      which = "link";
-    } else if (boldMatch) {
-      nextIdx = boldMatch.index;
-      which = "bold";
-    }
+    if (linkMatch && linkMatch.index < nextIdx) { nextIdx = linkMatch.index; which = "link"; }
+    if (boldMatch && boldMatch.index < nextIdx) { nextIdx = boldMatch.index; which = "bold"; }
+    if (affMatch  && affMatch.index  < nextIdx) { nextIdx = affMatch.index;  which = "aff";  }
+
     if (which == null) {
       parts.push(remaining);
       break;
@@ -50,9 +81,13 @@ function renderInline(text, key = 0) {
         parts.push(<a key={`${key}-l-${idx++}`} href={url} target="_blank" rel="noopener noreferrer">{label}</a>);
       }
       remaining = remaining.slice(nextIdx + full.length);
-    } else {
+    } else if (which === "bold") {
       const [full, inner] = boldMatch;
       parts.push(<strong key={`${key}-b-${idx++}`}>{inner}</strong>);
+      remaining = remaining.slice(nextIdx + full.length);
+    } else {
+      const [full, token] = affMatch;
+      parts.push(renderAffiliateToken(token, `${key}-a-${idx++}`));
       remaining = remaining.slice(nextIdx + full.length);
     }
   }
@@ -133,6 +168,7 @@ export default function BlogPost() {
 
   const related = relatedPosts(post);
   const minutes = readingTime(post.content);
+  const hasAffiliate = postHasAffiliateContent(post.content);
 
   return (
     <main id="main" className="blog-post-main">
@@ -157,11 +193,16 @@ export default function BlogPost() {
             <Tag size={14} />
             {post.tags.map((t) => <span key={t} className="blog-tag">{t}</span>)}
           </div>
-          <div className="blog-post-cta">
-            <h3>Talk to Simple IT SRQ</h3>
-            <p>We help Sarasota and Bradenton businesses translate stories like this into practical action - from EDR rollouts to cyber-insurance documentation.</p>
-            <Link to="/#contact" className="btn btn-primary btn-lg">Book a free consultation</Link>
+          <LeadCaptureCTA />
+          <div className="author-block">
+            <div className="author-avatar" aria-hidden="true">DI</div>
+            <div>
+              <strong>{post.author}</strong>
+              <p>Founder of Simple IT SRQ. Dancho and the team support Sarasota and Bradenton businesses with managed IT, cybersecurity, and cloud services.</p>
+            </div>
           </div>
+          <Newsletter />
+          <AffiliateDisclosure variant={hasAffiliate ? "affiliate" : "partnership"} />
           {post.sourceUrl && (
             <p className="blog-post-source">Original source: <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer">{post.sourceUrl}</a></p>
           )}
