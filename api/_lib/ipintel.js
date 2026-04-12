@@ -92,6 +92,21 @@ export async function enrichIp(ip) {
     } catch { /* best effort */ }
   }
 
+  // --- Auto-block high-threat IPs on sight ---
+  if (intel.abuse_score != null && intel.abuse_score >= 75) {
+    try {
+      const existing = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${ip}`;
+      if (existing.length === 0) {
+        await sql`INSERT INTO ip_blocklist (ip, reason) VALUES (${ip}, ${`auto: AbuseIPDB score ${intel.abuse_score}, ${intel.abuse_reports} reports, org=${intel.org || "unknown"}`})`;
+        await sql`
+          INSERT INTO security_events (kind, severity, ip, detail)
+          VALUES ('auto_block.abuse_score', 'critical', ${ip},
+                  ${JSON.stringify({ abuse_score: intel.abuse_score, abuse_reports: intel.abuse_reports, org: intel.org, is_tor: intel.is_tor, is_proxy: intel.is_proxy })}::jsonb)
+        `;
+      }
+    } catch { /* best effort */ }
+  }
+
   // --- Persist to cache ---
   try {
     await sql`

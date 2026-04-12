@@ -100,18 +100,39 @@ export async function POST(request) {
     console.error("[track] visits insert failed", err);
   }
 
-  // Fire-and-forget IP enrichment. Runs after the visit insert so it never
-  // slows down the tracking pixel. Results land in ip_intel (cached 7 days)
-  // and are back-patched onto the visit row for the admin dashboard.
-  enrichIp(ip).then((intel) => {
+  // Fire-and-forget: IP enrichment + real-time threat response. Runs after
+  // the visit insert so it never slows down the 204. The enrichIp call
+  // auto-blocks IPs with abuse_score >= 75 (in ipintel.js). The back-patch
+  // here populates the admin dashboard columns.
+  enrichIp(ip).then(async (intel) => {
     if (!intel) return;
-    sql`
+    // Back-patch visit row with OSINT data.
+    await sql`
       UPDATE visits
       SET abuse_score = ${intel.abuse_score},
           is_datacenter = ${intel.is_datacenter},
           org = ${intel.org}
       WHERE ip = ${ip} AND abuse_score IS NULL
     `.catch(() => {});
+
+    // Real-time auto-counter: check if this IP has 3+ threat_actor hits
+    // in the last hour (regardless of the daily cron). Lighter threshold
+    // than the cron's 5-in-24h because we are checking in real time.
+    const hits = await sql`
+      SELECT COUNT(*)::int AS cnt FROM threat_actors
+      WHERE ip = ${ip} AND ts > now() - interval '1 hour'
+    `.catch(() => [{ cnt: 0 }]);
+    if ((hits[0]?.cnt || 0) >= 3) {
+      const blocked = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${ip}`.catch(() => []);
+      if (blocked.length === 0) {
+        await sql`INSERT INTO ip_blocklist (ip, reason) VALUES (${ip}, ${`auto: ${hits[0].cnt} threat hits in 1h (realtime)`})`.catch(() => {});
+        await sql`
+          INSERT INTO security_events (kind, severity, ip, detail)
+          VALUES ('auto_block.realtime', 'critical', ${ip},
+                  ${JSON.stringify({ hits: hits[0].cnt, window: '1h', abuse_score: intel.abuse_score })}::jsonb)
+        `.catch(() => {});
+      }
+    }
   }).catch(() => {});
 
   if (anonId) {
