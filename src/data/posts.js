@@ -1643,6 +1643,87 @@ Your staff is using AI tools. The only question is whether they are doing it on 
 
 [Talk to Simple IT SRQ](/#contact) about a 30 minute AI policy review for your Sarasota, Bradenton, or Venice business. We can help you write the one pager, switch your team to the enterprise tier of whatever model they already want to use, and wire up the identity provider logging that tells you whether the policy is being followed. You can also see our broader [managed services offerings](/#solutions) if you want the policy to land as part of a full security posture, not a standalone memo.`
   },
+  {
+    slug: "sarasota-cybersecurity-insurance-small-business",
+    title: "Why Your Business Needs a Cybersecurity Insurance Policy (And What It Actually Covers)",
+    metaDescription: "Cybersecurity insurance for small business: what it covers, why you need it, and how to find the right policy in Sarasota.",
+    date: "2026-04-12",
+    author: "Dancho Ivanov",
+    category: "Compliance",
+    tags: ["compliance", "insurance", "cybersecurity", "smb"],
+    excerpt: "Cybersecurity insurance is not just for big companies anymore. Heres why Sarasota small businesses need it and what to look for in a policy.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "A clipboard with a cybersecurity insurance checklist next to a laptop showing a ransomware warning.",
+    content: `## The Ransomware Attack That Started With One Email
+
+A dental practice in Bradenton - one that looks a lot like dozens we work with - opens email one Tuesday morning. Someone clicks a link they should not have. By Wednesday their patient records are locked. The attackers want a hundred thousand dollars to unlock them.
+
+Now the practice is facing not just the ransom demand but forensic investigation costs, notification letters to every patient, legal fees, and lost revenue while they rebuild. Their regular business liability policy will not touch it.
+
+This is where cybersecurity insurance comes in - and it is becoming less of a nice to have and more of a business requirement.
+
+## What Cybersecurity Insurance Actually Covers
+
+Think of it like business liability insurance, except for digital disasters. A good cyber policy covers several categories that overlap but are priced separately.
+
+**Incident response and forensics.** When you get hit, someone needs to figure out what happened. That investigation is expensive. Insurance covers the forensic team, the lawyers, and the restoration specialists.
+
+**Ransomware and extortion.** Some policies cover ransom payments directly, though many insurers now encourage working with law enforcement instead. At minimum they cover the cost of dealing with the attack itself - negotiation, decryption attempts, and system rebuilds.
+
+**Notification and credit monitoring.** If customer data leaks you are required by Florida statute 501.171 to notify every affected person. Cyber insurance covers the letters, the credit monitoring services, and the call center to handle worried customers. For HIPAA covered entities in healthcare the notification requirements are even stricter - we walked through that overlap in our post on [cyber insurance renewal reviews](/blog/source-map-leak-build-pipeline-cleanup-sarasota).
+
+**Business interruption.** If you are offline for days while recovering you lose revenue. This coverage bridges the gap between the incident and the restore.
+
+**Legal defense and regulatory fines.** If you get sued or face a HIPAA penalty, insurance covers defense costs and in many cases the fine itself. For Sarasota healthcare practices and Bradenton legal firms this is the line item that justifies the entire policy.
+
+## Why Now
+
+Two things changed in the last twelve months.
+
+First, insurers got serious. They watched too many small businesses get hit, paid too many claims, and responded by raising premiums, adding technical requirements, and in some cases pulling out of the market entirely. If you wait another year it will be more expensive and harder to qualify for.
+
+Second, your customers started asking. In healthcare and finance especially, clients and partners now ask whether you carry cyber coverage. It is becoming a qualification question on vendor intake forms, not a luxury. The same dynamic is playing out in construction and real estate, where contract language increasingly requires proof of cyber liability.
+
+## The Catch: Insurers Require You to Earn the Policy
+
+Cybersecurity insurance is not standardized. One policy might cover ransomware but exclude social engineering. Another covers notification but caps business interruption at thirty days.
+
+More importantly, insurers will not write a policy unless you meet baseline security standards. The application will ask questions like these:
+
+- Is multi factor authentication enabled on all email and remote access accounts
+- Are systems backed up to an offline or immutable location on a documented schedule
+- Is endpoint protection (antivirus, EDR) deployed on every workstation and server
+- Does the organization have a written incident response plan
+- Do employees complete security awareness training at least annually
+
+If you cannot check those boxes, no insurer will touch you. Or they will quote premiums so high the policy is not worth carrying. The businesses that get the best rates are the ones that can show documentation - not just say yes but produce the runbook, the training logs, and the backup test results.
+
+## A Practical Playbook
+
+- Start by assessing your current posture honestly. Do you have backups that are tested quarterly. Are passwords managed in a business grade vault. Is your wifi segmented from guest traffic. You do not need to be perfect but you need to know your gaps before a broker asks.
+- Fix the two things insurers care about most: multi factor authentication on every account and offline backups that are tested. These two controls appear on every application we have seen. If you are not sure how to implement them, that is exactly what a managed IT partner handles.
+- Talk to a broker who understands your industry. General business insurance agents often do not understand cyber policies well enough to compare exclusions. Look for one who specializes in technology or healthcare risk. Ask what the typical coverage limits are for your size, what the most common exclusions are, and how they evaluate your security before quoting.
+- Budget fifteen hundred to five thousand dollars per year for a mid sized small business. That is another line item, but compare it to the six figure cost of a ransomware recovery and it is the cheapest insurance you will ever carry.
+
+## Insurance Is the Safety Net, Not the Security
+
+A cyber policy will not prevent an attack. It covers the financial fallout so a disaster does not bankrupt you. The actual security comes from the same fundamentals we build into every client engagement at Simple IT SRQ:
+
+- Regular tested backups
+- Multi factor authentication everywhere
+- Quarterly employee security training
+- Patched systems on a documented schedule
+- Endpoint detection and response on every device
+- A written incident response plan that someone actually drills
+
+We covered the training angle in detail in our post on [gamified onboarding](/blog/gamified-tech-training-sarasota-onboarding). The insurance conversation is the other half - what happens financially when the training is not enough.
+
+## The Bottom Line
+
+If you are running a business in Sarasota, Bradenton, or Venice with customer data worth protecting, this conversation should not wait until next quarter. Document your current security setup, get quotes from a broker, and if your posture is not solid enough to qualify for reasonable rates, fix the gaps first.
+
+[Talk to Simple IT SRQ](/#contact) about an insurance readiness review. We help small businesses meet insurer requirements and - more importantly - actually stay protected after the policy is signed. You can also see how we approach the broader security stack on our [solutions page](/#solutions).`
+  },
 ];
 
 export default posts;
