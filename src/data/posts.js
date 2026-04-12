@@ -78,7 +78,7 @@ The same logic applies to the back-office side of onboarding. The companies that
 Three places where gamified training pays off fastest for local teams:
 
 - Phishing simulations that score the user, show them exactly what they missed, and unlock the next scenario when they pass.
-- Microsoft 365 walk-throughs that drop the user into a sandbox tenant and ask them to share a file the right way, set up MFA, or recover a deleted document.
+- Microsoft 365 walk-throughs that drop the user into a sandbox tenant and ask them to share a file the right way, set up MFA with a hardware key like the [[amazon:B07HBD71HL|YubiKey 5C NFC]], or recover a deleted document.
 - Incident drills where the help desk runs a tabletop exercise once a quarter, scored against a documented runbook.
 
 We see the difference at clients who do this versus clients who do not. Teams that drill their people quarterly catch suspicious emails earlier, recover from outages faster, and renew cyber liability coverage with less friction.
@@ -1628,7 +1628,7 @@ The fix is not to ban AI. Bans do not work - they just push usage underground an
 - Write a one page AI use policy. Name which tools are approved (Microsoft 365 Copilot, Claude for Business, Gemini for Workspace), which are not (anything consumer grade or free tier), and what categories of data can never be pasted into any of them. Put it in your employee handbook and in your security awareness training.
 - Turn on the enterprise version of whatever AI your team actually wants. If you already pay for Microsoft 365 Business Standard, Copilot is an add on that keeps prompts inside your own tenant. If you are on Google Workspace, Gemini Business has the same posture. Consumer tools leak; the business tiers do not.
 - Run a fifteen minute team meeting. Not a lecture. Walk through what is allowed, what is not, and why. Answer questions. Show what happens when a medical record goes into the free ChatGPT. Most people will self correct once they understand the risk.
-- Put AI tool usage on your identity provider. If you use Microsoft Entra ID or Google Workspace, you can already see which SaaS apps your staff are signing into. You do not need to surveil anyone - you just need to know whether the policy is matching reality.
+- Put AI tool usage on your identity provider. If you use Microsoft Entra ID or Google Workspace, you can already see which SaaS apps your staff are signing into. You do not need to surveil anyone - you just need to know whether the policy is matching reality. Pair it with a hardware security key like the [[amazon:B07HBD71HL|YubiKey 5C NFC]] on every admin account so the identity layer itself is phishing proof.
 - Review it every quarter. The vendor landscape moves fast enough that last quarters approved list will be stale. Treat the AI policy like the MFA policy: a living document, not a one time memo.
 
 This is the same posture we take when we harden a Microsoft 365 tenant with Conditional Access or do a [vendor risk review on a new AI procurement](/blog/ai-vendor-lockin-procurement-playbook-bradenton). The tools are new. The principle - know what is touching your data - is old.
@@ -1701,7 +1701,7 @@ If you cannot check those boxes, no insurer will touch you. Or they will quote p
 ## A Practical Playbook
 
 - Start by assessing your current posture honestly. Do you have backups that are tested quarterly. Are passwords managed in a business grade vault. Is your wifi segmented from guest traffic. You do not need to be perfect but you need to know your gaps before a broker asks.
-- Fix the two things insurers care about most: multi factor authentication on every account and offline backups that are tested. These two controls appear on every application we have seen. If you are not sure how to implement them, that is exactly what a managed IT partner handles.
+- Fix the two things insurers care about most: multi factor authentication on every account and offline backups that are tested. These two controls appear on every application we have seen. For MFA, the most reliable option is a hardware security key like the [[amazon:B07HBD71HL|YubiKey 5C NFC]] - one per employee, works with Microsoft 365, Google Workspace, and most business apps out of the box. If you are not sure how to implement them across your team, that is exactly what a managed IT partner handles.
 - Talk to a broker who understands your industry. General business insurance agents often do not understand cyber policies well enough to compare exclusions. Look for one who specializes in technology or healthcare risk. Ask what the typical coverage limits are for your size, what the most common exclusions are, and how they evaluate your security before quoting.
 - Budget fifteen hundred to five thousand dollars per year for a mid sized small business. That is another line item, but compare it to the six figure cost of a ransomware recovery and it is the cheapest insurance you will ever carry.
 
