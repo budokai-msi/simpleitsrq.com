@@ -14,6 +14,7 @@ import { sql } from "./_lib/db.js";
 import { clientIp, geoFromHeaders, isIpBlocked, rateLimit } from "./_lib/security.js";
 import { parseUA } from "./_lib/ua.js";
 import { getSession } from "./_lib/session.js";
+import { enrichIp } from "./_lib/ipintel.js";
 
 const noContent = (extra = {}) =>
   new Response(null, { status: 204, headers: { "Cache-Control": "no-store", ...extra } });
@@ -98,6 +99,20 @@ export async function POST(request) {
   } catch (err) {
     console.error("[track] visits insert failed", err);
   }
+
+  // Fire-and-forget IP enrichment. Runs after the visit insert so it never
+  // slows down the tracking pixel. Results land in ip_intel (cached 7 days)
+  // and are back-patched onto the visit row for the admin dashboard.
+  enrichIp(ip).then((intel) => {
+    if (!intel) return;
+    sql`
+      UPDATE visits
+      SET abuse_score = ${intel.abuse_score},
+          is_datacenter = ${intel.is_datacenter},
+          org = ${intel.org}
+      WHERE ip = ${ip} AND abuse_score IS NULL
+    `.catch(() => {});
+  }).catch(() => {});
 
   if (anonId) {
     try {

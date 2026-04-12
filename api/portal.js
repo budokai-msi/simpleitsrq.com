@@ -11,6 +11,7 @@
 //   GET   /api/portal?action=invoices
 //   GET   /api/portal?action=visitors         (admin only)
 
+import Stripe from "stripe";
 import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
@@ -807,6 +808,154 @@ async function handleRejectDraft(session, request) {
   return json(200, { ok: true, draft: rows[0] });
 }
 
+// ---------- stripe invoices (admin only, two-step draft→send) ----------
+
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) return null;
+  return new Stripe(key);
+}
+
+async function handleCreateInvoice(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const stripe = getStripe();
+  if (!stripe) return json(500, { ok: false, error: "stripe_not_configured" });
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+
+  const email = String(body?.email || "").trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return json(400, { ok: false, error: "invalid_email" });
+  }
+
+  const items = Array.isArray(body?.items) ? body.items : [];
+  if (items.length === 0) return json(400, { ok: false, error: "no_items" });
+  for (const item of items) {
+    if (!item.description || typeof item.amount !== "number" || item.amount <= 0) {
+      return json(400, { ok: false, error: "invalid_item", detail: "Each item needs description + amount (cents > 0)" });
+    }
+  }
+
+  const memo = body?.memo ? String(body.memo).slice(0, 500) : null;
+
+  try {
+    // Find or create customer by email.
+    const existing = await stripe.customers.list({ email, limit: 1 });
+    let customer;
+    if (existing.data.length > 0) {
+      customer = existing.data[0];
+    } else {
+      customer = await stripe.customers.create({
+        email,
+        name: body?.name || undefined,
+        metadata: { source: "simpleitsrq-portal" },
+      });
+    }
+
+    // Create invoice in draft state (NEVER auto-finalize with live key).
+    const invoice = await stripe.invoices.create({
+      customer: customer.id,
+      collection_method: "send_invoice",
+      days_until_due: 30,
+      description: memo || undefined,
+      metadata: { created_by: session.user.email, source: "portal" },
+    });
+
+    // Add line items.
+    for (const item of items) {
+      await stripe.invoiceItems.create({
+        customer: customer.id,
+        invoice: invoice.id,
+        description: String(item.description).slice(0, 500),
+        amount: Math.round(item.amount),
+        currency: "usd",
+      });
+    }
+
+    // Fetch the draft to get the hosted URL.
+    const draft = await stripe.invoices.retrieve(invoice.id);
+
+    return json(200, {
+      ok: true,
+      invoice: {
+        id: draft.id,
+        number: draft.number,
+        status: draft.status,
+        amountDue: draft.amount_due,
+        hostedUrl: draft.hosted_invoice_url,
+        pdfUrl: draft.invoice_pdf,
+        customerEmail: email,
+      },
+    });
+  } catch (err) {
+    console.error("[portal] stripe create-invoice failed", err);
+    return json(502, { ok: false, error: "stripe_error", detail: String(err.message).slice(0, 200) });
+  }
+}
+
+async function handleSendInvoice(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const stripe = getStripe();
+  if (!stripe) return json(500, { ok: false, error: "stripe_not_configured" });
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const invoiceId = String(body?.invoiceId || "").trim();
+  if (!invoiceId.startsWith("in_")) return json(400, { ok: false, error: "invalid_invoice_id" });
+
+  try {
+    // Finalize the draft.
+    const finalized = await stripe.invoices.finalizeInvoice(invoiceId);
+
+    // Send to customer.
+    const sent = await stripe.invoices.sendInvoice(finalized.id);
+
+    // Mirror to local invoices table.
+    const userId = await (async () => {
+      const rows = await sql`
+        SELECT id FROM users WHERE lower(email) = lower(${sent.customer_email || ""}) LIMIT 1
+      `.catch(() => []);
+      return rows[0]?.id || null;
+    })();
+
+    await sql`
+      INSERT INTO invoices (
+        invoice_number, user_id, stripe_invoice_id, amount_cents, currency,
+        status, issued_at, due_at, hosted_url, pdf_url, description
+      ) VALUES (
+        ${sent.number || sent.id}, ${userId}, ${sent.id},
+        ${sent.amount_due || 0}, ${sent.currency || "usd"},
+        'open', now(),
+        ${sent.due_date ? new Date(sent.due_date * 1000).toISOString() : null},
+        ${sent.hosted_invoice_url || null}, ${sent.invoice_pdf || null},
+        ${sent.description || null}
+      )
+      ON CONFLICT (stripe_invoice_id) DO UPDATE
+        SET status = 'open', hosted_url = EXCLUDED.hosted_url, pdf_url = EXCLUDED.pdf_url
+    `.catch((err) => console.error("[portal] invoice mirror failed", err));
+
+    return json(200, {
+      ok: true,
+      invoice: {
+        id: sent.id,
+        number: sent.number,
+        status: sent.status,
+        amountDue: sent.amount_due,
+        hostedUrl: sent.hosted_invoice_url,
+        pdfUrl: sent.invoice_pdf,
+      },
+    });
+  } catch (err) {
+    console.error("[portal] stripe send-invoice failed", err);
+    return json(502, { ok: false, error: "stripe_error", detail: String(err.message).slice(0, 200) });
+  }
+}
+
 // ---------- health (unauthenticated, for external uptime monitors) ----------
 async function handleHealth() {
   const checks = { db: "unknown", criticalEvents: 0, ok: false };
@@ -850,6 +999,8 @@ async function dispatch(request, method) {
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
   if (action === "reject-draft"    && method === "POST")  return handleRejectDraft(session, request);
+  if (action === "create-invoice"  && method === "POST")  return handleCreateInvoice(session, request);
+  if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

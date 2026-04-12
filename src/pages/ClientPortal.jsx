@@ -1034,6 +1034,195 @@ function ProfilePanel({ styles, user, onSaved }) {
 }
 
 // ---------- admin: visitors panel ----------
+// ---------- admin: new invoice dialog ----------
+function NewInvoiceDialog({ styles, open, onClose, onSent }) {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [memo, setMemo] = useState("");
+  const [items, setItems] = useState([{ description: "", amount: "" }]);
+  const [step, setStep] = useState("form");
+  const [draft, setDraft] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(null);
+
+  const reset = () => {
+    setEmail(""); setName(""); setMemo("");
+    setItems([{ description: "", amount: "" }]);
+    setStep("form"); setDraft(null); setBusy(false); setError(null);
+  };
+
+  const addItem = () => setItems((prev) => [...prev, { description: "", amount: "" }]);
+  const updateItem = (i, field, val) =>
+    setItems((prev) => prev.map((it, j) => (j === i ? { ...it, [field]: val } : it)));
+  const removeItem = (i) => setItems((prev) => prev.filter((_, j) => j !== i));
+
+  const createDraft = useCallback(async () => {
+    setError(null);
+    const cleanItems = items
+      .filter((it) => it.description.trim() && Number(it.amount) > 0)
+      .map((it) => ({ description: it.description.trim(), amount: Math.round(Number(it.amount) * 100) }));
+    if (!email || cleanItems.length === 0) {
+      setError("Email and at least one line item with a dollar amount are required.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/portal?action=create-invoice", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name: name || undefined, memo: memo || undefined, items: cleanItems }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error + (data.detail ? ": " + data.detail : ""));
+      } else {
+        setDraft(data.invoice);
+        setStep("review");
+      }
+    } catch (err) {
+      setError(err.message || "Failed to create draft.");
+    } finally {
+      setBusy(false);
+    }
+  }, [email, name, memo, items]);
+
+  const sendInvoice = useCallback(async () => {
+    if (!draft?.id) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/portal?action=send-invoice", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoiceId: draft.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error + (data.detail ? ": " + data.detail : ""));
+      } else {
+        setStep("sent");
+        setDraft(data.invoice);
+        onSent?.();
+      }
+    } catch (err) {
+      setError(err.message || "Failed to send.");
+    } finally {
+      setBusy(false);
+    }
+  }, [draft, onSent]);
+
+  const totalCents = items.reduce((s, it) => s + (Math.round(Number(it.amount || 0) * 100)), 0);
+
+  return (
+    <Dialog open={open} onOpenChange={(_, d) => { if (!d.open) { reset(); onClose(); } }}>
+      <DialogSurface className={styles.detailSurface}>
+        <DialogBody>
+          <DialogTitle>
+            {step === "form" && "New Invoice"}
+            {step === "review" && "Review Draft Invoice"}
+            {step === "sent" && "Invoice Sent"}
+          </DialogTitle>
+          <DialogContent>
+            {error && (
+              <MessageBar intent="error" style={{ marginBottom: 12 }}>
+                <MessageBarBody>{error}</MessageBarBody>
+              </MessageBar>
+            )}
+
+            {step === "form" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <Field label="Customer email" required>
+                  <Input value={email} onChange={(_, d) => setEmail(d.value)} placeholder="client@company.com" type="email" />
+                </Field>
+                <Field label="Customer name (optional)">
+                  <Input value={name} onChange={(_, d) => setName(d.value)} placeholder="Acme Corp" />
+                </Field>
+                <Field label="Memo / description (optional)">
+                  <Input value={memo} onChange={(_, d) => setMemo(d.value)} placeholder="Monthly IT support - April 2026" />
+                </Field>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: tokens.colorNeutralForeground2 }}>Line items</div>
+                  {items.map((it, i) => (
+                    <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "flex-end" }}>
+                      <Field label={i === 0 ? "Description" : undefined} style={{ flex: 1 }}>
+                        <Input value={it.description} onChange={(_, d) => updateItem(i, "description", d.value)} placeholder="IT support" />
+                      </Field>
+                      <Field label={i === 0 ? "Amount ($)" : undefined} style={{ width: 120 }}>
+                        <Input value={it.amount} onChange={(_, d) => updateItem(i, "amount", d.value)} placeholder="500.00" type="number" step="0.01" min="0" />
+                      </Field>
+                      {items.length > 1 && (
+                        <Button appearance="subtle" size="small" onClick={() => removeItem(i)} icon={<Dismiss24Regular />} />
+                      )}
+                    </div>
+                  ))}
+                  <Button appearance="subtle" size="small" onClick={addItem}>+ Add line item</Button>
+                  {totalCents > 0 && (
+                    <div style={{ marginTop: 8, fontWeight: 600, fontSize: 15, color: tokens.colorNeutralForeground1 }}>
+                      Total: ${(totalCents / 100).toFixed(2)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {step === "review" && draft && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ padding: 16, background: tokens.colorNeutralBackground2, borderRadius: tokens.borderRadiusMedium }}>
+                  <div style={{ fontSize: 13, color: tokens.colorNeutralForeground3 }}>Draft invoice created in Stripe</div>
+                  <div style={{ fontSize: 18, fontWeight: 600, marginTop: 4 }}>${(draft.amountDue / 100).toFixed(2)} USD</div>
+                  <div style={{ fontSize: 13, marginTop: 4 }}>To: {draft.customerEmail}</div>
+                  {draft.hostedUrl && (
+                    <a href={draft.hostedUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, marginTop: 8, display: "inline-block" }}>
+                      Preview invoice in Stripe
+                    </a>
+                  )}
+                </div>
+                <MessageBar intent="warning">
+                  <MessageBarBody>
+                    Clicking Send will finalize this invoice and email it to the customer. This uses your <strong>live</strong> Stripe key. The customer will receive a real payment link.
+                  </MessageBarBody>
+                </MessageBar>
+              </div>
+            )}
+
+            {step === "sent" && draft && (
+              <div style={{ textAlign: "center", padding: 24 }}>
+                <Checkmark24Regular style={{ color: tokens.colorPaletteGreenForeground1, width: 48, height: 48 }} />
+                <div style={{ fontSize: 18, fontWeight: 600, marginTop: 12 }}>Invoice sent</div>
+                <div style={{ fontSize: 14, color: tokens.colorNeutralForeground3, marginTop: 4 }}>
+                  {draft.number || draft.id} — ${((draft.amountDue || 0) / 100).toFixed(2)} USD
+                </div>
+                {draft.hostedUrl && (
+                  <a href={draft.hostedUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, marginTop: 8, display: "inline-block" }}>
+                    View in Stripe
+                  </a>
+                )}
+              </div>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button appearance="secondary" onClick={() => { reset(); onClose(); }}>
+              {step === "sent" ? "Done" : "Cancel"}
+            </Button>
+            {step === "form" && (
+              <Button appearance="primary" onClick={createDraft} disabled={busy}>
+                {busy ? "Creating…" : "Create draft"}
+              </Button>
+            )}
+            {step === "review" && (
+              <Button appearance="primary" onClick={sendInvoice} disabled={busy} style={{ backgroundColor: tokens.colorPaletteRedBackground3 }}>
+                {busy ? "Sending…" : "Send invoice (live)"}
+              </Button>
+            )}
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
+}
+
 // ---------- admin: blog drafts panel ----------
 function DraftsPanel({ styles }) {
   const [drafts, setDrafts] = useState(null);
@@ -1500,6 +1689,7 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
   const [loadingInvoices, setLoadingInvoices] = useState(true);
   const [search, setSearch] = useState("");
   const [activeTicket, setActiveTicket] = useState(null);
+  const [showNewInvoice, setShowNewInvoice] = useState(false);
 
   const searchRef = useRef(search);
   searchRef.current = search;
@@ -1707,11 +1897,28 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
       )}
       {tab === "invoices" && (
         <div className={styles.panel}>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: tokens.colorNeutralForeground1 }}>Invoices</h3>
-          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, lineHeight: "22px", margin: "4px 0 0" }}>
-            Invoices we've issued to your account.
-          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: tokens.colorNeutralForeground1 }}>Invoices</h3>
+              <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, lineHeight: "22px", margin: "4px 0 0" }}>
+                {user.isAdmin ? "All invoices across clients. Click New to send one." : "Invoices issued to your account."}
+              </p>
+            </div>
+            {user.isAdmin && (
+              <Button appearance="primary" icon={<Receipt24Regular />} onClick={() => setShowNewInvoice(true)}>
+                New invoice
+              </Button>
+            )}
+          </div>
           <InvoiceList styles={styles} invoices={invoices} loading={loadingInvoices} />
+          {user.isAdmin && (
+            <NewInvoiceDialog
+              styles={styles}
+              open={showNewInvoice}
+              onClose={() => setShowNewInvoice(false)}
+              onSent={() => { setShowNewInvoice(false); loadInvoices(); }}
+            />
+          )}
         </div>
       )}
       {tab === "profile" && (
