@@ -465,12 +465,13 @@ async function handleVisitors(session) {
     `,
   ]);
 
-  // --- Threat actors + session anomalies ---
-  const [threatActors, sessionAnomalies] = await Promise.all([
+  // --- Threat actors with OSINT enrichment + blocked status ---
+  const [threatActors, sessionAnomalies, blockedIps, ipIntelAll] = await Promise.all([
     sql`
-      SELECT ip, country, city, user_agent, device_hash, path, method, threat_class, ts
-      FROM threat_actors
-      ORDER BY ts DESC LIMIT 50
+      SELECT ta.ip, ta.country, ta.city, ta.user_agent, ta.device_hash,
+             ta.path, ta.method, ta.threat_class, ta.ts
+      FROM threat_actors ta
+      ORDER BY ta.ts DESC LIMIT 50
     `,
     sql`
       SELECT st.event, st.ip, st.country, st.city, st.device_hash, st.detail, st.ts,
@@ -480,7 +481,26 @@ async function handleVisitors(session) {
       WHERE st.event = 'anomaly'
       ORDER BY st.ts DESC LIMIT 50
     `,
+    sql`SELECT ip, reason, created_at FROM ip_blocklist ORDER BY created_at DESC LIMIT 100`,
+    sql`
+      SELECT ip, asn, org, isp, is_datacenter, is_tor, is_proxy, is_vpn,
+             abuse_score, abuse_reports, abuse_last_seen, enriched_at
+      FROM ip_intel
+      ORDER BY enriched_at DESC LIMIT 200
+    `,
   ]);
+
+  // Build a lookup map for fast IP→intel resolution on the client.
+  const intelMap = {};
+  for (const i of ipIntelAll) {
+    intelMap[i.ip] = {
+      asn: i.asn, org: i.org, isp: i.isp,
+      isDatacenter: i.is_datacenter, isTor: i.is_tor, isProxy: i.is_proxy, isVpn: i.is_vpn,
+      abuseScore: i.abuse_score, abuseReports: i.abuse_reports,
+      abuseLastSeen: i.abuse_last_seen, enrichedAt: i.enriched_at,
+    };
+  }
+  const blockedSet = new Set(blockedIps.map((b) => b.ip));
 
   return json(200, {
     stats: {
@@ -517,6 +537,11 @@ async function handleVisitors(session) {
       langs: r.langs,
       userEmail: r.user_email,
       userName: r.user_name,
+      abuseScore: r.abuse_score,
+      isDatacenter: r.is_datacenter,
+      org: r.org,
+      intel: intelMap[r.ip] || null,
+      blocked: blockedSet.has(r.ip),
     })),
     topPages,
     topCountries,
@@ -525,12 +550,62 @@ async function handleVisitors(session) {
       ip: t.ip, country: t.country, city: t.city, ua: t.user_agent,
       deviceHash: t.device_hash, path: t.path, method: t.method,
       threatClass: t.threat_class, ts: t.ts,
+      intel: intelMap[t.ip] || null,
+      blocked: blockedSet.has(t.ip),
     })),
     sessionAnomalies: sessionAnomalies.map((s) => ({
       event: s.event, ip: s.ip, country: s.country, city: s.city,
       deviceHash: s.device_hash, detail: s.detail, ts: s.ts,
       userEmail: s.user_email,
     })),
+    blockedIps: blockedIps.map((b) => ({
+      ip: b.ip, reason: b.reason, blockedAt: b.created_at,
+      intel: intelMap[b.ip] || null,
+    })),
+    ipIntel: intelMap,
+  });
+}
+
+// --- Per-IP investigation endpoint (admin only) ---
+async function handleInvestigateIp(session, url) {
+  if (!(await resolveAdmin(session))) {
+    return json(403, { ok: false, error: "forbidden" });
+  }
+  const ip = url.searchParams.get("ip");
+  if (!ip) return json(400, { ok: false, error: "missing_ip" });
+
+  const [intel, visits, threats, blocked] = await Promise.all([
+    sql`SELECT * FROM ip_intel WHERE ip = ${ip} LIMIT 1`,
+    sql`
+      SELECT ts, path, device_hash, user_agent, browser, os, device,
+             screen, platform, cores, mem, tz, lang, country, city
+      FROM visits WHERE ip = ${ip} ORDER BY ts DESC LIMIT 50
+    `,
+    sql`
+      SELECT ts, path, method, threat_class, device_hash, user_agent
+      FROM threat_actors WHERE ip = ${ip} ORDER BY ts DESC LIMIT 50
+    `,
+    sql`SELECT ip, reason, created_at FROM ip_blocklist WHERE ip = ${ip}`,
+  ]);
+
+  return json(200, {
+    ip,
+    intel: intel[0] || null,
+    blocked: blocked.length > 0 ? blocked[0] : null,
+    visits: visits.map((v) => ({
+      ts: v.ts, path: v.path, deviceHash: v.device_hash, ua: v.user_agent,
+      browser: v.browser, os: v.os, device: v.device, screen: v.screen,
+      platform: v.platform, cores: v.cores, mem: v.mem, tz: v.tz,
+      lang: v.lang, country: v.country, city: v.city,
+    })),
+    threats: threats.map((t) => ({
+      ts: t.ts, path: t.path, method: t.method, threatClass: t.threat_class,
+      deviceHash: t.device_hash, ua: t.user_agent,
+    })),
+    deviceHashes: [...new Set([
+      ...visits.map((v) => v.device_hash),
+      ...threats.map((t) => t.device_hash),
+    ].filter(Boolean))],
   });
 }
 
@@ -996,6 +1071,7 @@ async function dispatch(request, method) {
   if (action === "ticket-message"  && method === "POST")  return handleTicketMessage(session, request);
   if (action === "invoices"        && method === "GET")   return handleInvoices(session);
   if (action === "visitors"        && method === "GET")   return handleVisitors(session);
+  if (action === "investigate-ip"   && method === "GET")   return handleInvestigateIp(session, url);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
   if (action === "reject-draft"    && method === "POST")  return handleRejectDraft(session, request);

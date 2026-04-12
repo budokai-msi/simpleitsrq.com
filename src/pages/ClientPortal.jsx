@@ -1494,6 +1494,15 @@ function VisitorsPanel({ styles }) {
             {data.topPages[0]?.hits || 0} hits
           </span>
         </div>
+        <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+          <div className={styles.statLabel}>Threat actors</div>
+          <div className={styles.statValue} style={{ color: data.threatActors?.length ? "#DC2626" : undefined }}>
+            {data.threatActors?.length || 0}
+          </div>
+          <span style={{ color: tokens.colorNeutralForeground3, fontSize: 12 }}>
+            {data.blockedIps?.length || 0} IPs blocked
+          </span>
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginTop: 24 }}>
@@ -1566,6 +1575,17 @@ function VisitorsPanel({ styles }) {
               {v.country && <><span>·</span><span>{[v.city, v.region, v.country].filter(Boolean).join(", ")}</span></>}
               <span>·</span>
               <span><strong>{v.browser}</strong> / {v.os} / {v.device}</span>
+              {v.intel?.org && <><span>·</span><span style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>{v.intel.org}</span></>}
+              {v.intel?.abuseScore != null && (
+                <Badge appearance="filled" color={v.intel.abuseScore >= 75 ? "danger" : v.intel.abuseScore >= 25 ? "warning" : "success"} style={{ fontSize: 10 }}>
+                  Abuse: {v.intel.abuseScore}%
+                </Badge>
+              )}
+              {v.intel?.isDatacenter && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>DC</Badge>}
+              {v.intel?.isTor && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>TOR</Badge>}
+              {v.intel?.isVpn && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>VPN</Badge>}
+              {v.intel?.isProxy && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>PROXY</Badge>}
+              {v.blocked && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>BLOCKED</Badge>}
             </div>
             <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6, opacity: 0.85 }}>
               {v.platform && <span>Platform: <strong>{v.platform}</strong></span>}
@@ -1603,21 +1623,33 @@ function VisitorsPanel({ styles }) {
           </p>
           <div className={styles.list}>
             {data.threatActors.map((t, i) => (
-              <div key={i} className={styles.listRow} style={{ borderColor: "#DC2626", borderLeftWidth: 3 }}>
-                <div className={styles.listMain}>
+              <div key={i} className={styles.listRow} style={{ borderColor: "#DC2626", borderLeftWidth: 3, flexDirection: "column", alignItems: "stretch", gap: 4 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <p className={styles.listTitle}>{t.method} {t.path}</p>
-                  <div className={styles.listMeta}>
-                    <span>{fmt(t.ts)}</span>
-                    <span>·</span>
-                    <span style={{ fontFamily: "monospace", fontSize: 11 }}>{t.ip}</span>
-                    <span>·</span>
-                    <span>{[t.city, t.country].filter(Boolean).join(", ")}</span>
-                    <span>·</span>
-                    <span>{t.threatClass}</span>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    <Badge appearance="filled" color="danger">{t.threatClass}</Badge>
+                    {t.blocked && <Badge appearance="filled" color="danger">BLOCKED</Badge>}
                   </div>
-                  {t.deviceHash && <div style={{ fontFamily: "monospace", fontSize: 10, color: tokens.colorNeutralForeground3 }}>Device: {t.deviceHash}</div>}
                 </div>
-                <Badge appearance="filled" color="danger">blocked</Badge>
+                <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                  <span>{fmt(t.ts)}</span>
+                  <span>·</span>
+                  <span style={{ fontFamily: "monospace", fontSize: 11 }}>{t.ip}</span>
+                  <span>·</span>
+                  <span>{[t.city, t.country].filter(Boolean).join(", ")}</span>
+                  {t.intel?.org && <><span>·</span><span>{t.intel.org}</span></>}
+                  {t.intel?.isp && t.intel.isp !== t.intel.org && <><span>·</span><span>{t.intel.isp}</span></>}
+                  {t.intel?.abuseScore != null && (
+                    <Badge appearance="filled" color={t.intel.abuseScore >= 75 ? "danger" : t.intel.abuseScore >= 25 ? "warning" : "subtle"} style={{ fontSize: 10 }}>
+                      Abuse: {t.intel.abuseScore}% ({t.intel.abuseReports} reports)
+                    </Badge>
+                  )}
+                  {t.intel?.isDatacenter && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>DC</Badge>}
+                  {t.intel?.isTor && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>TOR</Badge>}
+                  {t.intel?.isVpn && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>VPN</Badge>}
+                </div>
+                {t.deviceHash && <div style={{ fontFamily: "monospace", fontSize: 10, color: tokens.colorNeutralForeground3 }}>Device: {t.deviceHash}</div>}
+                {t.ua && <div style={{ fontSize: 10, color: tokens.colorNeutralForeground3, wordBreak: "break-all" }}>{t.ua}</div>}
               </div>
             ))}
           </div>
@@ -1656,6 +1688,40 @@ function VisitorsPanel({ styles }) {
                   )}
                 </div>
                 <Badge appearance="filled" color="warning">anomaly</Badge>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* --- Blocked IPs --- */}
+      {data.blockedIps && data.blockedIps.length > 0 && (
+        <>
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: tokens.colorNeutralForeground1 }}>
+            Blocked IPs ({data.blockedIps.length})
+          </h3>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+            Permanently blocked. Auto-blocked by abuse score, scanner traps, or manual action.
+          </p>
+          <div className={styles.list}>
+            {data.blockedIps.map((b, i) => (
+              <div key={i} className={styles.listRow} style={{ borderColor: tokens.colorNeutralForeground3, borderLeftWidth: 3 }}>
+                <div className={styles.listMain}>
+                  <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>{b.ip}</p>
+                  <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                    <span>{b.reason}</span>
+                    <span>·</span>
+                    <span>Blocked {fmt(b.blockedAt)}</span>
+                    {b.intel?.org && <><span>·</span><span>{b.intel.org}</span></>}
+                    {b.intel?.abuseScore != null && (
+                      <Badge appearance="filled" color={b.intel.abuseScore >= 75 ? "danger" : b.intel.abuseScore >= 25 ? "warning" : "subtle"} style={{ fontSize: 10 }}>
+                        Abuse: {b.intel.abuseScore}%
+                      </Badge>
+                    )}
+                    {b.intel?.isDatacenter && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>DC</Badge>}
+                    {b.intel?.isTor && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>TOR</Badge>}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
