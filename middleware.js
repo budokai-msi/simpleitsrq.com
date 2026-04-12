@@ -126,6 +126,59 @@ async function logThreat(request, geo, threatClass) {
     if (threatClass === "scanner") {
       await autoBlockIp(sql, ip, `auto: scanner trap ${new URL(request.url).pathname}`);
     }
+
+    // Enrich the IP inline so the admin dashboard shows intel immediately.
+    // Also report scanners to AbuseIPDB so other defenders benefit.
+    try {
+      const abuseKey = process.env.ABUSEIPDB_API_KEY;
+      // ipinfo enrichment (no key needed for free tier)
+      const infoRes = await fetch(`https://ipinfo.io/${ip}/json`, { signal: AbortSignal.timeout(3000) });
+      if (infoRes.ok) {
+        const info = await infoRes.json();
+        const orgLower = (info.org || "").toLowerCase();
+        const isDc = /amazon|aws|google cloud|microsoft azure|digitalocean|linode|ovh|hetzner|vultr|m247/.test(orgLower);
+        await sql`
+          INSERT INTO ip_intel (ip, asn, org, isp, country, city, is_datacenter)
+          VALUES (${ip}, ${info.asn?.asn || null}, ${info.org || null}, ${info.company?.name || info.org || null},
+                  ${info.country || null}, ${info.city || null}, ${isDc})
+          ON CONFLICT (ip) DO UPDATE
+            SET org = EXCLUDED.org, isp = EXCLUDED.isp, country = EXCLUDED.country,
+                city = EXCLUDED.city, is_datacenter = EXCLUDED.is_datacenter,
+                enriched_at = now(), expires_at = now() + interval '7 days'
+        `;
+      }
+      // AbuseIPDB check + auto-report for scanners
+      if (abuseKey) {
+        const checkRes = await fetch(
+          `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`,
+          { headers: { Key: abuseKey, Accept: "application/json" }, signal: AbortSignal.timeout(3000) },
+        );
+        if (checkRes.ok) {
+          const d = (await checkRes.json()).data || {};
+          await sql`
+            UPDATE ip_intel
+            SET abuse_score = ${d.abuseConfidenceScore ?? null},
+                abuse_reports = ${d.totalReports ?? null},
+                abuse_last_seen = ${d.lastReportedAt || null},
+                is_tor = ${!!d.isTor}
+            WHERE ip = ${ip}
+          `;
+        }
+        // Counter-report scanners back to AbuseIPDB
+        if (threatClass === "scanner") {
+          await fetch("https://api.abuseipdb.com/api/v2/report", {
+            method: "POST",
+            headers: { Key: abuseKey, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+              ip,
+              categories: "21,15",
+              comment: `Automated scanner probing ${new URL(request.url).pathname} on simpleitsrq.com. Auto-blocked by honeypot trap.`,
+            }),
+            signal: AbortSignal.timeout(3000),
+          });
+        }
+      }
+    } catch { /* enrichment is best-effort */ }
   } catch (err) {
     console.error("[middleware] threat log failed", err);
   }
