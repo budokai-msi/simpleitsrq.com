@@ -301,6 +301,121 @@ async function securityAnalysis() {
   }
 }
 
+// ========== SUPPLY-CHAIN AUDIT (daily) ==========
+
+async function supplyChainAudit() {
+  const token = process.env.GITHUB_TOKEN;
+  const repo  = process.env.GITHUB_REPO || "budokai-msi/simpleitsrq.com";
+  if (!token) return { skipped: true, reason: "GITHUB_TOKEN not set" };
+
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${repo}/dependabot/alerts?state=open&per_page=25`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "User-Agent": "simpleitsrq-agent",
+        },
+      },
+    );
+
+    if (res.status === 403 || res.status === 404) {
+      return { skipped: true, reason: `GitHub API ${res.status} — token may lack security_events:read scope` };
+    }
+    if (!res.ok) return { error: `GitHub API ${res.status}` };
+
+    const alerts = await res.json();
+    if (!Array.isArray(alerts) || alerts.length === 0) {
+      return { clean: true, openAlerts: 0 };
+    }
+
+    const summary = alerts.map((a) => ({
+      package: a.security_vulnerability?.package?.name,
+      severity: a.security_advisory?.severity,
+      title: a.security_advisory?.summary?.slice(0, 120),
+      url: a.html_url,
+    }));
+
+    // Email if there are open alerts
+    const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+    if (resend && REPORT_TO && alerts.length > 0) {
+      const body = [
+        `${alerts.length} open Dependabot alert(s) on ${repo}:`,
+        "",
+        ...summary.map((s) => `[${s.severity}] ${s.package}: ${s.title}\n  ${s.url}`),
+        "",
+        "Run `npm audit fix` or review at:",
+        `https://github.com/${repo}/security/dependabot`,
+      ].join("\n");
+      try {
+        await resend.emails.send({
+          from: FROM,
+          to: [REPORT_TO],
+          subject: `[Supply Chain] ${alerts.length} open vulnerability alert(s) — simpleitsrq.com`,
+          text: body,
+        });
+      } catch { /* best effort */ }
+    }
+
+    return { openAlerts: alerts.length, alerts: summary };
+  } catch (err) {
+    return { error: String(err.message || err) };
+  }
+}
+
+// ========== SELF-HEALTH CHECK (daily) ==========
+
+async function selfHealthCheck() {
+  const appUrl = process.env.APP_URL || "https://simpleitsrq.com";
+  const endpoints = [
+    { path: "/", expect: 200 },
+    { path: "/blog", expect: 200 },
+    { path: "/api/portal?action=me", expect: 401 },
+    { path: "/api/health", expect: 200 },
+  ];
+
+  const results = [];
+  let failures = 0;
+  for (const ep of endpoints) {
+    try {
+      const res = await fetch(`${appUrl}${ep.path}`, { redirect: "follow" });
+      const ok = res.status === ep.expect;
+      if (!ok) failures++;
+      results.push({ path: ep.path, status: res.status, expected: ep.expect, ok });
+    } catch (err) {
+      failures++;
+      results.push({ path: ep.path, error: String(err.message || err).slice(0, 100), ok: false });
+    }
+  }
+
+  if (failures > 0 && REPORT_TO) {
+    const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+    if (resend) {
+      const body = [
+        `Self-health check: ${failures} failure(s) out of ${endpoints.length} endpoints.`,
+        "",
+        ...results.filter((r) => !r.ok).map((r) =>
+          `FAIL ${r.path} — got ${r.status ?? r.error}, expected ${r.expected}`
+        ),
+        "",
+        `Full results: ${JSON.stringify(results)}`,
+      ].join("\n");
+      try {
+        await resend.emails.send({
+          from: FROM,
+          to: [REPORT_TO],
+          subject: `[HEALTH] ${failures} endpoint failure(s) — simpleitsrq.com`,
+          text: body,
+        });
+      } catch { /* best effort */ }
+    }
+  }
+
+  return { checked: endpoints.length, failures, results };
+}
+
 // ========== HANDLER ==========
 
 export async function GET(request) {
@@ -311,10 +426,11 @@ export async function GET(request) {
   const now = new Date();
   const result = { ts: now.toISOString(), tasks: {} };
 
-  // All tasks run every invocation (daily at 07:15 ET).
   result.tasks.autoCounter = await autoCounter();
   result.tasks.blogDraft = await generateBlogDraft();
   result.tasks.securityAnalysis = await securityAnalysis();
+  result.tasks.supplyChain = await supplyChainAudit();
+  result.tasks.healthCheck = await selfHealthCheck();
 
   return new Response(JSON.stringify(result, null, 2), {
     status: 200,
