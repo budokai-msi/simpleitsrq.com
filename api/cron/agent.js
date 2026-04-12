@@ -373,7 +373,7 @@ async function selfHealthCheck() {
     { path: "/", expect: 200 },
     { path: "/blog", expect: 200 },
     { path: "/api/portal?action=me", expect: 401 },
-    { path: "/api/health", expect: 200 },
+    { path: "/api/portal?action=health", expect: 200 },
   ];
 
   const results = [];

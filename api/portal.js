@@ -807,10 +807,34 @@ async function handleRejectDraft(session, request) {
   return json(200, { ok: true, draft: rows[0] });
 }
 
+// ---------- health (unauthenticated, for external uptime monitors) ----------
+async function handleHealth() {
+  const checks = { db: "unknown", criticalEvents: 0, ok: false };
+  try {
+    const r = await sql`SELECT 1 AS ping`;
+    checks.db = r.length > 0 ? "connected" : "no_response";
+  } catch (err) {
+    checks.db = "error";
+    checks.dbError = String(err.message || err).slice(0, 200);
+  }
+  try {
+    const r = await sql`
+      SELECT COUNT(*)::int AS cnt FROM security_events
+      WHERE severity = 'critical' AND ts > now() - interval '1 hour'
+    `;
+    checks.criticalEvents = r[0]?.cnt || 0;
+  } catch { checks.criticalEvents = -1; }
+  checks.ok = checks.db === "connected" && checks.criticalEvents === 0;
+  return json(checks.ok ? 200 : 503, checks);
+}
+
 // ---------- entry points ----------
 async function dispatch(request, method) {
   const url = new URL(request.url);
   const action = url.searchParams.get("action") || "";
+
+  // Health check is unauthenticated — must be before requireSession.
+  if (action === "health" && method === "GET") return handleHealth();
 
   const { session, error } = await requireSession(request);
   if (error) return error;
