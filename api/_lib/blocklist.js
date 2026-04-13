@@ -64,12 +64,12 @@ export function isHardBlocked(ip) {
 }
 
 /**
- * Validate an IP address string. Supports IPv4 and basic IPv6.
+ * Get the IP version for a given address string.
  * Returns "v4", "v6", or null if invalid.
  */
-export function validateIp(ip) {
+export function getIpVersion(ip) {
   if (!ip || typeof ip !== "string") return null;
-  // IPv4: strict dotted-quad
+  // IPv4: strict dotted-quad with octet range check
   if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(ip)) {
     const parts = ip.split(".");
     if (parts.every((p) => { const n = Number(p); return Number.isInteger(n) && n >= 0 && n <= 255; })) {
@@ -77,10 +77,27 @@ export function validateIp(ip) {
     }
     return null;
   }
-  // IPv6: colon-hex (simplified check — covers common formats)
+  // IPv6: enforce max 8 groups, single :: allowed, hex digits only
   if (/^[0-9a-fA-F:]+$/.test(ip) && ip.includes(":")) {
-    // At least 2 colons for a valid IPv6
-    if ((ip.match(/:/g) || []).length >= 2) return "v6";
+    const doubleColon = ip.split("::").length - 1;
+    if (doubleColon > 1) return null;  // only one :: allowed
+    const groups = ip.split(":");
+    // Without :: needs exactly 8 groups; with :: can have fewer
+    if (doubleColon === 0 && groups.length !== 8) return null;
+    if (doubleColon === 1 && groups.length > 8) return null;
+    // Each group must be 1-4 hex chars (empty allowed only from ::)
+    for (const g of groups) {
+      if (g.length > 4) return null;
+      if (g.length > 0 && !/^[0-9a-fA-F]+$/.test(g)) return null;
+    }
+    return "v6";
   }
   return null;
+}
+
+/**
+ * Validate an IP address string. Returns true if valid, false otherwise.
+ */
+export function validateIp(ip) {
+  return getIpVersion(ip) !== null;
 }

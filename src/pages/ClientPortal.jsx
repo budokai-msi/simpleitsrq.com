@@ -1429,6 +1429,7 @@ function ThreatIntelPanel({ styles }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [scanning, setScanning] = useState(null); // ip being scanned
   const [scanAllRunning, setScanAllRunning] = useState(false);
   const [expandedIp, setExpandedIp] = useState(null);
@@ -1491,20 +1492,28 @@ function ThreatIntelPanel({ styles }) {
 
   const scanAll = useCallback(async () => {
     setScanAllRunning(true);
+    setError(null);
+    const failures = [];
     try {
       const ips = data?.watchlist?.map((w) => w.ip) || [];
       for (const ip of ips) {
         setScanning(ip);
         try {
-          await fetch("/api/portal?action=scan-ip", {
+          const res = await fetch("/api/portal?action=scan-ip", {
             method: "POST",
             credentials: "same-origin",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ip }),
           });
-        } catch { /* continue to next */ }
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        } catch (err) {
+          failures.push(`${ip} (${err.message})`);
+        }
       }
       await load();
+      if (failures.length) {
+        setError(`Some scans failed: ${failures.join(", ")}`);
+      }
     } finally {
       setScanning(null);
       setScanAllRunning(false);
@@ -1546,6 +1555,11 @@ function ThreatIntelPanel({ styles }) {
           <MessageBarBody>{error}</MessageBarBody>
         </MessageBar>
       )}
+      {success && (
+        <MessageBar intent="success" style={{ marginBottom: 12 }}>
+          <MessageBarBody>{success}</MessageBarBody>
+        </MessageBar>
+      )}
 
       {/* Summary cards */}
       <div className={styles.cardGrid}>
@@ -1572,8 +1586,8 @@ function ThreatIntelPanel({ styles }) {
           </div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statLabel}>Last scan</div>
-          <div className={styles.statValue} style={{ fontSize: 16 }}>{ago(data.scannedAt)}</div>
+          <div className={styles.statLabel}>Last refresh</div>
+          <div className={styles.statValue} style={{ fontSize: 16 }}>{ago(data.lastRefreshedAt)}</div>
           <span style={{ color: tokens.colorNeutralForeground3, fontSize: 12 }}>
             Auto-refreshes every 30s
           </span>
@@ -1635,8 +1649,10 @@ function ThreatIntelPanel({ styles }) {
               let payload;
               try {
                 const parsed = JSON.parse(text);
-                // Accept { ips: [...] } or a bare array
-                payload = Array.isArray(parsed) ? { ips: parsed } : parsed;
+                // Accept { ips: [...] }, { blocklist: [...] } (exported shape), or bare array
+                if (Array.isArray(parsed)) payload = { ips: parsed };
+                else if (Array.isArray(parsed?.blocklist)) payload = { ips: parsed.blocklist };
+                else payload = parsed;
               } catch {
                 // Plain text: one IP per line
                 const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -1652,7 +1668,7 @@ function ThreatIntelPanel({ styles }) {
               const result = await res.json();
               setError(null);
               await load();
-              alert(`Import complete: ${result.imported} imported, ${result.skipped} skipped.`);
+              setSuccess(`Import complete: ${result.imported} imported, ${result.skipped} skipped.`);
             } catch (err) {
               setError("Import failed: " + (err.message || "Unknown error"));
             } finally {
@@ -1853,9 +1869,9 @@ function ThreatIntelPanel({ styles }) {
             Device fingerprints observed across multiple IPs — potential evasion or distributed attacks.
           </p>
           <div className={styles.list}>
-            {correlations.map((c, i) => (
+            {correlations.map((c) => (
               <div
-                key={i}
+                key={c.deviceHash}
                 className={styles.listRow}
                 style={{
                   borderLeftWidth: 3,

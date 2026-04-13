@@ -181,25 +181,29 @@ export async function GET(request) {
   // ip_blocklist so they're blocked before the next attack.
   let watchlistPromotions = [];
   try {
+    // Find IPs with 3+ hits in 7d that aren't already blocked,
+    // filtering out NULL/unknown to avoid bad inserts.
     const candidates = await sql`
-      SELECT ip, COUNT(*)::int AS hits, MAX(ts) AS last_seen
-      FROM threat_actors
-      WHERE ts > now() - interval '7 days'
-      GROUP BY ip
+      SELECT ta.ip, COUNT(*)::int AS hits, MAX(ta.ts) AS last_seen
+      FROM threat_actors ta
+      LEFT JOIN ip_blocklist bl ON bl.ip = ta.ip
+      WHERE ta.ts > now() - interval '7 days'
+        AND ta.ip IS NOT NULL AND ta.ip <> 'unknown'
+        AND bl.ip IS NULL
+      GROUP BY ta.ip
       HAVING COUNT(*) >= 3
     `;
     for (const row of candidates) {
-      // Skip if already in ip_blocklist.
-      const existing = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${row.ip} LIMIT 1`;
-      if (existing.length > 0) continue;
-
       const reason = `auto: watchlist promotion — ${row.hits} scanner hits in 7d`;
-      await sql`INSERT INTO ip_blocklist (ip, reason) VALUES (${row.ip}, ${reason})`;
-      await sql`
-        INSERT INTO auto_actions (action, target, reason)
-        VALUES ('watchlist_promotion', ${row.ip}, ${'Auto-promoted: ' + row.hits + ' hits in 7 days'})
+      const ins = await sql`
+        INSERT INTO ip_blocklist (ip, reason) VALUES (${row.ip}, ${reason})
+        ON CONFLICT DO NOTHING RETURNING ip
       `;
-      watchlistPromotions.push({ ip: row.ip, hits: row.hits, lastSeen: row.last_seen });
+      if (ins.length > 0) {
+        sql`INSERT INTO auto_actions (action, target, reason)
+            VALUES ('watchlist_promotion', ${row.ip}, ${'Auto-promoted: ' + row.hits + ' hits in 7 days'})`.catch(() => {});
+        watchlistPromotions.push({ ip: row.ip, hits: row.hits, lastSeen: row.last_seen });
+      }
     }
   } catch (err) {
     console.error("[cron/report] watchlist promotion failed", err);
