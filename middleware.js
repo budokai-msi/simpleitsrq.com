@@ -57,13 +57,16 @@ function isScannerPath(pathname) {
 }
 
 // ── In-memory edge rate limiter ────────────────────────────────────────
-// Tracks request counts per IP in a sliding window. This is per-isolate
-// (not globally shared), but still catches burst attacks before the DB
-// blocklist kicks in. Entries auto-expire via a periodic sweep.
+// Tracks request counts per IP in a fixed window anchored at the first
+// request timestamp for the current bucket. This is per-isolate (not
+// globally shared), but still catches burst attacks before the DB
+// blocklist kicks in. Stale entries are pruned inline on each call
+// (no setInterval — unreliable in serverless/edge runtimes).
 const RATE_WINDOW_MS = 60_000; // 1 minute
 const RATE_MAX_SCANNER = 3;    // 3 scanner hits in 1 min → instant 403
 const RATE_MAX_GLOBAL  = 120;  // 120 req/min per IP across all paths
-const rateCounts = new Map();  // ip → { scanner: count, global: count, ts: number }
+const rateCounts = new Map();  // ip → { scanner: count, global: count, ts: windowStart }
+let lastSweep = Date.now();
 
 // Countries that produced multiple attackers get stricter rate limits.
 const GEO_RATE_MULTIPLIERS = new Map([
@@ -75,6 +78,14 @@ const GEO_RATE_MULTIPLIERS = new Map([
 
 function rateCheck(ip, isScanner, countryCode) {
   const now = Date.now();
+  // Opportunistic sweep — prune stale entries at most once per 60s.
+  if (now - lastSweep > RATE_WINDOW_MS) {
+    const cutoff = now - RATE_WINDOW_MS * 2;
+    for (const [k, v] of rateCounts) {
+      if (v.ts < cutoff) rateCounts.delete(k);
+    }
+    lastSweep = now;
+  }
   let entry = rateCounts.get(ip);
   if (!entry || now - entry.ts > RATE_WINDOW_MS) {
     entry = { scanner: 0, global: 0, ts: now };
@@ -85,16 +96,8 @@ function rateCheck(ip, isScanner, countryCode) {
   const multiplier = GEO_RATE_MULTIPLIERS.get(countryCode) ?? 1.0;
   const maxScanner = Math.floor(RATE_MAX_SCANNER * multiplier);
   const maxGlobal  = Math.floor(RATE_MAX_GLOBAL * multiplier);
-  return entry.scanner > maxScanner || entry.global > maxGlobal;
+  return entry.scanner >= maxScanner || entry.global >= maxGlobal;
 }
-
-// Sweep stale entries every 5 minutes to prevent memory growth.
-setInterval(() => {
-  const cutoff = Date.now() - RATE_WINDOW_MS * 2;
-  for (const [ip, entry] of rateCounts) {
-    if (entry.ts < cutoff) rateCounts.delete(ip);
-  }
-}, 300_000);
 
 // Skip static assets — only intercept page navigations and API calls.
 const SKIP_EXTENSIONS = /\.(js|css|ico|png|jpg|jpeg|svg|woff2?|ttf|eot|map|xml|txt|json|webp|avif)$/i;
@@ -187,7 +190,7 @@ async function logThreat(request, geo, threatClass) {
     try {
       const abuseKey = process.env.ABUSEIPDB_API_KEY;
       // ipinfo enrichment (no key needed for free tier)
-      const infoRes = await fetch(`https://ipinfo.io/${ip}/json`, { signal: AbortSignal.timeout(3000) });
+      const infoRes = await fetch(`https://ipinfo.io/${ip}/json`, { signal: AbortSignal.timeout?.(3000) });
       if (infoRes.ok) {
         const info = await infoRes.json();
         const orgLower = (info.org || "").toLowerCase();
@@ -206,7 +209,7 @@ async function logThreat(request, geo, threatClass) {
       if (abuseKey) {
         const checkRes = await fetch(
           `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`,
-          { headers: { Key: abuseKey, Accept: "application/json" }, signal: AbortSignal.timeout(3000) },
+          { headers: { Key: abuseKey, Accept: "application/json" }, signal: AbortSignal.timeout?.(3000) },
         );
         if (checkRes.ok) {
           const d = (await checkRes.json()).data || {};
@@ -229,7 +232,7 @@ async function logThreat(request, geo, threatClass) {
               categories: "21,15",
               comment: `Automated scanner probing ${new URL(request.url).pathname} on simpleitsrq.com. Auto-blocked by honeypot trap.`,
             }),
-            signal: AbortSignal.timeout(3000),
+            signal: AbortSignal.timeout?.(3000),
           });
         }
       }
@@ -257,7 +260,7 @@ async function logThreat(request, geo, threatClass) {
               timestamp: new Date().toISOString(),
             }],
           }),
-          signal: AbortSignal.timeout(3000),
+          signal: AbortSignal.timeout?.(3000),
         });
       }
     } catch { /* webhook is best-effort */ }
@@ -323,21 +326,22 @@ const API_503 = () => new Response(
 
 export default async function middleware(request) {
   const url = new URL(request.url);
-
-  // Skip static assets.
-  if (SKIP_EXTENSIONS.test(url.pathname)) return;
-
   const ip = getIp(request);
-  const geo = getGeo(request);
 
-  // Layer 0: Hardcoded IP blocklist — zero-latency edge block, no DB round trip.
+  // Layer 0: Hardcoded IP blocklist — checked for ALL requests including
+  // static assets so blocked IPs can't fetch anything at all.
   if (isHardBlocked(ip)) return BLOCKED_RESPONSE;
 
+  // Skip static assets for the remaining (heavier) checks.
+  if (SKIP_EXTENSIONS.test(url.pathname)) return;
+
+  const geo = getGeo(request);
   const isScanner = isScannerPath(url.pathname);
 
   // Layer 0.5: In-memory rate limiter — catches burst attacks before the DB
   // blocklist kicks in. Scanner paths have a very low threshold (3/min).
-  if (rateCheck(ip, isScanner, geo.country)) return BLOCKED_RESPONSE;
+  // Skip when IP is unknown to avoid false positives from shared bucket.
+  if (ip !== "unknown" && rateCheck(ip, isScanner, geo.country)) return BLOCKED_RESPONSE;
 
   const sql = getSql();
 
