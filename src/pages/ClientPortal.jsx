@@ -1437,17 +1437,21 @@ function ThreatIntelPanel({ styles }) {
   const [importing, setImporting] = useState(false);
   const [honeypot, setHoneypot] = useState(null);
   const [dns, setDns] = useState(null);
+  const [associates, setAssociates] = useState(null);
+  const [subnetData, setSubnetData] = useState({});
+  const [osintData, setOsintData] = useState({});
   const fileInputRef = useRef(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [res, corrRes, hpRes, dnsRes] = await Promise.all([
+      const [res, corrRes, hpRes, dnsRes, assocRes] = await Promise.all([
         fetch("/api/portal?action=threat-intel", { credentials: "same-origin" }),
         fetch("/api/portal?action=threat-correlation", { credentials: "same-origin" }),
         fetch("/api/portal?action=honeypot-logs", { credentials: "same-origin" }),
         fetch("/api/portal?action=dns-integrity", { credentials: "same-origin" }),
+        fetch("/api/portal?action=behavioral-associates", { credentials: "same-origin" }),
       ]);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
@@ -1457,6 +1461,7 @@ function ThreatIntelPanel({ styles }) {
       }
       if (hpRes.ok) setHoneypot(await hpRes.json());
       if (dnsRes.ok) setDns(await dnsRes.json());
+      if (assocRes.ok) setAssociates(await assocRes.json());
     } catch (err) {
       setError(err.message || "Could not load threat intel.");
     } finally {
@@ -1765,6 +1770,57 @@ function ThreatIntelPanel({ styles }) {
                 >
                   {expanded ? "Hide activity" : "Show activity"}
                 </Button>
+                <Button
+                  size="small"
+                  appearance="subtle"
+                  onClick={async () => {
+                    setScanning(w.ip);
+                    try {
+                      const res = await fetch("/api/portal?action=subnet-scan", {
+                        method: "POST",
+                        credentials: "same-origin",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ip: w.ip }),
+                      });
+                      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                      const result = await res.json();
+                      setExpandedIp(w.ip);
+                      // Store subnet data in a Map keyed by IP
+                      setSubnetData(prev => ({ ...prev, [w.ip]: result }));
+                    } catch (err) {
+                      setError(`Subnet scan failed: ${err.message}`);
+                    } finally {
+                      setScanning(null);
+                    }
+                  }}
+                >
+                  Subnet scan
+                </Button>
+                <Button
+                  size="small"
+                  appearance="subtle"
+                  onClick={async () => {
+                    setScanning(w.ip);
+                    try {
+                      const res = await fetch("/api/portal?action=osint-enrich", {
+                        method: "POST",
+                        credentials: "same-origin",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ ip: w.ip }),
+                      });
+                      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                      const result = await res.json();
+                      setOsintData(prev => ({ ...prev, [w.ip]: result }));
+                      setExpandedIp(w.ip);
+                    } catch (err) {
+                      setError(`OSINT enrich failed: ${err.message}`);
+                    } finally {
+                      setScanning(null);
+                    }
+                  }}
+                >
+                  OSINT enrich
+                </Button>
               </div>
 
               {/* Expanded activity timeline */}
@@ -1793,6 +1849,86 @@ function ThreatIntelPanel({ styles }) {
                       {a.ua && <div style={{ fontSize: 10, color: tokens.colorNeutralForeground3, wordBreak: "break-all" }}>{a.ua}</div>}
                     </div>
                   ))}
+
+                  {subnetData[w.ip] && (
+                    <div style={{ marginTop: 12, paddingTop: 8, borderTop: `1px solid ${tokens.colorNeutralStroke2}` }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 600, margin: "0 0 6px", color: "#7C3AED" }}>
+                        Subnet neighbors — {subnetData[w.ip].cidr}
+                      </h4>
+                      {subnetData[w.ip].networkInfo && (
+                        <div className={styles.listMeta} style={{ marginBottom: 8, gap: 6 }}>
+                          <span>Network: {subnetData[w.ip].networkInfo.networkAddress}</span>
+                          {subnetData[w.ip].networkInfo.totalReports != null && (
+                            <><span>·</span><span>Total reports: {subnetData[w.ip].networkInfo.totalReports}</span></>
+                          )}
+                        </div>
+                      )}
+                      {subnetData[w.ip].neighbors?.length > 0 ? (
+                        subnetData[w.ip].neighbors.map((n, j) => (
+                          <div key={n.ip} style={{ fontSize: 12, padding: "3px 0", display: "flex", justifyContent: "space-between", gap: 8, borderBottom: j < subnetData[w.ip].neighbors.length - 1 ? `1px solid ${tokens.colorNeutralStroke3}` : "none" }}>
+                            <span style={{ fontFamily: "monospace", fontSize: 11 }}>{n.ip}</span>
+                            <div style={{ display: "flex", gap: 6 }}>
+                              {n.abuseScore != null && (
+                                <Badge appearance="filled" color={n.abuseScore >= 75 ? "danger" : n.abuseScore >= 25 ? "warning" : "success"} style={{ fontSize: 10 }}>
+                                  {n.abuseScore}%
+                                </Badge>
+                              )}
+                              {n.reports != null && <span style={{ fontSize: 10, color: tokens.colorNeutralForeground3 }}>{n.reports} reports</span>}
+                              {n.country && <span style={{ fontSize: 10 }}>{n.country}</span>}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p style={{ fontSize: 12, color: tokens.colorNeutralForeground3, margin: 0 }}>No neighbors found in AbuseIPDB.</p>
+                      )}
+                    </div>
+                  )}
+
+                  {osintData[w.ip] && (
+                    <div style={{ marginTop: 12, paddingTop: 8, borderTop: `1px solid ${tokens.colorNeutralStroke2}` }}>
+                      <h4 style={{ fontSize: 13, fontWeight: 600, margin: "0 0 6px", color: "#0EA5E9" }}>
+                        OSINT — {w.ip}
+                      </h4>
+                      {osintData[w.ip].reverseDns && (
+                        <div style={{ fontSize: 12, marginBottom: 4 }}>Reverse DNS: <code>{osintData[w.ip].reverseDns}</code></div>
+                      )}
+                      {osintData[w.ip].shodan && (
+                        <div style={{ fontSize: 12, marginBottom: 8 }}>
+                          <div>Open ports: <strong>{(osintData[w.ip].shodan.ports || []).join(", ") || "none"}</strong></div>
+                          {osintData[w.ip].shodan.hostnames?.length > 0 && <div>Hostnames: {osintData[w.ip].shodan.hostnames.join(", ")}</div>}
+                          {osintData[w.ip].shodan.vulns?.length > 0 && (
+                            <div style={{ color: "#DC2626" }}>
+                              Vulns: {osintData[w.ip].shodan.vulns.map(v => (
+                                <Badge key={v} appearance="filled" color="danger" style={{ fontSize: 9, marginRight: 4 }}>{v}</Badge>
+                              ))}
+                            </div>
+                          )}
+                          {osintData[w.ip].shodan.tags?.length > 0 && (
+                            <div>Tags: {osintData[w.ip].shodan.tags.map(t => (
+                              <Badge key={t} appearance="outline" color="warning" style={{ fontSize: 9, marginRight: 4 }}>{t}</Badge>
+                            ))}</div>
+                          )}
+                          {osintData[w.ip].shodan.cpes?.length > 0 && (
+                            <div style={{ fontSize: 10, color: tokens.colorNeutralForeground3 }}>CPEs: {osintData[w.ip].shodan.cpes.join(", ")}</div>
+                          )}
+                        </div>
+                      )}
+                      {osintData[w.ip].greynoise && (
+                        <div style={{ fontSize: 12 }}>
+                          <span>GreyNoise: </span>
+                          <Badge appearance="filled" color={
+                            osintData[w.ip].greynoise.classification === "malicious" ? "danger" :
+                            osintData[w.ip].greynoise.classification === "benign" ? "success" : "warning"
+                          } style={{ fontSize: 10 }}>
+                            {osintData[w.ip].greynoise.classification || "unknown"}
+                          </Badge>
+                          {osintData[w.ip].greynoise.noise && <Badge appearance="outline" color="warning" style={{ fontSize: 10, marginLeft: 4 }}>MASS SCANNER</Badge>}
+                          {osintData[w.ip].greynoise.riot && <Badge appearance="outline" color="success" style={{ fontSize: 10, marginLeft: 4 }}>RIOT</Badge>}
+                          {osintData[w.ip].greynoise.name && <span style={{ marginLeft: 6, fontSize: 11 }}>{osintData[w.ip].greynoise.name}</span>}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1930,6 +2066,81 @@ function ThreatIntelPanel({ styles }) {
               </div>
             ))}
           </div>
+        </>
+      )}
+
+      {/* Behavioral Associates — IPs sharing user agents or attack paths */}
+      {associates && (associates.uaGroups?.length > 0 || associates.pathPairs?.length > 0) && (
+        <>
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: "#0EA5E9" }}>
+            Behavioral Associates
+          </h3>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+            IPs linked by identical user agents or shared attack path patterns.
+          </p>
+
+          {associates.uaGroups?.length > 0 && (
+            <>
+              <h4 style={{ fontSize: 14, fontWeight: 600, margin: "16px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Shared user agents ({associates.uaGroups.length})
+              </h4>
+              <div className={styles.list}>
+                {associates.uaGroups.map((g, i) => (
+                  <div key={i} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: "#0EA5E9", flexDirection: "column", gap: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: 12, fontWeight: 600 }}>{g.ipCount} IPs · {g.totalHits} hits</span>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        {g.ipCount >= 3 && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>BOTNET</Badge>}
+                        {g.countries?.map(c => <Badge key={c} appearance="outline" color="informative" style={{ fontSize: 10 }}>{c}</Badge>)}
+                      </div>
+                    </div>
+                    <div style={{ fontFamily: "monospace", fontSize: 10, color: tokens.colorNeutralForeground3, wordBreak: "break-all" }}>
+                      {g.userAgent.slice(0, 200)}{g.userAgent.length > 200 ? "…" : ""}
+                    </div>
+                    <div style={{ fontFamily: "monospace", fontSize: 11 }}>
+                      IPs: {g.ips.join(", ")}
+                    </div>
+                    <div className={styles.listMeta} style={{ gap: 6 }}>
+                      <span>Paths: {g.paths.join(", ")}</span>
+                      <span>·</span>
+                      <span>First: {fmt(g.firstSeen)}</span>
+                      <span>·</span>
+                      <span>Last: {ago(g.lastSeen)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {associates.pathPairs?.length > 0 && (
+            <>
+              <h4 style={{ fontSize: 14, fontWeight: 600, margin: "16px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Path pattern pairs ({associates.pathPairs.length})
+              </h4>
+              <div className={styles.list}>
+                {associates.pathPairs.map((p) => (
+                  <div key={`${p.ipA}-${p.ipB}`} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: "#0EA5E9" }}>
+                    <div className={styles.listMain}>
+                      <p className={styles.listTitle}>
+                        <span style={{ fontFamily: "monospace", fontSize: 12 }}>{p.ipA}</span>
+                        {" ↔ "}
+                        <span style={{ fontFamily: "monospace", fontSize: 12 }}>{p.ipB}</span>
+                      </p>
+                      <div className={styles.listMeta} style={{ gap: 6 }}>
+                        <span>{p.sharedPaths} shared paths</span>
+                        <span>·</span>
+                        <span>First: {fmt(p.firstSeen)}</span>
+                        <span>·</span>
+                        <span>Last: {ago(p.lastSeen)}</span>
+                      </div>
+                    </div>
+                    <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>LINKED</Badge>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
 

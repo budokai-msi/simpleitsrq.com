@@ -1447,6 +1447,240 @@ async function handleHealth() {
   return json(checks.ok ? 200 : 503, checks);
 }
 
+// ---------- subnet neighbor scan (admin only) ----------
+async function handleSubnetScan(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const ip = String(body?.ip || "").trim();
+  if (!validateIp(ip)) {
+    return json(400, { ok: false, error: "invalid_ip" });
+  }
+
+  const subnetPrefix = ip.split(".").slice(0, 3).join(".") + ".";
+  const cidr = subnetPrefix + "0/24";
+
+  // Query local DB for known threats and intel in the same /24
+  const [knownThreats, knownIntel] = await Promise.all([
+    sql`
+      SELECT DISTINCT ip FROM threat_actors
+      WHERE ip LIKE ${subnetPrefix + '%'}
+      AND ip <> ${ip}
+    `,
+    sql`
+      SELECT ip, org, isp, abuse_score, abuse_reports, is_datacenter, is_tor, country, city
+      FROM ip_intel
+      WHERE ip LIKE ${subnetPrefix + '%'}
+    `,
+  ]);
+
+  // AbuseIPDB check-block enrichment (optional)
+  let neighbors = [];
+  let networkInfo = null;
+  const abuseKey = process.env.ABUSEIPDB_API_KEY;
+  if (abuseKey) {
+    try {
+      const res = await fetch(
+        `https://api.abuseipdb.com/api/v2/check-block?network=${encodeURIComponent(cidr)}&maxAgeInDays=30`,
+        { headers: { Key: abuseKey, Accept: "application/json" }, signal: AbortSignal.timeout?.(8000) }
+      );
+      if (res.ok) {
+        const d = await res.json();
+        neighbors = (d.data?.reportedAddress || []).map(n => ({
+          ip: n.ipAddress,
+          abuseScore: n.abuseConfidenceScore,
+          reports: n.numReports,
+          lastReport: n.mostRecentReport,
+          country: n.countryCode,
+        }));
+        networkInfo = {
+          cidr,
+          networkAddress: d.data?.networkAddress,
+          netmask: d.data?.netmask,
+          totalReports: d.data?.numDistinctUsers,
+        };
+      }
+    } catch (err) {
+      console.error("[portal] AbuseIPDB check-block failed", err);
+    }
+  }
+
+  // Log the scan action
+  try {
+    await sql`INSERT INTO auto_actions (action, target, reason) VALUES ('subnet_scan', ${cidr}, 'Admin subnet recon')`;
+  } catch { /* best effort */ }
+
+  return json(200, {
+    ok: true,
+    ip,
+    cidr,
+    networkInfo,
+    neighbors,
+    knownThreats: knownThreats.map(r => r.ip),
+    knownIntel: knownIntel.map(r => ({
+      ip: r.ip, org: r.org, isp: r.isp,
+      abuseScore: r.abuse_score, abuseReports: r.abuse_reports,
+      isDatacenter: r.is_datacenter, isTor: r.is_tor,
+      country: r.country, city: r.city,
+    })),
+    scannedAt: new Date().toISOString(),
+  });
+}
+
+// ---------- behavioral associates (admin only) ----------
+async function handleBehavioralAssociates(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const [uaGroups, pathPairs] = await Promise.all([
+    sql`
+      SELECT user_agent,
+             COUNT(DISTINCT ip)::int AS ip_count,
+             COUNT(*)::int AS total_hits,
+             array_agg(DISTINCT ip) AS ips,
+             array_agg(DISTINCT path ORDER BY path) FILTER (WHERE path IS NOT NULL) AS paths,
+             array_agg(DISTINCT country) FILTER (WHERE country IS NOT NULL) AS countries,
+             MIN(ts) AS first_seen,
+             MAX(ts) AS last_seen
+      FROM threat_actors
+      WHERE user_agent IS NOT NULL AND length(user_agent) > 10
+      GROUP BY user_agent
+      HAVING COUNT(DISTINCT ip) >= 2
+      ORDER BY COUNT(DISTINCT ip) DESC, COUNT(*) DESC
+      LIMIT 30
+    `,
+    sql`
+      SELECT a.ip AS ip_a, b.ip AS ip_b,
+             COUNT(DISTINCT a.path)::int AS shared_paths,
+             MIN(LEAST(a.ts, b.ts)) AS first_seen,
+             MAX(GREATEST(a.ts, b.ts)) AS last_seen
+      FROM threat_actors a
+      JOIN threat_actors b ON a.path = b.path AND a.ip < b.ip
+      WHERE a.ts > now() - interval '30 days'
+        AND b.ts > now() - interval '30 days'
+      GROUP BY a.ip, b.ip
+      HAVING COUNT(DISTINCT a.path) >= 3
+      ORDER BY shared_paths DESC
+      LIMIT 30
+    `,
+  ]);
+
+  return json(200, {
+    uaGroups: uaGroups.map(r => ({
+      userAgent: r.user_agent,
+      ipCount: r.ip_count,
+      totalHits: r.total_hits,
+      ips: r.ips,
+      paths: r.paths || [],
+      countries: r.countries || [],
+      firstSeen: r.first_seen,
+      lastSeen: r.last_seen,
+    })),
+    pathPairs: pathPairs.map(r => ({
+      ipA: r.ip_a,
+      ipB: r.ip_b,
+      sharedPaths: r.shared_paths,
+      firstSeen: r.first_seen,
+      lastSeen: r.last_seen,
+    })),
+  });
+}
+
+// ---------- OSINT enrichment — Shodan / GreyNoise / rDNS (admin only) ----------
+async function handleOsintEnrich(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const ip = String(body?.ip || "").trim();
+  if (!validateIp(ip)) {
+    return json(400, { ok: false, error: "invalid_ip" });
+  }
+
+  // Shodan InternetDB (free, no key needed)
+  let shodan = null;
+  try {
+    const res = await fetch(`https://internetdb.shodan.io/${encodeURIComponent(ip)}`, {
+      signal: AbortSignal.timeout?.(8000),
+    });
+    if (res.ok) {
+      const d = await res.json();
+      shodan = {
+        ports: d.ports || [],
+        hostnames: d.hostnames || [],
+        cpes: d.cpes || [],
+        vulns: d.vulns || [],
+        tags: d.tags || [],
+      };
+    }
+  } catch (err) {
+    console.error("[portal] Shodan InternetDB lookup failed", err);
+  }
+
+  // GreyNoise Community API (free, optional key)
+  let greynoise = null;
+  try {
+    const gnHeaders = { Accept: "application/json" };
+    const gnKey = process.env.GREYNOISE_API_KEY;
+    if (gnKey) gnHeaders.key = gnKey;
+    const res = await fetch(`https://api.greynoise.io/v3/community/${encodeURIComponent(ip)}`, {
+      headers: gnHeaders,
+      signal: AbortSignal.timeout?.(8000),
+    });
+    if (res.ok) {
+      const d = await res.json();
+      greynoise = {
+        noise: d.noise,
+        riot: d.riot,
+        classification: d.classification,
+        name: d.name,
+        lastSeen: d.last_seen,
+      };
+    }
+  } catch (err) {
+    console.error("[portal] GreyNoise lookup failed", err);
+  }
+
+  // Reverse DNS via DNS-over-HTTPS
+  let reverseDns = null;
+  try {
+    const reverseIp = ip.split(".").reverse().join(".");
+    const res = await fetch(
+      `https://dns.google/resolve?name=${encodeURIComponent(reverseIp + ".in-addr.arpa")}&type=PTR`,
+      { signal: AbortSignal.timeout?.(5000) }
+    );
+    if (res.ok) {
+      const d = await res.json();
+      if (d.Answer && d.Answer.length > 0) {
+        reverseDns = d.Answer[0].data?.replace(/\.$/, "") || null;
+      }
+    }
+  } catch (err) {
+    console.error("[portal] reverse DNS lookup failed", err);
+  }
+
+  // Log the scan action
+  try {
+    await sql`
+      INSERT INTO auto_actions (action, target, reason, detail)
+      VALUES ('osint_enrich', ${ip}, 'Admin OSINT enrichment',
+              ${JSON.stringify({ by: session.user.email, shodan: !!shodan, greynoise: !!greynoise, reverseDns: !!reverseDns })}::jsonb)
+    `;
+  } catch { /* best effort */ }
+
+  return json(200, {
+    ok: true,
+    ip,
+    shodan,
+    greynoise,
+    reverseDns,
+    scannedAt: new Date().toISOString(),
+  });
+}
+
 // ---------- entry points ----------
 async function dispatch(request, method) {
   const url = new URL(request.url);
@@ -1479,6 +1713,9 @@ async function dispatch(request, method) {
   if (action === "blocklist-import"  && method === "POST") return handleBlocklistImport(session, request);
   if (action === "honeypot-logs"     && method === "GET")  return handleHoneypotLogs(session);
   if (action === "dns-integrity"     && method === "GET")  return handleDnsIntegrity(session);
+  if (action === "subnet-scan"       && method === "POST") return handleSubnetScan(session, request);
+  if (action === "behavioral-associates" && method === "GET") return handleBehavioralAssociates(session);
+  if (action === "osint-enrich"      && method === "POST") return handleOsintEnrich(session, request);
 
   return json(404, { ok: false, error: "unknown_action" });
 }
