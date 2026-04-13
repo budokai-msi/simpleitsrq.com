@@ -10,14 +10,15 @@
 //   PATCH /api/portal?action=ticket           { code, status }   (admin only)
 //   GET   /api/portal?action=invoices
 //   GET   /api/portal?action=visitors         (admin only)
+//   GET   /api/portal?action=honeypot-creds   (admin only)
+//   POST  /api/portal?action=block-ip         (admin only)
+//   GET   /api/portal?action=investigate      (admin only)
 
 import Stripe from "stripe";
 import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { json } from "./_lib/http.js";
-import { enrichIp } from "./_lib/ipintel.js";
-import { BLOCKED_IPS, validateIp } from "./_lib/blocklist.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
@@ -394,60 +395,6 @@ async function handleTicketPatch(session, request) {
     RETURNING id, ticket_code, status, priority, updated_at, closed_at
   `;
   if (rows.length === 0) return json(404, { ok: false, error: "not_found" });
-
-  // Notify the client when status changes (best-effort).
-  if (hasStatus) {
-    try {
-      const ticketRows = await sql`
-        SELECT email, name, subject, ticket_code FROM tickets WHERE ticket_code = ${code} LIMIT 1
-      `;
-      if (ticketRows.length > 0) {
-        const t = ticketRows[0];
-        const apiKey = process.env.RESEND_API_KEY;
-        if (apiKey && t.email) {
-          const resend = new Resend(apiKey);
-          const emailSubject = `[Update ${t.ticket_code}] Status changed to ${status}`;
-          const emailHtml = `
-            <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:640px;margin:0 auto;color:#1a1a1a">
-              <div style="padding:14px 18px;background:#0F6CBD;color:#fff;border-radius:8px 8px 0 0">
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.9">Ticket status updated</div>
-                <div style="font-size:20px;font-weight:700;margin-top:2px">${escapeHtml(t.ticket_code)}</div>
-              </div>
-              <div style="padding:20px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">
-                <h2 style="margin:0 0 14px;font-size:18px;color:#0F6CBD">${escapeHtml(t.subject)}</h2>
-                <p style="font-size:14px;line-height:1.55;margin:0 0 18px">
-                  The status of your support ticket <strong>${escapeHtml(t.ticket_code)}</strong> has been changed to
-                  <strong style="text-transform:capitalize">${escapeHtml(status.replace(/_/g, " "))}</strong>.
-                </p>
-                <p style="margin-top:22px;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px">
-                  View details in the <a href="https://simpleitsrq.com/portal">Simple IT SRQ portal</a> · Ticket ${escapeHtml(t.ticket_code)}
-                </p>
-              </div>
-            </div>
-          `;
-          const emailText = [
-            `Ticket status updated`,
-            `Ticket: ${t.ticket_code} — ${t.subject}`,
-            `New status: ${status.replace(/_/g, " ")}`,
-            ``,
-            `View details in the portal: https://simpleitsrq.com/portal`,
-          ].join("\n");
-
-          await resend.emails.send({
-            from: TICKET_FROM,
-            to: [t.email],
-            subject: emailSubject,
-            text: emailText,
-            html: emailHtml,
-            headers: { "X-Ticket-ID": t.ticket_code },
-          });
-        }
-      }
-    } catch (err) {
-      console.error("[portal] status-change notification failed", err);
-    }
-  }
-
   return json(200, { ok: true, ticket: rows[0] });
 }
 
@@ -1087,343 +1034,71 @@ async function handleSendInvoice(session, request) {
   }
 }
 
-// ---------- threat intelligence (admin only) ----------
-
-// Watchlist imported from centralized blocklist — single source of truth.
-const WATCHLIST_IPS = BLOCKED_IPS;
-
-async function handleThreatIntel(session) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-
-  const ips = WATCHLIST_IPS.map((w) => w.ip);
-
-  // Parallel queries: intel cache, threat activity, blocked status, auto-actions
-  const [intelRows, activityRows, blockedRows, actionsRows, statsRows] = await Promise.all([
-    sql`SELECT * FROM ip_intel WHERE ip = ANY(${ips}) AND (expires_at IS NULL OR expires_at > now()) ORDER BY enriched_at DESC`,
-    sql`
-      SELECT ip, path, method, threat_class, user_agent, device_hash,
-             country, city, ts, headers_json
-      FROM threat_actors
-      WHERE ip = ANY(${ips})
-      ORDER BY ts DESC
-      LIMIT 200
-    `,
-    sql`SELECT ip, reason, created_at FROM ip_blocklist WHERE ip = ANY(${ips})`,
-    sql`
-      SELECT ts, action, target, reason, detail
-      FROM auto_actions
-      WHERE target = ANY(${ips})
-      ORDER BY ts DESC
-      LIMIT 50
-    `,
-    sql`
-      SELECT ip, COUNT(*)::int AS hit_count,
-             MIN(ts) AS first_seen, MAX(ts) AS last_seen,
-             COUNT(DISTINCT device_hash) FILTER (WHERE device_hash IS NOT NULL)::int AS device_count,
-             COUNT(DISTINCT path)::int AS path_count,
-             array_agg(DISTINCT path ORDER BY path) FILTER (WHERE path IS NOT NULL) AS paths
-      FROM threat_actors
-      WHERE ip = ANY(${ips})
-      GROUP BY ip
-    `,
-  ]);
-
-  // Build lookup maps
-  const intelMap = {};
-  for (const row of intelRows) {
-    intelMap[row.ip] = {
-      asn: row.asn, org: row.org, isp: row.isp,
-      country: row.country, region: row.region, city: row.city,
-      isDatacenter: row.is_datacenter, isTor: row.is_tor,
-      isProxy: row.is_proxy, isVpn: row.is_vpn,
-      abuseScore: row.abuse_score, abuseReports: row.abuse_reports,
-      abuseLastSeen: row.abuse_last_seen, enrichedAt: row.enriched_at,
-    };
+// ---------- health (unauthenticated, for external uptime monitors) ----------
+// ---------- honeypot credentials (admin only) ----------
+async function handleHoneypotCreds(session) {
+  if (!(await resolveAdmin(session))) {
+    return json(403, { ok: false, error: "forbidden" });
   }
+  const rows = await sql`
+    SELECT se.id, se.ip, se.detail, se.ts,
+           ta.country, ta.threat_class,
+           ii.org, ii.isp, ii.abuse_score
+    FROM security_events se
+    LEFT JOIN threat_actors ta ON ta.ip = se.ip
+      AND ta.ts BETWEEN se.ts - interval '2 minutes' AND se.ts + interval '30 seconds'
+    LEFT JOIN ip_intel ii ON ii.ip = se.ip
+    WHERE se.kind = 'honeypot.credential'
+    ORDER BY se.ts DESC
+    LIMIT 500
+  `;
 
-  const blockedMap = {};
-  for (const row of blockedRows) {
-    blockedMap[row.ip] = { reason: row.reason, blockedAt: row.created_at };
-  }
-
-  const statsMap = {};
-  for (const row of statsRows) {
-    statsMap[row.ip] = {
-      hitCount: row.hit_count, firstSeen: row.first_seen,
-      lastSeen: row.last_seen, deviceCount: row.device_count,
-      pathCount: row.path_count, paths: row.paths || [],
-    };
+  // De-duplicate by IP — keep the latest credential per attacker.
+  const byIp = new Map();
+  for (const r of rows) {
+    const email = r.detail?.email || r.detail?.d?.email || "(none captured)";
+    const page = r.detail?.page || r.detail?.d?.page || "/";
+    const existing = byIp.get(r.ip);
+    if (!existing || new Date(r.ts) > new Date(existing.ts)) {
+      byIp.set(r.ip, {
+        ip: r.ip,
+        email,
+        country: r.country || "unknown",
+        threatClass: r.threat_class || "honeypot",
+        ts: r.ts,
+        page,
+        org: r.org,
+        isp: r.isp,
+        abuseScore: r.abuse_score,
+      });
+    }
   }
 
   return json(200, {
-    watchlist: WATCHLIST_IPS.map((w) => ({
-      ip: w.ip,
-      label: w.label,
-      intel: intelMap[w.ip] || null,
-      blocked: blockedMap[w.ip] || { reason: "edge_hardcoded", blockedAt: null },
-      stats: statsMap[w.ip] || null,
-    })),
-    activity: activityRows.map((a) => ({
-      ip: a.ip, path: a.path, method: a.method, threatClass: a.threat_class,
-      ua: a.user_agent, deviceHash: a.device_hash,
-      country: a.country, city: a.city, ts: a.ts,
-    })),
-    autoActions: actionsRows.map((a) => ({
-      ts: a.ts, action: a.action, target: a.target,
-      reason: a.reason, detail: a.detail,
-    })),
-    lastRefreshedAt: new Date().toISOString(),
+    credentials: [...byIp.values()],
+    total: rows.length,
+    uniqueIps: byIp.size,
   });
 }
 
-async function handleScanIp(session, request) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-
+// ---------- block IP (admin only) ----------
+async function handleBlockIp(session, request) {
+  if (!(await resolveAdmin(session))) {
+    return json(403, { ok: false, error: "forbidden" });
+  }
   let body;
   try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
   const ip = String(body?.ip || "").trim();
-  if (!validateIp(ip)) {
-    return json(400, { ok: false, error: "invalid_ip" });
-  }
+  if (!ip) return json(400, { ok: false, error: "missing_ip" });
+  const reason = String(body?.reason || "manual block").trim().slice(0, 200);
 
-  // Force cache bust by deleting existing intel row before enriching
-  try {
-    await sql`DELETE FROM ip_intel WHERE ip = ${ip}`;
-  } catch { /* best effort */ }
-
-  const intel = await enrichIp(ip);
-
-  // Also fetch fresh activity + blocked status
-  const [threats, blocked, visits] = await Promise.all([
-    sql`
-      SELECT ts, path, method, threat_class, device_hash, user_agent
-      FROM threat_actors WHERE ip = ${ip} ORDER BY ts DESC LIMIT 50
-    `,
-    sql`SELECT ip, reason, created_at FROM ip_blocklist WHERE ip = ${ip}`,
-    sql`
-      SELECT ts, path, device_hash, user_agent, browser, os, country, city
-      FROM visits WHERE ip = ${ip} ORDER BY ts DESC LIMIT 50
-    `,
-  ]);
-
-  // Log the scan action
-  try {
-    await sql`
-      INSERT INTO auto_actions (action, target, reason, detail)
-      VALUES ('admin_scan', ${ip}, 'Manual threat intel scan',
-              ${JSON.stringify({ by: session.user.email, abuse_score: intel?.abuse_score })}::jsonb)
-    `;
-  } catch { /* best effort */ }
-
-  return json(200, {
-    ok: true,
-    ip,
-    intel: intel ? {
-      asn: intel.asn, org: intel.org, isp: intel.isp,
-      country: intel.country, region: intel.region, city: intel.city,
-      isDatacenter: intel.is_datacenter, isTor: intel.is_tor,
-      isProxy: intel.is_proxy, isVpn: intel.is_vpn,
-      abuseScore: intel.abuse_score, abuseReports: intel.abuse_reports,
-      abuseLastSeen: intel.abuse_last_seen,
-    } : null,
-    blocked: blocked.length > 0 ? { reason: blocked[0].reason, blockedAt: blocked[0].created_at } : null,
-    threats: threats.map((t) => ({
-      ts: t.ts, path: t.path, method: t.method, threatClass: t.threat_class,
-      deviceHash: t.device_hash, ua: t.user_agent,
-    })),
-    visits: visits.map((v) => ({
-      ts: v.ts, path: v.path, deviceHash: v.device_hash, ua: v.user_agent,
-      browser: v.browser, os: v.os, country: v.country, city: v.city,
-    })),
-    scannedAt: new Date().toISOString(),
-  });
-}
-
-// ---------- threat actor correlation by device_hash (admin only) ----------
-async function handleThreatCorrelation(session) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-
-  const rows = await sql`
-    SELECT device_hash,
-           COUNT(DISTINCT ip)::int AS ip_count,
-           COUNT(*)::int AS total_hits,
-           array_agg(DISTINCT ip) AS ips,
-           MIN(ts) AS first_seen,
-           MAX(ts) AS last_seen,
-           array_agg(DISTINCT path ORDER BY path) FILTER (WHERE path IS NOT NULL) AS paths,
-           array_agg(DISTINCT country) FILTER (WHERE country IS NOT NULL) AS countries
-    FROM threat_actors
-    WHERE device_hash IS NOT NULL
-    GROUP BY device_hash
-    HAVING COUNT(DISTINCT ip) >= 2
-    ORDER BY COUNT(DISTINCT ip) DESC, COUNT(*) DESC
-    LIMIT 50
+  await sql`
+    INSERT INTO ip_blocklist (ip, reason)
+    VALUES (${ip}, ${reason})
+    ON CONFLICT (ip) DO NOTHING
   `;
 
-  return json(200, {
-    correlations: rows.map((r) => ({
-      deviceHash: r.device_hash,
-      ipCount: r.ip_count,
-      totalHits: r.total_hits,
-      ips: r.ips,
-      firstSeen: r.first_seen,
-      lastSeen: r.last_seen,
-      paths: r.paths || [],
-      countries: r.countries || [],
-    })),
-  });
-}
-
-// ---------- blocklist export (admin only) ----------
-async function handleBlocklistExport(session) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-
-  const rows = await sql`SELECT ip, reason, created_at FROM ip_blocklist ORDER BY created_at DESC`;
-  return json(200, {
-    ok: true,
-    blocklist: rows.map((r) => ({ ip: r.ip, reason: r.reason, blockedAt: r.created_at })),
-    exportedAt: new Date().toISOString(),
-  });
-}
-
-// ---------- blocklist import (admin only) ----------
-async function handleBlocklistImport(session, request) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-
-  let body;
-  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
-
-  // Accept { ips: [...] }, { blocklist: [...] } (exported shape), or a bare array
-  let entries = Array.isArray(body?.ips) ? body.ips
-    : Array.isArray(body?.blocklist) ? body.blocklist
-    : Array.isArray(body) ? body : null;
-  if (!entries) return json(400, { ok: false, error: "expected { ips: [...] } or an array" });
-
-  // Normalize + validate + de-dupe in JS
-  const normalized = [];
-  const seen = new Set();
-  for (const entry of entries) {
-    const ip = typeof entry === "string" ? entry.trim() : String(entry?.ip || "").trim();
-    const reason = (typeof entry === "object" && entry !== null ? String(entry.reason || "") : "").trim() || "blocklist_import";
-    if (!validateIp(ip) || seen.has(ip)) continue;
-    seen.add(ip);
-    normalized.push({ ip, reason });
-  }
-
-  if (normalized.length === 0) {
-    return json(200, { ok: true, imported: 0, skipped: entries.length });
-  }
-
-  // Insert one-by-one with RETURNING to reliably detect new rows
-  let imported = 0;
-  for (const { ip, reason } of normalized) {
-    try {
-      const rows = await sql`
-        INSERT INTO ip_blocklist (ip, reason) VALUES (${ip}, ${reason})
-        ON CONFLICT DO NOTHING RETURNING ip
-      `;
-      if (rows.length > 0) {
-        imported++;
-        sql`INSERT INTO auto_actions (action, target, reason)
-            VALUES ('blocklist_import', ${ip}, ${reason})`.catch(() => {});
-      }
-    } catch { /* best effort per IP */ }
-  }
-  const skipped = normalized.length - imported;
-
-  return json(200, { ok: true, imported, skipped });
-}
-
-// ---------- honeypot logs (admin only) ----------
-async function handleHoneypotLogs(session) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-
-  const [credRows, probeRows, statsRows] = await Promise.all([
-    sql`
-      SELECT ts, ip, user_agent, detail
-      FROM security_events
-      WHERE kind = 'honeypot.credential'
-      ORDER BY ts DESC
-      LIMIT 100
-    `,
-    sql`
-      SELECT ts, ip, user_agent, detail
-      FROM security_events
-      WHERE kind = 'honeypot.probe'
-      ORDER BY ts DESC
-      LIMIT 100
-    `,
-    sql`
-      SELECT
-        COUNT(*) FILTER (WHERE kind = 'honeypot.credential')::int AS total_credentials,
-        COUNT(*) FILTER (WHERE kind = 'honeypot.probe')::int AS total_probes,
-        COUNT(DISTINCT ip)::int AS unique_ips
-      FROM security_events
-      WHERE kind IN ('honeypot.credential', 'honeypot.probe')
-    `,
-  ]);
-
-  return json(200, {
-    credentials: credRows.map((r) => ({
-      ts: r.ts, ip: r.ip, ua: r.user_agent,
-      email: r.detail?.email, country: r.detail?.country,
-    })),
-    probes: probeRows.map((r) => ({
-      ts: r.ts, ip: r.ip, ua: r.user_agent,
-      screen: r.detail?.screen, platform: r.detail?.platform,
-      webglRenderer: r.detail?.webglRenderer, canvasHash: r.detail?.canvasHash,
-      tz: r.detail?.tz, lang: r.detail?.lang, cores: r.detail?.cores,
-      mem: r.detail?.mem, plugins: r.detail?.plugins,
-    })),
-    stats: {
-      totalCredentials: statsRows[0]?.total_credentials || 0,
-      totalProbes: statsRows[0]?.total_probes || 0,
-      uniqueIps: statsRows[0]?.unique_ips || 0,
-    },
-  });
-}
-
-// ---------- DNS integrity (admin only) ----------
-async function handleDnsIntegrity(session) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-
-  const [rows, summaryRows] = await Promise.all([
-    sql`
-      SELECT id, ts, domain, record_type, expected, actual, match, resolver
-      FROM dns_integrity
-      ORDER BY ts DESC
-      LIMIT 100
-    `,
-    sql`
-      SELECT
-        COUNT(*)::int AS total_checks,
-        COUNT(*) FILTER (WHERE match = true)::int AS passing,
-        COUNT(*) FILTER (WHERE match = false)::int AS failing,
-        MAX(ts) AS last_check
-      FROM dns_integrity
-      WHERE ts > now() - interval '7 days'
-    `,
-  ]);
-
-  return json(200, {
-    checks: rows.map((r) => ({
-      id: r.id, ts: r.ts, domain: r.domain, recordType: r.record_type,
-      expected: r.expected, actual: r.actual, match: r.match, resolver: r.resolver,
-    })),
-    stats: {
-      totalChecks: summaryRows[0]?.total_checks || 0,
-      passing: summaryRows[0]?.passing || 0,
-      failing: summaryRows[0]?.failing || 0,
-      lastCheck: summaryRows[0]?.last_check || null,
-    },
-  });
+  return json(200, { ok: true });
 }
 
 // ---------- health (unauthenticated, for external uptime monitors) ----------
@@ -1467,18 +1142,13 @@ async function dispatch(request, method) {
   if (action === "invoices"        && method === "GET")   return handleInvoices(session);
   if (action === "visitors"        && method === "GET")   return handleVisitors(session);
   if (action === "investigate-ip"   && method === "GET")   return handleInvestigateIp(session, url);
+  if (action === "block-ip"         && method === "POST")  return handleBlockIp(session, request);
+  if (action === "honeypot-creds"   && method === "GET")   return handleHoneypotCreds(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
   if (action === "reject-draft"    && method === "POST")  return handleRejectDraft(session, request);
   if (action === "create-invoice"  && method === "POST")  return handleCreateInvoice(session, request);
   if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);
-  if (action === "threat-intel"    && method === "GET")   return handleThreatIntel(session);
-  if (action === "scan-ip"         && method === "POST")  return handleScanIp(session, request);
-  if (action === "threat-correlation" && method === "GET") return handleThreatCorrelation(session);
-  if (action === "blocklist-export"  && method === "GET")  return handleBlocklistExport(session);
-  if (action === "blocklist-import"  && method === "POST") return handleBlocklistImport(session, request);
-  if (action === "honeypot-logs"     && method === "GET")  return handleHoneypotLogs(session);
-  if (action === "dns-integrity"     && method === "GET")  return handleDnsIntegrity(session);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

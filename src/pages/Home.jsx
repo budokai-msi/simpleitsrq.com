@@ -37,6 +37,12 @@ function Hero() {
             <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included</li>
             <li><Clock size={14} strokeWidth={2.25} /> Local team · same-day response</li>
           </ul>
+          {/* Stat ticker */}
+          <div className="hero-stats">
+            <div className="hero-stat"><span className="val tabular">0</span><span className="lbl">Security breaches</span></div>
+            <div className="hero-stat"><span className="val tabular">&lt;4h</span><span className="lbl">Recovery time</span></div>
+            <div className="hero-stat"><span className="val tabular">99.99%</span><span className="lbl">Uptime</span></div>
+          </div>
         </div>
       </div>
     </section>
@@ -123,13 +129,13 @@ function Solutions() {
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
-            <a key={title} href="#contact" className="solution-card card-hover reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
+            <a key={title} href="#contact" className="solution-card card-hover card-tilt gradient-border reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
               <div className="solution-card-head">
-                <span className="solution-card-icon"><Icon size={18} /></span>
+                <span className="solution-card-icon gradient-icon"><Icon size={18} /></span>
                 <h3 className="solution-card-title">{title}</h3>
               </div>
               <p className="solution-card-desc">{desc}</p>
-              <span className="solution-card-link">
+              <span className="solution-card-link shimmer-line">
                 Learn more <ArrowRight size={14} />
               </span>
             </a>
@@ -165,7 +171,7 @@ function Industries() {
               <div className="industry-icon"><Icon size={26} /></div>
               <h3 className="industry-name">{name}</h3>
               <div className="badges">
-                {badges.map((b) => <span key={b} className="badge">{b}</span>)}
+                {badges.map((b) => <span key={b} className="badge badge-glow">{b}</span>)}
               </div>
             </article>
           ))}
@@ -224,8 +230,6 @@ function Compliance() {
 }
 
 function Testimonial() {
-  // Single-quote block with attribution. Plain layout, left brand
-  // border, no card shadow — competitor-aligned.
   return (
     <section className="testimonial-section" aria-label="Client testimonial">
       <div className="container">

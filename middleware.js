@@ -6,13 +6,9 @@
 // to the threat_actors table for intelligence.
 
 import { neon } from "@neondatabase/serverless";
+import { getHoneypotPage } from "./api/_lib/honeypot.js";
 
 const HOSTILE_COUNTRIES = new Set(["CN", "RU", "KP"]);
-
-// ── Layer 0: Hardcoded IP + CIDR blocklist ─────────────────────────────
-// Single source of truth lives in api/_lib/blocklist.js. All layers
-// (middleware, security lib, portal watchlist) import from there.
-import { isHardBlocked } from "./api/_lib/blocklist.js";
 
 // Paths that no legitimate visitor would ever hit. Anyone requesting these is
 // running a scanner — instant block + honeypot + threat log.
@@ -20,30 +16,25 @@ const SCANNER_TRAPS = new Set([
   "/wp-login.php", "/wp-admin", "/wp-admin/",
   "/administrator", "/admin", "/admin/",
   "/.env", "/.env.local", "/.env.production",
-  "/.env.development", "/.env.staging", "/.env.backup",
-  "/.env.bak", "/.env.old", "/.env.save", "/.env.example",
-  "/.git/config", "/.git/HEAD", "/.git/index",
-  "/.git/logs/HEAD", "/.git/refs/heads/main",
+  "/.git/config", "/.git/HEAD",
   "/phpmyadmin", "/phpmyadmin/",
   "/xmlrpc.php",
-  "/config.php", "/wp-config.php", "/wp-config.php.bak",
+  "/config.php", "/wp-config.php",
   "/cgi-bin/", "/shell", "/cmd",
   "/.aws/credentials",
   "/actuator", "/actuator/health",
   "/api/v1/debug", "/debug",
   "/server-status", "/server-info",
-  "/.htaccess", "/.htpasswd",
-  "/backup.sql", "/dump.sql", "/db.sql",
-  "/.DS_Store",
-  "/web.config",
+  "/robots.txt", "/sitemap.xml",
+  "/.htaccess", "/web.config",
+  "/wp-content/", "/wp-includes/",
+  "/api/jsonws", "/invoker/JMXInvokerServlet",
+  "/solr/", "/jenkins/", "/manager/html",
 ]);
 
-// Prefix traps — catch /wp-content/*, /wp-includes/*, .git/*, etc.
+// Prefix traps — catch /wp-content/*, /wp-includes/*, etc.
 const SCANNER_PREFIXES = [
   "/wp-content/", "/wp-includes/",
-  "/.git/",       // block ALL .git sub-paths
-  "/.env.",       // catch any .env.* variant not in the exact set above
-  "/.svn/", "/.hg/",  // other VCS directories
   "/.well-known/security.txt", // legit, but we don't have one — a scanner guess
 ];
 
@@ -54,49 +45,6 @@ function isScannerPath(pathname) {
     if (lower.startsWith(prefix)) return true;
   }
   return false;
-}
-
-// ── In-memory edge rate limiter ────────────────────────────────────────
-// Tracks request counts per IP in a fixed window anchored at the first
-// request timestamp for the current bucket. This is per-isolate (not
-// globally shared), but still catches burst attacks before the DB
-// blocklist kicks in. Stale entries are pruned inline on each call
-// (no setInterval — unreliable in serverless/edge runtimes).
-const RATE_WINDOW_MS = 60_000; // 1 minute
-const RATE_MAX_SCANNER = 3;    // 3 scanner hits in 1 min → instant 403
-const RATE_MAX_GLOBAL  = 120;  // 120 req/min per IP across all paths
-const rateCounts = new Map();  // ip → { scanner: count, global: count, ts: windowStart }
-let lastSweep = Date.now();
-
-// Countries that produced multiple attackers get stricter rate limits.
-const GEO_RATE_MULTIPLIERS = new Map([
-  ["FR", 0.5],   // 3 of 7 attackers from France
-  ["BR", 0.5],   // xmlrpc.php attacks
-  ["IN", 0.5],   // wp-login scanning
-  ["AE", 0.5],   // wp-login scanning
-]);
-
-function rateCheck(ip, isScanner, countryCode) {
-  const now = Date.now();
-  // Opportunistic sweep — prune stale entries at most once per 60s.
-  if (now - lastSweep > RATE_WINDOW_MS) {
-    const cutoff = now - RATE_WINDOW_MS * 2;
-    for (const [k, v] of rateCounts) {
-      if (v.ts < cutoff) rateCounts.delete(k);
-    }
-    lastSweep = now;
-  }
-  let entry = rateCounts.get(ip);
-  if (!entry || now - entry.ts > RATE_WINDOW_MS) {
-    entry = { scanner: 0, global: 0, ts: now };
-    rateCounts.set(ip, entry);
-  }
-  entry.global++;
-  if (isScanner) entry.scanner++;
-  const multiplier = GEO_RATE_MULTIPLIERS.get(countryCode) ?? 1.0;
-  const maxScanner = Math.floor(RATE_MAX_SCANNER * multiplier);
-  const maxGlobal  = Math.floor(RATE_MAX_GLOBAL * multiplier);
-  return entry.scanner >= maxScanner || entry.global >= maxGlobal;
 }
 
 // Skip static assets — only intercept page navigations and API calls.
@@ -190,7 +138,7 @@ async function logThreat(request, geo, threatClass) {
     try {
       const abuseKey = process.env.ABUSEIPDB_API_KEY;
       // ipinfo enrichment (no key needed for free tier)
-      const infoRes = await fetch(`https://ipinfo.io/${ip}/json`, { signal: AbortSignal.timeout?.(3000) });
+      const infoRes = await fetch(`https://ipinfo.io/${ip}/json`, { signal: AbortSignal.timeout(3000) });
       if (infoRes.ok) {
         const info = await infoRes.json();
         const orgLower = (info.org || "").toLowerCase();
@@ -209,7 +157,7 @@ async function logThreat(request, geo, threatClass) {
       if (abuseKey) {
         const checkRes = await fetch(
           `https://api.abuseipdb.com/api/v2/check?ipAddress=${encodeURIComponent(ip)}&maxAgeInDays=90`,
-          { headers: { Key: abuseKey, Accept: "application/json" }, signal: AbortSignal.timeout?.(3000) },
+          { headers: { Key: abuseKey, Accept: "application/json" }, signal: AbortSignal.timeout(3000) },
         );
         if (checkRes.ok) {
           const d = (await checkRes.json()).data || {};
@@ -232,38 +180,11 @@ async function logThreat(request, geo, threatClass) {
               categories: "21,15",
               comment: `Automated scanner probing ${new URL(request.url).pathname} on simpleitsrq.com. Auto-blocked by honeypot trap.`,
             }),
-            signal: AbortSignal.timeout?.(3000),
+            signal: AbortSignal.timeout(3000),
           });
         }
       }
     } catch { /* enrichment is best-effort */ }
-
-    // Webhook alert for new threat actors
-    try {
-      const webhookUrl = process.env.THREAT_WEBHOOK_URL;
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: `**New threat actor** on simpleitsrq.com\nIP: \`${ip}\`\nPath: \`${new URL(request.url).pathname}\`\nCountry: ${geo.country || "?"}\nClass: ${threatClass}\nTime: ${new Date().toISOString()}`,
-            embeds: [{
-              title: "Threat Actor Detected",
-              color: 0xDC2626,
-              fields: [
-                { name: "IP", value: ip, inline: true },
-                { name: "Country", value: `${geo.country || "?"} / ${geo.city || "?"}`, inline: true },
-                { name: "Path", value: new URL(request.url).pathname, inline: true },
-                { name: "Class", value: threatClass, inline: true },
-                { name: "User Agent", value: (request.headers.get("user-agent") || "unknown").slice(0, 200) },
-              ],
-              timestamp: new Date().toISOString(),
-            }],
-          }),
-          signal: AbortSignal.timeout?.(3000),
-        });
-      }
-    } catch { /* webhook is best-effort */ }
   } catch (err) {
     console.error("[middleware] threat log failed", err);
   }
@@ -326,31 +247,20 @@ const API_503 = () => new Response(
 
 export default async function middleware(request) {
   const url = new URL(request.url);
-  const ip = getIp(request);
 
-  // Layer 0: Hardcoded IP blocklist — checked for ALL requests including
-  // static assets so blocked IPs can't fetch anything at all.
-  if (isHardBlocked(ip)) return BLOCKED_RESPONSE;
-
-  // Skip static assets for the remaining (heavier) checks.
+  // Skip static assets.
   if (SKIP_EXTENSIONS.test(url.pathname)) return;
 
+  const ip = getIp(request);
   const geo = getGeo(request);
-  const isScanner = isScannerPath(url.pathname);
-
-  // Layer 0.5: In-memory rate limiter — catches burst attacks before the DB
-  // blocklist kicks in. Scanner paths have a very low threshold (3/min).
-  // Skip when IP is unknown to avoid false positives from shared bucket.
-  if (ip !== "unknown" && rateCheck(ip, isScanner, geo.country)) return BLOCKED_RESPONSE;
-
   const sql = getSql();
 
-  // Layer 1: DB-backed IP blocklist — dynamically-added bad actors.
+  // Layer 1: IP blocklist — already-known bad actors get nothing.
   if (await isBlocked(sql, ip)) return BLOCKED_RESPONSE;
 
   // Layer 2: Scanner traps — anyone probing wp-login, .env, phpmyadmin, etc.
   // is a scanner. Instant block, log as threat, serve honeypot to waste time.
-  if (isScanner) {
+  if (isScannerPath(url.pathname)) {
     const p = logThreat(request, geo, "scanner");
     request.waitUntil?.(p) ?? p.catch(() => {});
     return new Response(HONEYPOT_HTML, { status: 200, headers: HONEYPOT_HEADERS });
@@ -361,7 +271,9 @@ export default async function middleware(request) {
     const p = logThreat(request, geo, "hostile_geo");
     request.waitUntil?.(p) ?? p.catch(() => {});
     if (url.pathname.startsWith("/api/")) return API_503();
-    return new Response(HONEYPOT_HTML, { status: 200, headers: HONEYPOT_HEADERS });
+    // Serve the appropriate honeypot page based on path
+    const honeypotPage = url.searchParams.get("p") || "login";
+    return new Response(getHoneypotPage(honeypotPage), { status: 200, headers: HONEYPOT_HEADERS });
   }
 
   // All clear — proceed to the real site.
