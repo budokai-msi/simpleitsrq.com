@@ -394,6 +394,171 @@ const useStyles = makeStyles({
       backgroundColor: tokens.colorNeutralBackground2Hover,
     },
   },
+
+  // ── threat intel dashboard ──
+  threatSection: {
+    marginTop: "32px",
+    paddingTop: "24px",
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  threatSectionHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "8px",
+  },
+  threatSectionIcon: {
+    width: "32px",
+    height: "32px",
+    flexShrink: 0,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: tokens.borderRadiusMedium,
+    fontSize: "16px",
+  },
+  threatSectionTitle: {
+    fontSize: "18px",
+    fontWeight: 700,
+    margin: 0,
+    color: tokens.colorNeutralForeground1,
+  },
+  threatSectionCount: {
+    fontSize: "13px",
+    fontWeight: 600,
+    padding: "2px 8px",
+    borderRadius: "12px",
+    lineHeight: "18px",
+  },
+  threatSectionDesc: {
+    color: tokens.colorNeutralForeground3,
+    fontSize: "13px",
+    lineHeight: "20px",
+    margin: "0 0 12px",
+  },
+  ipCard: {
+    padding: "20px",
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusLarge,
+    backgroundColor: tokens.colorNeutralBackground1,
+    marginBottom: "12px",
+    transition: "box-shadow 0.15s ease, border-color 0.15s ease",
+    ":hover": {
+      boxShadow: tokens.shadow4,
+      borderColor: tokens.colorNeutralStroke1,
+    },
+  },
+  ipCardHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: "12px",
+    marginBottom: "12px",
+  },
+  ipAddress: {
+    fontFamily: "monospace",
+    fontSize: "16px",
+    fontWeight: 700,
+    color: tokens.colorNeutralForeground1,
+    margin: 0,
+    letterSpacing: "0.02em",
+  },
+  ipLabel: {
+    fontSize: "12px",
+    color: tokens.colorNeutralForeground3,
+    marginTop: "2px",
+  },
+  badgeRow: {
+    display: "flex",
+    gap: "6px",
+    flexWrap: "wrap",
+    alignItems: "center",
+  },
+  intelGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+    gap: "8px",
+    marginTop: "8px",
+    marginBottom: "12px",
+  },
+  intelField: {
+    fontSize: "12px",
+    color: tokens.colorNeutralForeground3,
+  },
+  intelValue: {
+    fontWeight: 600,
+    color: tokens.colorNeutralForeground1,
+  },
+  actionBar: {
+    display: "flex",
+    gap: "8px",
+    marginTop: "12px",
+    paddingTop: "12px",
+    borderTop: `1px solid ${tokens.colorNeutralStroke3}`,
+  },
+  expandedPanel: {
+    marginTop: "16px",
+    paddingTop: "16px",
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+  timelineItem: {
+    fontSize: "12px",
+    padding: "8px 0",
+    borderBottom: `1px solid ${tokens.colorNeutralStroke3}`,
+    ":last-child": {
+      borderBottom: "none",
+    },
+  },
+  statCardAccent: {
+    padding: "20px",
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusLarge,
+    backgroundColor: tokens.colorNeutralBackground1,
+    position: "relative",
+    overflow: "hidden",
+  },
+  statCardAccentBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "3px",
+  },
+  osintBlock: {
+    padding: "12px 16px",
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground2,
+    marginTop: "8px",
+    fontSize: "12px",
+  },
+  activityFeedItem: {
+    padding: "12px 16px",
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground1,
+    marginBottom: "8px",
+    display: "flex",
+    gap: "12px",
+    alignItems: "flex-start",
+  },
+  activityDot: {
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    flexShrink: 0,
+    marginTop: "5px",
+  },
+  toolbar: {
+    display: "flex",
+    gap: "8px",
+    margin: "16px 0",
+    flexWrap: "wrap",
+    alignItems: "center",
+    padding: "12px 16px",
+    borderRadius: tokens.borderRadiusMedium,
+    backgroundColor: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
 });
 
 // ---------- helpers ----------
@@ -1568,14 +1733,16 @@ function ThreatIntelPanel({ styles }) {
 
       {/* Summary cards */}
       <div className={styles.cardGrid}>
-        <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+        <div className={styles.statCardAccent}>
+          <div className={styles.statCardAccentBar} style={{ backgroundColor: "#DC2626" }} />
           <div className={styles.statLabel}>Watchlist IPs</div>
           <div className={styles.statValue}>{data.watchlist.length}</div>
           <span style={{ color: tokens.colorNeutralForeground3, fontSize: 12 }}>
             {data.watchlist.filter((w) => w.blocked).length} blocked
           </span>
         </div>
-        <div className={styles.statCard}>
+        <div className={styles.statCardAccent}>
+          <div className={styles.statCardAccentBar} style={{ backgroundColor: "#D97706" }} />
           <div className={styles.statLabel}>Total hits</div>
           <div className={styles.statValue}>
             {data.watchlist.reduce((sum, w) => sum + (w.stats?.hitCount || 0), 0)}
@@ -1584,13 +1751,15 @@ function ThreatIntelPanel({ styles }) {
             across all watchlist IPs
           </span>
         </div>
-        <div className={styles.statCard}>
+        <div className={styles.statCardAccent}>
+          <div className={styles.statCardAccentBar} style={{ backgroundColor: "#7C3AED" }} />
           <div className={styles.statLabel}>Device fingerprints</div>
           <div className={styles.statValue}>
             {data.watchlist.reduce((sum, w) => sum + (w.stats?.deviceCount || 0), 0)}
           </div>
         </div>
-        <div className={styles.statCard}>
+        <div className={styles.statCardAccent}>
+          <div className={styles.statCardAccentBar} style={{ backgroundColor: "#0EA5E9" }} />
           <div className={styles.statLabel}>Last refresh</div>
           <div className={styles.statValue} style={{ fontSize: 16 }}>{ago(data.lastRefreshedAt)}</div>
           <span style={{ color: tokens.colorNeutralForeground3, fontSize: 12 }}>
@@ -1600,7 +1769,7 @@ function ThreatIntelPanel({ styles }) {
       </div>
 
       {/* Scan All / Export / Import buttons */}
-      <div style={{ display: "flex", gap: 8, margin: "16px 0", flexWrap: "wrap" }}>
+      <div className={styles.toolbar}>
         <Button
           appearance="primary"
           disabled={scanAllRunning}
@@ -1686,10 +1855,21 @@ function ThreatIntelPanel({ styles }) {
       </div>
 
       {/* Watchlist IP cards */}
-      <h3 style={{ fontSize: 18, fontWeight: 600, margin: "24px 0 8px", color: "#DC2626" }}>
-        Watchlist ({data.watchlist.length})
-      </h3>
-      <div className={styles.list}>
+      <div className={styles.threatSection}>
+        <div className={styles.threatSectionHeader}>
+          <div className={styles.threatSectionIcon} style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}>
+            🛡
+          </div>
+          <h3 className={styles.threatSectionTitle}>Watchlist</h3>
+          <span className={styles.threatSectionCount} style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}>
+            {data.watchlist.length}
+          </span>
+        </div>
+        <p className={styles.threatSectionDesc}>
+          Monitored IP addresses with threat intelligence and activity tracking.
+        </p>
+      </div>
+      <div>
         {data.watchlist.map((w) => {
           const expanded = expandedIp === w.ip;
           const ipActivity = expanded ? data.activity.filter((a) => a.ip === w.ip) : [];
