@@ -16,6 +16,7 @@ import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { json } from "./_lib/http.js";
+import { enrichIp } from "./_lib/ipintel.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
@@ -1031,6 +1032,168 @@ async function handleSendInvoice(session, request) {
   }
 }
 
+// ---------- threat intelligence (admin only) ----------
+
+// The 7 hardcoded IPs from the edge blocklist. Mirrors middleware.js.
+const WATCHLIST_IPS = [
+  { ip: "52.47.126.220",   label: "FR — coordinated .env/.git probing" },
+  { ip: "208.115.211.186", label: "FR — .git directory probing" },
+  { ip: "66.187.6.102",    label: "US — .env file targeting" },
+  { ip: "20.199.112.200",  label: "FR — hellopress plugin exploitation" },
+  { ip: "177.235.105.185", label: "BR — xmlrpc.php POST attacks" },
+  { ip: "104.28.164.43",   label: "IN — wp-login brute-force scanning" },
+  { ip: "146.70.102.182",  label: "AE — wp-login brute-force scanning" },
+];
+
+async function handleThreatIntel(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const ips = WATCHLIST_IPS.map((w) => w.ip);
+
+  // Parallel queries: intel cache, threat activity, blocked status, auto-actions
+  const [intelRows, activityRows, blockedRows, actionsRows, statsRows] = await Promise.all([
+    sql`SELECT * FROM ip_intel WHERE ip = ANY(${ips}) ORDER BY enriched_at DESC`,
+    sql`
+      SELECT ip, path, method, threat_class, user_agent, device_hash,
+             country, city, ts, headers_json
+      FROM threat_actors
+      WHERE ip = ANY(${ips})
+      ORDER BY ts DESC
+      LIMIT 200
+    `,
+    sql`SELECT ip, reason, created_at FROM ip_blocklist WHERE ip = ANY(${ips})`,
+    sql`
+      SELECT ts, action, target, reason, detail
+      FROM auto_actions
+      WHERE target = ANY(${ips})
+      ORDER BY ts DESC
+      LIMIT 50
+    `,
+    sql`
+      SELECT ip, COUNT(*)::int AS hit_count,
+             MIN(ts) AS first_seen, MAX(ts) AS last_seen,
+             COUNT(DISTINCT device_hash) FILTER (WHERE device_hash IS NOT NULL)::int AS device_count,
+             COUNT(DISTINCT path)::int AS path_count,
+             array_agg(DISTINCT path ORDER BY path) FILTER (WHERE path IS NOT NULL) AS paths
+      FROM threat_actors
+      WHERE ip = ANY(${ips})
+      GROUP BY ip
+    `,
+  ]);
+
+  // Build lookup maps
+  const intelMap = {};
+  for (const row of intelRows) {
+    intelMap[row.ip] = {
+      asn: row.asn, org: row.org, isp: row.isp,
+      country: row.country, region: row.region, city: row.city,
+      isDatacenter: row.is_datacenter, isTor: row.is_tor,
+      isProxy: row.is_proxy, isVpn: row.is_vpn,
+      abuseScore: row.abuse_score, abuseReports: row.abuse_reports,
+      abuseLastSeen: row.abuse_last_seen, enrichedAt: row.enriched_at,
+    };
+  }
+
+  const blockedMap = {};
+  for (const row of blockedRows) {
+    blockedMap[row.ip] = { reason: row.reason, blockedAt: row.created_at };
+  }
+
+  const statsMap = {};
+  for (const row of statsRows) {
+    statsMap[row.ip] = {
+      hitCount: row.hit_count, firstSeen: row.first_seen,
+      lastSeen: row.last_seen, deviceCount: row.device_count,
+      pathCount: row.path_count, paths: row.paths || [],
+    };
+  }
+
+  return json(200, {
+    watchlist: WATCHLIST_IPS.map((w) => ({
+      ip: w.ip,
+      label: w.label,
+      intel: intelMap[w.ip] || null,
+      blocked: blockedMap[w.ip] || null,
+      stats: statsMap[w.ip] || null,
+    })),
+    activity: activityRows.map((a) => ({
+      ip: a.ip, path: a.path, method: a.method, threatClass: a.threat_class,
+      ua: a.user_agent, deviceHash: a.device_hash,
+      country: a.country, city: a.city, ts: a.ts,
+    })),
+    autoActions: actionsRows.map((a) => ({
+      ts: a.ts, action: a.action, target: a.target,
+      reason: a.reason, detail: a.detail,
+    })),
+    scannedAt: new Date().toISOString(),
+  });
+}
+
+async function handleScanIp(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const ip = String(body?.ip || "").trim();
+  if (!ip || !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) {
+    return json(400, { ok: false, error: "invalid_ip" });
+  }
+
+  // Force cache bust by deleting existing intel row before enriching
+  try {
+    await sql`DELETE FROM ip_intel WHERE ip = ${ip}`;
+  } catch { /* best effort */ }
+
+  const intel = await enrichIp(ip);
+
+  // Also fetch fresh activity + blocked status
+  const [threats, blocked, visits] = await Promise.all([
+    sql`
+      SELECT ts, path, method, threat_class, device_hash, user_agent
+      FROM threat_actors WHERE ip = ${ip} ORDER BY ts DESC LIMIT 50
+    `,
+    sql`SELECT ip, reason, created_at FROM ip_blocklist WHERE ip = ${ip}`,
+    sql`
+      SELECT ts, path, device_hash, user_agent, browser, os, country, city
+      FROM visits WHERE ip = ${ip} ORDER BY ts DESC LIMIT 50
+    `,
+  ]);
+
+  // Log the scan action
+  try {
+    await sql`
+      INSERT INTO auto_actions (action, target, reason, detail)
+      VALUES ('admin_scan', ${ip}, 'Manual threat intel scan',
+              ${JSON.stringify({ by: session.user.email, abuse_score: intel?.abuse_score })}::jsonb)
+    `;
+  } catch { /* best effort */ }
+
+  return json(200, {
+    ok: true,
+    ip,
+    intel: intel ? {
+      asn: intel.asn, org: intel.org, isp: intel.isp,
+      country: intel.country, region: intel.region, city: intel.city,
+      isDatacenter: intel.is_datacenter, isTor: intel.is_tor,
+      isProxy: intel.is_proxy, isVpn: intel.is_vpn,
+      abuseScore: intel.abuse_score, abuseReports: intel.abuse_reports,
+      abuseLastSeen: intel.abuse_last_seen,
+    } : null,
+    blocked: blocked.length > 0 ? { reason: blocked[0].reason, blockedAt: blocked[0].created_at } : null,
+    threats: threats.map((t) => ({
+      ts: t.ts, path: t.path, method: t.method, threatClass: t.threat_class,
+      deviceHash: t.device_hash, ua: t.user_agent,
+    })),
+    visits: visits.map((v) => ({
+      ts: v.ts, path: v.path, deviceHash: v.device_hash, ua: v.user_agent,
+      browser: v.browser, os: v.os, country: v.country, city: v.city,
+    })),
+    scannedAt: new Date().toISOString(),
+  });
+}
+
 // ---------- health (unauthenticated, for external uptime monitors) ----------
 async function handleHealth() {
   const checks = { db: "unknown", criticalEvents: 0, ok: false };
@@ -1077,6 +1240,8 @@ async function dispatch(request, method) {
   if (action === "reject-draft"    && method === "POST")  return handleRejectDraft(session, request);
   if (action === "create-invoice"  && method === "POST")  return handleCreateInvoice(session, request);
   if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);
+  if (action === "threat-intel"    && method === "GET")   return handleThreatIntel(session);
+  if (action === "scan-ip"         && method === "POST")  return handleScanIp(session, request);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

@@ -9,26 +9,50 @@ import { neon } from "@neondatabase/serverless";
 
 const HOSTILE_COUNTRIES = new Set(["CN", "RU", "KP"]);
 
+// ── Layer 0: Hardcoded IP blocklist ────────────────────────────────────
+// These IPs are blocked at the edge with ZERO database latency. They were
+// identified from coordinated attacks against .env, .git, xmlrpc.php,
+// wp-login.php, and plugin exploitation vectors.
+const HARDCODED_BLOCKLIST = new Map([
+  ["52.47.126.220",   "FR — coordinated .env/.git probing"],
+  ["208.115.211.186", "FR — .git directory probing"],
+  ["66.187.6.102",    "US — .env file targeting"],
+  ["20.199.112.200",  "FR — hellopress plugin exploitation"],
+  ["177.235.105.185", "BR — xmlrpc.php POST attacks"],
+  ["104.28.164.43",   "IN — wp-login brute-force scanning"],
+  ["146.70.102.182",  "AE — wp-login brute-force scanning"],
+]);
+
 // Paths that no legitimate visitor would ever hit. Anyone requesting these is
 // running a scanner — instant block + honeypot + threat log.
 const SCANNER_TRAPS = new Set([
   "/wp-login.php", "/wp-admin", "/wp-admin/",
   "/administrator", "/admin", "/admin/",
   "/.env", "/.env.local", "/.env.production",
-  "/.git/config", "/.git/HEAD",
+  "/.env.development", "/.env.staging", "/.env.backup",
+  "/.env.bak", "/.env.old", "/.env.save", "/.env.example",
+  "/.git/config", "/.git/HEAD", "/.git/index",
+  "/.git/logs/HEAD", "/.git/refs/heads/main",
   "/phpmyadmin", "/phpmyadmin/",
   "/xmlrpc.php",
-  "/config.php", "/wp-config.php",
+  "/config.php", "/wp-config.php", "/wp-config.php.bak",
   "/cgi-bin/", "/shell", "/cmd",
   "/.aws/credentials",
   "/actuator", "/actuator/health",
   "/api/v1/debug", "/debug",
   "/server-status", "/server-info",
+  "/.htaccess", "/.htpasswd",
+  "/backup.sql", "/dump.sql", "/db.sql",
+  "/.DS_Store",
+  "/web.config",
 ]);
 
-// Prefix traps — catch /wp-content/*, /wp-includes/*, etc.
+// Prefix traps — catch /wp-content/*, /wp-includes/*, .git/*, etc.
 const SCANNER_PREFIXES = [
   "/wp-content/", "/wp-includes/",
+  "/.git/",       // block ALL .git sub-paths
+  "/.env.",       // catch any .env.* variant not in the exact set above
+  "/.svn/", "/.hg/",  // other VCS directories
   "/.well-known/security.txt", // legit, but we don't have one — a scanner guess
 ];
 
@@ -40,6 +64,35 @@ function isScannerPath(pathname) {
   }
   return false;
 }
+
+// ── In-memory edge rate limiter ────────────────────────────────────────
+// Tracks request counts per IP in a sliding window. This is per-isolate
+// (not globally shared), but still catches burst attacks before the DB
+// blocklist kicks in. Entries auto-expire via a periodic sweep.
+const RATE_WINDOW_MS = 60_000; // 1 minute
+const RATE_MAX_SCANNER = 3;    // 3 scanner hits in 1 min → instant 403
+const RATE_MAX_GLOBAL  = 120;  // 120 req/min per IP across all paths
+const rateCounts = new Map();  // ip → { scanner: count, global: count, ts: number }
+
+function rateCheck(ip, isScanner) {
+  const now = Date.now();
+  let entry = rateCounts.get(ip);
+  if (!entry || now - entry.ts > RATE_WINDOW_MS) {
+    entry = { scanner: 0, global: 0, ts: now };
+    rateCounts.set(ip, entry);
+  }
+  entry.global++;
+  if (isScanner) entry.scanner++;
+  return entry.scanner > RATE_MAX_SCANNER || entry.global > RATE_MAX_GLOBAL;
+}
+
+// Sweep stale entries every 5 minutes to prevent memory growth.
+setInterval(() => {
+  const cutoff = Date.now() - RATE_WINDOW_MS * 2;
+  for (const [ip, entry] of rateCounts) {
+    if (entry.ts < cutoff) rateCounts.delete(ip);
+  }
+}, 300_000);
 
 // Skip static assets — only intercept page navigations and API calls.
 const SKIP_EXTENSIONS = /\.(js|css|ico|png|jpg|jpeg|svg|woff2?|ttf|eot|map|xml|txt|json|webp|avif)$/i;
@@ -247,14 +300,24 @@ export default async function middleware(request) {
 
   const ip = getIp(request);
   const geo = getGeo(request);
+
+  // Layer 0: Hardcoded IP blocklist — zero-latency edge block, no DB round trip.
+  if (HARDCODED_BLOCKLIST.has(ip)) return BLOCKED_RESPONSE;
+
+  const isScanner = isScannerPath(url.pathname);
+
+  // Layer 0.5: In-memory rate limiter — catches burst attacks before the DB
+  // blocklist kicks in. Scanner paths have a very low threshold (3/min).
+  if (rateCheck(ip, isScanner)) return BLOCKED_RESPONSE;
+
   const sql = getSql();
 
-  // Layer 1: IP blocklist — already-known bad actors get nothing.
+  // Layer 1: DB-backed IP blocklist — dynamically-added bad actors.
   if (await isBlocked(sql, ip)) return BLOCKED_RESPONSE;
 
   // Layer 2: Scanner traps — anyone probing wp-login, .env, phpmyadmin, etc.
   // is a scanner. Instant block, log as threat, serve honeypot to waste time.
-  if (isScannerPath(url.pathname)) {
+  if (isScanner) {
     const p = logThreat(request, geo, "scanner");
     request.waitUntil?.(p) ?? p.catch(() => {});
     return new Response(HONEYPOT_HTML, { status: 200, headers: HONEYPOT_HEADERS });
