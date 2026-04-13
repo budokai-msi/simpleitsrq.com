@@ -4,23 +4,12 @@
 // log writes, and a couple of header extractors for Vercel's geo data.
 
 import { sql } from "./db.js";
+import { isHardBlocked } from "./blocklist.js";
 
 // ISO 3166-1 alpha-2 codes for hostile-origin countries.
 // Visitors from these countries never see the real site — they get a
 // honeypot response and every detail is logged to threat_actors.
 const HOSTILE_COUNTRIES = new Set(["CN", "RU", "KP"]);
-
-// Hardcoded IP blocklist — checked before any DB query for zero-latency
-// blocking. Mirrors the list in middleware.js (edge layer).
-const HARDCODED_BLOCKLIST = new Set([
-  "52.47.126.220",   // FR — coordinated .env/.git probing
-  "208.115.211.186", // FR — .git directory probing
-  "66.187.6.102",    // US — .env file targeting
-  "20.199.112.200",  // FR — hellopress plugin exploitation
-  "177.235.105.185", // BR — xmlrpc.php POST attacks
-  "104.28.164.43",   // IN — wp-login brute-force scanning
-  "146.70.102.182",  // AE — wp-login brute-force scanning
-]);
 
 export function isHostileGeo(request) {
   const country = (request.headers.get("x-vercel-ip-country") || "").toUpperCase();
@@ -128,13 +117,11 @@ async function fireRealtimeAlert(kind, ip, detail) {
   } catch { /* best effort */ }
 }
 
-export function isIpHardBlocked(ip) {
-  return HARDCODED_BLOCKLIST.has(ip);
-}
+export { isHardBlocked as isIpHardBlocked } from "./blocklist.js";
 
 export async function isIpBlocked(ip) {
   if (!ip || ip === "unknown") return false;
-  if (HARDCODED_BLOCKLIST.has(ip)) return true;
+  if (isHardBlocked(ip)) return true;
   try {
     const rows = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${ip} LIMIT 1`;
     return rows.length > 0;
