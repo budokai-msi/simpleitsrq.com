@@ -8,6 +8,7 @@ import { sql } from "./db.js";
 
 const SESSION_COOKIE = "sirq_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const SESSION_IDLE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
 function randomToken() {
   const bytes = new Uint8Array(32);
@@ -122,7 +123,7 @@ export async function getSession(request) {
 
   const tokenHash = await hashToken(token);
   const rows = await sql`
-    SELECT s.id, s.user_id, s.expires_at, s.ip AS session_ip, s.user_agent AS session_ua,
+    SELECT s.id, s.user_id, s.expires_at, s.last_seen_at, s.ip AS session_ip, s.user_agent AS session_ua,
            u.email, u.name, u.avatar_url, u.company, u.phone, u.is_admin
     FROM sessions s
     JOIN users u ON u.id = s.user_id
@@ -134,6 +135,19 @@ export async function getSession(request) {
 
   const row = rows[0];
   const meta = extractRequestMeta(request);
+
+  // --- Idle timeout ---
+  // If the session hasn't been used within SESSION_IDLE_SECONDS, treat it
+  // as expired even though the absolute TTL hasn't passed yet.
+  if (row.last_seen_at) {
+    const idleSince = new Date(row.last_seen_at).getTime();
+    const idleMs = Date.now() - idleSince;
+    if (idleMs > SESSION_IDLE_SECONDS * 1000) {
+      logSessionEvent("idle_expired", { sessionId: row.id, userId: row.user_id, ...meta });
+      sql`DELETE FROM sessions WHERE id = ${row.id}`.catch(() => {});
+      return null;
+    }
+  }
 
   // --- Hijack detection ---
   // If the IP or UA changed since the session was created, log it as a

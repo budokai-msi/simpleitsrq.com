@@ -1432,14 +1432,30 @@ function ThreatIntelPanel({ styles }) {
   const [scanning, setScanning] = useState(null); // ip being scanned
   const [scanAllRunning, setScanAllRunning] = useState(false);
   const [expandedIp, setExpandedIp] = useState(null);
+  const [correlations, setCorrelations] = useState(null);
+  const [importing, setImporting] = useState(false);
+  const [honeypot, setHoneypot] = useState(null);
+  const [dns, setDns] = useState(null);
+  const fileInputRef = useRef(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/portal?action=threat-intel", { credentials: "same-origin" });
+      const [res, corrRes, hpRes, dnsRes] = await Promise.all([
+        fetch("/api/portal?action=threat-intel", { credentials: "same-origin" }),
+        fetch("/api/portal?action=threat-correlation", { credentials: "same-origin" }),
+        fetch("/api/portal?action=honeypot-logs", { credentials: "same-origin" }),
+        fetch("/api/portal?action=dns-integrity", { credentials: "same-origin" }),
+      ]);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
+      if (corrRes.ok) {
+        const corrData = await corrRes.json();
+        setCorrelations(corrData.correlations || []);
+      }
+      if (hpRes.ok) setHoneypot(await hpRes.json());
+      if (dnsRes.ok) setDns(await dnsRes.json());
     } catch (err) {
       setError(err.message || "Could not load threat intel.");
     } finally {
@@ -1564,8 +1580,8 @@ function ThreatIntelPanel({ styles }) {
         </div>
       </div>
 
-      {/* Scan All button */}
-      <div style={{ display: "flex", gap: 8, margin: "16px 0" }}>
+      {/* Scan All / Export / Import buttons */}
+      <div style={{ display: "flex", gap: 8, margin: "16px 0", flexWrap: "wrap" }}>
         <Button
           appearance="primary"
           disabled={scanAllRunning}
@@ -1575,6 +1591,77 @@ function ThreatIntelPanel({ styles }) {
           {scanAllRunning ? `Scanning ${scanning || "…"}` : "Scan all IPs"}
         </Button>
         <Button appearance="subtle" onClick={load}>Refresh</Button>
+        <Button
+          appearance="subtle"
+          onClick={async () => {
+            try {
+              const res = await fetch("/api/portal?action=blocklist-export", { credentials: "same-origin" });
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              const data = await res.json();
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "blocklist-export.json";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            } catch (err) {
+              setError("Export failed: " + (err.message || "Unknown error"));
+            }
+          }}
+        >
+          Export blocklist
+        </Button>
+        <Button
+          appearance="subtle"
+          disabled={importing}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {importing ? "Importing…" : "Import blocklist"}
+        </Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,.txt"
+          style={{ display: "none" }}
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            setImporting(true);
+            try {
+              const text = await file.text();
+              let payload;
+              try {
+                const parsed = JSON.parse(text);
+                // Accept { ips: [...] } or a bare array
+                payload = Array.isArray(parsed) ? { ips: parsed } : parsed;
+              } catch {
+                // Plain text: one IP per line
+                const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+                payload = { ips: lines };
+              }
+              const res = await fetch("/api/portal?action=blocklist-import", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              });
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              const result = await res.json();
+              setError(null);
+              await load();
+              alert(`Import complete: ${result.imported} imported, ${result.skipped} skipped.`);
+            } catch (err) {
+              setError("Import failed: " + (err.message || "Unknown error"));
+            } finally {
+              setImporting(false);
+              // Reset input so the same file can be re-selected
+              if (fileInputRef.current) fileInputRef.current.value = "";
+            }
+          }}
+        />
       </div>
 
       {/* Watchlist IP cards */}
@@ -1753,6 +1840,245 @@ function ThreatIntelPanel({ styles }) {
               </div>
             ))}
           </div>
+        </>
+      )}
+
+      {/* Threat Correlation — device hashes seen across multiple IPs */}
+      {correlations && correlations.length > 0 && (
+        <>
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: "#7C3AED" }}>
+            Threat Correlation ({correlations.length})
+          </h3>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+            Device fingerprints observed across multiple IPs — potential evasion or distributed attacks.
+          </p>
+          <div className={styles.list}>
+            {correlations.map((c, i) => (
+              <div
+                key={i}
+                className={styles.listRow}
+                style={{
+                  borderLeftWidth: 3,
+                  borderColor: "#7C3AED",
+                  flexDirection: "column",
+                  alignItems: "stretch",
+                  gap: 6,
+                  cursor: "default",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                  <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>
+                    {c.deviceHash.slice(0, 20)}...
+                  </p>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                    {c.ipCount >= 3 && (
+                      <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>MULTI-IP</Badge>
+                    )}
+                    <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>
+                      {c.ipCount} IPs
+                    </Badge>
+                    <Badge appearance="outline" color="informative" style={{ fontSize: 10 }}>
+                      {c.totalHits} hits
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* IPs list */}
+                <div style={{ fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+                  <strong>IPs:</strong>{" "}
+                  <span style={{ fontFamily: "monospace", fontSize: 11 }}>
+                    {c.ips.join(", ")}
+                  </span>
+                </div>
+
+                {/* Countries */}
+                {c.countries.length > 0 && (
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+                    <strong>Countries:</strong> {c.countries.join(", ")}
+                  </div>
+                )}
+
+                {/* Paths targeted */}
+                {c.paths.length > 0 && (
+                  <div style={{ fontSize: 11, fontFamily: "monospace", color: tokens.colorNeutralForeground3, lineHeight: "18px" }}>
+                    Paths: {c.paths.join(", ")}
+                  </div>
+                )}
+
+                {/* Timeframe */}
+                <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                  <span>First seen: {fmt(c.firstSeen)}</span>
+                  <span>·</span>
+                  <span>Last seen: {ago(c.lastSeen)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Honeypot Intelligence */}
+      {honeypot && (
+        <>
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: "#D97706" }}>
+            Honeypot Intelligence
+          </h3>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+            Credential attempts and device probes captured by honeypot endpoints.
+          </p>
+
+          {/* Honeypot stats cards */}
+          <div className={styles.cardGrid}>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+              <div className={styles.statLabel}>Credential attempts</div>
+              <div className={styles.statValue}>{honeypot.stats?.totalCredentials || 0}</div>
+            </div>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+              <div className={styles.statLabel}>Probe signals</div>
+              <div className={styles.statValue}>{honeypot.stats?.totalProbes || 0}</div>
+            </div>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+              <div className={styles.statLabel}>Unique IPs</div>
+              <div className={styles.statValue}>{honeypot.stats?.uniqueIps || 0}</div>
+            </div>
+          </div>
+
+          {/* Credential attempts table */}
+          {honeypot.credentials && honeypot.credentials.length > 0 && (
+            <>
+              <h4 style={{ fontSize: 14, fontWeight: 600, margin: "20px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Credential attempts ({honeypot.credentials.length})
+              </h4>
+              <div className={styles.list}>
+                {honeypot.credentials.map((c, i) => (
+                  <div key={i} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: "#D97706", cursor: "default" }}>
+                    <div className={styles.listMain}>
+                      <p className={styles.listTitle}>
+                        {c.email || "(no email)"}
+                      </p>
+                      <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                        <span>{fmt(c.ts)}</span>
+                        <span>·</span>
+                        <span style={{ fontFamily: "monospace", fontSize: 11 }}>{c.ip}</span>
+                        {c.country && <><span>·</span><span>{c.country}</span></>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Probe signals table */}
+          {honeypot.probes && honeypot.probes.length > 0 && (
+            <>
+              <h4 style={{ fontSize: 14, fontWeight: 600, margin: "20px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                Probe signals ({honeypot.probes.length})
+              </h4>
+              <div className={styles.list}>
+                {honeypot.probes.map((p, i) => (
+                  <div key={i} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: "#D97706", cursor: "default" }}>
+                    <div className={styles.listMain}>
+                      <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 12 }}>
+                        {p.ip}
+                      </p>
+                      <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                        <span>{fmt(p.ts)}</span>
+                        {p.screen && <><span>·</span><span>Screen: {p.screen}</span></>}
+                        {p.platform && <><span>·</span><span>Platform: {p.platform}</span></>}
+                        {p.webglRenderer && <><span>·</span><span>WebGL: {p.webglRenderer}</span></>}
+                        {p.canvasHash && <><span>·</span><span style={{ fontFamily: "monospace", fontSize: 10 }}>Canvas: {p.canvasHash.slice(0, 16)}...</span></>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {(!honeypot.credentials || honeypot.credentials.length === 0) && (!honeypot.probes || honeypot.probes.length === 0) && (
+            <p style={{ padding: 16, color: tokens.colorNeutralForeground3, fontSize: 13 }}>
+              No honeypot signals recorded yet.
+            </p>
+          )}
+        </>
+      )}
+
+      {/* DNS Integrity */}
+      {dns && (
+        <>
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: tokens.colorNeutralForeground1 }}>
+            DNS Integrity
+          </h3>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+            Automated DNS record checks to detect unauthorized changes or hijacking.
+          </p>
+
+          {/* DNS stats cards */}
+          <div className={styles.cardGrid}>
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>Total checks (7d)</div>
+              <div className={styles.statValue}>{dns.stats?.totalChecks || 0}</div>
+            </div>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #16A34A" }}>
+              <div className={styles.statLabel}>Passing</div>
+              <div className={styles.statValue} style={{ color: "#16A34A" }}>{dns.stats?.passing || 0}</div>
+            </div>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+              <div className={styles.statLabel}>Failing</div>
+              <div className={styles.statValue} style={{ color: dns.stats?.failing > 0 ? "#DC2626" : undefined }}>{dns.stats?.failing || 0}</div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statLabel}>Last check</div>
+              <div className={styles.statValue} style={{ fontSize: 16 }}>{dns.stats?.lastCheck ? ago(dns.stats.lastCheck) : "never"}</div>
+            </div>
+          </div>
+
+          {/* DNS checks table */}
+          {dns.checks && dns.checks.length > 0 && (
+            <div className={styles.list} style={{ marginTop: 12 }}>
+              {dns.checks.map((c, i) => (
+                <div
+                  key={c.id || i}
+                  className={styles.listRow}
+                  style={{
+                    borderLeftWidth: 3,
+                    borderColor: c.match ? "#16A34A" : "#DC2626",
+                    cursor: "default",
+                  }}
+                >
+                  <div className={styles.listMain}>
+                    <p className={styles.listTitle}>
+                      {c.domain}{" "}
+                      <Badge appearance="outline" color="informative" style={{ fontSize: 10, marginLeft: 6 }}>
+                        {c.recordType}
+                      </Badge>
+                    </p>
+                    <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                      <span>{fmt(c.ts)}</span>
+                      <span>·</span>
+                      <span>Expected: <code style={{ fontSize: 11 }}>{c.expected}</code></span>
+                      <span>·</span>
+                      <span>Actual: <code style={{ fontSize: 11 }}>{c.actual}</code></span>
+                      {c.resolver && <><span>·</span><span>Resolver: {c.resolver}</span></>}
+                    </div>
+                  </div>
+                  <Badge
+                    appearance="filled"
+                    color={c.match ? "success" : "danger"}
+                  >
+                    {c.match ? "PASS" : "FAIL"}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(!dns.checks || dns.checks.length === 0) && (
+            <p style={{ padding: 16, color: tokens.colorNeutralForeground3, fontSize: 13 }}>
+              No DNS integrity checks recorded yet.
+            </p>
+          )}
         </>
       )}
     </div>

@@ -17,6 +17,7 @@ import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { json } from "./_lib/http.js";
 import { enrichIp } from "./_lib/ipintel.js";
+import { BLOCKED_IPS, validateIp } from "./_lib/blocklist.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
@@ -393,6 +394,60 @@ async function handleTicketPatch(session, request) {
     RETURNING id, ticket_code, status, priority, updated_at, closed_at
   `;
   if (rows.length === 0) return json(404, { ok: false, error: "not_found" });
+
+  // Notify the client when status changes (best-effort).
+  if (hasStatus) {
+    try {
+      const ticketRows = await sql`
+        SELECT email, name, subject, ticket_code FROM tickets WHERE ticket_code = ${code} LIMIT 1
+      `;
+      if (ticketRows.length > 0) {
+        const t = ticketRows[0];
+        const apiKey = process.env.RESEND_API_KEY;
+        if (apiKey && t.email) {
+          const resend = new Resend(apiKey);
+          const emailSubject = `[Update ${t.ticket_code}] Status changed to ${status}`;
+          const emailHtml = `
+            <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:640px;margin:0 auto;color:#1a1a1a">
+              <div style="padding:14px 18px;background:#0F6CBD;color:#fff;border-radius:8px 8px 0 0">
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.9">Ticket status updated</div>
+                <div style="font-size:20px;font-weight:700;margin-top:2px">${escapeHtml(t.ticket_code)}</div>
+              </div>
+              <div style="padding:20px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">
+                <h2 style="margin:0 0 14px;font-size:18px;color:#0F6CBD">${escapeHtml(t.subject)}</h2>
+                <p style="font-size:14px;line-height:1.55;margin:0 0 18px">
+                  The status of your support ticket <strong>${escapeHtml(t.ticket_code)}</strong> has been changed to
+                  <strong style="text-transform:capitalize">${escapeHtml(status.replace(/_/g, " "))}</strong>.
+                </p>
+                <p style="margin-top:22px;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px">
+                  View details in the <a href="https://simpleitsrq.com/portal">Simple IT SRQ portal</a> · Ticket ${escapeHtml(t.ticket_code)}
+                </p>
+              </div>
+            </div>
+          `;
+          const emailText = [
+            `Ticket status updated`,
+            `Ticket: ${t.ticket_code} — ${t.subject}`,
+            `New status: ${status.replace(/_/g, " ")}`,
+            ``,
+            `View details in the portal: https://simpleitsrq.com/portal`,
+          ].join("\n");
+
+          await resend.emails.send({
+            from: TICKET_FROM,
+            to: [t.email],
+            subject: emailSubject,
+            text: emailText,
+            html: emailHtml,
+            headers: { "X-Ticket-ID": t.ticket_code },
+          });
+        }
+      }
+    } catch (err) {
+      console.error("[portal] status-change notification failed", err);
+    }
+  }
+
   return json(200, { ok: true, ticket: rows[0] });
 }
 
@@ -1034,16 +1089,8 @@ async function handleSendInvoice(session, request) {
 
 // ---------- threat intelligence (admin only) ----------
 
-// The 7 hardcoded IPs from the edge blocklist. Mirrors middleware.js.
-const WATCHLIST_IPS = [
-  { ip: "52.47.126.220",   label: "FR — coordinated .env/.git probing" },
-  { ip: "208.115.211.186", label: "FR — .git directory probing" },
-  { ip: "66.187.6.102",    label: "US — .env file targeting" },
-  { ip: "20.199.112.200",  label: "FR — hellopress plugin exploitation" },
-  { ip: "177.235.105.185", label: "BR — xmlrpc.php POST attacks" },
-  { ip: "104.28.164.43",   label: "IN — wp-login brute-force scanning" },
-  { ip: "146.70.102.182",  label: "AE — wp-login brute-force scanning" },
-];
+// Watchlist imported from centralized blocklist — single source of truth.
+const WATCHLIST_IPS = BLOCKED_IPS;
 
 async function handleThreatIntel(session) {
   const gate = await requireAdmin(session);
@@ -1137,7 +1184,7 @@ async function handleScanIp(session, request) {
   let body;
   try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
   const ip = String(body?.ip || "").trim();
-  if (!ip || !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) {
+  if (!validateIp(ip)) {
     return json(400, { ok: false, error: "invalid_ip" });
   }
 
@@ -1194,6 +1241,182 @@ async function handleScanIp(session, request) {
   });
 }
 
+// ---------- threat actor correlation by device_hash (admin only) ----------
+async function handleThreatCorrelation(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const rows = await sql`
+    SELECT device_hash,
+           COUNT(DISTINCT ip)::int AS ip_count,
+           COUNT(*)::int AS total_hits,
+           array_agg(DISTINCT ip) AS ips,
+           MIN(ts) AS first_seen,
+           MAX(ts) AS last_seen,
+           array_agg(DISTINCT path ORDER BY path) FILTER (WHERE path IS NOT NULL) AS paths,
+           array_agg(DISTINCT country) FILTER (WHERE country IS NOT NULL) AS countries
+    FROM threat_actors
+    WHERE device_hash IS NOT NULL
+    GROUP BY device_hash
+    HAVING COUNT(DISTINCT ip) >= 2
+    ORDER BY COUNT(DISTINCT ip) DESC, COUNT(*) DESC
+    LIMIT 50
+  `;
+
+  return json(200, {
+    correlations: rows.map((r) => ({
+      deviceHash: r.device_hash,
+      ipCount: r.ip_count,
+      totalHits: r.total_hits,
+      ips: r.ips,
+      firstSeen: r.first_seen,
+      lastSeen: r.last_seen,
+      paths: r.paths || [],
+      countries: r.countries || [],
+    })),
+  });
+}
+
+// ---------- blocklist export (admin only) ----------
+async function handleBlocklistExport(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const rows = await sql`SELECT ip, reason, created_at FROM ip_blocklist ORDER BY created_at DESC`;
+  return json(200, {
+    ok: true,
+    blocklist: rows.map((r) => ({ ip: r.ip, reason: r.reason, blockedAt: r.created_at })),
+    exportedAt: new Date().toISOString(),
+  });
+}
+
+// ---------- blocklist import (admin only) ----------
+async function handleBlocklistImport(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+
+  // Accept { ips: [...] } where entries can be objects { ip, reason } or plain strings
+  let entries = Array.isArray(body?.ips) ? body.ips : Array.isArray(body) ? body : null;
+  if (!entries) return json(400, { ok: false, error: "expected { ips: [...] } or an array" });
+
+  let imported = 0;
+  let skipped = 0;
+
+  for (const entry of entries) {
+    const ip = typeof entry === "string" ? entry.trim() : String(entry?.ip || "").trim();
+    const reason = (typeof entry === "object" && entry !== null ? String(entry.reason || "") : "").trim() || "blocklist_import";
+
+    if (!validateIp(ip)) { skipped++; continue; }
+
+    const res = await sql`
+      INSERT INTO ip_blocklist (ip, reason)
+      VALUES (${ip}, ${reason})
+      ON CONFLICT DO NOTHING
+    `;
+    if (res.count > 0) {
+      imported++;
+      await sql`
+        INSERT INTO auto_actions (action, target, reason)
+        VALUES ('blocklist_import', ${ip}, ${reason})
+      `;
+    } else {
+      skipped++;
+    }
+  }
+
+  return json(200, { ok: true, imported, skipped });
+}
+
+// ---------- honeypot logs (admin only) ----------
+async function handleHoneypotLogs(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const [credRows, probeRows, statsRows] = await Promise.all([
+    sql`
+      SELECT ts, ip, user_agent, detail
+      FROM security_events
+      WHERE kind = 'honeypot.credential'
+      ORDER BY ts DESC
+      LIMIT 100
+    `,
+    sql`
+      SELECT ts, ip, user_agent, detail
+      FROM security_events
+      WHERE kind = 'honeypot.probe'
+      ORDER BY ts DESC
+      LIMIT 100
+    `,
+    sql`
+      SELECT
+        COUNT(*) FILTER (WHERE kind = 'honeypot.credential')::int AS total_credentials,
+        COUNT(*) FILTER (WHERE kind = 'honeypot.probe')::int AS total_probes,
+        COUNT(DISTINCT ip)::int AS unique_ips
+      FROM security_events
+      WHERE kind IN ('honeypot.credential', 'honeypot.probe')
+    `,
+  ]);
+
+  return json(200, {
+    credentials: credRows.map((r) => ({
+      ts: r.ts, ip: r.ip, ua: r.user_agent,
+      email: r.detail?.email, country: r.detail?.country,
+    })),
+    probes: probeRows.map((r) => ({
+      ts: r.ts, ip: r.ip, ua: r.user_agent,
+      screen: r.detail?.screen, platform: r.detail?.platform,
+      webglRenderer: r.detail?.webglRenderer, canvasHash: r.detail?.canvasHash,
+      tz: r.detail?.tz, lang: r.detail?.lang, cores: r.detail?.cores,
+      mem: r.detail?.mem, plugins: r.detail?.plugins,
+    })),
+    stats: {
+      totalCredentials: statsRows[0]?.total_credentials || 0,
+      totalProbes: statsRows[0]?.total_probes || 0,
+      uniqueIps: statsRows[0]?.unique_ips || 0,
+    },
+  });
+}
+
+// ---------- DNS integrity (admin only) ----------
+async function handleDnsIntegrity(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const [rows, summaryRows] = await Promise.all([
+    sql`
+      SELECT id, ts, domain, record_type, expected, actual, match, resolver
+      FROM dns_integrity
+      ORDER BY ts DESC
+      LIMIT 100
+    `,
+    sql`
+      SELECT
+        COUNT(*)::int AS total_checks,
+        COUNT(*) FILTER (WHERE match = true)::int AS passing,
+        COUNT(*) FILTER (WHERE match = false)::int AS failing,
+        MAX(ts) AS last_check
+      FROM dns_integrity
+      WHERE ts > now() - interval '7 days'
+    `,
+  ]);
+
+  return json(200, {
+    checks: rows.map((r) => ({
+      id: r.id, ts: r.ts, domain: r.domain, recordType: r.record_type,
+      expected: r.expected, actual: r.actual, match: r.match, resolver: r.resolver,
+    })),
+    stats: {
+      totalChecks: summaryRows[0]?.total_checks || 0,
+      passing: summaryRows[0]?.passing || 0,
+      failing: summaryRows[0]?.failing || 0,
+      lastCheck: summaryRows[0]?.last_check || null,
+    },
+  });
+}
+
 // ---------- health (unauthenticated, for external uptime monitors) ----------
 async function handleHealth() {
   const checks = { db: "unknown", criticalEvents: 0, ok: false };
@@ -1242,6 +1465,11 @@ async function dispatch(request, method) {
   if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);
   if (action === "threat-intel"    && method === "GET")   return handleThreatIntel(session);
   if (action === "scan-ip"         && method === "POST")  return handleScanIp(session, request);
+  if (action === "threat-correlation" && method === "GET") return handleThreatCorrelation(session);
+  if (action === "blocklist-export"  && method === "GET")  return handleBlocklistExport(session);
+  if (action === "blocklist-import"  && method === "POST") return handleBlocklistImport(session, request);
+  if (action === "honeypot-logs"     && method === "GET")  return handleHoneypotLogs(session);
+  if (action === "dns-integrity"     && method === "GET")  return handleDnsIntegrity(session);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

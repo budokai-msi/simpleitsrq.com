@@ -176,6 +176,35 @@ export async function GET(request) {
     }
   }
 
+  // --- Automated watchlist promotion ---
+  // IPs with 3+ threat_actors hits in the last 7 days get auto-added to the
+  // ip_blocklist so they're blocked before the next attack.
+  let watchlistPromotions = [];
+  try {
+    const candidates = await sql`
+      SELECT ip, COUNT(*)::int AS hits, MAX(ts) AS last_seen
+      FROM threat_actors
+      WHERE ts > now() - interval '7 days'
+      GROUP BY ip
+      HAVING COUNT(*) >= 3
+    `;
+    for (const row of candidates) {
+      // Skip if already in ip_blocklist.
+      const existing = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${row.ip} LIMIT 1`;
+      if (existing.length > 0) continue;
+
+      const reason = `auto: watchlist promotion — ${row.hits} scanner hits in 7d`;
+      await sql`INSERT INTO ip_blocklist (ip, reason) VALUES (${row.ip}, ${reason})`;
+      await sql`
+        INSERT INTO auto_actions (action, target, reason)
+        VALUES ('watchlist_promotion', ${row.ip}, ${'Auto-promoted: ' + row.hits + ' hits in 7 days'})
+      `;
+      watchlistPromotions.push({ ip: row.ip, hits: row.hits, lastSeen: row.last_seen });
+    }
+  } catch (err) {
+    console.error("[cron/report] watchlist promotion failed", err);
+  }
+
   // --- Assemble report ---
   const report = {
     generated: now.toISOString(),
@@ -191,6 +220,7 @@ export async function GET(request) {
       threatActors: threatActors.length,
       sessionAnomalies: sessionAnomalies.length,
       dnsHealthy: dnsResults.every((d) => d.match),
+      watchlistPromotions: watchlistPromotions.length,
     },
     topPages,
     topDevices: topDevices.map((d) => ({
@@ -255,6 +285,7 @@ export async function GET(request) {
       ts: s.ts,
     })),
     dnsIntegrity: dnsResults,
+    watchlistPromotions,
   };
 
   const jsonStr = JSON.stringify(report, null, 2);
@@ -288,6 +319,7 @@ export async function GET(request) {
           <tr><td style="color:#6b7280">Security events</td><td><strong>${report.summary.securityEvents}</strong></td></tr>
           <tr><td style="color:#6b7280">Threat actors (honeypot)</td><td><strong style="color:${report.summary.threatActors > 0 ? '#DC2626' : 'inherit'}">${report.summary.threatActors}</strong></td></tr>
           <tr><td style="color:#6b7280">Session anomalies</td><td><strong style="color:${report.summary.sessionAnomalies > 0 ? '#D97706' : 'inherit'}">${report.summary.sessionAnomalies}</strong></td></tr>
+          <tr><td style="color:#6b7280">Watchlist promotions</td><td><strong style="color:${report.summary.watchlistPromotions > 0 ? '#D97706' : 'inherit'}">${report.summary.watchlistPromotions}</strong></td></tr>
           <tr><td style="color:#6b7280">DNS integrity</td><td><strong style="color:${report.summary.dnsHealthy ? '#107C10' : '#DC2626'}">${report.summary.dnsHealthy ? 'HEALTHY' : 'ALERT — MISMATCH'}</strong></td></tr>
         </table>
       </div>

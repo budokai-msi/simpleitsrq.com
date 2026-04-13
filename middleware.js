@@ -9,19 +9,10 @@ import { neon } from "@neondatabase/serverless";
 
 const HOSTILE_COUNTRIES = new Set(["CN", "RU", "KP"]);
 
-// ── Layer 0: Hardcoded IP blocklist ────────────────────────────────────
-// These IPs are blocked at the edge with ZERO database latency. They were
-// identified from coordinated attacks against .env, .git, xmlrpc.php,
-// wp-login.php, and plugin exploitation vectors.
-const HARDCODED_BLOCKLIST = new Map([
-  ["52.47.126.220",   "FR — coordinated .env/.git probing"],
-  ["208.115.211.186", "FR — .git directory probing"],
-  ["66.187.6.102",    "US — .env file targeting"],
-  ["20.199.112.200",  "FR — hellopress plugin exploitation"],
-  ["177.235.105.185", "BR — xmlrpc.php POST attacks"],
-  ["104.28.164.43",   "IN — wp-login brute-force scanning"],
-  ["146.70.102.182",  "AE — wp-login brute-force scanning"],
-]);
+// ── Layer 0: Hardcoded IP + CIDR blocklist ─────────────────────────────
+// Single source of truth lives in api/_lib/blocklist.js. All layers
+// (middleware, security lib, portal watchlist) import from there.
+import { isHardBlocked } from "./api/_lib/blocklist.js";
 
 // Paths that no legitimate visitor would ever hit. Anyone requesting these is
 // running a scanner — instant block + honeypot + threat log.
@@ -74,7 +65,15 @@ const RATE_MAX_SCANNER = 3;    // 3 scanner hits in 1 min → instant 403
 const RATE_MAX_GLOBAL  = 120;  // 120 req/min per IP across all paths
 const rateCounts = new Map();  // ip → { scanner: count, global: count, ts: number }
 
-function rateCheck(ip, isScanner) {
+// Countries that produced multiple attackers get stricter rate limits.
+const GEO_RATE_MULTIPLIERS = new Map([
+  ["FR", 0.5],   // 3 of 7 attackers from France
+  ["BR", 0.5],   // xmlrpc.php attacks
+  ["IN", 0.5],   // wp-login scanning
+  ["AE", 0.5],   // wp-login scanning
+]);
+
+function rateCheck(ip, isScanner, countryCode) {
   const now = Date.now();
   let entry = rateCounts.get(ip);
   if (!entry || now - entry.ts > RATE_WINDOW_MS) {
@@ -83,7 +82,10 @@ function rateCheck(ip, isScanner) {
   }
   entry.global++;
   if (isScanner) entry.scanner++;
-  return entry.scanner > RATE_MAX_SCANNER || entry.global > RATE_MAX_GLOBAL;
+  const multiplier = GEO_RATE_MULTIPLIERS.get(countryCode) ?? 1.0;
+  const maxScanner = Math.floor(RATE_MAX_SCANNER * multiplier);
+  const maxGlobal  = Math.floor(RATE_MAX_GLOBAL * multiplier);
+  return entry.scanner > maxScanner || entry.global > maxGlobal;
 }
 
 // Sweep stale entries every 5 minutes to prevent memory growth.
@@ -232,6 +234,33 @@ async function logThreat(request, geo, threatClass) {
         }
       }
     } catch { /* enrichment is best-effort */ }
+
+    // Webhook alert for new threat actors
+    try {
+      const webhookUrl = process.env.THREAT_WEBHOOK_URL;
+      if (webhookUrl) {
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: `**New threat actor** on simpleitsrq.com\nIP: \`${ip}\`\nPath: \`${new URL(request.url).pathname}\`\nCountry: ${geo.country || "?"}\nClass: ${threatClass}\nTime: ${new Date().toISOString()}`,
+            embeds: [{
+              title: "Threat Actor Detected",
+              color: 0xDC2626,
+              fields: [
+                { name: "IP", value: ip, inline: true },
+                { name: "Country", value: `${geo.country || "?"} / ${geo.city || "?"}`, inline: true },
+                { name: "Path", value: new URL(request.url).pathname, inline: true },
+                { name: "Class", value: threatClass, inline: true },
+                { name: "User Agent", value: (request.headers.get("user-agent") || "unknown").slice(0, 200) },
+              ],
+              timestamp: new Date().toISOString(),
+            }],
+          }),
+          signal: AbortSignal.timeout(3000),
+        });
+      }
+    } catch { /* webhook is best-effort */ }
   } catch (err) {
     console.error("[middleware] threat log failed", err);
   }
@@ -302,13 +331,13 @@ export default async function middleware(request) {
   const geo = getGeo(request);
 
   // Layer 0: Hardcoded IP blocklist — zero-latency edge block, no DB round trip.
-  if (HARDCODED_BLOCKLIST.has(ip)) return BLOCKED_RESPONSE;
+  if (isHardBlocked(ip)) return BLOCKED_RESPONSE;
 
   const isScanner = isScannerPath(url.pathname);
 
   // Layer 0.5: In-memory rate limiter — catches burst attacks before the DB
   // blocklist kicks in. Scanner paths have a very low threshold (3/min).
-  if (rateCheck(ip, isScanner)) return BLOCKED_RESPONSE;
+  if (rateCheck(ip, isScanner, geo.country)) return BLOCKED_RESPONSE;
 
   const sql = getSql();
 
