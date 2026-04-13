@@ -1100,7 +1100,7 @@ async function handleThreatIntel(session) {
 
   // Parallel queries: intel cache, threat activity, blocked status, auto-actions
   const [intelRows, activityRows, blockedRows, actionsRows, statsRows] = await Promise.all([
-    sql`SELECT * FROM ip_intel WHERE ip = ANY(${ips}) ORDER BY enriched_at DESC`,
+    sql`SELECT * FROM ip_intel WHERE ip = ANY(${ips}) AND (expires_at IS NULL OR expires_at > now()) ORDER BY enriched_at DESC`,
     sql`
       SELECT ip, path, method, threat_class, user_agent, device_hash,
              country, city, ts, headers_json
@@ -1161,7 +1161,7 @@ async function handleThreatIntel(session) {
       ip: w.ip,
       label: w.label,
       intel: intelMap[w.ip] || null,
-      blocked: blockedMap[w.ip] || null,
+      blocked: blockedMap[w.ip] || { reason: "edge_hardcoded", blockedAt: null },
       stats: statsMap[w.ip] || null,
     })),
     activity: activityRows.map((a) => ({
@@ -1173,7 +1173,7 @@ async function handleThreatIntel(session) {
       ts: a.ts, action: a.action, target: a.target,
       reason: a.reason, detail: a.detail,
     })),
-    scannedAt: new Date().toISOString(),
+    lastRefreshedAt: new Date().toISOString(),
   });
 }
 
@@ -1298,34 +1298,43 @@ async function handleBlocklistImport(session, request) {
   let body;
   try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
 
-  // Accept { ips: [...] } where entries can be objects { ip, reason } or plain strings
-  let entries = Array.isArray(body?.ips) ? body.ips : Array.isArray(body) ? body : null;
+  // Accept { ips: [...] }, { blocklist: [...] } (exported shape), or a bare array
+  let entries = Array.isArray(body?.ips) ? body.ips
+    : Array.isArray(body?.blocklist) ? body.blocklist
+    : Array.isArray(body) ? body : null;
   if (!entries) return json(400, { ok: false, error: "expected { ips: [...] } or an array" });
 
-  let imported = 0;
-  let skipped = 0;
-
+  // Normalize + validate + de-dupe in JS
+  const normalized = [];
+  const seen = new Set();
   for (const entry of entries) {
     const ip = typeof entry === "string" ? entry.trim() : String(entry?.ip || "").trim();
     const reason = (typeof entry === "object" && entry !== null ? String(entry.reason || "") : "").trim() || "blocklist_import";
-
-    if (!validateIp(ip)) { skipped++; continue; }
-
-    const res = await sql`
-      INSERT INTO ip_blocklist (ip, reason)
-      VALUES (${ip}, ${reason})
-      ON CONFLICT DO NOTHING
-    `;
-    if (res.count > 0) {
-      imported++;
-      await sql`
-        INSERT INTO auto_actions (action, target, reason)
-        VALUES ('blocklist_import', ${ip}, ${reason})
-      `;
-    } else {
-      skipped++;
-    }
+    if (!validateIp(ip) || seen.has(ip)) continue;
+    seen.add(ip);
+    normalized.push({ ip, reason });
   }
+
+  if (normalized.length === 0) {
+    return json(200, { ok: true, imported: 0, skipped: entries.length });
+  }
+
+  // Insert one-by-one with RETURNING to reliably detect new rows
+  let imported = 0;
+  for (const { ip, reason } of normalized) {
+    try {
+      const rows = await sql`
+        INSERT INTO ip_blocklist (ip, reason) VALUES (${ip}, ${reason})
+        ON CONFLICT DO NOTHING RETURNING ip
+      `;
+      if (rows.length > 0) {
+        imported++;
+        sql`INSERT INTO auto_actions (action, target, reason)
+            VALUES ('blocklist_import', ${ip}, ${reason})`.catch(() => {});
+      }
+    } catch { /* best effort per IP */ }
+  }
+  const skipped = normalized.length - imported;
 
   return json(200, { ok: true, imported, skipped });
 }
