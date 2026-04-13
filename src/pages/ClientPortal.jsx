@@ -509,6 +509,12 @@ const useStyles = makeStyles({
       borderBottom: "none",
     },
   },
+  timelineHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "8px",
+  },
   statCardAccent: {
     padding: "20px",
     border: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -1874,16 +1880,14 @@ function ThreatIntelPanel({ styles }) {
           const expanded = expandedIp === w.ip;
           const ipActivity = expanded ? data.activity.filter((a) => a.ip === w.ip) : [];
           return (
-            <div key={w.ip} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: w.blocked ? "#DC2626" : "#D97706", flexDirection: "column", alignItems: "stretch", gap: 6 }}>
+            <div key={w.ip} className={styles.ipCard} style={{ borderLeft: `4px solid ${w.blocked ? "#DC2626" : "#D97706"}` }}>
               {/* Header row */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                <div style={{ flex: 1 }}>
-                  <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 15 }}>
-                    {w.ip}
-                  </p>
-                  <span style={{ fontSize: 12, color: tokens.colorNeutralForeground3 }}>{w.label}</span>
+              <div className={styles.ipCardHeader}>
+                <div>
+                  <p className={styles.ipAddress}>{w.ip}</p>
+                  <div className={styles.ipLabel}>{w.label}</div>
                 </div>
-                <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                <div className={styles.badgeRow}>
                   {w.blocked && <Badge appearance="filled" color="danger">BLOCKED</Badge>}
                   {scoreBadge(w.intel?.abuseScore)}
                   {w.intel?.isDatacenter && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>DC</Badge>}
@@ -1894,46 +1898,43 @@ function ThreatIntelPanel({ styles }) {
               </div>
 
               {/* Intel summary */}
-              <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
-                {w.intel?.org && <span>Org: <strong>{w.intel.org}</strong></span>}
-                {w.intel?.isp && w.intel.isp !== w.intel.org && <><span>·</span><span>ISP: {w.intel.isp}</span></>}
-                {w.intel?.asn && <><span>·</span><span>ASN: {w.intel.asn}</span></>}
-                {w.intel?.country && <><span>·</span><span>{[w.intel.city, w.intel.region, w.intel.country].filter(Boolean).join(", ")}</span></>}
-                {w.intel?.abuseReports != null && <><span>·</span><span>{w.intel.abuseReports} abuse reports</span></>}
-                {w.intel?.enrichedAt && <><span>·</span><span>Enriched {ago(w.intel.enrichedAt)}</span></>}
-              </div>
+              {w.intel && (
+                <div className={styles.intelGrid}>
+                  {w.intel.org && <div className={styles.intelField}>Org <div className={styles.intelValue}>{w.intel.org}</div></div>}
+                  {w.intel.isp && w.intel.isp !== w.intel.org && <div className={styles.intelField}>ISP <div className={styles.intelValue}>{w.intel.isp}</div></div>}
+                  {w.intel.asn && <div className={styles.intelField}>ASN <div className={styles.intelValue}>{w.intel.asn}</div></div>}
+                  {w.intel.country && <div className={styles.intelField}>Location <div className={styles.intelValue}>{[w.intel.city, w.intel.region, w.intel.country].filter(Boolean).join(", ")}</div></div>}
+                  {w.intel.abuseReports != null && <div className={styles.intelField}>Abuse reports <div className={styles.intelValue}>{w.intel.abuseReports}</div></div>}
+                  {w.intel.enrichedAt && <div className={styles.intelField}>Enriched <div className={styles.intelValue}>{ago(w.intel.enrichedAt)}</div></div>}
+                </div>
+              )}
 
               {/* Activity stats */}
               {w.stats && (
-                <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
-                  <span>Hits: <strong>{w.stats.hitCount}</strong></span>
-                  <span>·</span>
-                  <span>First seen: {fmt(w.stats.firstSeen)}</span>
-                  <span>·</span>
-                  <span>Last seen: {ago(w.stats.lastSeen)}</span>
-                  <span>·</span>
-                  <span>Devices: {w.stats.deviceCount}</span>
-                  <span>·</span>
-                  <span>Paths targeted: {w.stats.pathCount}</span>
+                <div className={styles.intelGrid}>
+                  <div className={styles.intelField}>Hits <div className={styles.intelValue}>{w.stats.hitCount}</div></div>
+                  <div className={styles.intelField}>First seen <div className={styles.intelValue}>{fmt(w.stats.firstSeen)}</div></div>
+                  <div className={styles.intelField}>Last seen <div className={styles.intelValue}>{ago(w.stats.lastSeen)}</div></div>
+                  <div className={styles.intelField}>Devices <div className={styles.intelValue}>{w.stats.deviceCount}</div></div>
                 </div>
               )}
 
               {/* Paths targeted */}
               {w.stats?.paths?.length > 0 && (
-                <div style={{ fontSize: 11, fontFamily: "monospace", color: tokens.colorNeutralForeground3, lineHeight: "18px" }}>
-                  Paths: {w.stats.paths.join(", ")}
+                <div style={{ fontSize: 11, fontFamily: "monospace", color: tokens.colorNeutralForeground3, lineHeight: "18px", padding: "8px 12px", backgroundColor: tokens.colorNeutralBackground2, borderRadius: tokens.borderRadiusMedium }}>
+                  {w.stats.paths.join(" · ")}
                 </div>
               )}
 
               {/* Blocked reason */}
               {w.blocked && (
-                <div style={{ fontSize: 11, color: "#DC2626" }}>
-                  Blocked: {w.blocked.reason} ({fmt(w.blocked.blockedAt)})
+                <div style={{ fontSize: 11, color: "#DC2626", marginTop: 8, padding: "6px 10px", backgroundColor: "#FEF2F2", borderRadius: tokens.borderRadiusMedium }}>
+                  Blocked: {w.blocked.reason} {w.blocked.blockedAt && `(${fmt(w.blocked.blockedAt)})`}
                 </div>
               )}
 
               {/* Action buttons */}
-              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              <div className={styles.actionBar}>
                 <Button
                   size="small"
                   appearance="subtle"
@@ -2005,7 +2006,7 @@ function ThreatIntelPanel({ styles }) {
 
               {/* Expanded activity timeline */}
               {expanded && (
-                <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${tokens.colorNeutralStroke2}` }}>
+                <div className={styles.expandedPanel}>
                   <h4 style={{ fontSize: 13, fontWeight: 600, margin: "0 0 6px", color: tokens.colorNeutralForeground1 }}>
                     Activity timeline ({ipActivity.length} events)
                   </h4>
@@ -2015,8 +2016,8 @@ function ThreatIntelPanel({ styles }) {
                     </p>
                   )}
                   {ipActivity.map((a, i) => (
-                    <div key={i} style={{ fontSize: 12, padding: "4px 0", borderBottom: i < ipActivity.length - 1 ? `1px solid ${tokens.colorNeutralStroke3}` : "none" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                    <div key={i} className={styles.timelineItem}>
+                      <div className={styles.timelineHeader}>
                         <span>
                           <strong>{a.method}</strong> <code style={{ fontSize: 11 }}>{a.path}</code>
                         </span>
@@ -2073,7 +2074,8 @@ function ThreatIntelPanel({ styles }) {
                         <div style={{ fontSize: 12, marginBottom: 4 }}>Reverse DNS: <code>{osintData[w.ip].reverseDns}</code></div>
                       )}
                       {osintData[w.ip].shodan && (
-                        <div style={{ fontSize: 12, marginBottom: 8 }}>
+                        <div className={styles.osintBlock}>
+                          <div style={{ fontWeight: 600, marginBottom: 6, color: "#0EA5E9" }}>Shodan InternetDB</div>
                           <div>Open ports: <strong>{(osintData[w.ip].shodan.ports || []).join(", ") || "none"}</strong></div>
                           {osintData[w.ip].shodan.hostnames?.length > 0 && <div>Hostnames: {osintData[w.ip].shodan.hostnames.join(", ")}</div>}
                           {osintData[w.ip].shodan.vulns?.length > 0 && (
@@ -2094,8 +2096,8 @@ function ThreatIntelPanel({ styles }) {
                         </div>
                       )}
                       {osintData[w.ip].greynoise && (
-                        <div style={{ fontSize: 12 }}>
-                          <span>GreyNoise: </span>
+                        <div className={styles.osintBlock}>
+                          <div style={{ fontWeight: 600, marginBottom: 6, color: "#0EA5E9" }}>GreyNoise</div>
                           <Badge appearance="filled" color={
                             osintData[w.ip].greynoise.classification === "malicious" ? "danger" :
                             osintData[w.ip].greynoise.classification === "benign" ? "success" : "warning"
@@ -2117,29 +2119,39 @@ function ThreatIntelPanel({ styles }) {
       </div>
 
       {/* Recent activity feed (all watchlist IPs) */}
-      <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: tokens.colorNeutralForeground1 }}>
-        Activity feed ({data.activity.length} events)
-      </h3>
-      <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
-        Combined timeline of all watchlist IP activity. Most recent first.
-      </p>
-      <div className={styles.list}>
+      <div className={styles.threatSection}>
+        <div className={styles.threatSectionHeader}>
+          <div className={styles.threatSectionIcon} style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}>
+            🔴
+          </div>
+          <h3 className={styles.threatSectionTitle}>Activity feed</h3>
+          <span className={styles.threatSectionCount} style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}>
+            {data.activity.length}
+          </span>
+        </div>
+        <p className={styles.threatSectionDesc}>
+          Combined timeline of all watchlist IP activity. Most recent first.
+        </p>
+      </div>
+      <div>
         {data.activity.slice(0, 50).map((a, i) => (
-          <div key={i} className={styles.listRow} style={{ borderLeftWidth: 2, borderColor: "#DC2626" }}>
-            <div className={styles.listMain}>
-              <p className={styles.listTitle}>
-                <span style={{ fontFamily: "monospace", fontSize: 12 }}>{a.ip}</span>
-                {" "}<strong>{a.method}</strong>{" "}
-                <code style={{ fontSize: 12 }}>{a.path}</code>
-              </p>
-              <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+          <div key={i} className={styles.activityFeedItem}>
+            <div className={styles.activityDot} style={{ backgroundColor: "#DC2626" }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <span style={{ fontWeight: 600, fontSize: 13 }}>
+                  <code style={{ fontSize: 12, fontFamily: "monospace" }}>{a.ip}</code>
+                  {" → "}
+                  <code style={{ fontSize: 12 }}>{a.path}</code>
+                </span>
+                <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>{a.threatClass}</Badge>
+              </div>
+              <div className={styles.listMeta}>
                 <span>{fmt(a.ts)}</span>
                 <span>·</span>
                 <span>{[a.city, a.country].filter(Boolean).join(", ")}</span>
-                {a.deviceHash && <><span>·</span><span style={{ fontFamily: "monospace", fontSize: 10 }}>Device: {a.deviceHash.slice(0, 16)}…</span></>}
               </div>
             </div>
-            <Badge appearance="filled" color="danger">{a.threatClass}</Badge>
           </div>
         ))}
         {data.activity.length === 0 && (
@@ -2151,18 +2163,27 @@ function ThreatIntelPanel({ styles }) {
 
       {/* Auto-actions log */}
       {data.autoActions && data.autoActions.length > 0 && (
-        <>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: tokens.colorNeutralForeground1 }}>
-            Automated actions ({data.autoActions.length})
-          </h3>
-          <div className={styles.list}>
+        <div className={styles.threatSection}>
+          <div className={styles.threatSectionHeader}>
+            <div className={styles.threatSectionIcon} style={{ backgroundColor: tokens.colorNeutralBackground2, color: tokens.colorNeutralForeground2 }}>
+              ⚡
+            </div>
+            <h3 className={styles.threatSectionTitle}>Automated actions</h3>
+            <span className={styles.threatSectionCount} style={{ backgroundColor: tokens.colorNeutralBackground2, color: tokens.colorNeutralForeground2 }}>
+              {data.autoActions.length}
+            </span>
+          </div>
+          <div>
             {data.autoActions.map((a, i) => (
-              <div key={i} className={styles.listRow}>
-                <div className={styles.listMain}>
-                  <p className={styles.listTitle}>
-                    <Badge appearance="outline" color="informative" style={{ fontSize: 10, marginRight: 6 }}>{a.action}</Badge>
-                    {a.target}
-                  </p>
+              <div key={i} className={styles.activityFeedItem}>
+                <div className={styles.activityDot} style={{ backgroundColor: tokens.colorNeutralForeground3 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                    <span style={{ fontWeight: 600, fontSize: 13 }}>
+                      <Badge appearance="outline" color="informative" style={{ fontSize: 10, marginRight: 6 }}>{a.action}</Badge>
+                      {a.target}
+                    </span>
+                  </div>
                   <div className={styles.listMeta}>
                     <span>{fmt(a.ts)}</span>
                     <span>·</span>
@@ -2172,37 +2193,38 @@ function ThreatIntelPanel({ styles }) {
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
 
       {/* Threat Correlation — device hashes seen across multiple IPs */}
       {correlations && correlations.length > 0 && (
-        <>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: "#7C3AED" }}>
-            Threat Correlation ({correlations.length})
-          </h3>
-          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+        <div className={styles.threatSection}>
+          <div className={styles.threatSectionHeader}>
+            <div className={styles.threatSectionIcon} style={{ backgroundColor: "#F5F3FF", color: "#7C3AED" }}>
+              🔗
+            </div>
+            <h3 className={styles.threatSectionTitle}>Threat Correlation</h3>
+            <span className={styles.threatSectionCount} style={{ backgroundColor: "#F5F3FF", color: "#7C3AED" }}>
+              {correlations.length}
+            </span>
+          </div>
+          <p className={styles.threatSectionDesc}>
             Device fingerprints observed across multiple IPs — potential evasion or distributed attacks.
           </p>
-          <div className={styles.list}>
+          <div>
             {correlations.map((c) => (
               <div
                 key={c.deviceHash}
-                className={styles.listRow}
-                style={{
-                  borderLeftWidth: 3,
-                  borderColor: "#7C3AED",
-                  flexDirection: "column",
-                  alignItems: "stretch",
-                  gap: 6,
-                  cursor: "default",
-                }}
+                className={styles.ipCard}
+                style={{ borderLeft: "4px solid #7C3AED" }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                  <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>
-                    {c.deviceHash.slice(0, 20)}...
-                  </p>
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                <div className={styles.ipCardHeader}>
+                  <div>
+                    <p className={styles.ipAddress} style={{ fontSize: 13 }}>
+                      {c.deviceHash.slice(0, 20)}...
+                    </p>
+                  </div>
+                  <div className={styles.badgeRow}>
                     {c.ipCount >= 3 && (
                       <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>MULTI-IP</Badge>
                     )}
@@ -2216,46 +2238,35 @@ function ThreatIntelPanel({ styles }) {
                 </div>
 
                 {/* IPs list */}
-                <div style={{ fontSize: 12, color: tokens.colorNeutralForeground3 }}>
-                  <strong>IPs:</strong>{" "}
-                  <span style={{ fontFamily: "monospace", fontSize: 11 }}>
-                    {c.ips.join(", ")}
-                  </span>
+                <div className={styles.intelGrid}>
+                  <div className={styles.intelField}>IPs <div className={styles.intelValue} style={{ fontFamily: "monospace", fontSize: 11 }}>{c.ips.join(", ")}</div></div>
+                  {c.countries.length > 0 && <div className={styles.intelField}>Countries <div className={styles.intelValue}>{c.countries.join(", ")}</div></div>}
+                  <div className={styles.intelField}>First seen <div className={styles.intelValue}>{fmt(c.firstSeen)}</div></div>
+                  <div className={styles.intelField}>Last seen <div className={styles.intelValue}>{ago(c.lastSeen)}</div></div>
                 </div>
-
-                {/* Countries */}
-                {c.countries.length > 0 && (
-                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground3 }}>
-                    <strong>Countries:</strong> {c.countries.join(", ")}
-                  </div>
-                )}
 
                 {/* Paths targeted */}
                 {c.paths.length > 0 && (
-                  <div style={{ fontSize: 11, fontFamily: "monospace", color: tokens.colorNeutralForeground3, lineHeight: "18px" }}>
-                    Paths: {c.paths.join(", ")}
+                  <div style={{ fontSize: 11, fontFamily: "monospace", color: tokens.colorNeutralForeground3, lineHeight: "18px", padding: "8px 12px", backgroundColor: tokens.colorNeutralBackground2, borderRadius: tokens.borderRadiusMedium }}>
+                    {c.paths.join(" · ")}
                   </div>
                 )}
-
-                {/* Timeframe */}
-                <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
-                  <span>First seen: {fmt(c.firstSeen)}</span>
-                  <span>·</span>
-                  <span>Last seen: {ago(c.lastSeen)}</span>
-                </div>
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
 
       {/* Behavioral Associates — IPs sharing user agents or attack paths */}
       {associates && (associates.uaGroups?.length > 0 || associates.pathPairs?.length > 0) && (
-        <>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: "#0EA5E9" }}>
-            Behavioral Associates
-          </h3>
-          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+        <div className={styles.threatSection}>
+          <div className={styles.threatSectionHeader}>
+            <div className={styles.threatSectionIcon} style={{ backgroundColor: "#F0F9FF", color: "#0EA5E9" }}>
+              🤝
+            </div>
+            <h3 className={styles.threatSectionTitle}>Behavioral Associates</h3>
+          </div>
+          <p className={styles.threatSectionDesc}>
             IPs linked by identical user agents or shared attack path patterns.
           </p>
 
@@ -2264,28 +2275,24 @@ function ThreatIntelPanel({ styles }) {
               <h4 style={{ fontSize: 14, fontWeight: 600, margin: "16px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 Shared user agents ({associates.uaGroups.length})
               </h4>
-              <div className={styles.list}>
+              <div>
                 {associates.uaGroups.map((g, i) => (
-                  <div key={i} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: "#0EA5E9", flexDirection: "column", gap: 4 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={i} className={styles.ipCard} style={{ borderLeft: "4px solid #0EA5E9" }}>
+                    <div className={styles.ipCardHeader}>
                       <span style={{ fontSize: 12, fontWeight: 600 }}>{g.ipCount} IPs · {g.totalHits} hits</span>
-                      <div style={{ display: "flex", gap: 4 }}>
+                      <div className={styles.badgeRow}>
                         {g.ipCount >= 3 && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>BOTNET</Badge>}
                         {g.countries?.map(c => <Badge key={c} appearance="outline" color="informative" style={{ fontSize: 10 }}>{c}</Badge>)}
                       </div>
                     </div>
-                    <div style={{ fontFamily: "monospace", fontSize: 10, color: tokens.colorNeutralForeground3, wordBreak: "break-all" }}>
+                    <div style={{ fontFamily: "monospace", fontSize: 10, color: tokens.colorNeutralForeground3, wordBreak: "break-all", padding: "8px 12px", backgroundColor: tokens.colorNeutralBackground2, borderRadius: tokens.borderRadiusMedium }}>
                       {g.userAgent.slice(0, 200)}{g.userAgent.length > 200 ? "…" : ""}
                     </div>
-                    <div style={{ fontFamily: "monospace", fontSize: 11 }}>
-                      IPs: {g.ips.join(", ")}
-                    </div>
-                    <div className={styles.listMeta} style={{ gap: 6 }}>
-                      <span>Paths: {g.paths.join(", ")}</span>
-                      <span>·</span>
-                      <span>First: {fmt(g.firstSeen)}</span>
-                      <span>·</span>
-                      <span>Last: {ago(g.lastSeen)}</span>
+                    <div className={styles.intelGrid} style={{ marginTop: 8 }}>
+                      <div className={styles.intelField}>IPs <div className={styles.intelValue} style={{ fontFamily: "monospace", fontSize: 11 }}>{g.ips.join(", ")}</div></div>
+                      <div className={styles.intelField}>Paths <div className={styles.intelValue}>{g.paths.join(", ")}</div></div>
+                      <div className={styles.intelField}>First <div className={styles.intelValue}>{fmt(g.firstSeen)}</div></div>
+                      <div className={styles.intelField}>Last <div className={styles.intelValue}>{ago(g.lastSeen)}</div></div>
                     </div>
                   </div>
                 ))}
@@ -2298,53 +2305,59 @@ function ThreatIntelPanel({ styles }) {
               <h4 style={{ fontSize: 14, fontWeight: 600, margin: "16px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 Path pattern pairs ({associates.pathPairs.length})
               </h4>
-              <div className={styles.list}>
+              <div>
                 {associates.pathPairs.map((p) => (
-                  <div key={`${p.ipA}-${p.ipB}`} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: "#0EA5E9" }}>
-                    <div className={styles.listMain}>
-                      <p className={styles.listTitle}>
-                        <span style={{ fontFamily: "monospace", fontSize: 12 }}>{p.ipA}</span>
-                        {" ↔ "}
-                        <span style={{ fontFamily: "monospace", fontSize: 12 }}>{p.ipB}</span>
-                      </p>
-                      <div className={styles.listMeta} style={{ gap: 6 }}>
-                        <span>{p.sharedPaths} shared paths</span>
-                        <span>·</span>
-                        <span>First: {fmt(p.firstSeen)}</span>
-                        <span>·</span>
-                        <span>Last: {ago(p.lastSeen)}</span>
+                  <div key={`${p.ipA}-${p.ipB}`} className={styles.ipCard} style={{ borderLeft: "4px solid #0EA5E9" }}>
+                    <div className={styles.ipCardHeader}>
+                      <div>
+                        <p className={styles.ipAddress} style={{ fontSize: 13 }}>
+                          <span>{p.ipA}</span>
+                          {" ↔ "}
+                          <span>{p.ipB}</span>
+                        </p>
                       </div>
+                      <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>LINKED</Badge>
                     </div>
-                    <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>LINKED</Badge>
+                    <div className={styles.intelGrid}>
+                      <div className={styles.intelField}>Shared paths <div className={styles.intelValue}>{p.sharedPaths}</div></div>
+                      <div className={styles.intelField}>First <div className={styles.intelValue}>{fmt(p.firstSeen)}</div></div>
+                      <div className={styles.intelField}>Last <div className={styles.intelValue}>{ago(p.lastSeen)}</div></div>
+                    </div>
                   </div>
                 ))}
               </div>
             </>
           )}
-        </>
+        </div>
       )}
 
       {/* Honeypot Intelligence */}
       {honeypot && (
-        <>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: "#D97706" }}>
-            Honeypot Intelligence
-          </h3>
-          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+        <div className={styles.threatSection}>
+          <div className={styles.threatSectionHeader}>
+            <div className={styles.threatSectionIcon} style={{ backgroundColor: "#FFFBEB", color: "#D97706" }}>
+              🍯
+            </div>
+            <h3 className={styles.threatSectionTitle}>Honeypot Intelligence</h3>
+          </div>
+          <p className={styles.threatSectionDesc}>
             Credential attempts and device probes captured by honeypot endpoints.
           </p>
 
           {/* Honeypot stats cards */}
           <div className={styles.cardGrid}>
-            <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+            <div className={styles.statCardAccent}>
+              <div className={styles.statCardAccentBar} style={{ backgroundColor: "#D97706" }} />
               <div className={styles.statLabel}>Credential attempts</div>
               <div className={styles.statValue}>{honeypot.stats?.totalCredentials || 0}</div>
             </div>
-            <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+            <div className={styles.statCardAccent}>
+              <div className={styles.statCardAccentBar} style={{ backgroundColor: "#D97706" }} />
               <div className={styles.statLabel}>Probe signals</div>
               <div className={styles.statValue}>{honeypot.stats?.totalProbes || 0}</div>
             </div>
-            <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+            <div className={styles.statCardAccent}>
+              <div className={styles.statCardAccentBar} style={{ backgroundColor: "#D97706" }} />
               <div className={styles.statLabel}>Unique IPs</div>
               <div className={styles.statValue}>{honeypot.stats?.uniqueIps || 0}</div>
             </div>
@@ -2356,19 +2369,20 @@ function ThreatIntelPanel({ styles }) {
               <h4 style={{ fontSize: 14, fontWeight: 600, margin: "20px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 Credential attempts ({honeypot.credentials.length})
               </h4>
-              <div className={styles.list}>
+              <div>
                 {honeypot.credentials.map((c, i) => (
-                  <div key={i} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: "#D97706", cursor: "default" }}>
-                    <div className={styles.listMain}>
-                      <p className={styles.listTitle}>
-                        {c.email || "(no email)"}
-                      </p>
-                      <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
-                        <span>{fmt(c.ts)}</span>
-                        <span>·</span>
-                        <span style={{ fontFamily: "monospace", fontSize: 11 }}>{c.ip}</span>
-                        {c.country && <><span>·</span><span>{c.country}</span></>}
+                  <div key={i} className={styles.ipCard} style={{ borderLeft: "4px solid #D97706" }}>
+                    <div className={styles.ipCardHeader}>
+                      <div>
+                        <p className={styles.ipAddress} style={{ fontSize: 14, fontFamily: "inherit" }}>
+                          {c.email || "(no email)"}
+                        </p>
                       </div>
+                    </div>
+                    <div className={styles.intelGrid}>
+                      <div className={styles.intelField}>Time <div className={styles.intelValue}>{fmt(c.ts)}</div></div>
+                      <div className={styles.intelField}>IP <div className={styles.intelValue} style={{ fontFamily: "monospace", fontSize: 11 }}>{c.ip}</div></div>
+                      {c.country && <div className={styles.intelField}>Country <div className={styles.intelValue}>{c.country}</div></div>}
                     </div>
                   </div>
                 ))}
@@ -2382,20 +2396,20 @@ function ThreatIntelPanel({ styles }) {
               <h4 style={{ fontSize: 14, fontWeight: 600, margin: "20px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 Probe signals ({honeypot.probes.length})
               </h4>
-              <div className={styles.list}>
+              <div>
                 {honeypot.probes.map((p, i) => (
-                  <div key={i} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: "#D97706", cursor: "default" }}>
-                    <div className={styles.listMain}>
-                      <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 12 }}>
-                        {p.ip}
-                      </p>
-                      <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
-                        <span>{fmt(p.ts)}</span>
-                        {p.screen && <><span>·</span><span>Screen: {p.screen}</span></>}
-                        {p.platform && <><span>·</span><span>Platform: {p.platform}</span></>}
-                        {p.webglRenderer && <><span>·</span><span>WebGL: {p.webglRenderer}</span></>}
-                        {p.canvasHash && <><span>·</span><span style={{ fontFamily: "monospace", fontSize: 10 }}>Canvas: {p.canvasHash.slice(0, 16)}...</span></>}
+                  <div key={i} className={styles.ipCard} style={{ borderLeft: "4px solid #D97706" }}>
+                    <div className={styles.ipCardHeader}>
+                      <div>
+                        <p className={styles.ipAddress} style={{ fontSize: 13 }}>{p.ip}</p>
                       </div>
+                    </div>
+                    <div className={styles.intelGrid}>
+                      <div className={styles.intelField}>Time <div className={styles.intelValue}>{fmt(p.ts)}</div></div>
+                      {p.screen && <div className={styles.intelField}>Screen <div className={styles.intelValue}>{p.screen}</div></div>}
+                      {p.platform && <div className={styles.intelField}>Platform <div className={styles.intelValue}>{p.platform}</div></div>}
+                      {p.webglRenderer && <div className={styles.intelField}>WebGL <div className={styles.intelValue}>{p.webglRenderer}</div></div>}
+                      {p.canvasHash && <div className={styles.intelField}>Canvas <div className={styles.intelValue} style={{ fontFamily: "monospace", fontSize: 10 }}>{p.canvasHash.slice(0, 16)}...</div></div>}
                     </div>
                   </div>
                 ))}
@@ -2408,34 +2422,41 @@ function ThreatIntelPanel({ styles }) {
               No honeypot signals recorded yet.
             </p>
           )}
-        </>
+        </div>
       )}
 
       {/* DNS Integrity */}
       {dns && (
-        <>
-          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: tokens.colorNeutralForeground1 }}>
-            DNS Integrity
-          </h3>
-          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+        <div className={styles.threatSection}>
+          <div className={styles.threatSectionHeader}>
+            <div className={styles.threatSectionIcon} style={{ backgroundColor: "#F0FDF4", color: "#16A34A" }}>
+              🌐
+            </div>
+            <h3 className={styles.threatSectionTitle}>DNS Integrity</h3>
+          </div>
+          <p className={styles.threatSectionDesc}>
             Automated DNS record checks to detect unauthorized changes or hijacking.
           </p>
 
           {/* DNS stats cards */}
           <div className={styles.cardGrid}>
-            <div className={styles.statCard}>
+            <div className={styles.statCardAccent}>
+              <div className={styles.statCardAccentBar} style={{ backgroundColor: "#16A34A" }} />
               <div className={styles.statLabel}>Total checks (7d)</div>
               <div className={styles.statValue}>{dns.stats?.totalChecks || 0}</div>
             </div>
-            <div className={styles.statCard} style={{ borderLeft: "3px solid #16A34A" }}>
+            <div className={styles.statCardAccent}>
+              <div className={styles.statCardAccentBar} style={{ backgroundColor: "#16A34A" }} />
               <div className={styles.statLabel}>Passing</div>
               <div className={styles.statValue} style={{ color: "#16A34A" }}>{dns.stats?.passing || 0}</div>
             </div>
-            <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+            <div className={styles.statCardAccent}>
+              <div className={styles.statCardAccentBar} style={{ backgroundColor: "#DC2626" }} />
               <div className={styles.statLabel}>Failing</div>
               <div className={styles.statValue} style={{ color: dns.stats?.failing > 0 ? "#DC2626" : undefined }}>{dns.stats?.failing || 0}</div>
             </div>
-            <div className={styles.statCard}>
+            <div className={styles.statCardAccent}>
+              <div className={styles.statCardAccentBar} style={{ backgroundColor: "#16A34A" }} />
               <div className={styles.statLabel}>Last check</div>
               <div className={styles.statValue} style={{ fontSize: 16 }}>{dns.stats?.lastCheck ? ago(dns.stats.lastCheck) : "never"}</div>
             </div>
@@ -2443,39 +2464,35 @@ function ThreatIntelPanel({ styles }) {
 
           {/* DNS checks table */}
           {dns.checks && dns.checks.length > 0 && (
-            <div className={styles.list} style={{ marginTop: 12 }}>
+            <div style={{ marginTop: 12 }}>
               {dns.checks.map((c, i) => (
                 <div
                   key={c.id || i}
-                  className={styles.listRow}
-                  style={{
-                    borderLeftWidth: 3,
-                    borderColor: c.match ? "#16A34A" : "#DC2626",
-                    cursor: "default",
-                  }}
+                  className={styles.ipCard}
+                  style={{ borderLeft: `4px solid ${c.match ? "#16A34A" : "#DC2626"}` }}
                 >
-                  <div className={styles.listMain}>
-                    <p className={styles.listTitle}>
-                      {c.domain}{" "}
-                      <Badge appearance="outline" color="informative" style={{ fontSize: 10, marginLeft: 6 }}>
-                        {c.recordType}
-                      </Badge>
-                    </p>
-                    <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
-                      <span>{fmt(c.ts)}</span>
-                      <span>·</span>
-                      <span>Expected: <code style={{ fontSize: 11 }}>{c.expected}</code></span>
-                      <span>·</span>
-                      <span>Actual: <code style={{ fontSize: 11 }}>{c.actual}</code></span>
-                      {c.resolver && <><span>·</span><span>Resolver: {c.resolver}</span></>}
+                  <div className={styles.ipCardHeader}>
+                    <div>
+                      <p className={styles.ipAddress} style={{ fontSize: 14, fontFamily: "inherit" }}>
+                        {c.domain}{" "}
+                        <Badge appearance="outline" color="informative" style={{ fontSize: 10, marginLeft: 6 }}>
+                          {c.recordType}
+                        </Badge>
+                      </p>
                     </div>
+                    <Badge
+                      appearance="filled"
+                      color={c.match ? "success" : "danger"}
+                    >
+                      {c.match ? "PASS" : "FAIL"}
+                    </Badge>
                   </div>
-                  <Badge
-                    appearance="filled"
-                    color={c.match ? "success" : "danger"}
-                  >
-                    {c.match ? "PASS" : "FAIL"}
-                  </Badge>
+                  <div className={styles.intelGrid}>
+                    <div className={styles.intelField}>Time <div className={styles.intelValue}>{fmt(c.ts)}</div></div>
+                    <div className={styles.intelField}>Expected <div className={styles.intelValue}><code style={{ fontSize: 11 }}>{c.expected}</code></div></div>
+                    <div className={styles.intelField}>Actual <div className={styles.intelValue}><code style={{ fontSize: 11 }}>{c.actual}</code></div></div>
+                    {c.resolver && <div className={styles.intelField}>Resolver <div className={styles.intelValue}>{c.resolver}</div></div>}
+                  </div>
                 </div>
               ))}
             </div>
@@ -2486,7 +2503,7 @@ function ThreatIntelPanel({ styles }) {
               No DNS integrity checks recorded yet.
             </p>
           )}
-        </>
+        </div>
       )}
     </div>
   );
