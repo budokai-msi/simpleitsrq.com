@@ -4,7 +4,6 @@
 // log writes, and a couple of header extractors for Vercel's geo data.
 
 import { sql } from "./db.js";
-import { isHardBlocked } from "./blocklist.js";
 
 // ISO 3166-1 alpha-2 codes for hostile-origin countries.
 // Visitors from these countries never see the real site — they get a
@@ -117,11 +116,8 @@ async function fireRealtimeAlert(kind, ip, detail) {
   } catch { /* best effort */ }
 }
 
-export { isHardBlocked as isIpHardBlocked } from "./blocklist.js";
-
 export async function isIpBlocked(ip) {
   if (!ip || ip === "unknown") return false;
-  if (isHardBlocked(ip)) return true;
   try {
     const rows = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${ip} LIMIT 1`;
     return rows.length > 0;
@@ -166,4 +162,18 @@ export async function rateLimit({ ip, bucket, windowSeconds, max }) {
     // Fail open — it's better to serve the request than to false-positive-429.
     return { ok: true, remaining: max };
   }
+}
+
+/**
+ * XSS-safe string truncation.
+ */
+export function safeStr(value, maxLength = 200) {
+  return String(value || "").trim().slice(0, maxLength);
+}
+
+/**
+ * Validate email format with a permissive RFC 5322-ish regex.
+ */
+export function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""));
 }

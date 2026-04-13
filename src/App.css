@@ -2139,3 +2139,134 @@
     min-width: 0;
   }
 }
+
+/* ============================================================
+   VISUAL ENHANCEMENTS — Subtle, performant
+   ============================================================ */
+
+/* ── Gradient border on hover (single color, no neon) ── */
+.gradient-border {
+  position: relative;
+  border: 1px solid var(--border);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+.gradient-border:hover {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-glow);
+}
+
+/* ── Card lift on hover ── */
+.card-tilt {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.card-tilt:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow8);
+}
+
+/* ── Icon badge with subtle brand background ── */
+.gradient-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--brand-subtle);
+  color: var(--brand);
+}
+
+/* ── Shimmer line accent ── */
+.shimmer-line {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand) 12%, transparent), transparent);
+  animation: shimmer-sweep 4s ease-in-out infinite;
+}
+@keyframes shimmer-sweep {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* ── Solution card link arrow slide-in ── */
+.solution-card-link svg {
+  transition: transform 200ms ease;
+}
+.solution-card:hover .solution-card-link svg {
+  transform: translateX(4px);
+}
+
+/* ── Industry card icon ── */
+.industry-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--brand-subtle);
+  color: var(--brand);
+  transition: transform 250ms ease, box-shadow 250ms ease;
+}
+.industry-card:hover .industry-icon {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--brand-glow);
+}
+
+/* ── Blog card image subtle background ── */
+.blog-card-img-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  background: var(--brand-subtle);
+  transition: transform 300ms ease;
+}
+.blog-card:hover .blog-card-img-inner {
+  transform: scale(1.02);
+}
+.blog-card-img-inner svg {
+  color: var(--brand);
+  opacity: 0.5;
+}
+
+/* ── Badge subtle glow ── */
+.badge-glow {
+  position: relative;
+}
+
+/* ── Hero stat ticker ── */
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  margin-top: 20px;
+}
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+}
+.hero-stat .val {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+.hero-stat .lbl {
+  font-size: 12px;
+  color: var(--text-3);
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 640px) {
+  .hero-stats { gap: 20px; }
+  .hero-stat .val { font-size: 20px; }
+}
