@@ -1424,6 +1424,342 @@ function DraftsPanel({ styles }) {
   );
 }
 
+// ---------- admin: threat intelligence panel ----------
+function ThreatIntelPanel({ styles }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [scanning, setScanning] = useState(null); // ip being scanned
+  const [scanAllRunning, setScanAllRunning] = useState(false);
+  const [expandedIp, setExpandedIp] = useState(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/portal?action=threat-intel", { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setData(await res.json());
+    } catch (err) {
+      setError(err.message || "Could not load threat intel.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Auto-refresh every 30 seconds for monitoring
+  useEffect(() => {
+    const id = setInterval(load, 30_000);
+    return () => clearInterval(id);
+  }, [load]);
+
+  const scanIp = useCallback(async (ip) => {
+    setScanning(ip);
+    try {
+      const res = await fetch("/api/portal?action=scan-ip", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ip }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await load(); // refresh all data after scan
+    } catch (err) {
+      setError(`Scan failed for ${ip}: ${err.message}`);
+    } finally {
+      setScanning(null);
+    }
+  }, [load]);
+
+  const scanAll = useCallback(async () => {
+    setScanAllRunning(true);
+    try {
+      const ips = data?.watchlist?.map((w) => w.ip) || [];
+      for (const ip of ips) {
+        setScanning(ip);
+        try {
+          await fetch("/api/portal?action=scan-ip", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ip }),
+          });
+        } catch { /* continue to next */ }
+      }
+      await load();
+    } finally {
+      setScanning(null);
+      setScanAllRunning(false);
+    }
+  }, [data, load]);
+
+  if (loading && !data) {
+    return <div style={{ padding: 24 }}><Spinner label="Loading threat intelligence…" /></div>;
+  }
+  if (error && !data) {
+    return (
+      <MessageBar intent="error">
+        <MessageBarBody>{error}</MessageBarBody>
+      </MessageBar>
+    );
+  }
+  if (!data) return null;
+
+  const fmt = (iso) => iso ? new Date(iso).toLocaleString() : "—";
+  const ago = (iso) => {
+    if (!iso) return "never";
+    const ms = Date.now() - new Date(iso).getTime();
+    if (ms < 60_000) return "just now";
+    if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m ago`;
+    if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}h ago`;
+    return `${Math.floor(ms / 86_400_000)}d ago`;
+  };
+
+  const scoreBadge = (score) => {
+    if (score == null) return <Badge appearance="outline" color="subtle" style={{ fontSize: 10 }}>Not scanned</Badge>;
+    const color = score >= 75 ? "danger" : score >= 25 ? "warning" : "success";
+    return <Badge appearance="filled" color={color} style={{ fontSize: 10 }}>Abuse: {score}%</Badge>;
+  };
+
+  return (
+    <div>
+      {error && (
+        <MessageBar intent="warning" style={{ marginBottom: 12 }}>
+          <MessageBarBody>{error}</MessageBarBody>
+        </MessageBar>
+      )}
+
+      {/* Summary cards */}
+      <div className={styles.cardGrid}>
+        <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+          <div className={styles.statLabel}>Watchlist IPs</div>
+          <div className={styles.statValue}>{data.watchlist.length}</div>
+          <span style={{ color: tokens.colorNeutralForeground3, fontSize: 12 }}>
+            {data.watchlist.filter((w) => w.blocked).length} blocked
+          </span>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>Total hits</div>
+          <div className={styles.statValue}>
+            {data.watchlist.reduce((sum, w) => sum + (w.stats?.hitCount || 0), 0)}
+          </div>
+          <span style={{ color: tokens.colorNeutralForeground3, fontSize: 12 }}>
+            across all watchlist IPs
+          </span>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>Device fingerprints</div>
+          <div className={styles.statValue}>
+            {data.watchlist.reduce((sum, w) => sum + (w.stats?.deviceCount || 0), 0)}
+          </div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statLabel}>Last scan</div>
+          <div className={styles.statValue} style={{ fontSize: 16 }}>{ago(data.scannedAt)}</div>
+          <span style={{ color: tokens.colorNeutralForeground3, fontSize: 12 }}>
+            Auto-refreshes every 30s
+          </span>
+        </div>
+      </div>
+
+      {/* Scan All button */}
+      <div style={{ display: "flex", gap: 8, margin: "16px 0" }}>
+        <Button
+          appearance="primary"
+          disabled={scanAllRunning}
+          onClick={scanAll}
+          icon={scanAllRunning ? <Spinner size="tiny" /> : undefined}
+        >
+          {scanAllRunning ? `Scanning ${scanning || "…"}` : "Scan all IPs"}
+        </Button>
+        <Button appearance="subtle" onClick={load}>Refresh</Button>
+      </div>
+
+      {/* Watchlist IP cards */}
+      <h3 style={{ fontSize: 18, fontWeight: 600, margin: "24px 0 8px", color: "#DC2626" }}>
+        Watchlist ({data.watchlist.length})
+      </h3>
+      <div className={styles.list}>
+        {data.watchlist.map((w) => {
+          const expanded = expandedIp === w.ip;
+          const ipActivity = expanded ? data.activity.filter((a) => a.ip === w.ip) : [];
+          return (
+            <div key={w.ip} className={styles.listRow} style={{ borderLeftWidth: 3, borderColor: w.blocked ? "#DC2626" : "#D97706", flexDirection: "column", alignItems: "stretch", gap: 6 }}>
+              {/* Header row */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 15 }}>
+                    {w.ip}
+                  </p>
+                  <span style={{ fontSize: 12, color: tokens.colorNeutralForeground3 }}>{w.label}</span>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                  {w.blocked && <Badge appearance="filled" color="danger">BLOCKED</Badge>}
+                  {scoreBadge(w.intel?.abuseScore)}
+                  {w.intel?.isDatacenter && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>DC</Badge>}
+                  {w.intel?.isTor && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>TOR</Badge>}
+                  {w.intel?.isVpn && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>VPN</Badge>}
+                  {w.intel?.isProxy && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>PROXY</Badge>}
+                </div>
+              </div>
+
+              {/* Intel summary */}
+              <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                {w.intel?.org && <span>Org: <strong>{w.intel.org}</strong></span>}
+                {w.intel?.isp && w.intel.isp !== w.intel.org && <><span>·</span><span>ISP: {w.intel.isp}</span></>}
+                {w.intel?.asn && <><span>·</span><span>ASN: {w.intel.asn}</span></>}
+                {w.intel?.country && <><span>·</span><span>{[w.intel.city, w.intel.region, w.intel.country].filter(Boolean).join(", ")}</span></>}
+                {w.intel?.abuseReports != null && <><span>·</span><span>{w.intel.abuseReports} abuse reports</span></>}
+                {w.intel?.enrichedAt && <><span>·</span><span>Enriched {ago(w.intel.enrichedAt)}</span></>}
+              </div>
+
+              {/* Activity stats */}
+              {w.stats && (
+                <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                  <span>Hits: <strong>{w.stats.hitCount}</strong></span>
+                  <span>·</span>
+                  <span>First seen: {fmt(w.stats.firstSeen)}</span>
+                  <span>·</span>
+                  <span>Last seen: {ago(w.stats.lastSeen)}</span>
+                  <span>·</span>
+                  <span>Devices: {w.stats.deviceCount}</span>
+                  <span>·</span>
+                  <span>Paths targeted: {w.stats.pathCount}</span>
+                </div>
+              )}
+
+              {/* Paths targeted */}
+              {w.stats?.paths?.length > 0 && (
+                <div style={{ fontSize: 11, fontFamily: "monospace", color: tokens.colorNeutralForeground3, lineHeight: "18px" }}>
+                  Paths: {w.stats.paths.join(", ")}
+                </div>
+              )}
+
+              {/* Blocked reason */}
+              {w.blocked && (
+                <div style={{ fontSize: 11, color: "#DC2626" }}>
+                  Blocked: {w.blocked.reason} ({fmt(w.blocked.blockedAt)})
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                <Button
+                  size="small"
+                  appearance="subtle"
+                  disabled={scanning === w.ip}
+                  onClick={() => scanIp(w.ip)}
+                  icon={scanning === w.ip ? <Spinner size="tiny" /> : undefined}
+                >
+                  {scanning === w.ip ? "Scanning…" : "Scan"}
+                </Button>
+                <Button
+                  size="small"
+                  appearance="subtle"
+                  onClick={() => setExpandedIp(expanded ? null : w.ip)}
+                >
+                  {expanded ? "Hide activity" : "Show activity"}
+                </Button>
+              </div>
+
+              {/* Expanded activity timeline */}
+              {expanded && (
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${tokens.colorNeutralStroke2}` }}>
+                  <h4 style={{ fontSize: 13, fontWeight: 600, margin: "0 0 6px", color: tokens.colorNeutralForeground1 }}>
+                    Activity timeline ({ipActivity.length} events)
+                  </h4>
+                  {ipActivity.length === 0 && (
+                    <p style={{ fontSize: 12, color: tokens.colorNeutralForeground3, margin: 0 }}>
+                      No recorded activity from this IP.
+                    </p>
+                  )}
+                  {ipActivity.map((a, i) => (
+                    <div key={i} style={{ fontSize: 12, padding: "4px 0", borderBottom: i < ipActivity.length - 1 ? `1px solid ${tokens.colorNeutralStroke3}` : "none" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                        <span>
+                          <strong>{a.method}</strong> <code style={{ fontSize: 11 }}>{a.path}</code>
+                        </span>
+                        <span style={{ color: tokens.colorNeutralForeground3, flexShrink: 0 }}>{fmt(a.ts)}</span>
+                      </div>
+                      <div style={{ color: tokens.colorNeutralForeground3, fontSize: 11 }}>
+                        {[a.city, a.country].filter(Boolean).join(", ")}
+                        {a.deviceHash && ` · Device: ${a.deviceHash.slice(0, 16)}…`}
+                      </div>
+                      {a.ua && <div style={{ fontSize: 10, color: tokens.colorNeutralForeground3, wordBreak: "break-all" }}>{a.ua}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Recent activity feed (all watchlist IPs) */}
+      <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: tokens.colorNeutralForeground1 }}>
+        Activity feed ({data.activity.length} events)
+      </h3>
+      <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, margin: "0 0 8px" }}>
+        Combined timeline of all watchlist IP activity. Most recent first.
+      </p>
+      <div className={styles.list}>
+        {data.activity.slice(0, 50).map((a, i) => (
+          <div key={i} className={styles.listRow} style={{ borderLeftWidth: 2, borderColor: "#DC2626" }}>
+            <div className={styles.listMain}>
+              <p className={styles.listTitle}>
+                <span style={{ fontFamily: "monospace", fontSize: 12 }}>{a.ip}</span>
+                {" "}<strong>{a.method}</strong>{" "}
+                <code style={{ fontSize: 12 }}>{a.path}</code>
+              </p>
+              <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                <span>{fmt(a.ts)}</span>
+                <span>·</span>
+                <span>{[a.city, a.country].filter(Boolean).join(", ")}</span>
+                {a.deviceHash && <><span>·</span><span style={{ fontFamily: "monospace", fontSize: 10 }}>Device: {a.deviceHash.slice(0, 16)}…</span></>}
+              </div>
+            </div>
+            <Badge appearance="filled" color="danger">{a.threatClass}</Badge>
+          </div>
+        ))}
+        {data.activity.length === 0 && (
+          <p style={{ padding: 16, color: tokens.colorNeutralForeground3, fontSize: 13 }}>
+            No recorded activity from watchlist IPs yet.
+          </p>
+        )}
+      </div>
+
+      {/* Auto-actions log */}
+      {data.autoActions && data.autoActions.length > 0 && (
+        <>
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: tokens.colorNeutralForeground1 }}>
+            Automated actions ({data.autoActions.length})
+          </h3>
+          <div className={styles.list}>
+            {data.autoActions.map((a, i) => (
+              <div key={i} className={styles.listRow}>
+                <div className={styles.listMain}>
+                  <p className={styles.listTitle}>
+                    <Badge appearance="outline" color="informative" style={{ fontSize: 10, marginRight: 6 }}>{a.action}</Badge>
+                    {a.target}
+                  </p>
+                  <div className={styles.listMeta}>
+                    <span>{fmt(a.ts)}</span>
+                    <span>·</span>
+                    <span>{a.reason}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---------- admin: visitors panel ----------
 function VisitorsPanel({ styles }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1744,7 +2080,7 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
   const [tab, setTab] = useState(() => {
     const t = searchParams.get("tab");
     if (t === "open" || t === "closed" || t === "invoices" || t === "profile") return t;
-    if (user.isAdmin && (t === "drafts" || t === "visitors")) return t;
+    if (user.isAdmin && (t === "drafts" || t === "visitors" || t === "threat-intel")) return t;
     return "overview";
   });
   const [openTickets, setOpenTickets] = useState(null);
@@ -1892,6 +2228,11 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
           </Tab>
         )}
         {user.isAdmin && (
+          <Tab value="threat-intel" icon={<ShieldCheckmark24Regular />}>
+            Threat Intel
+          </Tab>
+        )}
+        {user.isAdmin && (
           <Tab value="visitors" icon={<Eye24Regular />}>
             Visitors
           </Tab>
@@ -2012,6 +2353,19 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
             Vercel redeploy.
           </p>
           <DraftsPanel styles={styles} />
+        </div>
+      )}
+      {tab === "threat-intel" && user.isAdmin && (
+        <div className={styles.panel}>
+          <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: "#DC2626" }}>
+            <ShieldCheckmark24Regular style={{ verticalAlign: -4, marginRight: 6 }} />
+            Threat intelligence
+          </h3>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, lineHeight: "22px", margin: "4px 0 0" }}>
+            Monitored threat actors from the edge blocklist. Live enrichment via
+            AbuseIPDB + ipinfo.io. Auto-refreshes every 30 seconds.
+          </p>
+          <ThreatIntelPanel styles={styles} />
         </div>
       )}
       {tab === "visitors" && user.isAdmin && (
