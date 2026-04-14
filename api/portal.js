@@ -17,7 +17,7 @@ import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { json } from "./_lib/http.js";
 import { enrichIp } from "./_lib/ipintel.js";
-import { BLOCKED_IPS, validateIp } from "./_lib/blocklist.js";
+import { BLOCKED_IPS, validateIp, validateIpv4 } from "./_lib/blocklist.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
@@ -1455,31 +1455,19 @@ async function handleSubnetScan(session, request) {
   let body;
   try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
   const ip = String(body?.ip || "").trim();
-  if (!validateIp(ip)) {
-    return json(400, { ok: false, error: "invalid_ip" });
+  if (!validateIpv4(ip)) {
+    return json(400, { ok: false, error: "invalid_ip", message: "IPv4 address required for /24 subnet scan" });
   }
 
   const subnetPrefix = ip.split(".").slice(0, 3).join(".") + ".";
   const cidr = subnetPrefix + "0/24";
 
-  // Query local DB for known threats and intel in the same /24
-  const [knownThreats, knownIntel] = await Promise.all([
-    sql`
-      SELECT DISTINCT ip FROM threat_actors
-      WHERE ip LIKE ${subnetPrefix + '%'}
-      AND ip <> ${ip}
-    `,
-    sql`
-      SELECT ip, org, isp, abuse_score, abuse_reports, is_datacenter, is_tor, country, city
-      FROM ip_intel
-      WHERE ip LIKE ${subnetPrefix + '%'}
-    `,
-  ]);
-
   // AbuseIPDB check-block enrichment (optional)
   let neighbors = [];
   let networkInfo = null;
+  let abuseipdbError = null;
   const abuseKey = process.env.ABUSEIPDB_API_KEY;
+  const abuseipdbEnabled = !!abuseKey;
   if (abuseKey) {
     try {
       const res = await fetch(
@@ -1501,15 +1489,19 @@ async function handleSubnetScan(session, request) {
           netmask: d.data?.netmask,
           totalReports: d.data?.numDistinctUsers,
         };
+      } else {
+        abuseipdbError = `HTTP ${res.status}`;
       }
     } catch (err) {
       console.error("[portal] AbuseIPDB check-block failed", err);
+      abuseipdbError = err.message || "network error";
     }
   }
 
-  // Log the scan action
+  // Log the scan action — target=IP so the dashboard's auto_actions query
+  // (which filters by watchlist IPs) surfaces it; CIDR goes in the reason.
   try {
-    await sql`INSERT INTO auto_actions (action, target, reason) VALUES ('subnet_scan', ${cidr}, 'Admin subnet recon')`;
+    await sql`INSERT INTO auto_actions (action, target, reason) VALUES ('subnet_scan', ${ip}, ${`Admin subnet recon (${cidr})`})`;
   } catch { /* best effort */ }
 
   return json(200, {
@@ -1518,13 +1510,8 @@ async function handleSubnetScan(session, request) {
     cidr,
     networkInfo,
     neighbors,
-    knownThreats: knownThreats.map(r => r.ip),
-    knownIntel: knownIntel.map(r => ({
-      ip: r.ip, org: r.org, isp: r.isp,
-      abuseScore: r.abuse_score, abuseReports: r.abuse_reports,
-      isDatacenter: r.is_datacenter, isTor: r.is_tor,
-      country: r.country, city: r.city,
-    })),
+    abuseipdbEnabled,
+    abuseipdbError,
     scannedAt: new Date().toISOString(),
   });
 }
@@ -1535,6 +1522,7 @@ async function handleBehavioralAssociates(session) {
   if (gate) return gate;
 
   const [uaGroups, pathPairs] = await Promise.all([
+    // Bound to 30 days so the query stays predictable as threat_actors grows.
     sql`
       SELECT user_agent,
              COUNT(DISTINCT ip)::int AS ip_count,
@@ -1546,22 +1534,38 @@ async function handleBehavioralAssociates(session) {
              MAX(ts) AS last_seen
       FROM threat_actors
       WHERE user_agent IS NOT NULL AND length(user_agent) > 10
+        AND ts > now() - interval '30 days'
       GROUP BY user_agent
       HAVING COUNT(DISTINCT ip) >= 2
       ORDER BY COUNT(DISTINCT ip) DESC, COUNT(*) DESC
       LIMIT 30
     `,
+    // Pre-aggregate by (path, ip) first, then pair only paths with 2+ distinct IPs.
+    // This avoids the O(N^2) self-join on raw rows.
     sql`
+      WITH recent_path_ips AS (
+        SELECT path, ip,
+               MIN(ts) AS first_seen,
+               MAX(ts) AS last_seen
+        FROM threat_actors
+        WHERE ts > now() - interval '30 days'
+          AND path IS NOT NULL
+        GROUP BY path, ip
+      ),
+      shared_paths AS (
+        SELECT path FROM recent_path_ips
+        GROUP BY path
+        HAVING COUNT(DISTINCT ip) >= 2
+      )
       SELECT a.ip AS ip_a, b.ip AS ip_b,
-             COUNT(DISTINCT a.path)::int AS shared_paths,
-             MIN(LEAST(a.ts, b.ts)) AS first_seen,
-             MAX(GREATEST(a.ts, b.ts)) AS last_seen
-      FROM threat_actors a
-      JOIN threat_actors b ON a.path = b.path AND a.ip < b.ip
-      WHERE a.ts > now() - interval '30 days'
-        AND b.ts > now() - interval '30 days'
+             COUNT(*)::int AS shared_paths,
+             MIN(LEAST(a.first_seen, b.first_seen)) AS first_seen,
+             MAX(GREATEST(a.last_seen, b.last_seen)) AS last_seen
+      FROM recent_path_ips a
+      JOIN recent_path_ips b ON a.path = b.path AND a.ip < b.ip
+      JOIN shared_paths sp ON sp.path = a.path
       GROUP BY a.ip, b.ip
-      HAVING COUNT(DISTINCT a.path) >= 3
+      HAVING COUNT(*) >= 3
       ORDER BY shared_paths DESC
       LIMIT 30
     `,
@@ -1644,18 +1648,41 @@ async function handleOsintEnrich(session, request) {
     console.error("[portal] GreyNoise lookup failed", err);
   }
 
-  // Reverse DNS via DNS-over-HTTPS
+  // Reverse DNS via DNS-over-HTTPS — IPv4 uses in-addr.arpa, IPv6 uses ip6.arpa
   let reverseDns = null;
   try {
-    const reverseIp = ip.split(".").reverse().join(".");
-    const res = await fetch(
-      `https://dns.google/resolve?name=${encodeURIComponent(reverseIp + ".in-addr.arpa")}&type=PTR`,
-      { signal: AbortSignal.timeout?.(5000) }
-    );
-    if (res.ok) {
-      const d = await res.json();
-      if (d.Answer && d.Answer.length > 0) {
-        reverseDns = d.Answer[0].data?.replace(/\.$/, "") || null;
+    let ptrName = null;
+    if (validateIpv4(ip)) {
+      ptrName = ip.split(".").reverse().join(".") + ".in-addr.arpa";
+    } else if (ip.includes(":")) {
+      // Expand :: shorthand, pad each hextet to 4, reverse nibbles, append ip6.arpa
+      const doubleColonIdx = ip.indexOf("::");
+      let hextets;
+      if (doubleColonIdx >= 0) {
+        const left = ip.slice(0, doubleColonIdx);
+        const right = ip.slice(doubleColonIdx + 2);
+        const leftParts = left ? left.split(":").filter(Boolean) : [];
+        const rightParts = right ? right.split(":").filter(Boolean) : [];
+        const missing = 8 - (leftParts.length + rightParts.length);
+        hextets = [...leftParts, ...Array(Math.max(missing, 0)).fill("0"), ...rightParts];
+      } else {
+        hextets = ip.split(":");
+      }
+      if (hextets.length === 8) {
+        const expanded = hextets.map(h => h.padStart(4, "0").toLowerCase()).join("");
+        ptrName = expanded.split("").reverse().join(".") + ".ip6.arpa";
+      }
+    }
+    if (ptrName) {
+      const res = await fetch(
+        `https://dns.google/resolve?name=${encodeURIComponent(ptrName)}&type=PTR`,
+        { signal: AbortSignal.timeout?.(5000) }
+      );
+      if (res.ok) {
+        const d = await res.json();
+        if (d.Answer && d.Answer.length > 0) {
+          reverseDns = d.Answer[0].data?.replace(/\.$/, "") || null;
+        }
       }
     }
   } catch (err) {

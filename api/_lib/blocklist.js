@@ -101,3 +101,11 @@ export function getIpVersion(ip) {
 export function validateIp(ip) {
   return getIpVersion(ip) !== null;
 }
+
+/**
+ * Validate an IPv4 address string specifically. Returns true only if IPv4.
+ * Use this for endpoints that only support IPv4 (e.g. /24 CIDR logic).
+ */
+export function validateIpv4(ip) {
+  return getIpVersion(ip) === "v4";
+}

@@ -1617,12 +1617,12 @@ function ThreatIntelPanel({ styles }) {
     setLoading(true);
     setError(null);
     try {
-      const [res, corrRes, hpRes, dnsRes, assocRes] = await Promise.all([
+      // Core dashboard data loads in parallel.
+      const [res, corrRes, hpRes, dnsRes] = await Promise.all([
         fetch("/api/portal?action=threat-intel", { credentials: "same-origin" }),
         fetch("/api/portal?action=threat-correlation", { credentials: "same-origin" }),
         fetch("/api/portal?action=honeypot-logs", { credentials: "same-origin" }),
         fetch("/api/portal?action=dns-integrity", { credentials: "same-origin" }),
-        fetch("/api/portal?action=behavioral-associates", { credentials: "same-origin" }),
       ]);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData(await res.json());
@@ -1632,7 +1632,6 @@ function ThreatIntelPanel({ styles }) {
       }
       if (hpRes.ok) setHoneypot(await hpRes.json());
       if (dnsRes.ok) setDns(await dnsRes.json());
-      if (assocRes.ok) setAssociates(await assocRes.json());
     } catch (err) {
       setError(err.message || "Could not load threat intel.");
     } finally {
@@ -1640,7 +1639,16 @@ function ThreatIntelPanel({ styles }) {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  // Behavioral associates loads separately — it's a heavy self-join query
+  // and shouldn't block the rest of the dashboard from rendering.
+  const loadAssociates = useCallback(async () => {
+    try {
+      const res = await fetch("/api/portal?action=behavioral-associates", { credentials: "same-origin" });
+      if (res.ok) setAssociates(await res.json());
+    } catch { /* non-fatal */ }
+  }, []);
+
+  useEffect(() => { load(); loadAssociates(); }, [load, loadAssociates]);
 
   // Auto-refresh every 30 seconds for monitoring
   useEffect(() => {
@@ -1954,6 +1962,8 @@ function ThreatIntelPanel({ styles }) {
                 <Button
                   size="small"
                   appearance="subtle"
+                  disabled={scanning === w.ip}
+                  icon={scanning === w.ip ? <Spinner size="tiny" /> : undefined}
                   onClick={async () => {
                     setScanning(w.ip);
                     try {
@@ -1966,7 +1976,7 @@ function ThreatIntelPanel({ styles }) {
                       if (!res.ok) throw new Error(`HTTP ${res.status}`);
                       const result = await res.json();
                       setExpandedIp(w.ip);
-                      // Store subnet data in a Map keyed by IP
+                      // Store subnet data in a plain object keyed by IP
                       setSubnetData(prev => ({ ...prev, [w.ip]: result }));
                     } catch (err) {
                       setError(`Subnet scan failed: ${err.message}`);
@@ -1975,11 +1985,13 @@ function ThreatIntelPanel({ styles }) {
                     }
                   }}
                 >
-                  Subnet scan
+                  {scanning === w.ip ? "Scanning…" : "Subnet scan"}
                 </Button>
                 <Button
                   size="small"
                   appearance="subtle"
+                  disabled={scanning === w.ip}
+                  icon={scanning === w.ip ? <Spinner size="tiny" /> : undefined}
                   onClick={async () => {
                     setScanning(w.ip);
                     try {
@@ -2000,7 +2012,7 @@ function ThreatIntelPanel({ styles }) {
                     }
                   }}
                 >
-                  OSINT enrich
+                  {scanning === w.ip ? "Enriching…" : "OSINT enrich"}
                 </Button>
               </div>
 
@@ -2059,8 +2071,12 @@ function ThreatIntelPanel({ styles }) {
                             </div>
                           </div>
                         ))
+                      ) : subnetData[w.ip].abuseipdbEnabled === false ? (
+                        <p style={{ fontSize: 12, color: tokens.colorNeutralForeground3, margin: 0 }}>AbuseIPDB not configured (set ABUSEIPDB_API_KEY).</p>
+                      ) : subnetData[w.ip].abuseipdbError ? (
+                        <p style={{ fontSize: 12, color: tokens.colorNeutralForeground3, margin: 0 }}>Unable to load AbuseIPDB neighbors: {subnetData[w.ip].abuseipdbError}</p>
                       ) : (
-                        <p style={{ fontSize: 12, color: tokens.colorNeutralForeground3, margin: 0 }}>No neighbors found in AbuseIPDB.</p>
+                        <p style={{ fontSize: 12, color: tokens.colorNeutralForeground3, margin: 0 }}>No neighbors reported by AbuseIPDB.</p>
                       )}
                     </div>
                   )}
