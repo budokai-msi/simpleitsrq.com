@@ -25,6 +25,18 @@ export const PROVIDERS = {
     clientIdEnv: "GITHUB_CLIENT_ID",
     clientSecretEnv: "GITHUB_CLIENT_SECRET",
   },
+  // Auth0 Universal Login — enterprise SSO gateway (Okta, Azure AD, Ping, etc.)
+  // The user signs in via your Auth0 tenant's hosted login page. Auth0 handles
+  // the IdP selection and SAML/OIDC federation behind the scenes.
+  auth0: {
+    // These are built dynamically from AUTH0_DOMAIN env var.
+    authorizeUrl: null,
+    tokenUrl: null,
+    userInfoUrl: null,
+    scope: "openid email profile",
+    clientIdEnv: "AUTH0_CLIENT_ID",
+    clientSecretEnv: "AUTH0_CLIENT_SECRET",
+  },
 };
 
 export function appBaseUrl(request) {
@@ -69,10 +81,34 @@ export async function consumeOAuthState(state, provider) {
   return { redirectTo: row.redirect_to };
 }
 
+/**
+ * Resolve Auth0 endpoint URLs from the AUTH0_DOMAIN env var.
+ * Auth0 is special: all URLs are derived from the tenant domain,
+ * unlike Google/GitHub which have fixed authorize/token endpoints.
+ */
+function resolveAuth0Urls() {
+  const domain = process.env.AUTH0_DOMAIN;
+  if (!domain) return null;
+  const base = domain.startsWith("https://") ? domain : `https://${domain}`;
+  return {
+    authorizeUrl: `${base}/authorize`,
+    tokenUrl: `${base}/oauth/token`,
+    userInfoUrl: `${base}/userinfo`,
+  };
+}
+
 export function buildAuthorizeUrl(provider, state, request) {
   const cfg = PROVIDERS[provider];
   const clientId = process.env[cfg.clientIdEnv];
   if (!clientId) throw new Error(`${cfg.clientIdEnv} not set`);
+
+  // Auth0 endpoints are dynamic — resolve from AUTH0_DOMAIN.
+  let authorizeUrl = cfg.authorizeUrl;
+  if (provider === "auth0") {
+    const urls = resolveAuth0Urls();
+    if (!urls) throw new Error("AUTH0_DOMAIN env var not set");
+    authorizeUrl = urls.authorizeUrl;
+  }
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -88,7 +124,12 @@ export function buildAuthorizeUrl(provider, state, request) {
   if (provider === "github") {
     params.set("allow_signup", "true");
   }
-  return `${cfg.authorizeUrl}?${params.toString()}`;
+  // Auth0: add connection param if specified (e.g. "okta", "azure-ad").
+  // Omit it to show the Universal Login page with all enabled connections.
+  if (provider === "auth0" && process.env.AUTH0_CONNECTION) {
+    params.set("connection", process.env.AUTH0_CONNECTION);
+  }
+  return `${authorizeUrl}?${params.toString()}`;
 }
 
 export async function exchangeCodeForToken(provider, code, request) {
@@ -99,6 +140,14 @@ export async function exchangeCodeForToken(provider, code, request) {
     throw new Error(`${cfg.clientIdEnv}/${cfg.clientSecretEnv} not set`);
   }
 
+  // Resolve Auth0 token URL dynamically.
+  let tokenUrl = cfg.tokenUrl;
+  if (provider === "auth0") {
+    const urls = resolveAuth0Urls();
+    if (!urls) throw new Error("AUTH0_DOMAIN env var not set");
+    tokenUrl = urls.tokenUrl;
+  }
+
   const body = new URLSearchParams({
     client_id: clientId,
     client_secret: clientSecret,
@@ -107,7 +156,7 @@ export async function exchangeCodeForToken(provider, code, request) {
     grant_type: "authorization_code",
   });
 
-  const res = await fetch(cfg.tokenUrl, {
+  const res = await fetch(tokenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -128,7 +177,16 @@ export async function exchangeCodeForToken(provider, code, request) {
 
 export async function fetchUserProfile(provider, accessToken) {
   const cfg = PROVIDERS[provider];
-  const res = await fetch(cfg.userInfoUrl, {
+
+  // Resolve Auth0 userinfo URL dynamically.
+  let userInfoUrl = cfg.userInfoUrl;
+  if (provider === "auth0") {
+    const urls = resolveAuth0Urls();
+    if (!urls) throw new Error("AUTH0_DOMAIN env var not set");
+    userInfoUrl = urls.userInfoUrl;
+  }
+
+  const res = await fetch(userInfoUrl, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: "application/json",
@@ -146,6 +204,18 @@ export async function fetchUserProfile(provider, accessToken) {
       email: raw.email,
       emailVerified: raw.email_verified === true,
       name: raw.name || raw.given_name || null,
+      avatarUrl: raw.picture || null,
+    };
+  }
+
+  // Auth0 returns standard OIDC claims — same shape as Google.
+  // The `sub` field is the unique identifier scoped to the Auth0 tenant.
+  if (provider === "auth0") {
+    return {
+      providerAccountId: String(raw.sub),
+      email: raw.email || null,
+      emailVerified: raw.email_verified === true,
+      name: raw.name || raw.given_name || raw.nickname || null,
       avatarUrl: raw.picture || null,
     };
   }

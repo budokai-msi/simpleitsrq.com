@@ -462,6 +462,7 @@ function GitHubGlyph() {
 function SignInView({ styles, authError, onLogin, providers }) {
   const hasGoogle = providers.includes("google");
   const hasGitHub = providers.includes("github");
+  const hasAuth0 = providers.includes("auth0");
 
   return (
     <div className={styles.signInWrap}>
@@ -476,8 +477,8 @@ function SignInView({ styles, authError, onLogin, providers }) {
         {authError && (
           <MessageBar intent="error" style={{ marginBottom: 16 }}>
             <MessageBarBody>
-              {authError === "unverified_email" && "Your Google email isn't verified. Please verify it and try again."}
-              {authError === "no_email" && "We couldn't read an email from your GitHub account. Add a verified email and retry."}
+              {authError === "unverified_email" && "Your email isn't verified. Please verify it and try again."}
+              {authError === "no_email" && "We couldn't read an email from your account. Add a verified email and retry."}
               {authError === "access_denied" && "Sign-in was cancelled."}
               {authError === "server" && "Something went wrong. Please try again."}
               {!["unverified_email", "no_email", "access_denied", "server"].includes(authError) &&
@@ -506,7 +507,17 @@ function SignInView({ styles, authError, onLogin, providers }) {
               Continue with GitHub
             </Button>
           )}
-          {!hasGoogle && !hasGitHub && (
+          {hasAuth0 && (
+            <Button
+              className={styles.providerBtn}
+              style={{ background: "#EB5424", color: "#fff" }}
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>}
+              onClick={() => onLogin("auth0")}
+            >
+              Enterprise SSO (Okta / Azure AD)
+            </Button>
+          )}
+          {!hasGoogle && !hasGitHub && !hasAuth0 && (
             <p style={{ color: tokens.colorNeutralForeground3, textAlign: "center", padding: 16, fontSize: 14, margin: 0 }}>
               Sign-in providers are being configured. Check back shortly or
               email <a href="mailto:hello@simpleitsrq.com">hello@simpleitsrq.com</a>.
