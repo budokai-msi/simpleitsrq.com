@@ -231,6 +231,29 @@ CREATE TABLE IF NOT EXISTS ip_blocklist (
   created_at  timestamptz NOT NULL DEFAULT now()
 );
 
+-- ---------- ip_intel ----------
+-- OSINT enrichment for known IPs. Populated automatically when threat actors
+-- are logged (AbuseIPDB + ipinfo.io lookups).
+CREATE TABLE IF NOT EXISTS ip_intel (
+  ip              text PRIMARY KEY,
+  asn             text,
+  org             text,
+  isp             text,
+  country         text,
+  city            text,
+  is_datacenter   boolean,
+  is_tor          boolean,
+  is_proxy        boolean,
+  is_vpn          boolean,
+  abuse_score     integer,
+  abuse_reports   integer,
+  abuse_last_seen text,
+  enriched_at     timestamptz,
+  expires_at      timestamptz
+);
+
+CREATE INDEX IF NOT EXISTS ip_intel_enriched_idx ON ip_intel (enriched_at DESC);
+
 -- ---------- threat_actors ----------
 -- Every request from a hostile-origin country gets logged here with full
 -- device intel. The visitor sees a fake honeypot page; the real site is
