@@ -10,6 +10,7 @@ export async function GET(request) {
   const providers = [];
   if (process.env.GOOGLE_CLIENT_ID) providers.push("google");
   if (process.env.GITHUB_CLIENT_ID) providers.push("github");
+  if (process.env.AUTH0_CLIENT_ID && process.env.AUTH0_DOMAIN) providers.push("auth0");
 
   try {
     const session = await getSession(request);
