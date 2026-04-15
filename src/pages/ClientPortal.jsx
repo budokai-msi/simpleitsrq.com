@@ -1433,7 +1433,7 @@ function DraftsPanel({ styles }) {
                 setStatus({ type: "error", msg: `GitHub diagnostic: ${parts.join(" — ")}` });
               }
             } catch (err) {
-              setStatus({ type: "error", msg: `Diagnostic call failed: ${err.message}` });
+              setStatus({ type: "error", msg: `Diagnostic call failed: ${String(err?.message || err).slice(0, 200)}` });
             }
           }}
         >
