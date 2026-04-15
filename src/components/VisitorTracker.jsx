@@ -58,6 +58,62 @@ function randomId() {
   return Array.from(arr, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function randomUUID() {
+  // Prefer native crypto.randomUUID when available. Fall back to a v4
+  // shape built from crypto.getRandomValues so we still get a valid UUID
+  // on the handful of browsers that don't expose randomUUID yet.
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const b = new Uint8Array(16);
+  crypto.getRandomValues(b);
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, "0"));
+  return `${h.slice(0, 4).join("")}-${h.slice(4, 6).join("")}-${h.slice(6, 8).join("")}-${h.slice(8, 10).join("")}-${h.slice(10, 16).join("")}`;
+}
+
+// Visitor session: a logical grouping of pageviews with a 30-minute idle
+// timeout. Stored in sessionStorage (dies with the tab) *and* a rolling
+// cookie (survives a tab close if the visitor comes back within 30 min).
+// Distinct from the `sessions` auth table — this tracks anonymous browsing.
+const SESSION_COOKIE = "sirq_sess";
+const SESSION_TS_COOKIE = "sirq_sess_ts";
+const SESSION_IDLE_MS = 30 * 60 * 1000;
+
+function readCookie(name) {
+  try {
+    const m = document.cookie.split("; ").find((c) => c.startsWith(name + "="));
+    return m ? decodeURIComponent(m.slice(name.length + 1)) : null;
+  } catch { return null; }
+}
+
+function writeCookie(name, value, maxAgeSec) {
+  try {
+    const secure = location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAgeSec}; SameSite=Lax${secure}`;
+  } catch { /* ignore */ }
+}
+
+function getOrMintSession() {
+  const now = Date.now();
+  const existingId = readCookie(SESSION_COOKIE);
+  const existingTs = Number(readCookie(SESSION_TS_COOKIE) || 0);
+  const isFresh = existingId && existingTs && (now - existingTs) < SESSION_IDLE_MS;
+
+  if (isFresh) {
+    // Slide the idle window forward.
+    writeCookie(SESSION_TS_COOKIE, String(now), Math.floor(SESSION_IDLE_MS / 1000));
+    return { id: existingId, isNew: false };
+  }
+
+  const id = randomUUID();
+  // 30-minute idle; resets every pageview.
+  writeCookie(SESSION_COOKIE, id, Math.floor(SESSION_IDLE_MS / 1000));
+  writeCookie(SESSION_TS_COOKIE, String(now), Math.floor(SESSION_IDLE_MS / 1000));
+  return { id, isNew: true };
+}
+
 export default function VisitorTracker() {
   const location = useLocation();
   const lastSent = useRef(null);
@@ -92,8 +148,12 @@ export default function VisitorTracker() {
     const nav = typeof navigator !== "undefined" ? navigator : {};
     const scr = typeof window !== "undefined" ? window.screen : {};
 
+    const sess = getOrMintSession();
+
     const payload = {
       anonId: analyticsOk ? anonId : null,
+      sessionId: sess.id,
+      isNewSession: sess.isNew,
       path,
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
       screen: scr ? `${scr.width || 0}x${scr.height || 0}` : null,
