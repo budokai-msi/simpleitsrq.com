@@ -11,7 +11,6 @@ import { useAuth } from "./lib/authContext.js";
 import CookieConsent from "./components/CookieConsent.jsx";
 import VisitorTracker from "./components/VisitorTracker.jsx";
 import "./App.css";
-import "./editorial.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
 // small. The homepage is the most-visited route and stays eager.
@@ -54,8 +53,9 @@ function Logo() {
   return (
     <Link to="/" className="brand" aria-label="Simple IT SRQ home">
       <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="4" />
-        <text x="16" y="23" textAnchor="middle" fontSize="22" fontStyle="italic">S</text>
+        <rect width="32" height="32" rx="6" fill="#0F6CBD" />
+        <text x="16" y="22" textAnchor="middle" fontFamily="Segoe UI, system-ui, sans-serif"
+              fontSize="18" fontWeight="700" fill="#FFFFFF">S</text>
       </svg>
       <span className="brand-text">Simple IT <span className="brand-accent">SRQ</span></span>
     </Link>
