@@ -1,9 +1,9 @@
-// GET /api/auth/callback/auth0?code&state
+// GET /api/auth/callback/:provider?code&state
 //
-// Completes Auth0 Universal Login (enterprise SSO via Okta, Azure AD, etc.):
-// verifies CSRF state, exchanges code → access token, fetches OIDC userinfo,
-// upserts the user + linked oauth account, creates a session, sets the cookie,
-// and redirects to the original page.
+// Unified OAuth callback for Google, GitHub, and Auth0. Verifies CSRF state,
+// exchanges the code for an access token, fetches the profile, upserts the
+// user, creates a session, and redirects back. Consolidated into one file
+// to stay under Vercel Hobby's 12-function limit.
 
 import {
   consumeOAuthState,
@@ -15,8 +15,20 @@ import { createSession } from "../../_lib/session.js";
 import { redirect, json, safeRedirectPath } from "../../_lib/http.js";
 import { clientIp, logSecurityEvent } from "../../_lib/security.js";
 
+const SUPPORTED = new Set(["google", "github", "auth0"]);
+
+function providerFromPath(pathname) {
+  const m = pathname.match(/\/api\/auth\/callback\/([^/?]+)/);
+  return m ? m[1].toLowerCase() : null;
+}
+
 export async function GET(request) {
   const url = new URL(request.url);
+  const provider = providerFromPath(url.pathname);
+  if (!provider || !SUPPORTED.has(provider)) {
+    return json(404, { ok: false, error: "unknown_provider" });
+  }
+
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const error = url.searchParams.get("error");
@@ -30,17 +42,23 @@ export async function GET(request) {
     return json(400, { ok: false, error: "missing_params" });
   }
 
+  const path = `/api/auth/callback/${provider}`;
+
   try {
-    const consumed = await consumeOAuthState(state, "auth0");
+    const consumed = await consumeOAuthState(state, provider);
     if (!consumed) return json(400, { ok: false, error: "invalid_state" });
 
-    const accessToken = await exchangeCodeForToken("auth0", code, request);
-    const profile = await fetchUserProfile("auth0", accessToken);
-    if (!profile.emailVerified) {
+    const accessToken = await exchangeCodeForToken(provider, code, request);
+    const profile = await fetchUserProfile(provider, accessToken);
+
+    // GitHub doesn't return emailVerified; require an email instead.
+    if (provider === "github") {
+      if (!profile.email) return redirect(`/portal?auth_error=no_email`);
+    } else if (!profile.emailVerified) {
       return redirect(`/portal?auth_error=unverified_email`);
     }
 
-    const user = await upsertUserFromProfile("auth0", profile);
+    const user = await upsertUserFromProfile(provider, profile);
     const { cookie } = await createSession(user.id, request);
     const target = safeRedirectPath(consumed.redirectTo, "/portal");
     await logSecurityEvent({
@@ -49,19 +67,21 @@ export async function GET(request) {
       ip: clientIp(request),
       userId: user.id,
       userAgent: request.headers.get("user-agent"),
-      path: "/api/auth/callback/auth0",
-      detail: { provider: "auth0", sub: profile.providerAccountId },
+      path,
+      detail: provider === "auth0"
+        ? { provider, sub: profile.providerAccountId }
+        : { provider },
     });
     return redirect(target, { "Set-Cookie": cookie });
   } catch (err) {
-    console.error("[auth/callback/auth0]", err);
+    console.error(`[auth/callback/${provider}]`, err);
     await logSecurityEvent({
       kind: "auth.login.failure",
       severity: "error",
       ip: clientIp(request),
       userAgent: request.headers.get("user-agent"),
-      path: "/api/auth/callback/auth0",
-      detail: { provider: "auth0", message: String(err?.message || err) },
+      path,
+      detail: { provider, message: String(err?.message || err) },
     });
     return redirect(`/portal?auth_error=server`);
   }

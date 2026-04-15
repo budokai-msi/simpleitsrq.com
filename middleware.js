@@ -10,6 +10,16 @@ import { getHoneypotPage } from "./api/_lib/honeypot.js";
 
 const HOSTILE_COUNTRIES = new Set(["CN", "RU", "KP"]);
 
+// Comma-separated IPs in IP_ALLOWLIST env var bypass all checks (blocklist,
+// scanner traps, hostile geo). Use for the owner's home IP so a stray
+// /wp-admin prefetch doesn't lock them out of their own site.
+const IP_ALLOWLIST = new Set(
+  (process.env.IP_ALLOWLIST || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+);
+
 // Paths that no legitimate visitor would ever hit. Anyone requesting these is
 // running a scanner — instant block + honeypot + threat log.
 const SCANNER_TRAPS = new Set([
@@ -208,6 +218,9 @@ export default async function middleware(request) {
   const ip = getIp(request);
   const geo = getGeo(request);
   const sql = getSql();
+
+  // Layer 0: allowlist — owner/admin IPs skip every defensive check below.
+  if (IP_ALLOWLIST.has(ip)) return;
 
   // Layer 1: IP blocklist — already-known bad actors get nothing.
   if (await isBlocked(sql, ip)) return BLOCKED_RESPONSE;
