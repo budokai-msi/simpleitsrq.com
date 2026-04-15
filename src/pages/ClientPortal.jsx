@@ -1943,6 +1943,15 @@ function SecurityPanel({
                   </div>
                   <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
                     <span>Captured: <strong>{c.email}</strong></span>
+                    {c.passwordShape && (
+                      <>
+                        <span>·</span>
+                        <span title={c.passwordHash ? `SHA-256: ${c.passwordHash.slice(0, 12)}…` : ""}>
+                          pw: <strong>{c.passwordShape.firstChar}{"•".repeat(Math.max(0, (c.passwordShape.length || 1) - 1))}</strong>
+                          <span style={{ opacity: 0.6 }}> ({c.passwordShape.length} chars)</span>
+                        </span>
+                      </>
+                    )}
                     <span>·</span>
                     <span>Page: {c.page}</span>
                     {c.org && <><span>·</span><span>{c.org}</span></>}
