@@ -828,7 +828,12 @@ async function handlePublishDraft(session, request) {
     // Diagnose common causes to help admins fix without hunting through logs.
     let hint = null;
     if (getRes.status === 404) {
-      hint = "GitHub returned 404. For private repos this usually means the GITHUB_TOKEN is missing, expired, or lacks Contents:Read+Write on " + repo + ". Verify the token at GitHub → Settings → Developer settings → Personal access tokens, and the GITHUB_REPO/GITHUB_BRANCH env vars in Vercel.";
+      // Token presence is already checked above; at this point we have a token
+      // that GitHub either rejected as unauthorized (404 masks 403 on private
+      // repos) or couldn't find the file. Common causes: wrong GITHUB_REPO or
+      // GITHUB_BRANCH, token scoped to a different repo, or token lacks
+      // Contents:Read+Write on this repo.
+      hint = "GitHub returned 404. Either the file doesn't exist at " + repo + "@" + branch + "/src/data/posts.js, or the token can authenticate but lacks Contents:Read+Write on this repo (GitHub masks 403 as 404 for private repos). Verify GITHUB_REPO/GITHUB_BRANCH env vars in Vercel, and the token's repository access.";
     } else if (getRes.status === 401) {
       hint = "GitHub rejected the token (401). The token is malformed or revoked. Rotate it in GitHub and update GITHUB_TOKEN in Vercel.";
     } else if (getRes.status === 403) {
@@ -1172,6 +1177,7 @@ async function handleGithubHealth(session) {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
         "User-Agent": "simpleitsrq-portal",
       },
       signal: AbortSignal.timeout?.(5000),
@@ -1204,6 +1210,7 @@ async function handleGithubHealth(session) {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
           "User-Agent": "simpleitsrq-portal",
         },
         signal: AbortSignal.timeout?.(5000),

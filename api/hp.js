@@ -14,6 +14,23 @@ const noContent = () => new Response(null, { status: 204 });
 
 const ALLOWED_TYPE = /^[a-z0-9_-]{1,32}$/i;
 
+// SHA-256 with a static per-deploy salt so captured passwords are useful
+// for correlation ("this attacker reused the same password on 4 attempts")
+// without keeping the cleartext on disk. The salt is fixed so hashes are
+// stable across restarts — security signal, not a defense against rainbow
+// tables (which is why we also log length + first char only).
+const PW_SALT = "simpleitsrq-honeypot-v1";
+async function hashPw(pw) {
+  if (!pw) return null;
+  try {
+    const data = new TextEncoder().encode(PW_SALT + ":" + pw);
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request) {
   const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
   const ua = request.headers.get("user-agent") || null;
@@ -65,7 +82,13 @@ export async function POST(request) {
     // Beacon shape: { type: 'cred', d: { email, password?, ts, page } }
     // Older clients may send { type: 'cred', email, ts } — accept both.
     const email = String(d.email ?? body.email ?? "").slice(0, 320);
-    const password = String(d.password ?? body.password ?? "").slice(0, 200);
+    const rawPw = String(d.password ?? body.password ?? "");
+    // Intentionally never store the cleartext password. Keep a salted SHA-256
+    // for correlation + length/first-char fingerprint for behavioral signal.
+    const passwordHash = rawPw ? await hashPw(rawPw) : null;
+    const passwordShape = rawPw
+      ? { length: rawPw.length, firstChar: rawPw.slice(0, 1) }
+      : null;
     try {
       await sql`
         INSERT INTO security_events (kind, severity, ip, user_agent, path, detail)
@@ -75,7 +98,8 @@ export async function POST(request) {
             country,
             page,
             email,
-            password: password || null,
+            passwordHash,
+            passwordShape,
             ts: d.ts ?? ts,
           })}::jsonb
         )
