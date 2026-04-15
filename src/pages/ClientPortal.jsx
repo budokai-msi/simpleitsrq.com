@@ -78,6 +78,12 @@ const useStyles = makeStyles({
     paddingRight: "24px",
     paddingTop: "48px",
     paddingBottom: "72px",
+    "@media (max-width: 720px)": {
+      paddingLeft: "14px",
+      paddingRight: "14px",
+      paddingTop: "24px",
+      paddingBottom: "40px",
+    },
   },
 
   // signed-out card
@@ -153,38 +159,71 @@ const useStyles = makeStyles({
     gap: "16px",
     flexWrap: "wrap",
     marginBottom: "24px",
+    "@media (max-width: 720px)": {
+      gap: "10px",
+      marginBottom: "16px",
+    },
   },
   dashHeadLeft: {
     display: "flex",
     alignItems: "center",
     gap: "14px",
+    "@media (max-width: 720px)": {
+      gap: "10px",
+    },
   },
   dashGreeting: {
     margin: 0,
     lineHeight: 1.2,
+    "@media (max-width: 720px)": {
+      fontSize: "17px !important",
+    },
   },
   dashEmail: {
     color: tokens.colorNeutralForeground3,
     fontSize: "13px",
+    "@media (max-width: 720px)": {
+      fontSize: "12px",
+      wordBreak: "break-all",
+    },
   },
   tabs: {
     marginBottom: "20px",
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    "@media (max-width: 720px)": {
+      overflowX: "auto",
+      flexWrap: "nowrap",
+      WebkitOverflowScrolling: "touch",
+      marginBottom: "16px",
+    },
   },
   panel: {
     marginTop: "24px",
+    "@media (max-width: 720px)": {
+      marginTop: "16px",
+    },
   },
   cardGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
     gap: "14px",
     marginTop: "12px",
+    "@media (max-width: 720px)": {
+      gridTemplateColumns: "1fr 1fr",
+      gap: "10px",
+    },
+    "@media (max-width: 420px)": {
+      gridTemplateColumns: "1fr",
+    },
   },
   statCard: {
     padding: "18px 20px",
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
     backgroundColor: tokens.colorNeutralBackground1,
+    "@media (max-width: 720px)": {
+      padding: "14px 16px",
+    },
   },
   statLabel: {
     color: tokens.colorNeutralForeground3,
@@ -197,6 +236,9 @@ const useStyles = makeStyles({
     fontWeight: 700,
     marginTop: "4px",
     color: tokens.colorNeutralForeground1,
+    "@media (max-width: 720px)": {
+      fontSize: "22px",
+    },
   },
 
   // list (tickets / invoices)
@@ -226,6 +268,12 @@ const useStyles = makeStyles({
       outline: `2px solid ${tokens.colorBrandStroke1}`,
       outlineOffset: "2px",
     },
+    "@media (max-width: 720px)": {
+      padding: "12px 14px",
+      gap: "10px",
+      flexDirection: "column",
+      alignItems: "flex-start",
+    },
   },
   listMain: {
     minWidth: 0,
@@ -238,6 +286,10 @@ const useStyles = makeStyles({
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
+    "@media (max-width: 720px)": {
+      whiteSpace: "normal",
+      wordBreak: "break-word",
+    },
   },
   listMeta: {
     color: tokens.colorNeutralForeground3,
@@ -246,6 +298,10 @@ const useStyles = makeStyles({
     display: "flex",
     gap: "10px",
     flexWrap: "wrap",
+    "@media (max-width: 720px)": {
+      gap: "6px",
+      fontSize: "11px",
+    },
   },
   listAside: {
     display: "flex",
@@ -286,6 +342,12 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     overflow: "hidden",
+    "@media (max-width: 720px)": {
+      width: "100vw",
+      maxWidth: "100vw",
+      maxHeight: "100vh",
+      borderRadius: 0,
+    },
   },
   detailHeader: {
     display: "flex",
@@ -1344,6 +1406,40 @@ function DraftsPanel({ styles }) {
           <MessageBarBody>{status.msg}</MessageBarBody>
         </MessageBar>
       )}
+
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+        <Button
+          appearance="subtle"
+          size="small"
+          onClick={async () => {
+            setStatus({ type: "success", msg: "Checking GitHub access…" });
+            try {
+              const res = await fetch("/api/portal?action=github-health", { credentials: "same-origin" });
+              const data = await res.json();
+              if (data.ok) {
+                const rl = data.rateLimit?.remaining != null ? ` · API quota: ${data.rateLimit.remaining}/${data.rateLimit.limit}` : "";
+                setStatus({
+                  type: "success",
+                  msg: `GitHub OK — authenticated as ${data.user?.login} · file ${data.path} on ${data.repo}@${data.branch} reachable (sha ${data.fileAccess?.sha?.slice(0, 7)})${rl}`,
+                });
+              } else {
+                const parts = [];
+                parts.push(`token set: ${data.tokenSet}`);
+                if (data.user?.login) parts.push(`user: ${data.user.login}`);
+                if (data.user?.error) parts.push(`user error: ${data.user.error}`);
+                if (data.fileAccess?.status) parts.push(`file access: HTTP ${data.fileAccess.status}`);
+                if (data.fileAccess?.error) parts.push(`file error: ${data.fileAccess.error}`);
+                if (data.hint) parts.push(data.hint);
+                setStatus({ type: "error", msg: `GitHub diagnostic: ${parts.join(" — ")}` });
+              }
+            } catch (err) {
+              setStatus({ type: "error", msg: `Diagnostic call failed: ${err.message}` });
+            }
+          }}
+        >
+          Check GitHub access
+        </Button>
+      </div>
 
       <h4 style={{ fontSize: 14, fontWeight: 600, margin: "12px 0 6px", color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.06em" }}>
         Pending review

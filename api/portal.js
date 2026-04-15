@@ -825,7 +825,23 @@ async function handlePublishDraft(session, request) {
   });
   if (!getRes.ok) {
     const txt = await getRes.text().catch(() => "");
-    return json(502, { ok: false, error: `github_get_${getRes.status}`, detail: txt.slice(0, 200) });
+    // Diagnose common causes to help admins fix without hunting through logs.
+    let hint = null;
+    if (getRes.status === 404) {
+      hint = "GitHub returned 404. For private repos this usually means the GITHUB_TOKEN is missing, expired, or lacks Contents:Read+Write on " + repo + ". Verify the token at GitHub → Settings → Developer settings → Personal access tokens, and the GITHUB_REPO/GITHUB_BRANCH env vars in Vercel.";
+    } else if (getRes.status === 401) {
+      hint = "GitHub rejected the token (401). The token is malformed or revoked. Rotate it in GitHub and update GITHUB_TOKEN in Vercel.";
+    } else if (getRes.status === 403) {
+      hint = "GitHub returned 403. The token is valid but doesn't have permission to read this file. Check the token's repository access and scope (needs Contents:Read+Write).";
+    }
+    return json(502, {
+      ok: false,
+      error: `github_get_${getRes.status}`,
+      detail: txt.slice(0, 300),
+      repo,
+      branch,
+      hint,
+    });
   }
   const meta = await getRes.json();
   const currentFile = Buffer.from(meta.content, "base64").toString("utf8");
@@ -1122,6 +1138,100 @@ async function handleHealth() {
   return json(checks.ok ? 200 : 503, checks);
 }
 
+// ---------- github diagnostic (admin only) ----------
+// Pings the GitHub Contents API with the current GITHUB_TOKEN to diagnose
+// publish failures without exposing token bytes.
+async function handleGithubHealth(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const token = process.env.GITHUB_TOKEN;
+  const repo  = process.env.GITHUB_REPO  || "budokai-msi/simpleitsrq.com";
+  const branch = process.env.GITHUB_BRANCH || "main";
+  const path  = "src/data/posts.js";
+
+  const result = {
+    tokenSet: !!token,
+    repo,
+    branch,
+    path,
+    user: null,
+    fileAccess: null,
+    rateLimit: null,
+    hint: null,
+  };
+
+  if (!token) {
+    result.hint = "GITHUB_TOKEN env var is not set in Vercel. Set it under Settings → Environment Variables.";
+    return json(200, result);
+  }
+
+  // 1. Check token validity + identity (works for both classic and fine-grained PATs)
+  try {
+    const userRes = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "simpleitsrq-portal",
+      },
+      signal: AbortSignal.timeout?.(5000),
+    });
+    if (userRes.ok) {
+      const u = await userRes.json();
+      result.user = { login: u.login, type: u.type };
+      // Capture rate limit info from headers
+      result.rateLimit = {
+        remaining: userRes.headers.get("x-ratelimit-remaining"),
+        limit: userRes.headers.get("x-ratelimit-limit"),
+        reset: userRes.headers.get("x-ratelimit-reset"),
+      };
+    } else if (userRes.status === 401) {
+      result.user = { error: "401 unauthorized — token is invalid or revoked" };
+      result.hint = "Token is rejected by GitHub. Generate a new fine-grained PAT with Contents:Read+Write on the repo and update GITHUB_TOKEN in Vercel.";
+      return json(200, result);
+    } else {
+      result.user = { error: `HTTP ${userRes.status}` };
+    }
+  } catch (err) {
+    result.user = { error: String(err.message || err).slice(0, 200) };
+  }
+
+  // 2. Try to read the target file with the same call publish-draft makes
+  try {
+    const fileRes = await fetch(
+      `https://api.github.com/repos/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+          "User-Agent": "simpleitsrq-portal",
+        },
+        signal: AbortSignal.timeout?.(5000),
+      },
+    );
+    if (fileRes.ok) {
+      const meta = await fileRes.json();
+      result.fileAccess = {
+        ok: true,
+        sha: meta.sha,
+        size: meta.size,
+      };
+    } else {
+      result.fileAccess = { ok: false, status: fileRes.status };
+      if (fileRes.status === 404) {
+        result.hint = `404 reading ${path} on branch ${branch}. Either the repo/branch name is wrong (current: ${repo}@${branch}), the file doesn't exist there, or the token lacks Contents:Read+Write on this repo.`;
+      } else if (fileRes.status === 403) {
+        result.hint = "403 — token is valid but lacks Contents permission on this repo.";
+      }
+    }
+  } catch (err) {
+    result.fileAccess = { ok: false, error: String(err.message || err).slice(0, 200) };
+  }
+
+  result.ok = result.tokenSet && result.user?.login && result.fileAccess?.ok === true;
+  return json(200, result);
+}
+
 // ---------- entry points ----------
 async function dispatch(request, method) {
   const url = new URL(request.url);
@@ -1146,6 +1256,7 @@ async function dispatch(request, method) {
   if (action === "honeypot-creds"   && method === "GET")   return handleHoneypotCreds(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
+  if (action === "github-health"   && method === "GET")   return handleGithubHealth(session);
   if (action === "reject-draft"    && method === "POST")  return handleRejectDraft(session, request);
   if (action === "create-invoice"  && method === "POST")  return handleCreateInvoice(session, request);
   if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);

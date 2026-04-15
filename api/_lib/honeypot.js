@@ -67,6 +67,32 @@ a:hover{text-decoration:underline}
 .loading{display:none;text-align:center;padding:20px}
 .loading.show{display:block}
 .form.hide{display:none}
+@media (max-width: 720px){
+  .topbar{padding:10px 14px;flex-wrap:wrap;gap:8px}
+  .topbar-user{font-size:12px;gap:10px}
+  .card{padding:24px 18px;margin:24px 12px;max-width:none}
+  .card h1{font-size:18px}
+  .dashboard{padding:0 12px;margin:16px auto}
+  .dash-header{flex-direction:column;align-items:flex-start;gap:8px;margin-bottom:16px}
+  .dash-header h2{font-size:18px}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .stat-card{padding:14px}
+  .stat-card .value{font-size:22px}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .table-wrap table{min-width:520px}
+  .table-wrap th,.table-wrap td{padding:10px 12px;font-size:13px}
+  .admin-layout{flex-direction:column}
+  .admin-sidebar{width:100%;padding:10px 0;display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid #334155}
+  .admin-sidebar .brand{flex:1 0 100%;padding:8px 16px;border-bottom:none;margin-bottom:4px;font-size:15px}
+  .admin-sidebar .nav-item{padding:8px 14px;font-size:13px;border-radius:6px}
+  .admin-content{padding:14px}
+  .admin-content h1{font-size:18px;margin-bottom:12px}
+  .admin-card{padding:14px;margin-bottom:12px}
+  .footer{padding:14px;font-size:11px}
+}
+@media (max-width: 420px){
+  .stat-grid{grid-template-columns:1fr}
+}
 `;
 
 // ────────────────────────────────────────────────────────────────────────────
