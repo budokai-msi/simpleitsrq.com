@@ -39,6 +39,10 @@ export async function POST(request) {
   const referrer   = body.referrer ? String(body.referrer).slice(0, 1000) : null;
   const anonIdIn   = body.anonId ? String(body.anonId).slice(0, 64) : null;
   const consent    = body.consent ? String(body.consent).slice(0, 16) : "pending";
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const rawSid = body.sessionId ? String(body.sessionId) : null;
+  const sessionId   = rawSid && UUID_RE.test(rawSid) ? rawSid.toLowerCase() : null;
+  const isNewSession = !!body.isNewSession && !!sessionId;
   const screen     = body.screen ? String(body.screen).slice(0, 20) : null;
   const colorDepth = body.colorDepth ? Number(body.colorDepth) || null : null;
   const tz         = body.tz ? String(body.tz).slice(0, 64) : null;
@@ -83,13 +87,13 @@ export async function POST(request) {
   try {
     await sql`
       INSERT INTO visits (
-        anon_id, user_id, path, referrer, ip,
+        anon_id, user_id, session_id, path, referrer, ip,
         country, region, city, latitude, longitude,
         user_agent, browser, os, device, screen, tz, lang,
         consent, utm_source, utm_medium, utm_campaign,
         device_hash, color_depth, platform, cores, mem, touch, dpr, connection, langs
       ) VALUES (
-        ${anonId}, ${userId}, ${path}, ${referrer}, ${ip},
+        ${anonId}, ${userId}, ${sessionId}::uuid, ${path}, ${referrer}, ${ip},
         ${geo.country}, ${geo.region}, ${geo.city}, ${geo.latitude}, ${geo.longitude},
         ${userAgent}, ${browser}, ${os}, ${device}, ${screen}, ${tz}, ${lang},
         ${consent}, ${utmSource}, ${utmMedium}, ${utmCampaign},
@@ -98,6 +102,48 @@ export async function POST(request) {
     `;
   } catch (err) {
     console.error("[track] visits insert failed", err);
+  }
+
+  // Web-session upsert. First pageview in a session inserts the full row
+  // (landing path, referrer, UTM). Subsequent pageviews within the 30-min
+  // idle window only bump activity/count/exit — and clear `bounced` once
+  // the session crosses two pageviews.
+  if (sessionId) {
+    try {
+      if (isNewSession) {
+        await sql`
+          INSERT INTO web_sessions (
+            id, anon_id, user_id, ip, country, region, city,
+            user_agent, device_hash, landing_path, exit_path, referrer,
+            utm_source, utm_medium, utm_campaign
+          ) VALUES (
+            ${sessionId}::uuid, ${anonId}, ${userId}, ${ip},
+            ${geo.country}, ${geo.region}, ${geo.city},
+            ${userAgent}, ${deviceHash}, ${path}, ${path}, ${referrer},
+            ${utmSource}, ${utmMedium}, ${utmCampaign}
+          )
+          ON CONFLICT (id) DO UPDATE
+            SET last_activity = now(),
+                page_count    = web_sessions.page_count + 1,
+                exit_path     = EXCLUDED.exit_path,
+                bounced       = false,
+                user_id       = COALESCE(web_sessions.user_id, EXCLUDED.user_id),
+                anon_id       = COALESCE(web_sessions.anon_id, EXCLUDED.anon_id)
+        `;
+      } else {
+        await sql`
+          UPDATE web_sessions
+             SET last_activity = now(),
+                 page_count    = page_count + 1,
+                 exit_path     = ${path},
+                 bounced       = false,
+                 user_id       = COALESCE(user_id, ${userId})
+           WHERE id = ${sessionId}::uuid
+        `;
+      }
+    } catch (err) {
+      console.error("[track] web_sessions upsert failed", err);
+    }
   }
 
   // Fire-and-forget: IP enrichment + real-time threat response. Runs after
@@ -114,6 +160,19 @@ export async function POST(request) {
           org = ${intel.org}
       WHERE ip = ${ip} AND abuse_score IS NULL
     `.catch(() => {});
+
+    // Back-patch the current session with reverse DNS + registrant + bot flag.
+    // The session was written with these fields NULL; enrichment fills them
+    // once the async IP intel resolves.
+    if (sessionId) {
+      await sql`
+        UPDATE web_sessions
+           SET reverse_dns     = ${intel.reverse_dns},
+               rdap_registrant = ${intel.rdap_registrant},
+               is_bot          = ${!!intel.is_bot_hostname || !!intel.is_datacenter}
+         WHERE id = ${sessionId}::uuid
+      `.catch(() => {});
+    }
 
     // Real-time auto-counter: check if this IP has 3+ threat_actor hits
     // in the last hour (regardless of the daily cron). Lighter threshold

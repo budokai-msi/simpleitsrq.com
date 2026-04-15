@@ -194,6 +194,10 @@ CREATE INDEX IF NOT EXISTS visits_path_idx        ON visits (path);
 CREATE INDEX IF NOT EXISTS visits_ip_idx          ON visits (ip);
 CREATE INDEX IF NOT EXISTS visits_device_hash_idx ON visits (device_hash);
 
+-- Visitor-session grouping: links every pageview to the web_sessions row.
+ALTER TABLE visits ADD COLUMN IF NOT EXISTS session_id uuid;
+CREATE INDEX IF NOT EXISTS visits_session_idx ON visits (session_id, ts);
+
 -- ---------- security_events ----------
 -- Auth failures, rate-limit trips, and anything else worth reviewing.
 CREATE TABLE IF NOT EXISTS security_events (
@@ -253,6 +257,22 @@ CREATE TABLE IF NOT EXISTS ip_intel (
 );
 
 CREATE INDEX IF NOT EXISTS ip_intel_enriched_idx ON ip_intel (enriched_at DESC);
+
+-- Reverse DNS + RDAP WHOIS — resolved once per IP, cached with the rest.
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS region                 text;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS reverse_dns            text;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS rdap_handle            text;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS rdap_name              text;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS rdap_registrant        text;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS rdap_abuse_email       text;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS rdap_net_range         text;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS rdap_registration_date timestamptz;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS rdap_source            text;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS raw_abuseipdb          jsonb;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS raw_ipinfo             jsonb;
+ALTER TABLE ip_intel ADD COLUMN IF NOT EXISTS raw_rdap               jsonb;
+CREATE INDEX IF NOT EXISTS ip_intel_rdap_registrant_idx ON ip_intel (rdap_registrant);
+CREATE INDEX IF NOT EXISTS ip_intel_reverse_dns_idx     ON ip_intel (reverse_dns);
 
 -- ---------- threat_actors ----------
 -- Every request from a hostile-origin country gets logged here with full
@@ -355,3 +375,39 @@ CREATE TABLE IF NOT EXISTS auto_actions (
 );
 
 CREATE INDEX IF NOT EXISTS auto_actions_ts_idx ON auto_actions (ts DESC);
+
+-- ---------- web_sessions ----------
+-- Visitor-side session grouping. One row per logical session (30-min idle
+-- timeout), distinct from the `sessions` auth table. Every pageview in
+-- `visits` carries a session_id pointing here.
+CREATE TABLE IF NOT EXISTS web_sessions (
+  id             uuid PRIMARY KEY,
+  started_at     timestamptz NOT NULL DEFAULT now(),
+  last_activity  timestamptz NOT NULL DEFAULT now(),
+  ended_at       timestamptz,
+  page_count     integer NOT NULL DEFAULT 1,
+  anon_id        text,
+  user_id        uuid REFERENCES users(id) ON DELETE SET NULL,
+  ip             text,
+  country        text,
+  region         text,
+  city           text,
+  user_agent     text,
+  device_hash    text,
+  landing_path   text,
+  exit_path      text,
+  referrer       text,
+  utm_source     text,
+  utm_medium     text,
+  utm_campaign   text,
+  bounced        boolean NOT NULL DEFAULT true,
+  is_bot         boolean NOT NULL DEFAULT false,
+  reverse_dns    text,
+  rdap_registrant text
+);
+
+CREATE INDEX IF NOT EXISTS web_sessions_anon_idx     ON web_sessions (anon_id, started_at DESC);
+CREATE INDEX IF NOT EXISTS web_sessions_user_idx     ON web_sessions (user_id, started_at DESC);
+CREATE INDEX IF NOT EXISTS web_sessions_ip_idx       ON web_sessions (ip, started_at DESC);
+CREATE INDEX IF NOT EXISTS web_sessions_last_act_idx ON web_sessions (last_activity DESC);
+CREATE INDEX IF NOT EXISTS web_sessions_device_idx   ON web_sessions (device_hash);
