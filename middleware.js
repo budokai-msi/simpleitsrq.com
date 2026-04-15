@@ -25,7 +25,6 @@ const SCANNER_TRAPS = new Set([
   "/actuator", "/actuator/health",
   "/api/v1/debug", "/debug",
   "/server-status", "/server-info",
-  "/robots.txt", "/sitemap.xml",
   "/.htaccess", "/web.config",
   "/wp-content/", "/wp-includes/",
   "/api/jsonws", "/invoker/JMXInvokerServlet",
@@ -35,7 +34,6 @@ const SCANNER_TRAPS = new Set([
 // Prefix traps — catch /wp-content/*, /wp-includes/*, etc.
 const SCANNER_PREFIXES = [
   "/wp-content/", "/wp-includes/",
-  "/.well-known/security.txt", // legit, but we don't have one — a scanner guess
 ];
 
 function isScannerPath(pathname) {

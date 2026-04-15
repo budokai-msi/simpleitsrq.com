@@ -1079,11 +1079,15 @@ async function handleHoneypotCreds(session) {
   for (const r of rows) {
     const email = r.detail?.email || r.detail?.d?.email || "(none captured)";
     const page = r.detail?.page || r.detail?.d?.page || "/";
+    const passwordHash = r.detail?.passwordHash || null;
+    const passwordShape = r.detail?.passwordShape || null;
     const existing = byIp.get(r.ip);
     if (!existing || new Date(r.ts) > new Date(existing.ts)) {
       byIp.set(r.ip, {
         ip: r.ip,
         email,
+        passwordHash,
+        passwordShape,
         country: r.country || "unknown",
         threatClass: r.threat_class || "honeypot",
         ts: r.ts,
