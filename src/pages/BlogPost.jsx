@@ -30,7 +30,7 @@ function renderAffiliateToken(raw, key) {
   if (!aff) {
     // Strip any "amazon:ASIN|" prefix and show only the label half. For
     // single-word tokens like "gusto" we just show the capitalized name.
-    const display = raw.startsWith("amazon:")
+    const display = raw.startsWith("amazon:") || raw.startsWith("amazon_search:")
       ? (raw.split("|")[1] || raw.split(":")[1] || raw)
       : raw.charAt(0).toUpperCase() + raw.slice(1);
     return <span key={key}>{display}</span>;
