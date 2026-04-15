@@ -3,6 +3,220 @@
 
 export const posts = [
   {
+    slug: "business-ups-battery-backup-sarasota-storm-season",
+    title: "The UPS Buying Guide for Sarasota Offices Heading Into Storm Season",
+    metaDescription: "Hurricane-season power flickers cost Sarasota and Bradenton businesses more than they realize. Heres how to size a UPS that actually works when it counts.",
+    date: "2026-04-15",
+    author: "Dancho Ivanov",
+    category: "Business Tech",
+    tags: ["hardware", "power", "hurricane", "smb", "sarasota"],
+    excerpt: "A $150 battery backup pays for itself the first time a summer storm kills the power mid-QuickBooks sync. Heres what to buy - and what sizing shortcuts quietly leave you exposed.",
+    heroAlt: "A row of desktop computers behind a business counter with a small rackmount UPS on the floor, power LEDs glowing during a storm.",
+    content: `## Why This Post, Why Now
+
+Hurricane season officially starts June 1, but the afternoon thunderstorms that actually kill your office power start rolling in by mid-May. Every year around this time, we take the same calls: a Bradenton dental office whose server rebooted mid-X-ray backup, a Sarasota law firm that lost an hour of dictation, a Venice contractor whose estimating workstation corrupted a project file.
+
+In almost every case the fix costs less than the downtime did. A proper uninterruptible power supply (UPS) is the single most boring piece of hardware in your office and also the one with the best ROI during our six-month storm season.
+
+## What a UPS Actually Does
+
+A UPS is a battery plus a power filter. When grid power flickers - even for a half-second - the UPS covers the gap so your computers never see it. When it cuts out for real, the battery buys you 5 to 20 minutes to save your work and shut down cleanly.
+
+The second job matters more than the first for most small businesses: the voltage on the Florida grid is noisy even on sunny days, and that noise shortens the life of power supplies inside your PCs and network gear. A UPS cleans it up.
+
+## The Three Categories Worth Knowing
+
+**Consumer standby (under $100).** Fine for a single home office PC and a monitor. Not enough capacity for a business phone system, a NAS, or any office with more than one person depending on it. Skip for business use.
+
+**Business-grade line-interactive ($150-$400).** This is the sweet spot for 80% of Sarasota and Bradenton small offices. Enough capacity for a workstation, monitor, switch, and modem/router. Active voltage regulation, pure-sine-wave output on the higher models, and a USB cable so Windows can shut the machine down gracefully when the battery gets low.
+
+If you only buy one, this is the tier. A reliable option on our shortlist: [[amazon_search:APC back-ups pro 1500va line interactive|a line-interactive UPS in the 1000-1500VA range]]. Plan on one per desk for staff who cannot afford to lose work, plus a larger unit for any network closet.
+
+**Rackmount / double-conversion ($600+).** Needed if you actually have a server in a rack, a VoIP phone system with 10+ handsets, or a network closet with a switch, firewall, and small NAS. Rackmount units mount cleanly in the closet and are designed to run 24/7 for years. For an office server closet, this is the right class: [[amazon_search:cyberpower rackmount ups 1500va sine wave|a rackmount UPS with pure-sine output]].
+
+## Sizing Without Overthinking It
+
+Most people oversize by 2x and spend more than they need to. The simple rule:
+
+1. Add up the wattage of everything you want to keep running. You can read this off the sticker on the back of each device.
+2. Multiply that total by 1.5 to get a safe VA rating.
+3. Pick the next size up.
+
+For a typical two-person office with a shared NAS and a router - roughly 350W of load - a 600-900VA unit is right. A solo workstation plus phone and router is usually fine on a 500VA unit. A full network closet with a server wants at least 1500VA.
+
+## The Things People Forget
+
+**Batteries wear out.** A UPS battery lasts 3 to 5 years in our climate. Put a reminder on your calendar - the unit itself lasts a decade, but the battery does not, and a dead battery means zero protection. Replacements are cheap and take five minutes.
+
+**Label the outlets.** Most UPSes split their back panel into battery-backed and surge-only outlets. If you plug your laser printer into a battery outlet, you will discover during a brownout that the printer drains the battery in under a minute. Rule of thumb: computers and network gear on battery, printers and monitors the non-critical users can live without on surge-only.
+
+**Test it once a year.** Unplug the UPS from the wall while the office is running. If the computers stay up for more than a minute, you are in good shape. If they drop instantly, the battery is dead. This is the five-minute maintenance everyone skips and then regrets in August.
+
+## A Quick Word on Surge Strips
+
+A $20 surge strip is not a UPS. It will protect your electronics from a lightning-induced spike, but it will do nothing for a blackout or brownout. If the device matters, it goes on battery, not on a surge strip.
+
+One exception: phone and coax lines. Your internet enters the building through a copper or coax line, and a nearby lightning strike can ride that line right into your router even if your power was protected. A [[amazon_search:coax and ethernet surge protector|combination coax and ethernet surge protector]] at the point of entry is cheap insurance.
+
+## What We Do for Clients
+
+For Simple IT SRQ managed-services clients, UPS sizing and annual battery checks are part of the plan. We standardize on two or three models so spare batteries stock easily, and we set up monitoring so the UPS can tell the computer to shut down cleanly when the battery reaches 20%. It is the kind of thing nobody notices is working - until the day it saves a morning of billable work.
+
+## The Bottom Line
+
+If your office has electronics you do not want to reboot unexpectedly - and in Sarasota, Bradenton, or Venice, every office does - a business-grade UPS is a $200 purchase that pays for itself the first summer it is installed. Buy it before the first June storm, not after.
+
+[Talk to Simple IT SRQ](/#contact) if you want us to spec and install UPS coverage across your office as part of a managed plan. Links above are Amazon affiliate links - we earn a small commission on qualifying purchases, which helps keep these guides free.`
+  },
+  {
+    slug: "small-business-backup-drive-bradenton-ransomware",
+    title: "The 3-2-1 Backup Rule Still Works - Heres the Hardware Bradenton Offices Use",
+    metaDescription: "Ransomware hits small businesses weekly. A $120 external drive plus cloud gives Bradenton and Sarasota offices the 3-2-1 backup every insurer now expects.",
+    date: "2026-04-14",
+    author: "Dancho Ivanov",
+    category: "Cybersecurity",
+    tags: ["backup", "ransomware", "hardware", "smb", "bradenton"],
+    excerpt: "Cyber-insurance applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes.",
+    heroAlt: "An external hard drive on a desk next to a laptop, with a padlock icon overlaid showing an encrypted backup.",
+    content: `## Why Your Insurer Keeps Asking About Backups
+
+Five years ago, cyber-insurance applications had maybe two backup questions. The 2026 applications we are seeing for Sarasota and Bradenton clients now have eight to twelve. Carriers want to know not just whether you back up, but how often, where the backups live, whether they are tested, and whether the backup destination can be reached by ransomware that gets into your network.
+
+There is a reason. Ransomware groups now specifically hunt and delete backups before they encrypt the live data, because a working backup is the one thing that makes a victim not pay. If your backup is an external drive that sits permanently plugged into the bookkeeping PC, it is not really a backup - it is a second copy that will get encrypted alongside the first.
+
+## The 3-2-1 Rule, Translated
+
+The industry shorthand everyone uses is 3-2-1:
+
+- **3** total copies of your important data
+- **2** different media types (so a drive failure does not take both copies)
+- **1** copy offsite (so a fire, flood, or ransomware attack cannot reach it)
+
+For a typical Bradenton small office, that translates to: the live copy on your working computer, a local backup on an external drive or NAS, and a cloud backup somewhere the ransomware cannot touch.
+
+## Copy 1: Live Data
+
+This is whatever you work on every day - QuickBooks files, the shared drive, the customer folder. You do not need to change anything about this copy. Just make sure you know where it actually lives. We get calls every month where a staff member saved everything important to their desktop instead of the shared drive, and nobody realized until the laptop died.
+
+## Copy 2: Local Backup
+
+A local backup is the one you restore from when something goes wrong in the next five minutes - a drive dies, a file gets corrupted, an employee deletes the wrong folder. Speed matters; this is what gets you back to work before lunch.
+
+**For a single PC:** a USB-C external SSD is the right answer. Fast, silent, compact, and good for a few years of daily backup rotation. [[amazon_search:samsung t7 portable ssd 2tb|a 2TB portable SSD]] is plenty for most single-workstation offices. Plug it in overnight, run Windows File History or a free tool like Veeam Agent, unplug it in the morning. That last step - unplugging it - is what keeps ransomware from reaching it.
+
+**For a multi-person office with a shared drive:** a small NAS is the better answer. Two drives in a mirror, sitting on a shelf in the network closet, backing up every shared folder nightly. Look at [[amazon_search:synology 2 bay nas|a two-bay Synology NAS]] as the reference. Add two [[amazon_search:wd red plus 4tb nas drive|WD Red Plus NAS drives]] and you have a professional local backup tier for well under $700. Configure it so the NAS pulls backups from your computers rather than the other way around - that way a compromised PC cannot delete the backup.
+
+**Rotate at least one drive offsite.** The cheapest honest version of 3-2-1: buy two of the same external drive. Alternate them weekly. One is in the office this week, the other is at home or in a safety deposit box. Next week, swap. A fire in the office loses one drive and one working copy; it does not lose everything.
+
+## Copy 3: Cloud Backup
+
+This is the copy that survives the fire, the break-in, and the ransomware incident that encrypts every drive on the local network. It is also the copy most small offices get wrong - not because they skip it, but because they confuse file sync with backup.
+
+**OneDrive, Google Drive, and Dropbox are not backups.** They are sync tools. If ransomware encrypts a file on your PC, the encrypted version syncs to the cloud and overwrites the good copy within seconds. Most of these services have a recycle bin that can save you, but not always, and not reliably against a sophisticated attack.
+
+What you want is a real backup service - one that keeps multiple historical versions, has its own credentials (not your Microsoft login), and cannot be deleted by something running on your PC. For small offices, a dedicated backup service is the right shape: unlimited data per workstation, daily uploads, 30-day (or longer) version history, and a separate web portal to restore from. If you prefer all-in-one backup plus endpoint protection, [[acronis]] does both.
+
+## What to Actually Test
+
+A backup you have never restored from is not a backup - it is a hope. Twice a year, pick one random file, delete it, and restore it from each of your backup layers. If either restore fails or takes more than 15 minutes to figure out, fix the process now, not during an incident.
+
+We also recommend testing a full-device restore at least once. Take an old spare laptop, wipe it, and restore a user profile from backup. If you cannot get back to a working desktop in a few hours, your real recovery time during an incident will be days. That is the gap cyber-insurance carriers are pricing for.
+
+## The Mistake Almost Every Small Office Makes
+
+External drive permanently plugged in. NAS on the same network with the same admin password as every PC. Cloud sync treated as cloud backup. Each of these looks like a backup and fails as one during an actual incident.
+
+The fix is the three separations: media (different hardware), time (versions going back weeks), and network (at least one copy that a ransomware payload on your PC cannot reach).
+
+## The Bottom Line
+
+A credible 3-2-1 backup for a typical Sarasota or Bradenton small office runs $300 to $800 in hardware and $10 to $30 per workstation per month for cloud. It is the single cheapest insurance policy against the most common disaster scenario your office will face. Every cyber-insurance carrier will ask about it. Every ransomware incident response document we have written starts with whether it existed.
+
+Build the stack before you need it.
+
+[Talk to Simple IT SRQ](/#contact) about setting up and monitoring a real 3-2-1 backup across your office - including the test-restore cycle that insurers now expect documented. The product links above are affiliate links; we earn a small commission when you buy through them.`
+  },
+  {
+    slug: "hardware-2fa-yubikey-sarasota-law-firms",
+    title: "Why Sarasota Law and Medical Offices Are Switching to Hardware 2FA",
+    metaDescription: "SMS text-message 2FA is being actively bypassed. Heres what a $50 YubiKey does differently and why Sarasota law and medical offices are standardizing on them.",
+    date: "2026-04-13",
+    author: "Dancho Ivanov",
+    category: "Cybersecurity",
+    tags: ["mfa", "2fa", "yubikey", "legal", "healthcare", "sarasota"],
+    excerpt: "SMS 2FA keeps getting bypassed in the wild. A physical security key costs $50, stops the entire class of attack, and is now effectively required by several cyber-insurance carriers. Heres how to deploy them.",
+    heroAlt: "A small USB-C hardware security key plugged into a laptop with a login screen showing a successful passkey prompt.",
+    content: `## SMS Text-Message 2FA Is No Longer Enough
+
+For years, the standard small-office advice was: turn on two-factor authentication anywhere it is offered, usually via a text message code. That advice is now outdated. In 2025 and 2026, the attacks that actually compromise small businesses no longer care about SMS codes - they steal them in real time.
+
+The mechanism is mundane. An attacker sends a convincing email or text pointing a victim to a fake login page that looks exactly like Microsoft 365 or a bank. The user types the password, the fake page passes it to the real site, the real site sends a text code, the user types the code into the fake page, and the attacker relays the code to the real site within seconds. From Microsoft's side, the login looks normal. The attacker now has a valid session and often installs persistence before anyone notices.
+
+This is no longer a theoretical attack. It is sold as a subscription service ("phishing-as-a-service") for a few hundred dollars a month, and Sarasota law firms and medical offices are on the target list because they hold data worth extorting.
+
+## What a Hardware Key Does Differently
+
+A hardware security key - a YubiKey is the most common brand - solves this with a single design decision: it cryptographically ties the login to the real domain. When you tap the key to approve a login at microsoft.com, the key knows it is microsoft.com. When the attacker sends you to microsoft-login.malicious.com and you tap the key, the key signs a response for the wrong domain, and the real Microsoft login rejects it.
+
+There is no code for the user to type and no code for the attacker to steal. The phishing flow breaks at the cryptography step, not at the user's judgment step. That is the entire appeal: you stop relying on people never falling for a convincing email.
+
+## Why Law and Medical Offices Are Adopting Them First
+
+Three reasons, in order:
+
+1. **Insurance.** Several cyber-insurance carriers writing policies for Florida legal and healthcare practices now require phishing-resistant MFA on admin accounts for renewal. Hardware keys satisfy this; SMS does not.
+2. **Compliance.** HIPAA's access-control guidance and state privacy statutes both point toward strong authentication for access to regulated data. A hardware key makes the audit conversation trivially short.
+3. **Admin account protection.** Even firms that are not ready to roll out keys to every staff member find the math easy for the two or three accounts that can reset passwords or export client data. Those accounts are where the damage happens.
+
+## What to Buy
+
+For 95% of small offices, the answer is straightforward: [[amazon_search:yubikey 5c nfc|a YubiKey 5C NFC]] per user, plus a backup key. Two keys per person is not optional - if the primary is lost and there is no enrolled backup, the account locks out. Treat it like a car key.
+
+- **USB-C** for modern laptops.
+- **NFC** so it works on phones by tapping the back.
+- Two per person: one on the keyring, one in a drawer.
+
+If you have older hardware with USB-A ports, look at [[amazon_search:yubikey 5 nfc usb a|the USB-A variant]] instead. Same chip, different plug.
+
+For a larger deployment where users share workstations, the [[amazon_search:yubico security key nfc|lower-cost Security Key NFC]] covers the FIDO2 cases at about half the price.
+
+## How to Roll It Out Without Breaking Anything
+
+The biggest mistake we see is treating this as a one-day cutover. Do it as a two-week rollout per account:
+
+**Week 1: Enroll.** Add the key as a second factor alongside the existing SMS or app-based MFA. Everything keeps working. Users get used to tapping the key.
+
+**Week 2: Cut over admin accounts.** Remove SMS as an option for any account that can manage users, reset passwords, or export data. These are the attackers' real targets.
+
+**Weeks 3-4: Cut over everyone else.** Remove SMS for standard users. Keep authenticator-app TOTP as the fallback for the two times a year someone genuinely forgets their key at home.
+
+This phased approach avoids the support nightmare of someone unable to log in at 8 a.m. Monday because they never practiced with the key.
+
+## The Account Recovery Gotcha
+
+The single biggest source of post-deployment tickets is account recovery. Before you enroll anyone, write down what happens if they lose both keys:
+
+- Microsoft 365 admin: a specific admin account with its own hardware keys stored physically in a safe.
+- Banking and financial: the bank's in-branch recovery process, pre-identified.
+- QuickBooks Online, Dropbox, etc: each one has a different process. Document each.
+
+We literally print a one-page recovery sheet per office. When someone calls from a vacation saying they lost their keys, the first thing we pull up is that sheet.
+
+## The Limits
+
+Hardware keys are not magic. They protect the login; they do not protect a session that is already compromised. They do not stop an attacker who convinces a staff member to wire money directly. And they only work on services that support FIDO2 or WebAuthn - which today includes Microsoft 365, Google Workspace, most major banks, GitHub, Dropbox, and LastPass/1Password, but still excludes some industry-specific SaaS tools.
+
+The services the attackers actually target - email, cloud storage, password managers - are all covered. That is what matters for the threat model.
+
+## The Bottom Line
+
+A $50 hardware key per person eliminates the single most common successful attack on Sarasota and Bradenton small offices. Cyber-insurance carriers are moving from "recommended" to "required" for admin accounts, and the deployment effort is two weeks of calendar time, not two weeks of work.
+
+If your office handles client data worth a ransomware demand - legal, medical, financial, construction contracts, real estate transactions - this is the most boring, highest-leverage security upgrade you can make this quarter.
+
+[Talk to Simple IT SRQ](/#contact) if you want help speccing, sourcing, and rolling out hardware keys across your team, including the enrollment scripts and recovery runbook. Links above are Amazon affiliate links; we earn a small commission on qualifying purchases.`
+  },
+  {
     slug: "ai-comprehension-debt-sarasota-it-teams",
     title: "AI Comprehension Debt: A Hidden Risk for Sarasota IT Teams",
     metaDescription: "AI coding tools speed teams up, but quietly erode understanding. Heres how Sarasota and Bradenton businesses can avoid comprehension debt.",

@@ -31,6 +31,20 @@ function amazonProduct(asin, label) {
   };
 }
 
+// Builder for an Amazon search link with the affiliate tag appended. Use when
+// recommending a category ("business-grade UPS") rather than a single SKU -
+// links to a curated search instead of gambling on one ASIN that may go out
+// of stock.
+function amazonSearch(query, label) {
+  if (!AMAZON_TAG) return null;
+  return {
+    vendor: "Amazon",
+    label,
+    href: `https://www.amazon.com/s?k=${encodeURIComponent(query)}&tag=${encodeURIComponent(AMAZON_TAG)}`,
+    blurb: "Affiliate search link - we earn a small commission on qualifying purchases.",
+  };
+}
+
 export const AFFILIATES = {
   // === Gusto referral - flat $200 per signup that runs first payroll ===
   gusto: GUSTO_REF
@@ -76,6 +90,11 @@ export const AFFILIATES = {
   // Hardware picks are passed inline as [[amazon:ASIN|label]] in markdown
   // and resolved at render time, so we expose the constructor instead.
   amazon: AMAZON_TAG ? amazonProduct : null,
+
+  // === Amazon category search - [[amazon_search:query|label]] in markdown ===
+  // Better than a specific ASIN when recommending a category. Won't 404 if
+  // the product goes OOS.
+  amazon_search: AMAZON_TAG ? amazonSearch : null,
 };
 
 // True if at least one affiliate is configured. Used by BlogPost to decide
@@ -96,12 +115,20 @@ export function resolveAffiliate(token) {
     return AFFILIATES.amazon(asin.trim(), (label || asin).trim());
   }
 
+  // Amazon search takes "amazon_search:query|label"
+  if (token.startsWith("amazon_search:")) {
+    const rest = token.slice("amazon_search:".length);
+    const [query, label] = rest.split("|");
+    if (typeof AFFILIATES.amazon_search !== "function") return null;
+    return AFFILIATES.amazon_search(query.trim(), (label || query).trim());
+  }
+
   return AFFILIATES[token] || null;
 }
 
 // Test whether a piece of markdown contains any [[affiliate:...]] tokens.
 // Used to drive the disclosure banner.
-const TOKEN_RE = /\[\[(amazon:[^\]]+|gusto|onepassword|honeybook|acronis)\]\]/g;
+const TOKEN_RE = /\[\[(amazon:[^\]]+|amazon_search:[^\]]+|gusto|onepassword|honeybook|acronis)\]\]/g;
 
 export function postHasAffiliateContent(markdown) {
   if (!markdown) return false;

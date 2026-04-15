@@ -109,6 +109,76 @@ async function autoCounter() {
   return actions;
 }
 
+// ========== THREAT-FEED INGEST (daily) ==========
+//
+// Pulls known-bad IPs from public threat feeds and pre-populates ip_blocklist
+// so scanners are blocked on first touch instead of being detected after
+// they've already probed us. IP-only feeds (not CIDR) so rows fit the
+// existing schema. Runs daily — feeds update hourly but once/day is plenty
+// for a marketing site on Hobby.
+
+const THREAT_FEEDS = [
+  {
+    source: "feodo-tracker",
+    url: "https://feodotracker.abuse.ch/downloads/ipblocklist.txt",
+    description: "active Emotet/Dridex/TrickBot C2 servers",
+  },
+  {
+    source: "et-compromised",
+    url: "https://rules.emergingthreats.net/blockrules/compromised-ips.txt",
+    description: "Emerging Threats compromised IPs",
+  },
+];
+
+const IPV4_RE = /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/;
+const INGEST_CAP_PER_FEED = 5000; // cap per run so a corrupt feed can't blow up the table
+
+async function fetchFeedIps(url) {
+  const res = await fetch(url, {
+    headers: { "User-Agent": "simpleitsrq-threat-intel/1.0" },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) throw new Error(`${url} -> HTTP ${res.status}`);
+  const body = await res.text();
+  const ips = new Set();
+  for (const raw of body.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#") || line.startsWith(";")) continue;
+    // Some feeds ship "ip[tab]comment"; take the first token.
+    const first = line.split(/\s+/)[0];
+    if (IPV4_RE.test(first)) ips.add(first);
+  }
+  return Array.from(ips).slice(0, INGEST_CAP_PER_FEED);
+}
+
+async function ingestThreatFeeds() {
+  const perFeed = [];
+  for (const feed of THREAT_FEEDS) {
+    try {
+      const ips = await fetchFeedIps(feed.url);
+      if (ips.length === 0) {
+        perFeed.push({ source: feed.source, fetched: 0, added: 0 });
+        continue;
+      }
+      // One round-trip: bulk-insert ignoring dupes. Postgres ON CONFLICT gives
+      // us the insert count directly via RETURNING.
+      const reason = `feed: ${feed.source} (${feed.description})`;
+      const inserted = await sql`
+        INSERT INTO ip_blocklist (ip, reason)
+        SELECT ip, ${reason}
+        FROM unnest(${ips}::text[]) AS t(ip)
+        ON CONFLICT (ip) DO NOTHING
+        RETURNING ip
+      `;
+      perFeed.push({ source: feed.source, fetched: ips.length, added: inserted.length });
+    } catch (err) {
+      perFeed.push({ source: feed.source, error: String(err.message || err).slice(0, 200) });
+    }
+  }
+  const totalAdded = perFeed.reduce((n, f) => n + (f.added || 0), 0);
+  return { feeds: perFeed, totalAdded };
+}
+
 // ========== AI BLOG AGENT (daily) ==========
 
 async function generateBlogDraft() {
@@ -427,6 +497,7 @@ export async function GET(request) {
   const result = { ts: now.toISOString(), tasks: {} };
 
   result.tasks.autoCounter = await autoCounter();
+  result.tasks.threatFeeds = await ingestThreatFeeds();
   result.tasks.blogDraft = await generateBlogDraft();
   result.tasks.securityAnalysis = await securityAnalysis();
   result.tasks.supplyChain = await supplyChainAudit();
