@@ -1,47 +1,40 @@
-﻿import {
-  Headphones, Server, ShieldCheck, Lock, Cloud, FileCheck,
-  HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
-  Phone, Mail, MapPin, Clock, Star, Check, ArrowRight, Wifi, Briefcase,
-  Loader2, CheckCircle2, AlertCircle, Send
+import {
+  Lock, Cloud, FileCheck, HeartPulse, Scale, Landmark, HardHat,
+  Home as HomeIcon, Phone, Mail, MapPin, Clock, ArrowRight, Wifi, Briefcase,
+  Loader2, CheckCircle2, AlertCircle, Send, ArrowUpRight, Headphones,
+  Server, Shield, Star
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useSEO } from "../lib/seo";
-import { useScrollReveal, useRevealChildren } from "../lib/useScrollReveal";
-import heroGrid from "../assets/hero-grid.svg";
 import { posts } from "../data/posts";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 
 function Hero() {
+  const today = new Date().toLocaleDateString("en-US", {
+    year: "numeric", month: "short", day: "2-digit"
+  }).toUpperCase();
   return (
-    <section className="hero hero-clean" aria-labelledby="hero-title">
-      <div className="hero-bg" aria-hidden="true">
-        <img src={heroGrid} alt="" className="hero-grid-bg" />
-      </div>
-      <div className="container hero-stack-clean">
-        <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display">IT support that just works — for Sarasota and Bradenton businesses.</h1>
-          <p className="lede">
-            We keep your computers running, your data safe, and your team productive.
-            A local crew that picks up the phone, flat monthly pricing, and all the
-            paperwork your insurance company and auditors ask for.
+    <section className="e-hero" aria-labelledby="hero-title">
+      <div className="container">
+        <div className="e-hero-meta">
+          <span><span className="dot" aria-hidden="true" />Online · Sarasota, FL</span>
+          <span>Edition {today}</span>
+          <span className="hide-sm">Est. 2023</span>
+        </div>
+        <h1 id="hero-title">
+          IT support that <em>just works</em> — for the businesses of Sarasota, Bradenton & Venice.
+        </h1>
+        <div className="e-hero-foot">
+          <p className="e-hero-lede">
+            A local crew that picks up the phone. Flat monthly pricing. Every
+            piece of paperwork your insurer and auditors ask for — ready the
+            same day.
           </p>
-          <div className="hero-ctas">
-            <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Check-Up</a>
-            <a href="#solutions" className="btn btn-secondary btn-lg">See What We Do</a>
-          </div>
-          <ul className="trust-row" aria-label="Why clients trust us">
-            <li><Star size={14} strokeWidth={2.25} fill="#F7630C" stroke="#F7630C" /> 5-star Google reviews</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included</li>
-            <li><Clock size={14} strokeWidth={2.25} /> Local team · same-day response</li>
-          </ul>
-          {/* Stat ticker */}
-          <div className="hero-stats">
-            <div className="hero-stat"><span className="val tabular">0</span><span className="lbl">Security breaches</span></div>
-            <div className="hero-stat"><span className="val tabular">&lt;4h</span><span className="lbl">Recovery time</span></div>
-            <div className="hero-stat"><span className="val tabular">99.99%</span><span className="lbl">Uptime</span></div>
+          <div className="e-hero-ctas">
+            <a href="#contact" className="btn btn-primary btn-lg">Get a free IT check-up <ArrowUpRight size={14} /></a>
+            <a href="#solutions" className="e-hero-link">See what we do →</a>
           </div>
         </div>
       </div>
@@ -49,22 +42,33 @@ function Hero() {
   );
 }
 
-function LogosBar() {
-  // The brands we use under the hood. Kept so prospective clients (and their
-  // insurance carriers or auditors) can recognize the tools, but framed as
-  // "what we install for you" instead of a raw vendor dump.
-  const vendors = [
-    "Microsoft 365",
-    "SentinelOne",
-    "Microsoft Defender",
-    "Intune",
-    "Fortinet",
-    "Cisco Meraki",
+function Ticker() {
+  const items = [
+    "0 breaches since 2023",
+    "<15 min first response",
+    "99.99% uptime",
+    "HIPAA paperwork included",
+    "Local team, no call centers",
+    "Flat monthly pricing",
+    "Same-day onsite across Sarasota & Bradenton",
+    "Cyber-insurance renewal support",
   ];
+  const loop = [...items, ...items];
+  return (
+    <div className="e-ticker" aria-hidden="true">
+      <div className="e-ticker-track">
+        {loop.map((t, i) => <span key={i}>{t}</span>)}
+      </div>
+    </div>
+  );
+}
+
+function LogosBar() {
+  const vendors = ["Microsoft 365", "SentinelOne", "Defender", "Intune", "Fortinet", "Cisco Meraki"];
   return (
     <section className="logos-bar" aria-label="Tools and brands we install">
       <div className="container">
-        <p className="logos-title">The tools we install and support for you</p>
+        <p className="logos-title">Tools we install & support ——</p>
         <div className="logos-row">
           {vendors.map((v) => <span key={v} className="logo-mark">{v}</span>)}
         </div>
@@ -74,156 +78,126 @@ function LogosBar() {
 }
 
 const SOLUTIONS = [
-  {
-    Icon: Headphones,
-    title: "Everyday IT Support",
-    desc: "One flat monthly price covers unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and critical problems get a live tech in under 15 minutes."
-  },
-  {
-    Icon: Lock,
-    title: "Cybersecurity and Virus Protection",
-    desc: "Modern antivirus, email scam filtering, safer web browsing, and 24/7 monitoring that catches attacks while you sleep. We turn on two-step sign-in for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
-  },
-  {
-    Icon: Cloud,
-    title: "Microsoft 365, Email and Cloud Apps",
-    desc: "We set up (or clean up) your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone. Moving from another provider? We handle the switch over a weekend so nobody loses a message."
-  },
-  {
-    Icon: Server,
-    title: "Backups and Disaster Recovery",
-    desc: "Automatic backups of every computer and server, with a second copy stored off-site so a fire, a hurricane, or a ransomware attack can't wipe you out. We test the backups every quarter and keep a simple plan for getting you back up and running in hours, not days."
-  },
-  {
-    Icon: FileCheck,
-    title: "HIPAA and Cyber-Insurance Paperwork",
-    desc: "Made for medical and dental practices, law firms, and any business renewing their cyber-insurance policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor or an insurance agent the same day."
-  },
-  {
-    Icon: Phone,
-    title: "Business Phone Systems",
-    desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email. We move your existing numbers, set up after-hours routing, and train your front desk so switching over is quiet."
-  },
-  {
-    Icon: Wifi,
-    title: "Networking, Wi-Fi, and Cabling",
-    desc: "Business-grade firewalls and Wi-Fi that actually reach every corner of your office. We run new network cables, label every jack, and guest-separate the Wi-Fi so your customers and staff are never on the same network."
-  },
-  {
-    Icon: Briefcase,
-    title: "IT Planning and Budgeting",
-    desc: "Sit down with a senior tech once a quarter to look at what's working, what's about to break, and what should be in next year's budget. No corporate speak — just a straight answer on where to spend and where to wait."
-  },
+  { title: "Everyday IT support", desc: "Unlimited help desk, monitoring, software updates, new-employee setup. A real person in Sarasota picks up — critical issues get a live tech under 15 minutes." },
+  { title: "Cybersecurity & virus protection", desc: "Modern antivirus, email scam filtering, safer browsing, 24/7 monitoring. Two-step sign-in on every account and the written proof your cyber-insurance carrier asks for." },
+  { title: "Microsoft 365 & cloud apps", desc: "Email, Teams, shared drives, company devices — all set up to work the same on every laptop and phone. Migrations handled over a weekend, no lost messages." },
+  { title: "Backups & disaster recovery", desc: "Automatic backups with off-site copies, quarterly restore tests, and a plain-English recovery plan so fire, hurricane, or ransomware can't wipe you out." },
+  { title: "HIPAA & cyber-insurance paperwork", desc: "For medical, dental, legal, and any business renewing cyber-insurance. We run the required checks and hand you a binder ready for the auditor." },
+  { title: "Business phone systems", desc: "Voicemail in your email, text messaging, fax-to-email. We port your numbers, set after-hours routing, and train the front desk so switching is quiet." },
+  { title: "Networking, Wi-Fi, cabling", desc: "Business-grade firewalls and Wi-Fi that reach every corner. New cabling, labeled jacks, and a guest network that isolates visitors from staff." },
+  { title: "IT planning & budgeting", desc: "Quarterly sit-down with a senior tech — what's working, what's about to break, what belongs in next year's budget. No corporate speak." },
 ];
 
 function Solutions() {
-  const ref = useRef(null);
-  useRevealChildren(ref);
   return (
-    <section className="section" id="solutions" aria-labelledby="solutions-title">
-      <div className="container" ref={ref}>
-        <div className="section-head reveal-up" data-reveal>
-          <span className="eyebrow">What We Do</span>
-          <h2 id="solutions-title" className="title-1">Everything your business needs from an IT company</h2>
-          <p className="section-sub">One local team for your computers, phones, email, Wi-Fi, backups, and security — so you don't have to call five different vendors when something breaks.</p>
+    <section className="e-section" id="solutions" aria-labelledby="solutions-title">
+      <div className="container">
+        <div className="e-section-head">
+          <div className="e-section-num">01 — Index</div>
+          <div>
+            <h2 id="solutions-title">Everything <em>one</em> local team can handle.</h2>
+            <p className="e-section-sub">No more juggling five vendors for five problems. Computers, phones, email, Wi-Fi, backups, security — one number, one bill, one team that knows your setup.</p>
+          </div>
         </div>
-        <div className="solution-grid">
-          {SOLUTIONS.map(({ Icon, title, desc }, i) => (
-            <a key={title} href="#contact" className="solution-card card-hover card-tilt gradient-border reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
-              <div className="solution-card-head">
-                <span className="solution-card-icon gradient-icon"><Icon size={18} /></span>
-                <h3 className="solution-card-title">{title}</h3>
-              </div>
-              <p className="solution-card-desc">{desc}</p>
-              <span className="solution-card-link shimmer-line">
-                Learn more <ArrowRight size={14} />
-              </span>
-            </a>
+        <ul className="e-solutions-list">
+          {SOLUTIONS.map((s, i) => (
+            <li key={s.title}>
+              <a href="#contact" className="e-sol-row">
+                <span className="e-sol-num">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="e-sol-title">{s.title}</h3>
+                <p className="e-sol-desc">{s.desc}</p>
+                <ArrowUpRight size={22} className="e-sol-arrow" />
+              </a>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );
 }
 
 const INDUSTRIES = [
-  { Icon: HeartPulse, name: "Healthcare", badges: ["HIPAA", "HITECH"] },
-  { Icon: Scale, name: "Legal", badges: ["ABA", "SOC 2"] },
-  { Icon: Landmark, name: "Finance", badges: ["GLBA", "PCI-DSS"] },
-  { Icon: HardHat, name: "Construction", badges: ["OSHA", "CMMC"] },
-  { Icon: HomeIcon, name: "Real Estate", badges: ["NAR", "SOC 2"] },
+  { name: "Healthcare", badges: ["HIPAA", "HITECH"] },
+  { name: "Legal", badges: ["ABA", "SOC 2"] },
+  { name: "Finance", badges: ["GLBA", "PCI-DSS"] },
+  { name: "Construction", badges: ["OSHA", "CMMC"] },
+  { name: "Real Estate", badges: ["NAR", "SOC 2"] },
+  { name: "Non-Profit", badges: ["990", "GDPR"] },
 ];
 
 function Industries() {
-  const ref = useRef(null);
-  useRevealChildren(ref);
   return (
-    <section className="section section-alt" id="industries" aria-labelledby="industries-title">
-      <div className="container" ref={ref}>
-        <div className="section-head reveal-up" data-reveal>
-          <span className="eyebrow">Who We Work With</span>
-          <h2 id="industries-title" className="title-1">Businesses we know how to support</h2>
-          <p className="section-sub">We specialize in the industries that have to deal with the most paperwork — medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton.</p>
+    <section className="e-industries" id="industries" aria-labelledby="industries-title">
+      <div className="container">
+        <div className="e-section-head">
+          <div className="e-section-num">02 — Practice</div>
+          <div>
+            <h2 id="industries-title">The industries we <em>know</em> the paperwork for.</h2>
+            <p className="e-section-sub">We specialize in the offices that live under the most regulation — and the insurers and auditors they answer to.</p>
+          </div>
         </div>
-        <div className="industries-grid">
-          {INDUSTRIES.map(({ Icon, name, badges }, i) => (
-            <article key={name} className="industry-card card-hover reveal-up" data-reveal data-reveal-delay={i + 1}>
-              <div className="industry-icon"><Icon size={26} /></div>
-              <h3 className="industry-name">{name}</h3>
-              <div className="badges">
-                {badges.map((b) => <span key={b} className="badge badge-glow">{b}</span>)}
-              </div>
-            </article>
-          ))}
-        </div>
+      </div>
+      <div className="e-industries-scroll" role="list">
+        {INDUSTRIES.map((ind, i) => (
+          <article className="e-ind-card" key={ind.name} role="listitem">
+            <span className="e-ind-num">{String(i + 1).padStart(2, "0")} / {String(INDUSTRIES.length).padStart(2, "0")}</span>
+            <h3 className="e-ind-name">{ind.name}</h3>
+            <div className="e-ind-badges">
+              {ind.badges.map((b) => <span key={b}>{b}</span>)}
+            </div>
+          </article>
+        ))}
       </div>
     </section>
   );
 }
 
 function Compliance() {
-  const ref = useScrollReveal();
   const features = [
-    "HIPAA paperwork and risk reviews",
+    "HIPAA paperwork & risk reviews",
     "Cyber-insurance renewal help",
     "Off-site backups you can actually restore",
-    "A simple disaster-recovery plan for your team",
-    "Strong encryption on every laptop and phone",
+    "Disaster-recovery plan your team understands",
+    "Full-disk encryption on every device",
+    "Quarterly security posture report",
+  ];
+  const stats = [
+    { v: "0", l: "Breaches since 2023" },
+    { v: "<4h", l: "Median recovery time" },
+    { v: "99.99%", l: "Monitored uptime" },
+    { v: "100%", l: "Renewal pass rate" },
   ];
   return (
-    <section className="section" id="compliance" aria-labelledby="compliance-title">
-      <div className="container compliance-grid reveal-up" ref={ref}>
-        <div>
-          <span className="eyebrow">Paperwork and Disaster Planning</span>
-          <h2 id="compliance-title" className="title-1">We handle the paperwork most IT guys hate</h2>
-          <p className="section-sub">
-            Audits, cyber-insurance renewals, HIPAA reviews, disaster-recovery plans — we do
-            the work and hand you the documents so you can focus on running your business.
-          </p>
-          <ul className="feature-list">
-            {features.map((f) => (
-              <li key={f}><Check size={18} color="#0F6CBD" /> {f}</li>
-            ))}
-          </ul>
+    <section className="e-compliance" id="compliance" aria-labelledby="compliance-title">
+      <div className="container">
+        <div className="e-section-head">
+          <div className="e-section-num">03 — Evidence</div>
+          <div>
+            <h2 id="compliance-title">The paperwork most IT guys <em>hate</em>. We bring a binder.</h2>
+          </div>
         </div>
-        <aside className="compliance-card" aria-label="Our track record">
-          <div className="cc-header">
-            <Shield size={24} color="#0F6CBD" />
-            <div>
-              <span className="cc-eyebrow">HIPAA DOCUMENTED PARTNER</span>
-              <h3 className="cc-title">Our track record</h3>
-            </div>
+        <div className="e-comp-grid">
+          <div>
+            <p className="e-comp-pull">
+              Audits, HIPAA reviews, cyber-insurance renewals — <em>we do the work</em> and hand you the documents.
+            </p>
+            <ul className="e-comp-list">
+              {features.map((f, i) => (
+                <li key={f} data-num={String(i + 1).padStart(2, "0")}>
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="cc-grid">
-            <div><span>0</span><small>Breaches</small></div>
-            <div><span>&lt;4h</span><small>Back up and running</small></div>
-            <div><span>Strong</span><small>Encryption</small></div>
-            <div><span>99.99%</span><small>Uptime</small></div>
+          <div className="e-comp-stats">
+            {stats.map((s) => (
+              <div key={s.l} className="e-comp-stat">
+                <span className="v tabular">{s.v}</span>
+                <span className="l">{s.l}</span>
+              </div>
+            ))}
           </div>
-          <div className="cc-footer">
-            <Check size={14} color="#107C10" /> Paperwork and protections in place
-          </div>
-        </aside>
+        </div>
       </div>
     </section>
   );
@@ -231,116 +205,76 @@ function Compliance() {
 
 function Testimonial() {
   return (
-    <section className="testimonial-section" aria-label="Client testimonial">
+    <section className="e-testimonial" aria-label="Client testimonial">
       <div className="container">
-        <figure className="testimonial">
-          <blockquote>
-            "We switched to Simple IT SRQ after our last IT company missed a
-            ransomware attempt. Within a month they had two-step sign-in on
-            every account, replaced our backups, and walked our cyber-insurance
-            carrier through everything they'd put in place. Our renewal premium
-            dropped 18%."
-          </blockquote>
-          <figcaption>
-            <strong>Karen M.</strong>
-            <span> Practice Administrator, Sarasota dental group</span>
-          </figcaption>
-        </figure>
+        <div className="e-testimonial-grid">
+          <div className="e-section-num">04 — Record</div>
+          <figure>
+            <blockquote>
+              "Within a month they had two-step sign-in on every account, replaced our backups, and walked our carrier through everything they'd put in place. Our renewal premium <em>dropped 18%</em>."
+            </blockquote>
+            <figcaption>
+              <strong>Karen M.</strong> Practice Administrator · Sarasota dental group
+            </figcaption>
+          </figure>
+        </div>
       </div>
     </section>
   );
-}
-
-function CategoryIcon({ category }) {
-  const map = {
-    "Cybersecurity": Lock,
-    "AI & Productivity": Server,
-    "Cloud": Cloud,
-    "Compliance": FileCheck,
-    "Privacy": Shield,
-    "Business Tech": Briefcase,
-    "Industry News": Star,
-  };
-  const Icon = map[category] || Briefcase;
-  return <Icon size={28} />;
 }
 
 function BlogPreview() {
-  const ref = useRef(null);
-  useRevealChildren(ref);
-  const recent = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
+  const recent = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+  const fmt = (d) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }).toUpperCase();
   return (
-    <section className="section section-alt" id="blog" aria-labelledby="blog-title">
-      <div className="container" ref={ref}>
-        <div className="section-head reveal-up" data-reveal>
-          <span className="eyebrow">From the Blog</span>
-          <h2 id="blog-title" className="title-1">Tips for local business owners</h2>
-          <p className="section-sub">Straightforward takes on the security, AI, and cloud news that actually matters for Sarasota and Bradenton businesses.</p>
+    <section className="e-blog" id="blog" aria-labelledby="blog-title">
+      <div className="container">
+        <div className="e-section-head">
+          <div className="e-section-num">05 — Writing</div>
+          <div>
+            <h2 id="blog-title">Straight takes for <em>local</em> business owners.</h2>
+            <p className="e-section-sub">What's actually worth your attention in security, AI, and cloud — without the hype.</p>
+          </div>
         </div>
-        <div className="blog-grid">
+        <div className="e-blog-list">
           {recent.map((p) => (
-            <article key={p.slug} className="blog-card card-hover reveal-up" data-reveal>
-              <Link to={`/blog/${p.slug}`} className="blog-card-img" aria-label={p.title}>
-                <div className="blog-card-img-inner"><CategoryIcon category={p.category} /></div>
-              </Link>
-              <div className="blog-card-body">
-                <span className="blog-card-category">{p.category}</span>
-                <h3 className="blog-card-title"><Link to={`/blog/${p.slug}`}>{p.title}</Link></h3>
-                <p className="blog-card-excerpt">{p.excerpt}</p>
-                <div className="blog-card-meta">
-                  <time dateTime={p.date}>{new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</time>
-                  <Link to={`/blog/${p.slug}`} className="blog-card-readmore">Read more <ArrowRight size={14} /></Link>
-                </div>
-              </div>
-            </article>
+            <Link to={`/blog/${p.slug}`} key={p.slug} className="e-blog-row">
+              <time className="e-blog-date" dateTime={p.date}>{fmt(p.date)}</time>
+              <span className="e-blog-cat">{p.category}</span>
+              <h3 className="e-blog-title">{p.title}</h3>
+              <ArrowUpRight size={20} className="e-sol-arrow" />
+            </Link>
           ))}
         </div>
-        <div className="blog-cta-row">
-          <Link to="/blog" className="btn btn-secondary btn-lg">View all posts</Link>
+        <div className="e-blog-foot">
+          <Link to="/blog" className="btn btn-secondary btn-lg">All writing →</Link>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function StatsBar() {
-  const ref = useRef(null);
-  useRevealChildren(ref);
-  const stats = [
-    { v: "99.99%", l: "Uptime promise" },
-    { v: "<15 min", l: "Response time" },
-    { v: "24/7", l: "Monitoring" },
-    { v: "100%", l: "Local team" },
-  ];
-  return (
-    <section className="stats-bar" aria-label="Key statistics">
-      <div className="container stats-grid" ref={ref}>
-        {stats.map((s, i) => (
-          <div key={s.l} className="stat reveal-up" data-reveal data-reveal-delay={i + 1}>
-            <span className="stat-v">{s.v}</span>
-            <span className="stat-l">{s.l}</span>
-          </div>
-        ))}
       </div>
     </section>
   );
 }
 
 function CtaBanner() {
-  const ref = useScrollReveal();
   return (
-    <section className="section">
+    <section className="e-cta">
       <div className="container">
-        <div className="cta-banner reveal-scale" ref={ref}>
-          <h2 className="title-2">Tired of fighting with your IT?</h2>
-          <p>Book a free 30-minute call with a local tech. No sales pitch, no jargon — just a straight answer on what's wrong and what it'd take to fix.</p>
-          <div className="cta-actions">
-            <Link to="/book" className="btn btn-primary btn-lg">Book a free call</Link>
-            <Link to="/support" className="btn btn-secondary btn-lg">Existing client? Get help</Link>
-          </div>
+        <h2>Tired of <em>fighting</em> with your IT?</h2>
+        <p>Book a free 30-minute call with a local tech. No sales pitch — just a straight answer on what's wrong and what it'd take to fix.</p>
+        <div className="e-cta-actions">
+          <Link to="/book" className="btn btn-primary btn-lg">Book a free call <ArrowUpRight size={14} /></Link>
+          <Link to="/support" className="btn btn-secondary btn-lg">Existing client? Get help</Link>
         </div>
       </div>
     </section>
+  );
+}
+
+function MobileStickyCTA() {
+  return (
+    <div className="m-sticky-cta" aria-hidden="false">
+      <span>Local IT · Sarasota & Bradenton</span>
+      <Link to="/book">Book</Link>
+    </div>
   );
 }
 
@@ -362,12 +296,11 @@ const initialForm = { name: "", company: "", email: "", phone: "", message: "", 
 
 function Contact() {
   const [form, setForm] = useState(initialForm);
-  const [status, setStatus] = useState("idle"); // idle | submitting | success | error
+  const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
 
-  const { containerRef: turnstileRef, reset: resetTurnstile } =
-    useTurnstile(setTurnstileToken);
+  const { containerRef: turnstileRef, reset: resetTurnstile } = useTurnstile(setTurnstileToken);
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
@@ -384,7 +317,6 @@ function Contact() {
     e.preventDefault();
     if (status === "submitting") return;
 
-    // If Turnstile is configured (prod) but no token yet, prompt the user.
     if (TURNSTILE_SITE_KEY && !turnstileToken) {
       errorHaptic();
       setStatus("error");
@@ -413,7 +345,6 @@ function Contact() {
       errorHaptic();
       setStatus("error");
       setErrorMsg(ERROR_MESSAGES[data?.error] || "Something went wrong. Please try again in a moment.");
-      // Turnstile tokens are single-use — get a fresh one for the retry.
       setTurnstileToken("");
       resetTurnstile();
     } catch {
@@ -428,12 +359,14 @@ function Contact() {
   const submitting = status === "submitting";
 
   return (
-    <section className="section" id="contact" aria-labelledby="contact-title">
+    <section className="e-contact" id="contact" aria-labelledby="contact-title">
       <div className="container">
-        <div className="section-head">
-          <span className="eyebrow">Contact</span>
-          <h2 id="contact-title" className="title-1">Tell us what's going on</h2>
-          <p className="section-sub">Drop us a note and a real person will get back to you within one business hour.</p>
+        <div className="e-section-head">
+          <div className="e-section-num">06 — Contact</div>
+          <div>
+            <h2 id="contact-title">Tell us what's <em>going on</em>.</h2>
+            <p className="e-section-sub">A real person replies within one business hour.</p>
+          </div>
         </div>
         <div className="contact-grid">
           <div className="form-shell">
@@ -444,101 +377,49 @@ function Contact() {
               noValidate
             >
               <div className="row-2">
-                <label>
-                  <span>Name</span>
-                  <input
-                    type="text" name="name" value={form.name} onChange={update("name")}
-                    required aria-required="true" autoComplete="name"
-                    disabled={submitting}
-                  />
-                </label>
-                <label>
-                  <span>Company</span>
-                  <input
-                    type="text" name="company" value={form.company} onChange={update("company")}
-                    autoComplete="organization" disabled={submitting}
-                  />
-                </label>
+                <label><span>Name</span>
+                  <input type="text" name="name" value={form.name} onChange={update("name")}
+                    required aria-required="true" autoComplete="name" disabled={submitting} /></label>
+                <label><span>Company</span>
+                  <input type="text" name="company" value={form.company} onChange={update("company")}
+                    autoComplete="organization" disabled={submitting} /></label>
               </div>
               <div className="row-2">
-                <label>
-                  <span>Email</span>
-                  <input
-                    type="email" name="email" value={form.email} onChange={update("email")}
-                    required aria-required="true" autoComplete="email"
-                    inputMode="email" disabled={submitting}
-                  />
-                </label>
-                <label>
-                  <span>Phone</span>
-                  <input
-                    type="tel" name="phone" value={form.phone} onChange={update("phone")}
-                    autoComplete="tel" inputMode="tel" disabled={submitting}
-                  />
-                </label>
+                <label><span>Email</span>
+                  <input type="email" name="email" value={form.email} onChange={update("email")}
+                    required aria-required="true" autoComplete="email" inputMode="email" disabled={submitting} /></label>
+                <label><span>Phone</span>
+                  <input type="tel" name="phone" value={form.phone} onChange={update("phone")}
+                    autoComplete="tel" inputMode="tel" disabled={submitting} /></label>
               </div>
-              <label>
-                <span>Message</span>
-                <textarea
-                  name="message" rows="5" value={form.message} onChange={update("message")}
-                  disabled={submitting}
-                />
-              </label>
+              <label><span>Message</span>
+                <textarea name="message" rows="5" value={form.message} onChange={update("message")}
+                  disabled={submitting} /></label>
 
-              {/* Honeypot — hidden from real users, catches bots.
-                  Inline styles + class so no layout rule can leak it. */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: "absolute",
-                  left: "-10000px",
-                  top: "auto",
-                  width: "1px",
-                  height: "1px",
-                  overflow: "hidden",
-                  pointerEvents: "none",
-                }}
-              >
-                <input
-                  type="text"
-                  name="website"
-                  tabIndex="-1"
-                  autoComplete="off"
-                  value={form._hp}
-                  onChange={update("_hp")}
-                />
+              <div aria-hidden="true" style={{
+                position: "absolute", left: "-10000px", top: "auto",
+                width: "1px", height: "1px", overflow: "hidden", pointerEvents: "none",
+              }}>
+                <input type="text" name="website" tabIndex="-1" autoComplete="off"
+                  value={form._hp} onChange={update("_hp")} />
               </div>
 
-              {/* Cloudflare Turnstile — renders only when VITE_TURNSTILE_SITE_KEY is set. */}
               {TURNSTILE_SITE_KEY && (
-                <div
-                  ref={turnstileRef}
-                  className="turnstile-widget"
-                  style={{ margin: "8px 0" }}
-                />
+                <div ref={turnstileRef} className="turnstile-widget" style={{ margin: "8px 0" }} />
               )}
 
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg btn-submit"
-                disabled={submitting}
-                onPointerDown={tapHaptic}
-              >
-                {submitting ? (
-                  <><Loader2 size={18} className="spin" /> Sending...</>
-                ) : (
-                  <><Send size={16} /> Send Message</>
-                )}
+              <button type="submit" className="btn btn-primary btn-lg btn-submit"
+                disabled={submitting} onPointerDown={tapHaptic}>
+                {submitting
+                  ? <><Loader2 size={18} className="spin" /> Sending...</>
+                  : <><Send size={16} /> Send message</>}
               </button>
 
-              <p className="form-note">
-                We'll reply within one business hour. No spam, ever.
-              </p>
+              <p className="form-note">We'll reply within one business hour. No spam, ever.</p>
 
               {status === "error" && (
                 <div className="form-banner form-banner-error" role="alert">
-                  <AlertCircle size={18} />
-                  <span>{errorMsg}</span>
+                  <AlertCircle size={18} /><span>{errorMsg}</span>
                 </div>
               )}
             </form>
@@ -546,14 +427,10 @@ function Contact() {
             {status === "success" && (
               <div className="form-success-overlay" role="status" aria-live="polite">
                 <div className="form-success-card">
-                  <div className="success-check">
-                    <CheckCircle2 size={56} />
-                  </div>
+                  <div className="success-check"><CheckCircle2 size={56} /></div>
                   <h3>Message sent</h3>
-                  <p>Thanks for reaching out — a real human at Simple IT SRQ will reply within one business hour.</p>
-                  <button type="button" className="btn btn-secondary" onClick={reset}>
-                    Send another
-                  </button>
+                  <p>Thanks — a real human at Simple IT SRQ will reply within one business hour.</p>
+                  <button type="button" className="btn btn-secondary" onClick={reset}>Send another</button>
                 </div>
               </div>
             )}
@@ -561,8 +438,8 @@ function Contact() {
 
           <aside className="contact-info" aria-label="Contact information">
             <div className="info-row"><Mail size={18} /><div><strong>Email</strong><br />hello@simpleitsrq.com</div></div>
-            <div className="info-row"><MapPin size={18} /><div><strong>Service Area</strong><br />Sarasota, Bradenton, and Venice</div></div>
-            <div className="info-row"><Clock size={18} /><div><strong>Hours</strong><br />Mon-Fri, 8:00 AM - 6:00 PM</div></div>
+            <div className="info-row"><MapPin size={18} /><div><strong>Service Area</strong><br />Sarasota, Bradenton, Venice</div></div>
+            <div className="info-row"><Clock size={18} /><div><strong>Hours</strong><br />Mon–Fri, 8:00 AM – 6:00 PM</div></div>
           </aside>
         </div>
       </div>
@@ -581,15 +458,16 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <Ticker />
       <LogosBar />
       <Solutions />
       <Industries />
       <Compliance />
       <Testimonial />
       <BlogPreview />
-      <StatsBar />
       <CtaBanner />
       <Contact />
+      <MobileStickyCTA />
     </>
   );
 }
