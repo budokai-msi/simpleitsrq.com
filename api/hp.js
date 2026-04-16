@@ -14,16 +14,17 @@ const noContent = () => new Response(null, { status: 204 });
 
 const ALLOWED_TYPE = /^[a-z0-9_-]{1,32}$/i;
 
-// SHA-256 with a static per-deploy salt so captured passwords are useful
-// for correlation ("this attacker reused the same password on 4 attempts")
-// without keeping the cleartext on disk. The salt is fixed so hashes are
-// stable across restarts — security signal, not a defense against rainbow
-// tables (which is why we also log length + first char only).
-const PW_SALT = "simpleitsrq-honeypot-v1";
+// SHA-256 with a secret pepper so captured honeypot passwords are useful for
+// correlation without keeping cleartext. Set HP_PW_PEPPER in env for stable
+// hashes across deploys; falls back to a process-local random value so
+// hashes are never repo-predictable.
+const PW_PEPPER = process.env.HP_PW_PEPPER || crypto.randomUUID();
+const PW_MAX_LEN = 1024;
 async function hashPw(pw) {
   if (!pw) return null;
   try {
-    const data = new TextEncoder().encode(PW_SALT + ":" + pw);
+    const capped = pw.length > PW_MAX_LEN ? pw.slice(0, PW_MAX_LEN) : pw;
+    const data = new TextEncoder().encode(PW_PEPPER + ":" + capped);
     const digest = await crypto.subtle.digest("SHA-256", data);
     return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
   } catch {
@@ -82,7 +83,7 @@ export async function POST(request) {
     // Beacon shape: { type: 'cred', d: { email, password?, ts, page } }
     // Older clients may send { type: 'cred', email, ts } — accept both.
     const email = String(d.email ?? body.email ?? "").slice(0, 320);
-    const rawPw = String(d.password ?? body.password ?? "");
+    const rawPw = String(d.password ?? body.password ?? "").slice(0, PW_MAX_LEN);
     // Intentionally never store the cleartext password. Keep a salted SHA-256
     // for correlation + length/first-char fingerprint for behavioral signal.
     const passwordHash = rawPw ? await hashPw(rawPw) : null;
