@@ -10,6 +10,7 @@ import { AuthProvider } from "./lib/auth.jsx";
 import { useAuth } from "./lib/authContext.js";
 import CookieConsent from "./components/CookieConsent.jsx";
 import VisitorTracker from "./components/VisitorTracker.jsx";
+import { AutoAds } from "./components/AdSense.jsx";
 import "./App.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
@@ -209,6 +210,7 @@ function Layout({ children }) {
       {children}
       <Footer />
       <CookieConsent />
+      <AutoAds />
       <Analytics />
       <SpeedInsights />
     </>
