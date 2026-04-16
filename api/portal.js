@@ -713,8 +713,9 @@ function formatDraftAsPostEntry(draft, overrides = {}) {
 
 // Commit a file change to GitHub via the Contents API. Expects a GitHub
 // fine-grained PAT with contents:write scope on the target repo in the
-// GITHUB_TOKEN env var.
-async function commitPostsFile(newContent, commitMessage) {
+// GITHUB_TOKEN env var. Caller passes the SHA from the same fetch they
+// used to build newContent so there is no race between read and write.
+async function commitPostsFile(newContent, commitMessage, fileSha) {
   const token = process.env.GITHUB_TOKEN;
   const repo  = process.env.GITHUB_REPO  || "budokai-msi/simpleitsrq.com";
   const branch = process.env.GITHUB_BRANCH || "main";
@@ -732,20 +733,10 @@ async function commitPostsFile(newContent, commitMessage) {
     "User-Agent": "simpleitsrq-portal",
   };
 
-  // Fetch current file to get its SHA (required to update).
-  const getRes = await fetch(`${base}?ref=${encodeURIComponent(branch)}`, { headers });
-  if (!getRes.ok) {
-    const txt = await getRes.text().catch(() => "");
-    return { ok: false, error: `github_get_${getRes.status}`, detail: txt.slice(0, 200) };
-  }
-  const meta = await getRes.json();
-  const sha = meta.sha;
-
-  // PUT the new content, base64-encoded.
   const body = {
     message: commitMessage,
     content: Buffer.from(newContent, "utf8").toString("base64"),
-    sha,
+    sha: fileSha,
     branch,
     committer: {
       name:  "Simple IT SRQ Agent",
@@ -760,6 +751,10 @@ async function commitPostsFile(newContent, commitMessage) {
   });
   if (!putRes.ok) {
     const txt = await putRes.text().catch(() => "");
+    if (putRes.status === 409) {
+      return { ok: false, error: "github_conflict",
+        hint: "posts.js was modified on GitHub between read and write. Try again — the portal will re-fetch the latest version." };
+    }
     return { ok: false, error: `github_put_${putRes.status}`, detail: txt.slice(0, 200) };
   }
   const putData = await putRes.json();
@@ -767,14 +762,14 @@ async function commitPostsFile(newContent, commitMessage) {
 }
 
 // Insert a new post entry into the existing posts.js array string by
-// anchoring on the final "];\nexport default posts;" tail. Returns null
-// if the tail is not found (file structure changed).
+// anchoring on the closing "];" of the array followed by the default
+// export. Tolerates 0-2 newlines and optional \r between them.
 function spliceIntoPostsFile(fileContent, entry) {
-  const tail = "];\n\nexport default posts;";
-  const idx = fileContent.lastIndexOf(tail);
-  if (idx === -1) return null;
-  const before = fileContent.slice(0, idx);
-  const after = fileContent.slice(idx);
+  const re = /\];\s*\r?\nexport\s+default\s+posts;/;
+  const match = re.exec(fileContent);
+  if (!match) return null;
+  const before = fileContent.slice(0, match.index);
+  const after = fileContent.slice(match.index);
   return before + entry + after;
 }
 
@@ -820,6 +815,7 @@ async function handlePublishDraft(session, request) {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
       "User-Agent": "simpleitsrq-portal",
     },
   });
@@ -850,6 +846,7 @@ async function handlePublishDraft(session, request) {
   }
   const meta = await getRes.json();
   const currentFile = Buffer.from(meta.content, "base64").toString("utf8");
+  const fileSha = meta.sha;
 
   // Bail if this slug is already in the file (idempotency).
   if (currentFile.includes(`slug: "${draft.slug}"`)) {
@@ -871,6 +868,7 @@ async function handlePublishDraft(session, request) {
   const commit = await commitPostsFile(
     spliced,
     `Publish blog post: ${draft.title}`,
+    fileSha,
   );
   if (!commit.ok) {
     return json(502, commit);
