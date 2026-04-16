@@ -7,6 +7,7 @@ import { useSEO } from "../lib/seo";
 import LeadCaptureCTA from "../components/LeadCaptureCTA";
 import Newsletter from "../components/Newsletter";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
+import AdUnit from "../components/AdSense";
 
 function CategoryIcon({ category, size = 28 }) {
   const map = {
@@ -187,7 +188,16 @@ export default function BlogPost() {
             <CategoryIcon category={post.category} size={64} />
           </div>
           <div className="blog-post-content">
-            {renderMarkdown(post.content)}
+            {(() => {
+              const blocks = renderMarkdown(post.content);
+              const mid = Math.min(4, Math.floor(blocks.length / 2));
+              return [
+                ...blocks.slice(0, mid),
+                <AdUnit key="ad-mid" format="auto" className="ad-in-article" />,
+                ...blocks.slice(mid),
+                <AdUnit key="ad-bottom" format="auto" className="ad-in-article" />,
+              ];
+            })()}
           </div>
           <div className="blog-post-tags">
             <Tag size={14} />
