@@ -24,6 +24,7 @@ const ClientPortal = lazy(() => import("./pages/ClientPortal"));
 const PrivacyPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
+const Tools = lazy(() => import("./pages/Tools"));
 
 function RouteFallback() {
   return (
@@ -90,6 +91,7 @@ function Navbar() {
           <Link to="/#industries">Industries</Link>
           <Link to="/#compliance">Compliance</Link>
           <Link to="/blog">Blog</Link>
+          <Link to="/tools">Tools</Link>
           <Link to="/support">Support</Link>
         </nav>
         <div className="nav-actions">
@@ -110,6 +112,7 @@ function Navbar() {
           <Link to="/#industries" onClick={() => setOpen(false)}>Industries</Link>
           <Link to="/#compliance" onClick={() => setOpen(false)}>Compliance</Link>
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
+          <Link to="/tools" onClick={() => setOpen(false)}>Tools</Link>
           <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#contact" onClick={() => setOpen(false)}>Contact</Link>
           <Link to="/portal" onClick={() => setOpen(false)}>
@@ -150,6 +153,7 @@ function Footer() {
             <li><Link to="/#industries">Industries</Link></li>
             <li><Link to="/#compliance">Compliance</Link></li>
             <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/tools">Recommended Tools</Link></li>
             <li><Link to="/sarasota-it-support">Sarasota IT Support</Link></li>
             <li><Link to="/bradenton-it-support">Bradenton IT Support</Link></li>
             <li><Link to="/lakewood-ranch-it-support">Lakewood Ranch IT</Link></li>
@@ -261,6 +265,7 @@ export default function App() {
               <Route path="/lakewood-ranch-it-support" element={<LocalLanding />} />
               <Route path="/book" element={<Book />} />
               <Route path="/support" element={<Support />} />
+              <Route path="/tools" element={<Tools />} />
               <Route path="/portal" element={<ClientPortal />} />
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/terms" element={<TermsPage />} />
