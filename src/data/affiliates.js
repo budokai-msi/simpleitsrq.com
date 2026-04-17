@@ -127,8 +127,15 @@ export function resolveAffiliate(token) {
 }
 
 // Test whether a piece of markdown contains any [[affiliate:...]] tokens.
-// Used to drive the disclosure banner.
-const TOKEN_RE = /\[\[(amazon:[^\]]+|amazon_search:[^\]]+|gusto|onepassword|honeybook|acronis)\]\]/g;
+// Used to drive the disclosure banner. Built dynamically from AFFILIATES keys
+// so new programs get disclosure automatically.
+const simpleKeys = Object.keys(AFFILIATES)
+  .filter((k) => typeof AFFILIATES[k] !== "function" && k !== "amazon" && k !== "amazon_search")
+  .join("|");
+const TOKEN_RE = new RegExp(
+  `\\[\\[(amazon:[^\\]]+|amazon_search:[^\\]]+${simpleKeys ? "|" + simpleKeys : ""})\\]\\]`,
+  "g",
+);
 
 export function postHasAffiliateContent(markdown) {
   if (!markdown) return false;
