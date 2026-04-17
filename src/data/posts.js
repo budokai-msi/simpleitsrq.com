@@ -2380,6 +2380,98 @@ If youre not sure whether your business is truly compliant, or you want to know 
 
 Your customers trusted you with their information. The law now says you have to protect it. Lets make sure youre doing it right.`
   },
+  {
+    slug: "sarasota-business-security-threats-2024",
+    title: "Your Business is Being Targeted Right Now—Heres What to Do About It",
+    metaDescription: "Small businesses in Sarasota face rising cyber attacks. Learn what threats are active now and how to protect your company.",
+    date: "2026-04-17",
+    author: "Dancho Ivanov",
+    category: "Cybersecurity",
+    tags: ["ai", "smb"],
+    excerpt: "Hackers dont take holidays, and theyre actively targeting small businesses in Sarasota and Bradenton. Heres whats happening and how to protect yourself.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying Your Business is Being Targeted Right Now—Heres What to Do About It.",
+    content: `If you run a small business in Sarasota, Bradenton, or Venice, youre being targeted right now. Not by name—by vulnerability. Hackers are constantly scanning the internet for easy targets, and small businesses are their favorite because they often have fewer defenses than larger companies.
+
+Lets talk about whats actually happening and what you can do about it today.
+
+## The Threats Are Real (And Theyre Happening Now)
+
+Were not being dramatic when we say this. In the past 60 days, weve seen a spike in attacks specifically targeting small businesses in Florida. These include:
+
+**Ransomware attacks** where hackers lock up your files and demand payment. Weve seen healthcare practices and law firms targeted because their data is literally critical to their business.
+
+**Email compromise scams** where someone pretends to be your boss and asks accounting to wire money. Its shockingly effective because it looks like a real email from your own system.
+
+**Weak password exploits** where attackers simply guess common passwords to get into employee accounts. Once theyre in, they have access to everything.
+
+The thing that makes small businesses vulnerable is straightforward: most dont have anyone watching for these attacks 24/7.
+
+## Why Now?
+
+Hackers are opportunistic. They know that many small business owners are focused on year-end operations, budgeting, and holiday staffing. Attention is divided. Security sometimes slides down the priority list.
+
+Plus, if you havent updated your systems recently (which many small businesses havent), youre running on outdated software that hackers know how to break into.
+
+## What You Should Do About This (Starting Today)
+
+**1. Check Your Passwords Right Now**
+
+If your team is still using simple passwords like "Welcome123" or the name of your business, youre asking to be hacked. Go through your critical accounts—email, banking, cloud storage—and make sure theyre using strong, unique passwords.
+
+Better yet: use a password manager. It sounds complicated, but it means everyone has strong passwords without having to remember them.
+
+**2. Turn On Multi-Factor Authentication (MFA)**
+
+This is the single best defense you can deploy today. It means that even if someone steals a password, they cant get in without a second verification (usually a code sent to a phone).
+
+Start with your email and banking. If these accounts get compromised, a hacker can access everything else.
+
+**3. Update Everything This Week**
+
+Windows, Mac, Microsoft 365, software on your servers—all of it. These updates patch security holes that hackers actively exploit.
+
+We know the updates are annoying and sometimes slow things down. Do them anyway. Preferably after hours or on a weekend when no ones working.
+
+**4. Train Your Team (Really)**
+
+Your biggest vulnerability is a well-meaning employee clicking a malicious link or calling out passwords to someone pretending to be IT support.
+
+Spend 15 minutes with your team this week explaining:
+- Never click links in unexpected emails
+- Never call out passwords or sensitive information
+- If something seems odd about an email from leadership, call and verify it
+
+Thats it. That conversation prevents most attacks.
+
+**5. Back Up Your Data (Off-Site)**
+
+If ransomware does hit you, having a backup thats not connected to your network means you can recover without paying the criminals.
+
+If youre using cloud storage (OneDrive, SharePoint, Google Drive), thats a start. But make sure you also have a separate, offline backup.
+
+## The Bigger Picture
+
+Heres what separates businesses that get hit hard from ones that shrug off an attack: preparation.
+
+You cant prevent every attack. But you can make yourself a less attractive target and recover faster when something does happen.
+
+The businesses we work with who have the fewest incidents are the ones doing these five things consistently. Its not fancy. Its not expensive. Its just standard practice.
+
+## What If Youre Already Worried?
+
+If you think you might already be compromised, or if youre not sure where your vulnerabilities are, dont wait around wondering.
+
+A security assessment takes a few hours and gives you a clear picture of whats actually at risk in your business. Weve done these for practices, law firms, construction companies, and real estate offices across Sarasota and Bradenton, and it always puts business owners minds at ease.
+
+## Do This Today
+
+Pick one action above and do it. Update passwords on critical accounts, or turn on MFA for email, or schedule those software updates.
+
+Dont wait until something goes wrong. Hackers dont wait.
+
+If youd like us to take a look at your security posture and give you a clear plan, were here to help. **[Talk to us about a security assessment](/"#solutions")** and get real clarity on whats actually protecting—or not protecting—your business.`
+  },
 ];
 
 export default posts;
