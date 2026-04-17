@@ -11,6 +11,7 @@ import { useAuth } from "./lib/authContext.js";
 import CookieConsent from "./components/CookieConsent.jsx";
 import VisitorTracker from "./components/VisitorTracker.jsx";
 import { AutoAds } from "./components/AdSense.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./App.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
@@ -255,6 +256,7 @@ export default function App() {
       <AuthProvider>
       <BrowserRouter>
         <Layout>
+          <ErrorBoundary>
           <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/" element={<main id="main"><Home /></main>} />
@@ -273,6 +275,7 @@ export default function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </ErrorBoundary>
         </Layout>
       </BrowserRouter>
       </AuthProvider>

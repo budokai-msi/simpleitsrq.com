@@ -20,7 +20,11 @@ function verifyCron(request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) return true;
   const auth = request.headers.get("authorization") || "";
-  return auth === `Bearer ${secret}`;
+  const expected = `Bearer ${secret}`;
+  if (auth.length !== expected.length) return false;
+  const a = new TextEncoder().encode(auth);
+  const b = new TextEncoder().encode(expected);
+  return crypto.subtle.timingSafeEqual(a, b);
 }
 
 // ========== AUTO COUNTER-MEASURES (every 15 min) ==========
