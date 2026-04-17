@@ -2271,6 +2271,115 @@ If you are running a business in Sarasota, Bradenton, or Venice with customer da
 
 [Talk to Simple IT SRQ](/#contact) about an insurance readiness review. We help small businesses meet insurer requirements and - more importantly - actually stay protected after the policy is signed. You can also see how we approach the broader security stack on our [solutions page](/#solutions).`
   },
+  {
+    slug: "florida-data-privacy-law-sarasota-small-business",
+    title: "Floridas New Data Privacy Law: What Sarasota Small Businesses Need to Know",
+    metaDescription: "Floridas new privacy law affects small businesses. Learn what the Florida Information Protection Act means for your Sarasota company.",
+    date: "2026-04-17",
+    author: "Dancho Ivanov",
+    category: "Compliance",
+    tags: ["ai", "smb"],
+    excerpt: "Florida just passed its own data privacy law, and it affects how you handle customer information. Heres what changed and what you need to do about it.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying Floridas New Data Privacy Law: What Sarasota Small Businesses Need to Know.",
+    content: `# Floridas New Data Privacy Law: What Sarasota Small Businesses Need to Know
+
+If you run a business in Sarasota, Bradenton, or Venice, you probably already deal with customer data—names, emails, payment info, maybe health records if youre in healthcare or legal services. Florida just made handling that data more complicated (and more important) with its new privacy law.
+
+The good news? Its not as overwhelming as it sounds. Lets break down what happened and what actually matters for your business.
+
+## What Changed?
+
+Florida passed the **Florida Information Protection Act (FIPA)** amendments, which strengthen how businesses must protect personal information. The law applies to any company in Florida that handles customer or employee data.
+
+Heres whats new: You now have clearer rules about how you collect, use, and protect personal data. You also have to be faster about notifying people if their data gets breached.
+
+## Who Does This Actually Affect?
+
+Lets be honest—this probably applies to you. If you:
+
+- Store customer names and contact info (real estate, legal, construction)
+- Process payments (basically everyone)
+- Keep employee records (everyone)
+- Handle patient or health information (healthcare practices)
+- Have a website with a contact form
+
+Then youre handling personal information that falls under this law.
+
+Small businesses sometimes think, "Were too small to be regulated." Youre not. The law applies to companies of all sizes.
+
+## The Three Things That Actually Matter
+
+**1. You need a clear privacy policy**
+
+If you dont have one on your website, you need one now. It should explain what data you collect, why you collect it, who can see it, and how long you keep it. It doesnt need to be 50 pages—just honest and clear.
+
+**2. Data breaches require fast notification**
+
+If someone hackers gain unauthorized access to customer data, you have to tell people quickly (the law says "without unreasonable delay"). This means you need to know *when* a breach happens, which requires monitoring systems and processes.
+
+**3. You need to implement reasonable security measures**
+
+The law requires "reasonable security procedures and practices" to protect personal information. This isnt asking for military-grade encryption—it means passwords, access controls, basic firewalls, and regular backups. Standard stuff that protects you anyway.
+
+## What This Means for Different Industries
+
+**Healthcare practices**: If you use patient portals or store medical records, make sure patient consent is documented and your security meets HIPAA standards (which usually exceeds FIPA requirements anyway).
+
+**Legal firms**: Youre already handling sensitive client information. FIPA just codifies what you should be doing. Make sure client data is encrypted and access is logged.
+
+**Real estate companies**: Property transactions involve financial information. Ensure client files are password-protected and stored securely, not on someones laptop.
+
+**Construction firms**: If you collect subcontractor information, insurance details, or homeowner data, document how youre protecting it.
+
+**Financial services**: Youre probably already compliant if you follow standard banking security practices, but verify your data retention policies align with the new law.
+
+## What to Do About It
+
+**Step 1: Audit your data**
+
+Walk through your business and identify where personal information lives. Is it in QuickBooks? Your email? Physical files? A cloud service like HubSpot or Salesforce? Just make a list.
+
+**Step 2: Create or update your privacy policy**
+
+If you have a website, add a privacy page. Include:
+- What data you collect
+- Why you collect it
+- How you protect it
+- How long you keep it
+- How people can request their data be deleted
+
+You dont need a lawyer for this (though one doesnt hurt). There are templates available, and it should reflect what you *actually* do, not some fantasy version.
+
+**Step 3: Strengthen basic security**
+
+Implement these simple measures:
+- Use strong, unique passwords (consider a password manager)
+- Enable two-factor authentication on accounts containing customer data
+- Make sure your files are encrypted if they contain sensitive information
+- Set up automatic backups so a breach doesnt mean lost data
+- Limit who has access to sensitive files
+
+**Step 4: Create a breach response plan**
+
+If something happens, who calls the customer? Who contacts law enforcement? Who notifies the media? Having a plan means youll respond faster (and more legally) when youre stressed.
+
+**Step 5: Get professional help if youre unsure**
+
+If you have sensitive data—healthcare records, financial information, legal documents—its worth having someone review your setup. This isnt paranoia. Its smart business.
+
+## The Silver Lining
+
+Complying with this law doesnt just keep you legal—it protects your customers, your reputation, and your business. A data breach is expensive and embarrassing. Basic security measures prevent most of them.
+
+Youre probably already doing 80% of what this law asks for. The remaining 20% just needs to be intentional instead of accidental.
+
+## Next Steps
+
+If youre not sure whether your business is truly compliant, or you want to know if your current security setup meets the new requirements, **[contact Simple IT SRQ](/contact)**. We work with Sarasota, Bradenton, and Venice small businesses in healthcare, legal, finance, construction, and real estate—and we can audit your data practices and security in a single visit.
+
+Your customers trusted you with their information. The law now says you have to protect it. Lets make sure youre doing it right.`
+  },
 ];
 
 export default posts;
