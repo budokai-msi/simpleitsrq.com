@@ -2632,6 +2632,93 @@ Your cyber-insurance is one of the most important policies you have. Dont let it
 
 **If youre not sure where you stand on these requirements, lets talk.** Simple IT SRQ offers free insurance readiness assessments for small businesses in Sarasota, Bradenton, and Venice. Well review what your insurer actually wants, show you what youve got covered, and give you a realistic timeline to close the gaps. [Contact us](/contact) or [learn about our cybersecurity solutions](/solutions) today.`
   },
+  {
+    slug: "sarasota-employee-password-sharing-security-risk",
+    title: "Your Employees Are Sharing Passwords (And You Should Know About It)",
+    metaDescription: "Why password sharing among employees is a security risk and how to stop it safely without annoying your team.",
+    date: "2026-04-17",
+    author: "Dancho Ivanov",
+    category: "Cybersecurity",
+    tags: ["ai", "smb"],
+    excerpt: "Password sharing might seem harmless, but its one of the fastest ways hackers get into your systems. Heres why it matters and what to do about it.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying Your Employees Are Sharing Passwords (And You Should Know About It).",
+    content: `# Your Employees Are Sharing Passwords (And You Should Know About It)
+
+Lets start with something you probably already suspect: your team is sharing passwords. Someone needs access to the client database, so they ask their colleague for the login. An employee leaves, and someone else just keeps using their credentials instead of creating new ones. The accounting software login gets passed around like a house key.
+
+It feels efficient. It saves time. And its quietly opening your business to serious security problems.
+
+## Why This Actually Matters
+
+When passwords get shared, you lose the ability to know who did what. If someone accesses a client file and makes changes, you cant track whether it was the person whose credentials were used or someone borrowing them. For healthcare, legal, and finance businesses here in Sarasota and Bradenton, thats more than inconvenient—it can be a compliance violation.
+
+But the bigger risk is simpler: the more people who know a password, the more likely it gets compromised. One person writes it on a sticky note. Another texts it to someone who doesnt work here anymore. A device gets stolen. Suddenly, someone outside your company has legitimate-looking access to your systems.
+
+Hackers dont always need to break in if someone hands them the keys.
+
+## The Real Problem Isnt Your Employees
+
+Heres the thing: your team isnt being irresponsible because they want to be. Theyre sharing passwords because your systems make it hard not to. When access requests take three days to process, when logging in with multiple credentials feels annoying, when software doesnt support multiple user accounts—people find workarounds.
+
+Theyre solving a real problem. You just need to solve it better than they did.
+
+## What You Can Actually Do About This
+
+### Start with a password policy that makes sense
+
+Dont just tell people "dont share passwords." Tell them what they should do instead. "If you need access to something, ask your manager, who will request it from IT by end of day." Make the right way easier than the workaround.
+
+### Use single sign-on where possible
+
+Tools like Microsoft 365 or Okta let your team log in once with their own credentials and get access to multiple applications. No shared passwords needed. If youre currently sharing logins to cloud-based software, this should be your next investment.
+
+### Set up proper access controls
+
+Every employee should have their own login. Every login should be tied to their email address and job role. When someone leaves, you disable their account—not add three other people to a generic one.
+
+This sounds obvious, but many small businesses are still operating with shared credentials from 2015.
+
+### Enable multi-factor authentication
+
+Even if a password does get compromised, multi-factor authentication (MFA) means hackers cant just use it. Theyd need a code from the persons phone. For critical systems—email, banking, customer data—this is essential.
+
+### Make it part of onboarding
+
+When new employees start, they should get their own login credentials to everything on day one. Make it clear that sharing is off-limits and show them why it matters. A 5-minute conversation beats a breach investigation later.
+
+## The Compliance Side
+
+If youre in healthcare, youre already dealing with HIPAA. Patient records cant be accessed without audit trails showing exactly who accessed what and when. Shared passwords break that chain.
+
+If youre in legal or finance, your clients expect data security as a baseline. Insurance companies and regulators expect it too.
+
+Password sharing isnt just a "nice to avoid" problem—its a compliance risk that could affect your cyber insurance, your client relationships, and your liability.
+
+## A Practical Starting Point
+
+You dont need to overhaul everything at once. Start here:
+
+1. **This week**: Identify which systems currently have shared logins. Prioritize the ones holding client data or financial information.
+
+2. **Next week**: Create individual accounts for everyone who needs access. Yes, even the accounting software. Yes, even the CRM.
+
+3. **This month**: Turn on multi-factor authentication for email and your most critical systems.
+
+4. **Going forward**: Make personal credentials the standard when someone joins your team.
+
+If youre not sure where shared passwords are happening in your business, thats a sign you need to know. Its also a sign that a quick security audit would be valuable.
+
+## The Bottom Line
+
+Your employees arent the problem. A system that makes sharing easier than proper access control is the problem. Fix the system, and the behavior changes naturally.
+
+If youre running a small legal practice, medical office, or construction company in Sarasota or Bradenton and youre not sure how tight your access controls are, its worth checking. [**Simple IT SRQ can help you audit your current setup and build a plan that actually works for your team.**](/#contact) Reach out—well look at what youve got and show you what could be better.
+
+---
+
+**Need help tightening up your security?** [Contact Simple IT SRQ today](/#contact) for a free security consultation tailored to your business.`
+  },
 ];
 
 export default posts;
