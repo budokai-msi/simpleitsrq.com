@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { TOOL_CATEGORIES } from "../data/toolCatalog";
+import { useSEO } from "../lib/seo";
 import { ExternalLink, ShieldCheck, Zap, HardDrive, Wifi, Monitor, FileCheck, Server } from "lucide-react";
 
 const ICONS = {
@@ -49,11 +49,15 @@ function CategorySection({ cat }) {
 }
 
 export default function Tools() {
-  useEffect(() => {
-    document.title = "Recommended Tools & Hardware | Simple IT SRQ";
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "Curated hardware and software recommendations for Sarasota and Bradenton small businesses. UPS, backup drives, security keys, WiFi, docking stations, and compliance gear.");
-  }, []);
+  useSEO({
+    title: "Recommended Tools & Hardware | Simple IT SRQ",
+    description: "Curated hardware and software recommendations for Sarasota and Bradenton small businesses. UPS, backup drives, security keys, WiFi, docking stations, and compliance gear.",
+    canonical: "https://simpleitsrq.com/tools",
+    breadcrumbs: [
+      { name: "Home", url: "https://simpleitsrq.com/" },
+      { name: "Recommended Tools", url: "https://simpleitsrq.com/tools" },
+    ],
+  });
 
   return (
     <main className="tools-page">

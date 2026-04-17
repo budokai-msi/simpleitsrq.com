@@ -134,6 +134,8 @@ export default function VisitorTracker() {
     if (lastSent.current === path) return;
     lastSent.current = path;
 
+    if (typeof navigator !== "undefined" && navigator.doNotTrack === "1") return;
+
     const consent = readConsent();
     const analyticsOk = !!(consent && consent.categories && consent.categories.analytics);
 

@@ -1242,12 +1242,28 @@ async function handleGithubHealth(session) {
 }
 
 // ---------- entry points ----------
+const ALLOWED_ORIGINS = new Set([
+  "https://simpleitsrq.com",
+  "https://www.simpleitsrq.com",
+]);
+
+function csrfCheck(request, method) {
+  if (method === "GET") return true;
+  const origin = request.headers.get("origin");
+  if (!origin) return true; // non-browser clients (curl, cron)
+  return ALLOWED_ORIGINS.has(origin);
+}
+
 async function dispatch(request, method) {
   const url = new URL(request.url);
   const action = url.searchParams.get("action") || "";
 
   // Health check is unauthenticated — must be before requireSession.
   if (action === "health" && method === "GET") return handleHealth();
+
+  if (!csrfCheck(request, method)) {
+    return json(403, { ok: false, error: "csrf_origin_rejected" });
+  }
 
   const { session, error } = await requireSession(request);
   if (error) return error;
