@@ -2402,3 +2402,18 @@
 /* ── AdSense containers ───────────────────────────────── */
 .ad-container { margin: 24px 0; min-height: 90px; text-align: center; }
 .ad-in-article { margin: 32px 0; }
+
+/* ── Dark-mode overrides for tools + ads ──────────────── */
+[data-theme="dark"] .tool-card {
+  background: var(--surface, #1a1d23);
+  border-color: var(--border, #2a2d35);
+}
+[data-theme="dark"] .tool-card:hover {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .tools-cta {
+  background: var(--surface, #1a1d23);
+}
+[data-theme="dark"] .ad-container {
+  background: transparent;
+}

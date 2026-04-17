@@ -134,9 +134,7 @@ function Footer() {
           <Logo />
           <p className="footer-desc">Local IT support, cybersecurity, and cloud services for Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
           <div className="socials" aria-label="Social media">
-            <a href="#" aria-label="LinkedIn"><Globe size={18} /></a>
-            <a href="#" aria-label="Facebook"><AtSign size={18} /></a>
-            <a href="#" aria-label="Twitter"><Share2 size={18} /></a>
+            <a href="mailto:hello@simpleitsrq.com" aria-label="Email"><AtSign size={18} /></a>
           </div>
         </div>
         <div>

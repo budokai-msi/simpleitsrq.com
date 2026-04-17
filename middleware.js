@@ -63,7 +63,10 @@ export const config = {
 };
 
 function getIp(request) {
-  return (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+  // Prefer Vercel's authoritative header (not spoofable) over X-Forwarded-For.
+  return request.headers.get("x-real-ip")
+    || (request.headers.get("x-forwarded-for") || "").split(",")[0].trim()
+    || "unknown";
 }
 
 function getGeo(request) {
