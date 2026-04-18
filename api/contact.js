@@ -22,6 +22,7 @@
 
 import { checkBotId } from "botid/server";
 import { Resend } from "resend";
+import { clientIp, rateLimit } from "./_lib/security.js";
 
 const CONTACT_FROM = "Simple IT SRQ Website <contact@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
@@ -52,35 +53,11 @@ const json = (status, body) =>
 // Fluid Compute reuses instances across requests, so this is a soft
 // per-instance limit — good enough for a marketing site. Upgrade to
 // Upstash Redis if submission volume grows.
-const RATE_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-const RATE_MAX = 5;                    // 5 submissions per window
-const ipBuckets = new Map();
-
-function clientIp(request) {
-  const xff = request.headers.get("x-forwarded-for") || "";
-  return xff.split(",")[0].trim() || "unknown";
-}
-
-function rateLimited(ip) {
-  const now = Date.now();
-  const arr = (ipBuckets.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (arr.length >= RATE_MAX) {
-    ipBuckets.set(ip, arr);
-    return true;
-  }
-  arr.push(now);
-  ipBuckets.set(ip, arr);
-
-  // Opportunistic cleanup so the Map doesn't grow forever.
-  if (ipBuckets.size > 1000) {
-    for (const [k, v] of ipBuckets) {
-      const fresh = v.filter((t) => now - t < RATE_WINDOW_MS);
-      if (fresh.length === 0) ipBuckets.delete(k);
-      else ipBuckets.set(k, fresh);
-    }
-  }
-  return false;
-}
+// Rate limit config — 5 submissions per 10 min per IP. The DB-backed
+// sliding window from _lib/security.js survives across Fluid Compute
+// instances and uses x-real-ip (not spoofable).
+const RATE_WINDOW_S = 10 * 60;
+const RATE_MAX = 5;
 
 // ---------- Turnstile ----------
 async function verifyTurnstile(token, ip) {
@@ -154,7 +131,8 @@ export async function POST(request) {
   }
 
   // 4. Rate limit
-  if (rateLimited(ip)) {
+  const rl = await rateLimit({ ip, bucket: "contact", windowSeconds: RATE_WINDOW_S, max: RATE_MAX });
+  if (!rl.ok) {
     return json(429, { ok: false, error: "rate_limited" });
   }
 

@@ -18,6 +18,7 @@
 import { checkBotId } from "botid/server";
 import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
+import { clientIp, rateLimit } from "./_lib/security.js";
 import { getSession } from "./_lib/session.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
@@ -70,35 +71,10 @@ function generateTicketId() {
   return `SRQ-${y}${m}${d}-${rand}`;
 }
 
-// ---------- Rate limit ----------
-const RATE_WINDOW_MS = 10 * 60 * 1000;
+// Rate limit config — DB-backed sliding window (see _lib/security.js).
+// Survives across Fluid Compute instances; keys on x-real-ip (not spoofable).
+const RATE_WINDOW_S = 10 * 60;
 const RATE_MAX = 5;
-const ipBuckets = new Map();
-
-function clientIp(request) {
-  const xff = request.headers.get("x-forwarded-for") || "";
-  return xff.split(",")[0].trim() || "unknown";
-}
-
-function rateLimited(ip) {
-  const now = Date.now();
-  const arr = (ipBuckets.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (arr.length >= RATE_MAX) {
-    ipBuckets.set(ip, arr);
-    return true;
-  }
-  arr.push(now);
-  ipBuckets.set(ip, arr);
-
-  if (ipBuckets.size > 1000) {
-    for (const [k, v] of ipBuckets) {
-      const fresh = v.filter((t) => now - t < RATE_WINDOW_MS);
-      if (fresh.length === 0) ipBuckets.delete(k);
-      else ipBuckets.set(k, fresh);
-    }
-  }
-  return false;
-}
 
 // ---------- Turnstile ----------
 async function verifyTurnstile(token, ip) {
@@ -169,7 +145,8 @@ export async function POST(request) {
   }
 
   // 4. Rate limit
-  if (rateLimited(ip)) {
+  const rl = await rateLimit({ ip, bucket: "ticket", windowSeconds: RATE_WINDOW_S, max: RATE_MAX });
+  if (!rl.ok) {
     return json(429, { ok: false, error: "rate_limited" });
   }
 

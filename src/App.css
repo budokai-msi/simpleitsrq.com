@@ -2775,6 +2775,92 @@
   color: #7FDB9F;
 }
 
+/* Bundle banner — shown above the series grid on /store */
+.bundle-banner {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 32px;
+  padding: 36px;
+  background: linear-gradient(135deg, #0F6CBD 0%, #1E40AF 55%, #0F172A 100%);
+  border-radius: 14px;
+  color: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25);
+  align-items: center;
+}
+.bundle-banner-copy h2 {
+  color: #fff;
+  margin: 10px 0 14px;
+}
+.bundle-banner-copy p {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.92);
+}
+.bundle-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: #F59E0B;
+  color: #1F2937;
+  border-radius: 999px;
+}
+.bundle-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.bundle-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+.bundle-banner-cta {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.bundle-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+}
+.bundle-price-strike {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: line-through;
+}
+.bundle-price-now {
+  font-size: 44px;
+  font-weight: 800;
+  color: #F59E0B;
+}
+.bundle-fineprint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  max-width: 260px;
+}
+.bundle-banner .store-launch-input {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0F172A;
+}
+@media (max-width: 820px) {
+  .bundle-banner { grid-template-columns: 1fr; padding: 28px; gap: 20px; }
+  .bundle-price-now { font-size: 36px; }
+}
+
 /* Complete-series grid (the other 4 products under the hero) */
 .series-grid {
   display: grid;

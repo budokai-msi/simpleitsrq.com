@@ -58,8 +58,13 @@ export async function logThreatActor(request, extra = {}) {
 }
 
 export function clientIp(request) {
+  // Prefer Vercel's authoritative x-real-ip header — set by the edge and not
+  // reachable from client code. x-forwarded-for is trivially spoofable and
+  // was the source of a rate-limit / blocklist bypass before this fix.
+  const real = request.headers.get("x-real-ip");
+  if (real) return real;
   const xff = request.headers.get("x-forwarded-for") || "";
-  return xff.split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
+  return xff.split(",")[0].trim() || "unknown";
 }
 
 export function geoFromHeaders(request) {

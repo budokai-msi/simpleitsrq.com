@@ -17,6 +17,29 @@ const env = import.meta.env;
 
 export const products = [
   {
+    slug: "compliance-library",
+    title: "Complete Florida Compliance Library",
+    tagline: "All five templates. One download. Save $116 vs. buying them separately.",
+    price: 299,
+    originalPrice: 415,
+    isBundle: true,
+    featured: false, // rendered as a banner on /store, not as a hero — avoid it being picked as the hero product.
+    audience: "Florida small offices that want every compliance document done in one purchase.",
+    description:
+      "Every template in the series — HIPAA Starter Kit, Written Information Security Program, Cyber-Insurance Answer Kit, Hurricane IT Continuity Playbook, and the Onboarding/Offboarding Runbook — in a single download with $116 off the list price.",
+    contents: [
+      "Florida Small-Business HIPAA Starter Kit ($79 value)",
+      "Written Information Security Program template ($149 value)",
+      "Cyber-Insurance Questionnaire Answer Kit ($99 value)",
+      "Hurricane-Season IT Continuity Playbook ($49 value)",
+      "Employee Onboarding + Offboarding IT Runbook ($39 value)",
+      "Lifetime updates for every document in the library",
+      "Early access to new templates as we publish them",
+    ],
+    buyLink: env.VITE_PRODUCT_BUNDLE_BUY_URL || null,
+    priority: 0,
+  },
+  {
     slug: "hipaa-starter-kit",
     title: "Florida Small-Business HIPAA Starter Kit",
     tagline: "Pass your first HIPAA audit without paying a consultant $2,500.",
