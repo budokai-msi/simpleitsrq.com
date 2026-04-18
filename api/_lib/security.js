@@ -80,6 +80,33 @@ export function geoFromHeaders(request) {
   };
 }
 
+// Tamper-evident audit log via hash chain.
+//
+// Each row's `row_hash` = SHA-256 over (prev_hash || kind || severity || ip ||
+// user_id || path || detail_json || ts_iso). A single tampered value anywhere
+// in the chain breaks the hash of that row AND every subsequent row, which
+// auditVerify() detects by recomputing and comparing.
+//
+// The chain only provides value if the columns exist. Run the migration in
+// db/migrations/001_audit_chain.sql once, then every new event gets chained.
+// If the migration hasn't been run yet, the helper degrades to the plain
+// insert path so existing code keeps working.
+async function chainHash(parts) {
+  const raw = parts.map((p) => (p == null ? "" : String(p))).join("\x00");
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function getLastRowHash() {
+  try {
+    const rows = await sql`SELECT row_hash FROM security_events WHERE row_hash IS NOT NULL ORDER BY id DESC LIMIT 1`;
+    return rows[0]?.row_hash || "GENESIS";
+  } catch {
+    // Columns probably not migrated yet — return null signal so we skip chaining.
+    return null;
+  }
+}
+
 export async function logSecurityEvent({
   kind,
   severity = "info",
@@ -89,19 +116,74 @@ export async function logSecurityEvent({
   path = null,
   detail = null,
 }) {
-  try {
-    await sql`
-      INSERT INTO security_events (kind, severity, ip, user_id, user_agent, path, detail)
-      VALUES (${kind}, ${severity}, ${ip}, ${userId}, ${userAgent}, ${path},
-              ${detail ? JSON.stringify(detail) : null}::jsonb)
-    `;
+  const detailJson = detail ? JSON.stringify(detail) : null;
+  const ts = new Date().toISOString();
 
-    // Real-time alert for critical events — don't wait for the daily cron.
+  const prevHash = await getLastRowHash();
+
+  try {
+    if (prevHash === null) {
+      // Legacy path — row_hash columns don't exist yet. Log without chaining
+      // so the event still lands in the DB and cron jobs still work.
+      await sql`
+        INSERT INTO security_events (kind, severity, ip, user_id, user_agent, path, detail)
+        VALUES (${kind}, ${severity}, ${ip}, ${userId}, ${userAgent}, ${path},
+                ${detailJson}::jsonb)
+      `;
+    } else {
+      const rowHash = await chainHash([prevHash, kind, severity, ip, userId, path, detailJson, ts]);
+      await sql`
+        INSERT INTO security_events (kind, severity, ip, user_id, user_agent, path, detail, prev_hash, row_hash)
+        VALUES (${kind}, ${severity}, ${ip}, ${userId}, ${userAgent}, ${path},
+                ${detailJson}::jsonb, ${prevHash}, ${rowHash})
+      `;
+    }
+
     if (severity === "critical") {
       fireRealtimeAlert(kind, ip, detail).catch(() => {});
     }
   } catch (err) {
     console.error("[security] logSecurityEvent failed", err);
+  }
+}
+
+// Walk the audit log chain and report any breaks. Returns
+// { ok, totalRows, chainedRows, breaks: [{ id, reason }] }. Breaks are the
+// first row id where the hash doesn't match the recomputed chain (meaning
+// some value in the row, or its prev_hash reference, was tampered).
+export async function auditVerify(limit = 5000) {
+  try {
+    const rows = await sql`
+      SELECT id, kind, severity, ip, user_id, path, detail, ts, prev_hash, row_hash
+      FROM security_events
+      WHERE row_hash IS NOT NULL
+      ORDER BY id ASC
+      LIMIT ${limit}
+    `;
+    const breaks = [];
+    let expectedPrev = "GENESIS";
+    for (const r of rows) {
+      if (r.prev_hash !== expectedPrev) {
+        breaks.push({ id: r.id, reason: `prev_hash mismatch (got ${r.prev_hash?.slice(0, 12)}, expected ${expectedPrev.slice(0, 12)})` });
+      }
+      const detailJson = r.detail == null ? null : JSON.stringify(r.detail);
+      const recomputed = await chainHash([
+        r.prev_hash, r.kind, r.severity, r.ip, r.user_id, r.path, detailJson, new Date(r.ts).toISOString(),
+      ]);
+      if (recomputed !== r.row_hash) {
+        breaks.push({ id: r.id, reason: `row_hash mismatch — row content likely tampered` });
+      }
+      expectedPrev = r.row_hash;
+    }
+    const totalRows = await sql`SELECT COUNT(*)::int AS n FROM security_events`;
+    return {
+      ok: breaks.length === 0,
+      totalRows: totalRows[0]?.n || 0,
+      chainedRows: rows.length,
+      breaks: breaks.slice(0, 20),
+    };
+  } catch (err) {
+    return { ok: false, error: String(err?.message || err), migrationNeeded: true };
   }
 }
 
