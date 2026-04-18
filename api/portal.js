@@ -18,7 +18,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
-import { clientIp } from "./_lib/security.js";
+import { clientIp, auditVerify } from "./_lib/security.js";
 import { json } from "./_lib/http.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
@@ -809,6 +809,16 @@ async function requireAdmin(session) {
   return null;
 }
 
+// Walk the security_events hash chain and report tampering. Admin-only —
+// the breaks themselves are not sensitive, but the full event list behind
+// them is.
+async function handleAuditVerify(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const result = await auditVerify();
+  return json(200, result);
+}
+
 async function handleDrafts(session, url) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
@@ -1483,6 +1493,7 @@ async function dispatch(request, method) {
   if (action === "block-ip"         && method === "POST")  return handleBlockIp(session, request);
   if (action === "honeypot-creds"   && method === "GET")   return handleHoneypotCreds(session);
   if (action === "threat-intel"     && method === "GET")   return handleThreatIntel(session, url);
+  if (action === "audit-verify"     && method === "GET")   return handleAuditVerify(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
   if (action === "github-health"   && method === "GET")   return handleGithubHealth(session);
