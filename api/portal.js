@@ -1334,6 +1334,22 @@ async function handleBlockIp(session, request) {
     ON CONFLICT (ip) DO NOTHING
   `;
 
+  try {
+    await sql`
+      INSERT INTO security_events (kind, severity, ip, user_agent, path, detail)
+      VALUES (
+        'admin.block_ip', 'info', ${clientIp(request)},
+        ${request.headers.get('user-agent') || null},
+        '/api/portal?action=block-ip',
+        ${JSON.stringify({
+          adminEmail: session?.user?.email || null,
+          targetIp: ip,
+          reason,
+        })}::jsonb
+      )
+    `;
+  } catch { /* best effort */ }
+
   return json(200, { ok: true });
 }
 
