@@ -612,6 +612,187 @@ async function handleInvestigateIp(session, url) {
   });
 }
 
+// ---------- threat intelligence (admin only) ----------
+
+async function handleThreatIntel(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  const [
+    timeline, campaigns, topAsns, threatClasses,
+    tzDistribution, credStats, feedStats,
+    autoActions, recentCritical, attackVelocity
+  ] = await Promise.all([
+    // Attack timeline — hourly buckets for charting
+    sql`
+      SELECT date_trunc('hour', ts) AS bucket,
+             threat_class,
+             COUNT(*)::int AS hits
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval
+      GROUP BY bucket, threat_class
+      ORDER BY bucket
+    `,
+    // Campaign clusters — group by device_hash to reveal actors behind multiple IPs
+    sql`
+      SELECT ta.device_hash,
+             COUNT(DISTINCT ta.ip)::int AS ip_count,
+             COUNT(*)::int AS total_hits,
+             array_agg(DISTINCT ta.ip) AS ips,
+             array_agg(DISTINCT ta.country) FILTER (WHERE ta.country IS NOT NULL) AS countries,
+             MIN(ta.ts) AS first_seen,
+             MAX(ta.ts) AS last_seen,
+             array_agg(DISTINCT ta.threat_class) AS threat_classes,
+             array_agg(DISTINCT ta.path ORDER BY ta.path) AS paths_probed
+      FROM threat_actors ta
+      WHERE ta.device_hash IS NOT NULL
+        AND ta.ts > now() - ${interval}::interval
+      GROUP BY ta.device_hash
+      HAVING COUNT(DISTINCT ta.ip) >= 2
+      ORDER BY total_hits DESC
+      LIMIT 20
+    `,
+    // Top attacking ASNs/orgs
+    sql`
+      SELECT ii.org, ii.asn, ii.is_datacenter,
+             COUNT(DISTINCT ta.ip)::int AS ip_count,
+             COUNT(*)::int AS total_hits,
+             AVG(ii.abuse_score)::int AS avg_abuse
+      FROM threat_actors ta
+      JOIN ip_intel ii ON ii.ip = ta.ip
+      WHERE ta.ts > now() - ${interval}::interval AND ii.org IS NOT NULL
+      GROUP BY ii.org, ii.asn, ii.is_datacenter
+      ORDER BY total_hits DESC
+      LIMIT 15
+    `,
+    // Threat class breakdown
+    sql`
+      SELECT threat_class, COUNT(*)::int AS hits
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval
+      GROUP BY threat_class
+      ORDER BY hits DESC
+    `,
+    // Timezone distribution from attacker user-agents (behavioral signal)
+    sql`
+      SELECT
+        EXTRACT(HOUR FROM ts AT TIME ZONE 'UTC')::int AS utc_hour,
+        COUNT(*)::int AS hits
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval
+      GROUP BY utc_hour
+      ORDER BY utc_hour
+    `,
+    // Credential capture stats
+    sql`
+      SELECT COUNT(*)::int AS total_captures,
+             COUNT(DISTINCT detail->>'ip')::int AS unique_ips,
+             COUNT(DISTINCT detail->>'email')::int AS unique_emails,
+             COUNT(DISTINCT detail->>'passwordHash')::int AS unique_passwords
+      FROM security_events
+      WHERE kind = 'honeypot.credential'
+        AND ts > now() - ${interval}::interval
+    `,
+    // Threat feed ingest stats (from auto_actions log)
+    sql`
+      SELECT action, target, reason, detail, ts
+      FROM auto_actions
+      WHERE action IN ('threat_feed_ingest', 'ip_blocked')
+      ORDER BY ts DESC
+      LIMIT 30
+    `,
+    // Auto countermeasure actions taken
+    sql`
+      SELECT action, target, reason, ts
+      FROM auto_actions
+      WHERE ts > now() - ${interval}::interval
+      ORDER BY ts DESC
+      LIMIT 50
+    `,
+    // Recent critical security events
+    sql`
+      SELECT kind, severity, ip, user_agent, path, detail, ts
+      FROM security_events
+      WHERE severity IN ('critical', 'error')
+        AND ts > now() - ${interval}::interval
+      ORDER BY ts DESC
+      LIMIT 20
+    `,
+    // Attack velocity — IPs with highest hit rate in last hour
+    sql`
+      SELECT ip, COUNT(*)::int AS hits_1h
+      FROM threat_actors
+      WHERE ts > now() - interval '1 hour'
+      GROUP BY ip
+      HAVING COUNT(*) >= 3
+      ORDER BY hits_1h DESC
+      LIMIT 10
+    `,
+  ]);
+
+  // Enrich campaigns with ip_intel
+  const campaignIps = new Set(campaigns.flatMap((c) => c.ips || []));
+  const velocityIps = new Set(attackVelocity.map((v) => v.ip));
+  const allIps = [...new Set([...campaignIps, ...velocityIps])];
+  let intelMap = {};
+  if (allIps.length > 0) {
+    const intel = await sql`SELECT ip, org, asn, isp, is_datacenter, abuse_score, abuse_reports, is_tor, is_vpn, is_proxy FROM ip_intel WHERE ip = ANY(${allIps})`;
+    for (const i of intel) intelMap[i.ip] = i;
+  }
+
+  // Summary stats
+  const totalThreats = threatClasses.reduce((s, t) => s + t.hits, 0);
+  const blockedCount = await sql`SELECT COUNT(*)::int AS n FROM ip_blocklist`;
+
+  return json(200, {
+    range,
+    summary: {
+      totalThreats,
+      blockedIps: blockedCount[0]?.n || 0,
+      campaignCount: campaigns.length,
+      credCaptures: credStats[0]?.total_captures || 0,
+      uniqueAttackerEmails: credStats[0]?.unique_emails || 0,
+      uniquePasswords: credStats[0]?.unique_passwords || 0,
+    },
+    timeline: timeline.map((t) => ({
+      bucket: t.bucket,
+      threatClass: t.threat_class,
+      hits: t.hits,
+    })),
+    campaigns: campaigns.map((c) => ({
+      deviceHash: c.device_hash,
+      ipCount: c.ip_count,
+      totalHits: c.total_hits,
+      ips: (c.ips || []).slice(0, 10),
+      countries: c.countries || [],
+      firstSeen: c.first_seen,
+      lastSeen: c.last_seen,
+      threatClasses: c.threat_classes || [],
+      pathsProbed: (c.paths_probed || []).slice(0, 15),
+      intel: (c.ips || []).slice(0, 3).map((ip) => intelMap[ip]).filter(Boolean),
+    })),
+    topAsns: topAsns.map((a) => ({
+      org: a.org, asn: a.asn, isDatacenter: a.is_datacenter,
+      ipCount: a.ip_count, totalHits: a.total_hits, avgAbuse: a.avg_abuse,
+    })),
+    threatClasses: threatClasses.map((t) => ({ class: t.threat_class, hits: t.hits })),
+    tzDistribution: tzDistribution.map((t) => ({ hour: t.utc_hour, hits: t.hits })),
+    attackVelocity: attackVelocity.map((v) => ({
+      ip: v.ip, hits1h: v.hits_1h, intel: intelMap[v.ip] || null,
+    })),
+    autoActions: autoActions.map((a) => ({
+      action: a.action, target: a.target, reason: a.reason, ts: a.ts,
+    })),
+    recentCritical: recentCritical.map((e) => ({
+      kind: e.kind, severity: e.severity, ip: e.ip, path: e.path,
+      detail: e.detail, ts: e.ts,
+    })),
+  });
+}
+
 // ---------- blog drafts (admin only) ----------
 // These handlers manage the `draft_posts` table populated by the daily
 // cron agent (api/cron/agent.js). They let the admin list pending drafts,
@@ -1279,6 +1460,7 @@ async function dispatch(request, method) {
   if (action === "investigate-ip"   && method === "GET")   return handleInvestigateIp(session, url);
   if (action === "block-ip"         && method === "POST")  return handleBlockIp(session, request);
   if (action === "honeypot-creds"   && method === "GET")   return handleHoneypotCreds(session);
+  if (action === "threat-intel"     && method === "GET")   return handleThreatIntel(session, url);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
   if (action === "github-health"   && method === "GET")   return handleGithubHealth(session);

@@ -1575,10 +1575,27 @@ function VisitorsPanel({ styles, onBlockIp }) {
   }
   if (!data) return null;
 
+  const [visitorView, setVisitorView] = useState("overview");
   const fmt = (iso) => new Date(iso).toLocaleString();
+
+  const vpill = (v, label) => (
+    <button key={v} style={{
+      padding: "6px 14px", borderRadius: 999, fontSize: 13, fontWeight: visitorView === v ? 600 : 400, cursor: "pointer", border: "none",
+      background: visitorView === v ? tokens.colorBrandBackground : "transparent",
+      color: visitorView === v ? "#fff" : tokens.colorNeutralForeground2,
+    }} onClick={() => setVisitorView(v)}>{label}</button>
+  );
 
   return (
     <div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
+        {vpill("overview", "Overview")}
+        {vpill("traffic", "Live Traffic")}
+        {vpill("threats", "Threat Actors")}
+        {vpill("blocked", "Blocked IPs")}
+        <Button appearance="subtle" size="small" onClick={load} style={{ marginLeft: "auto" }}>Refresh</Button>
+      </div>
+
       <div className={styles.cardGrid}>
         <div className={styles.statCard}>
           <div className={styles.statLabel}>Visits (24h)</div>
@@ -1623,7 +1640,7 @@ function VisitorsPanel({ styles, onBlockIp }) {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginTop: 24 }}>
+      {(visitorView === "overview" || visitorView === "traffic") && <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginTop: 24 }}>
         <section>
           <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: tokens.colorNeutralForeground1 }}>Top pages (7d)</h3>
           <div className={styles.list}>
@@ -1663,9 +1680,9 @@ function VisitorsPanel({ styles, onBlockIp }) {
             ))}
           </div>
         </section>
-      </div>
+      </div>}
 
-      <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 0", color: tokens.colorNeutralForeground1 }}>Recent visits</h3>
+      {(visitorView === "overview" || visitorView === "traffic") && <><h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 0", color: tokens.colorNeutralForeground1 }}>Recent visits</h3>
       <p style={{ color: tokens.colorNeutralForeground3, fontSize: 14, lineHeight: "22px", margin: "4px 0 0" }}>
         Last 100 page views. IP + geo come from Vercel edge headers.
       </p>
@@ -1730,8 +1747,10 @@ function VisitorsPanel({ styles, onBlockIp }) {
         ))}
       </div>
 
+      </>}
+
       {/* --- Threat actors (honeypot hits) --- */}
-      {data.threatActors && data.threatActors.length > 0 && (
+      {(visitorView === "overview" || visitorView === "threats") && data.threatActors && data.threatActors.length > 0 && (
         <>
           <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: "#DC2626" }}>
             Threat actors ({data.threatActors.length})
@@ -1787,7 +1806,7 @@ function VisitorsPanel({ styles, onBlockIp }) {
       )}
 
       {/* --- Session anomalies --- */}
-      {data.sessionAnomalies && data.sessionAnomalies.length > 0 && (
+      {(visitorView === "overview" || visitorView === "threats") && data.sessionAnomalies && data.sessionAnomalies.length > 0 && (
         <>
           <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: "#D97706" }}>
             Session anomalies ({data.sessionAnomalies.length})
@@ -1825,7 +1844,7 @@ function VisitorsPanel({ styles, onBlockIp }) {
       )}
 
       {/* --- Blocked IPs --- */}
-      {data.blockedIps && data.blockedIps.length > 0 && (
+      {(visitorView === "overview" || visitorView === "blocked") && data.blockedIps && data.blockedIps.length > 0 && (
         <>
           <h3 style={{ fontSize: 18, fontWeight: 600, margin: "32px 0 8px", color: tokens.colorNeutralForeground1 }}>
             Blocked IPs ({data.blockedIps.length})
@@ -1858,14 +1877,12 @@ function VisitorsPanel({ styles, onBlockIp }) {
         </>
       )}
 
-      <div style={{ marginTop: 16 }}>
-        <Button appearance="subtle" onClick={load}>Refresh</Button>
-      </div>
+      <div style={{ marginTop: 16 }} />
     </div>
   );
 }
 
-// ---------- admin: security operations panel ----------
+// ---------- admin: CTI command center ----------
 function SecurityPanel({
   styles,
   loadHpCreds,
@@ -1880,101 +1897,322 @@ function SecurityPanel({
   setInvestigateIp,
   setInvestigateData,
 }) {
+  const [intel, setIntel] = useState(null);
+  const [intelLoading, setIntelLoading] = useState(true);
+  const [subTab, setSubTab] = useState("overview");
+  const [range, setRange] = useState("7d");
   const [showInvestigate, setShowInvestigate] = useState(false);
 
-  useEffect(() => { loadHpCreds?.(); }, [loadHpCreds]);
+  const loadIntel = useCallback(async () => {
+    setIntelLoading(true);
+    try {
+      const res = await fetch(`/api/portal?action=threat-intel&range=${range}`, { credentials: "same-origin" });
+      if (res.ok) setIntel(await res.json());
+    } catch { /* best effort */ }
+    finally { setIntelLoading(false); }
+  }, [range]);
+
+  useEffect(() => { loadIntel(); }, [loadIntel]);
+  useEffect(() => { if (subTab === "credentials") loadHpCreds?.(); }, [subTab, loadHpCreds]);
+
+  const fmt = (iso) => iso ? new Date(iso).toLocaleString() : "—";
+  const ago = (iso) => {
+    if (!iso) return "—";
+    const ms = Date.now() - new Date(iso).getTime();
+    if (ms < 3600000) return `${Math.floor(ms / 60000)}m ago`;
+    if (ms < 86400000) return `${Math.floor(ms / 3600000)}h ago`;
+    return `${Math.floor(ms / 86400000)}d ago`;
+  };
+
+  const pillStyle = (active) => ({
+    padding: "6px 14px", borderRadius: 999, fontSize: 13, fontWeight: active ? 600 : 400, cursor: "pointer", border: "none",
+    background: active ? tokens.colorBrandBackground : "transparent",
+    color: active ? "#fff" : tokens.colorNeutralForeground2,
+  });
+  const rangePill = (v, label) => (
+    <button key={v} style={{ ...pillStyle(range === v), padding: "4px 10px", fontSize: 11 }} onClick={() => setRange(v)}>{label}</button>
+  );
 
   return (
     <div>
-      {/* ── Honeypot credentials ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <h4 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: tokens.colorNeutralForeground1 }}>
-          <Alert16Regular style={{ verticalAlign: -3, marginRight: 6, color: "#DC2626" }} />
-          Honeypot-captured credentials
-        </h4>
-        <Button appearance="subtle" size="small" onClick={loadHpCreds} disabled={hpLoading}>
-          Refresh
-        </Button>
+      {/* ── Sub-nav ── */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+        {["overview", "campaigns", "credentials", "countermeasures"].map((t) => (
+          <button key={t} style={pillStyle(subTab === t)} onClick={() => setSubTab(t)}>
+            {t === "overview" ? "Threat Overview" : t === "campaigns" ? "Campaign Clusters" : t === "credentials" ? "Captured Creds" : "Countermeasures"}
+          </button>
+        ))}
+        <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+          {rangePill("24h", "24h")}{rangePill("7d", "7d")}{rangePill("30d", "30d")}
+          <Button appearance="subtle" size="small" onClick={loadIntel} disabled={intelLoading} style={{ marginLeft: 8 }}>Refresh</Button>
+        </div>
       </div>
 
-      {hpLoading && <div style={{ padding: 24 }}><Spinner label="Loading credentials…" /></div>}
+      {intelLoading && !intel && <div style={{ padding: 24 }}><Spinner label="Loading threat intelligence…" /></div>}
 
-      {!hpLoading && hpCreds && (
+      {/* ════ OVERVIEW TAB ════ */}
+      {subTab === "overview" && intel && (
         <>
           <div className={styles.cardGrid}>
             <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
-              <div className={styles.statLabel}>Total captures</div>
-              <div className={styles.statValue} style={{ color: "#DC2626" }}>{hpCreds.total || 0}</div>
+              <div className={styles.statLabel}>Threats ({range})</div>
+              <div className={styles.statValue} style={{ color: "#DC2626" }}>{intel.summary.totalThreats}</div>
             </div>
             <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
-              <div className={styles.statLabel}>Unique IPs</div>
-              <div className={styles.statValue} style={{ color: "#D97706" }}>{hpCreds.uniqueIps || 0}</div>
+              <div className={styles.statLabel}>Campaigns detected</div>
+              <div className={styles.statValue} style={{ color: "#D97706" }}>{intel.summary.campaignCount}</div>
+            </div>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #059669" }}>
+              <div className={styles.statLabel}>IPs blocked</div>
+              <div className={styles.statValue}>{intel.summary.blockedIps}</div>
+            </div>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #7C3AED" }}>
+              <div className={styles.statLabel}>Creds captured</div>
+              <div className={styles.statValue} style={{ color: "#7C3AED" }}>{intel.summary.credCaptures}</div>
+              <span style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>{intel.summary.uniquePasswords} unique passwords</span>
             </div>
           </div>
 
-          {hpCreds.credentials?.length > 0 && (
-            <div className={styles.list} style={{ marginTop: 16 }}>
-              {hpCreds.credentials.map((c, i) => (
-                <div key={i} className={styles.listRow} style={{ borderColor: "#DC2626", borderLeftWidth: 3, flexDirection: "column", alignItems: "stretch", gap: 6 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>{c.ip}</p>
-                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                      <Badge appearance="filled" color="danger">{c.country}</Badge>
-                      <Button
-                        appearance="subtle"
-                        size="small"
-                        icon={<Delete24Regular />}
-                        onClick={() => blockIp(c.ip, `honeypot credential: ${c.email}`)}
-                        disabled={blockBusy}
-                        title="Block this IP"
-                      >
-                        Block
-                      </Button>
-                      <Button
-                        appearance="subtle"
-                        size="small"
-                        icon={<Eye24Regular />}
-                        onClick={() => { investigate(c.ip); setShowInvestigate(true); }}
-                        title="Investigate this IP"
-                      >
-                        Investigate
-                      </Button>
+          {/* Attack velocity — hot IPs right now */}
+          {intel.attackVelocity?.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600, color: "#DC2626" }}>Active attackers (last hour)</h4>
+              <div className={styles.list}>
+                {intel.attackVelocity.map((v, i) => (
+                  <div key={i} className={styles.listRow} style={{ borderColor: "#DC2626", borderLeftWidth: 3 }}>
+                    <div className={styles.listMain}>
+                      <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>{v.ip}</p>
+                      <div className={styles.listMeta}><span>{v.hits1h} hits in last hour</span>
+                        {v.intel?.org && <><span>·</span><span>{v.intel.org}</span></>}
+                        {v.intel?.abuse_score != null && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>Abuse: {v.intel.abuse_score}%</Badge>}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <Button size="small" appearance="subtle" icon={<Eye24Regular />} onClick={() => { investigate(v.ip); setShowInvestigate(true); }}>Investigate</Button>
+                      <Button size="small" appearance="subtle" icon={<Delete24Regular />} onClick={() => blockIp(v.ip, `high velocity: ${v.hits1h} hits/hr`)} disabled={blockBusy}>Block</Button>
                     </div>
                   </div>
-                  <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
-                    <span>Captured: <strong>{c.email}</strong></span>
-                    {c.passwordShape && (
-                      <>
-                        <span>·</span>
-                        <span title={c.passwordHash ? `SHA-256: ${c.passwordHash.slice(0, 12)}…` : ""}>
-                          pw: <strong>{c.passwordShape.firstChar}{"•".repeat(Math.max(0, (c.passwordShape.length || 1) - 1))}</strong>
-                          <span style={{ opacity: 0.6 }}> ({c.passwordShape.length} chars)</span>
-                        </span>
-                      </>
-                    )}
-                    <span>·</span>
-                    <span>Page: {c.page}</span>
-                    {c.org && <><span>·</span><span>{c.org}</span></>}
-                    {c.abuseScore != null && (
-                      <Badge appearance="filled" color={c.abuseScore >= 75 ? "danger" : c.abuseScore >= 25 ? "warning" : "subtle"} style={{ fontSize: 10 }}>
-                        Abuse: {c.abuseScore}%
-                      </Badge>
-                    )}
-                    <span>·</span>
-                    <span>{new Date(c.ts).toLocaleString()}</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 
-          {hpCreds.credentials?.length === 0 && (
-            <div className={styles.emptyState}>No credentials captured yet. The honeypot is active and logging attempts.</div>
+          {/* Threat class breakdown */}
+          {intel.threatClasses?.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Threat breakdown</h4>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {intel.threatClasses.map((t) => (
+                  <div key={t.class} style={{ padding: "8px 16px", background: tokens.colorNeutralBackground2, borderRadius: 8, fontSize: 13 }}>
+                    <strong style={{ color: t.class === "scanner" ? "#DC2626" : t.class === "hostile_geo" ? "#D97706" : tokens.colorNeutralForeground1 }}>{t.class}</strong>
+                    <span style={{ marginLeft: 8, color: tokens.colorNeutralForeground3 }}>{t.hits}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Top attacking ASNs */}
+          {intel.topAsns?.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top attacking organizations</h4>
+              <div className={styles.list}>
+                {intel.topAsns.slice(0, 8).map((a, i) => (
+                  <div key={i} className={styles.listRow}>
+                    <div className={styles.listMain}>
+                      <p className={styles.listTitle}>{a.org || "Unknown"}</p>
+                      <div className={styles.listMeta}>
+                        <span>{a.ipCount} IPs · {a.totalHits} hits</span>
+                        {a.isDatacenter && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>Datacenter</Badge>}
+                        {a.avgAbuse > 0 && <Badge appearance="filled" color={a.avgAbuse >= 50 ? "danger" : "warning"} style={{ fontSize: 10 }}>Avg abuse: {a.avgAbuse}%</Badge>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Activity heatmap by UTC hour */}
+          {intel.tzDistribution?.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Attack activity by hour (UTC)</h4>
+              <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 60, padding: "0 4px" }}>
+                {Array.from({ length: 24 }, (_, h) => {
+                  const entry = intel.tzDistribution.find((t) => t.hour === h);
+                  const hits = entry?.hits || 0;
+                  const max = Math.max(...intel.tzDistribution.map((t) => t.hits), 1);
+                  const pct = (hits / max) * 100;
+                  return (
+                    <div key={h} title={`${h}:00 UTC — ${hits} hits`} style={{ flex: 1, minWidth: 8, background: hits > 0 ? `rgba(220, 38, 38, ${0.2 + pct / 140})` : tokens.colorNeutralBackground2, height: `${Math.max(4, pct)}%`, borderRadius: 2, cursor: "default" }} />
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: tokens.colorNeutralForeground3, marginTop: 2, padding: "0 4px" }}>
+                <span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>23:00</span>
+              </div>
+            </div>
+          )}
+
+          {/* Critical events */}
+          {intel.recentCritical?.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600, color: "#DC2626" }}>Critical & error events</h4>
+              <div className={styles.list}>
+                {intel.recentCritical.slice(0, 10).map((e, i) => (
+                  <div key={i} className={styles.listRow} style={{ borderColor: e.severity === "critical" ? "#DC2626" : "#D97706", borderLeftWidth: 3 }}>
+                    <div className={styles.listMain}>
+                      <p className={styles.listTitle}>{e.kind}</p>
+                      <div className={styles.listMeta}>
+                        <span>{ago(e.ts)}</span>
+                        {e.ip && <><span>·</span><span style={{ fontFamily: "monospace", fontSize: 11 }}>{e.ip}</span></>}
+                        {e.path && <><span>·</span><span>{e.path}</span></>}
+                      </div>
+                    </div>
+                    <Badge appearance="filled" color={e.severity === "critical" ? "danger" : "warning"}>{e.severity}</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </>
       )}
 
-      {/* ── IP Investigation ── */}
+      {/* ════ CAMPAIGNS TAB ════ */}
+      {subTab === "campaigns" && intel && (
+        <>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 13, margin: "0 0 16px" }}>
+            Attacks grouped by device fingerprint. Multiple IPs with the same fingerprint = one actor rotating proxies. Inspired by Ch.25 §5 of the playbook.
+          </p>
+          {intel.campaigns?.length === 0 && (
+            <div className={styles.emptyState}>No multi-IP campaigns detected in this time range.</div>
+          )}
+          {intel.campaigns?.map((c, i) => (
+            <div key={i} className={styles.listRow} style={{ borderColor: "#7C3AED", borderLeftWidth: 3, flexDirection: "column", alignItems: "stretch", gap: 8, marginBottom: 12, padding: 16, background: tokens.colorNeutralBackground2, borderRadius: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <Badge appearance="filled" color="important" style={{ marginRight: 8 }}>{c.ipCount} IPs</Badge>
+                  <Badge appearance="filled" color="danger">{c.totalHits} hits</Badge>
+                  {c.countries?.map((co) => <Badge key={co} appearance="outline" color="informative" style={{ marginLeft: 4, fontSize: 10 }}>{co}</Badge>)}
+                </div>
+                <span style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>{ago(c.firstSeen)} → {ago(c.lastSeen)}</span>
+              </div>
+              <div style={{ fontSize: 12 }}>
+                <span style={{ color: tokens.colorNeutralForeground3 }}>Threat types:</span>{" "}
+                {c.threatClasses?.join(", ")}
+              </div>
+              <div style={{ fontSize: 12 }}>
+                <span style={{ color: tokens.colorNeutralForeground3 }}>Paths probed:</span>{" "}
+                <span style={{ fontFamily: "monospace", fontSize: 11 }}>{c.pathsProbed?.slice(0, 8).join(", ")}{c.pathsProbed?.length > 8 ? ` +${c.pathsProbed.length - 8} more` : ""}</span>
+              </div>
+              <div style={{ fontSize: 12 }}>
+                <span style={{ color: tokens.colorNeutralForeground3 }}>IPs:</span>{" "}
+                {c.ips?.map((ip) => (
+                  <button key={ip} style={{ fontFamily: "monospace", fontSize: 11, background: "none", border: "none", color: tokens.colorBrandForeground1, cursor: "pointer", textDecoration: "underline", marginRight: 6 }}
+                    onClick={() => { investigate(ip); setShowInvestigate(true); }}>{ip}</button>
+                ))}
+              </div>
+              {c.intel?.length > 0 && (
+                <div style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>
+                  Orgs: {[...new Set(c.intel.map((i) => i.org).filter(Boolean))].join(", ") || "—"}
+                  {c.intel.some((i) => i.is_datacenter) && <Badge appearance="outline" color="warning" style={{ fontSize: 9, marginLeft: 4 }}>DC</Badge>}
+                  {c.intel.some((i) => i.is_tor) && <Badge appearance="filled" color="danger" style={{ fontSize: 9, marginLeft: 4 }}>TOR</Badge>}
+                </div>
+              )}
+              <div style={{ fontFamily: "monospace", fontSize: 10, color: tokens.colorNeutralForeground3 }}>
+                Fingerprint: {c.deviceHash}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* ════ CREDENTIALS TAB ════ */}
+      {subTab === "credentials" && (
+        <>
+          {hpLoading && <div style={{ padding: 24 }}><Spinner label="Loading credentials…" /></div>}
+          {!hpLoading && hpCreds && (
+            <>
+              <div className={styles.cardGrid}>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+                  <div className={styles.statLabel}>Total captures</div>
+                  <div className={styles.statValue} style={{ color: "#DC2626" }}>{hpCreds.total || 0}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+                  <div className={styles.statLabel}>Unique IPs</div>
+                  <div className={styles.statValue} style={{ color: "#D97706" }}>{hpCreds.uniqueIps || 0}</div>
+                </div>
+              </div>
+              {hpCreds.credentials?.length > 0 && (
+                <div className={styles.list} style={{ marginTop: 16 }}>
+                  {hpCreds.credentials.map((c, i) => (
+                    <div key={i} className={styles.listRow} style={{ borderColor: "#DC2626", borderLeftWidth: 3, flexDirection: "column", alignItems: "stretch", gap: 6 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>{c.ip}</p>
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                          <Badge appearance="filled" color="danger">{c.country}</Badge>
+                          <Button appearance="subtle" size="small" icon={<Delete24Regular />} onClick={() => blockIp(c.ip, `honeypot credential: ${c.email}`)} disabled={blockBusy}>Block</Button>
+                          <Button appearance="subtle" size="small" icon={<Eye24Regular />} onClick={() => { investigate(c.ip); setShowInvestigate(true); }}>Investigate</Button>
+                        </div>
+                      </div>
+                      <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6 }}>
+                        <span>Captured: <strong>{c.email}</strong></span>
+                        {c.passwordShape && (
+                          <><span>·</span><span title={c.passwordHash ? `SHA-256: ${c.passwordHash.slice(0, 12)}…` : ""}>pw: <strong>{c.passwordShape.firstChar}{"•".repeat(Math.max(0, (c.passwordShape.length || 1) - 1))}</strong> ({c.passwordShape.length} chars)</span></>
+                        )}
+                        <span>·</span><span>Page: {c.page}</span>
+                        {c.org && <><span>·</span><span>{c.org}</span></>}
+                        {c.abuseScore != null && <Badge appearance="filled" color={c.abuseScore >= 75 ? "danger" : c.abuseScore >= 25 ? "warning" : "subtle"} style={{ fontSize: 10 }}>Abuse: {c.abuseScore}%</Badge>}
+                        <span>·</span><span>{fmt(c.ts)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {hpCreds.credentials?.length === 0 && <div className={styles.emptyState}>No credentials captured yet.</div>}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ════ COUNTERMEASURES TAB ════ */}
+      {subTab === "countermeasures" && intel && (
+        <>
+          <div className={styles.cardGrid}>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #059669" }}>
+              <div className={styles.statLabel}>Total blocked IPs</div>
+              <div className={styles.statValue}>{intel.summary.blockedIps}</div>
+            </div>
+            <div className={styles.statCard} style={{ borderLeft: "3px solid #2563EB" }}>
+              <div className={styles.statLabel}>Auto-actions ({range})</div>
+              <div className={styles.statValue}>{intel.autoActions?.length || 0}</div>
+            </div>
+          </div>
+
+          <h4 style={{ margin: "20px 0 8px", fontSize: 15, fontWeight: 600 }}>Automated countermeasure log</h4>
+          <p style={{ color: tokens.colorNeutralForeground3, fontSize: 12, margin: "0 0 8px" }}>
+            Actions taken by the cron agent: threat feed ingests, auto-blocks on repeat offenders, session cleanups.
+          </p>
+          {intel.autoActions?.length === 0 && <div className={styles.emptyState}>No automated actions in this time range.</div>}
+          <div className={styles.list}>
+            {intel.autoActions?.map((a, i) => (
+              <div key={i} className={styles.listRow}>
+                <div className={styles.listMain}>
+                  <p className={styles.listTitle}>
+                    <Badge appearance="outline" color={a.action === "ip_blocked" ? "danger" : a.action.includes("feed") ? "brand" : "subtle"} style={{ marginRight: 6, fontSize: 10 }}>{a.action}</Badge>
+                    {a.target}
+                  </p>
+                  <div className={styles.listMeta}>
+                    <span>{a.reason}</span><span>·</span><span>{ago(a.ts)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* ── IP Investigation dialog (shared across tabs) ── */}
       {showInvestigate && (
         <Dialog open={showInvestigate} onOpenChange={(_, d) => { if (!d.open) { setShowInvestigate(false); setInvestigateData(null); setInvestigateIp(null); } }}>
           <DialogSurface className={styles.detailSurface}>
@@ -1982,10 +2220,8 @@ function SecurityPanel({
               <DialogTitle>IP Investigation — {investigateIp}</DialogTitle>
               <DialogContent>
                 {investigateLoading && <Spinner label="Investigating…" />}
-
                 {!investigateLoading && investigateData && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                    {/* Intel summary */}
                     {investigateData.intel && (
                       <div style={{ padding: 16, background: tokens.colorNeutralBackground2, borderRadius: tokens.borderRadiusMedium }}>
                         <h4 style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 600 }}>OSINT Intel</h4>
@@ -1997,69 +2233,38 @@ function SecurityPanel({
                         </div>
                       </div>
                     )}
-
-                    {/* Blocked status */}
-                    {investigateData.blocked && (
-                      <MessageBar intent="warning">
-                        <MessageBarBody>This IP is already blocked: {investigateData.blocked.reason}</MessageBarBody>
-                      </MessageBar>
-                    )}
-
-                    {/* Visits */}
+                    {investigateData.blocked && <MessageBar intent="warning"><MessageBarBody>Blocked: {investigateData.blocked.reason}</MessageBarBody></MessageBar>}
                     {investigateData.visits?.length > 0 && (
                       <div>
                         <h4 style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 600 }}>Visits ({investigateData.visits.length})</h4>
                         <div style={{ maxHeight: 200, overflowY: "auto", fontSize: 12 }}>
                           {investigateData.visits.slice(0, 20).map((v, i) => (
-                            <div key={i} style={{ padding: "4px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}>
-                              {new Date(v.ts).toLocaleString()} — {v.path}
-                              {v.browser && ` (${v.browser} / ${v.os})`}
-                            </div>
+                            <div key={i} style={{ padding: "4px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}>{fmt(v.ts)} — {v.path}{v.browser && ` (${v.browser} / ${v.os})`}</div>
                           ))}
                         </div>
                       </div>
                     )}
-
-                    {/* Threats */}
                     {investigateData.threats?.length > 0 && (
                       <div>
-                        <h4 style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 600, color: "#DC2626" }}>Threat actor hits ({investigateData.threats.length})</h4>
+                        <h4 style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 600, color: "#DC2626" }}>Threats ({investigateData.threats.length})</h4>
                         <div style={{ maxHeight: 200, overflowY: "auto", fontSize: 12 }}>
                           {investigateData.threats.slice(0, 20).map((t, i) => (
-                            <div key={i} style={{ padding: "4px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}>
-                              {new Date(t.ts).toLocaleString()} — {t.method} {t.path} <Badge appearance="filled" color="danger" style={{ fontSize: 9 }}>{t.threatClass}</Badge>
-                            </div>
+                            <div key={i} style={{ padding: "4px 0", borderBottom: `1px solid ${tokens.colorNeutralStroke2}` }}>{fmt(t.ts)} — {t.method} {t.path} <Badge appearance="filled" color="danger" style={{ fontSize: 9 }}>{t.threatClass}</Badge></div>
                           ))}
                         </div>
                       </div>
                     )}
-
-                    {/* Device hashes */}
                     {investigateData.deviceHashes?.length > 0 && (
-                      <div style={{ fontFamily: "monospace", fontSize: 11, color: tokens.colorNeutralForeground3 }}>
-                        Device fingerprints: {investigateData.deviceHashes.join(", ")}
-                      </div>
+                      <div style={{ fontFamily: "monospace", fontSize: 11, color: tokens.colorNeutralForeground3 }}>Fingerprints: {investigateData.deviceHashes.join(", ")}</div>
                     )}
                   </div>
                 )}
-
-                {!investigateLoading && !investigateData && investigateIp && (
-                  <div className={styles.emptyState}>No data found for this IP.</div>
-                )}
+                {!investigateLoading && !investigateData && investigateIp && <div className={styles.emptyState}>No data found.</div>}
               </DialogContent>
               <DialogActions>
-                <Button appearance="secondary" onClick={() => { setShowInvestigate(false); setInvestigateData(null); setInvestigateIp(null); }}>
-                  Close
-                </Button>
+                <Button appearance="secondary" onClick={() => { setShowInvestigate(false); setInvestigateData(null); setInvestigateIp(null); }}>Close</Button>
                 {!investigateData?.blocked && (
-                  <Button
-                    appearance="primary"
-                    icon={<Delete24Regular />}
-                    onClick={() => { blockIp(investigateIp, "manual block from investigation"); setShowInvestigate(false); }}
-                    disabled={blockBusy}
-                  >
-                    Block IP
-                  </Button>
+                  <Button appearance="primary" icon={<Delete24Regular />} onClick={() => { blockIp(investigateIp, "manual block from investigation"); setShowInvestigate(false); }} disabled={blockBusy}>Block IP</Button>
                 )}
               </DialogActions>
             </DialogBody>
