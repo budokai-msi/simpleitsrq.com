@@ -1882,6 +1882,120 @@ function VisitorsPanel({ styles, onBlockIp }) {
   );
 }
 
+// ---------- admin: ops console ----------
+// One-click buttons for admin actions that would otherwise require curl
+// or a Vercel env-var trip: Stripe Payment Link creation, audit-chain
+// migration, audit-chain verification.
+function OpsConsole() {
+  const [running, setRunning] = useState(null); // action name mid-flight
+  const [output, setOutput] = useState({});     // { [action]: result-object }
+
+  const run = async (action, method = "POST") => {
+    setRunning(action);
+    try {
+      const res = await fetch(`/api/portal?action=${action}`, {
+        method,
+        credentials: "same-origin",
+        headers: method === "POST" ? { "Content-Type": "application/json" } : {},
+      });
+      const data = await res.json().catch(() => ({}));
+      setOutput((o) => ({ ...o, [action]: { status: res.status, data } }));
+    } catch (e) {
+      setOutput((o) => ({ ...o, [action]: { error: String(e.message || e) } }));
+    } finally {
+      setRunning(null);
+    }
+  };
+
+  const card = {
+    padding: 18,
+    background: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: 10,
+    marginBottom: 14,
+  };
+  const pre = {
+    marginTop: 10,
+    padding: 12,
+    fontSize: 11,
+    fontFamily: "monospace",
+    lineHeight: 1.5,
+    background: tokens.colorNeutralBackground2,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: 6,
+    maxHeight: 360,
+    overflow: "auto",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-all",
+  };
+
+  return (
+    <div>
+      <p style={{ color: tokens.colorNeutralForeground3, fontSize: 13, margin: "0 0 16px" }}>
+        One-click admin operations. Every button hits the matching <code>/api/portal?action=...</code> endpoint under your current session. Output is shown inline — no page reload.
+      </p>
+
+      {/* Stripe payment links */}
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Create Stripe Payment Links</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Creates (or reuses) a Stripe Product + Price + Payment Link for every store SKU. Idempotent — safe to run multiple times. Copy each <code>url</code> from the output into the matching Vercel env var, then redeploy.
+        </p>
+        <Button
+          appearance="primary"
+          onClick={() => run("create-payment-links")}
+          disabled={running === "create-payment-links"}
+        >
+          {running === "create-payment-links" ? "Running…" : "Create all 6 Payment Links"}
+        </Button>
+        {output["create-payment-links"] && (
+          <pre style={pre}>{JSON.stringify(output["create-payment-links"].data, null, 2)}</pre>
+        )}
+      </div>
+
+      {/* Audit migration */}
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Run audit-chain migration (001)</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Adds <code>prev_hash</code> + <code>row_hash</code> columns on <code>security_events</code> and a supporting index. Safe to re-run — every statement is <code>IF NOT EXISTS</code>.
+        </p>
+        <Button
+          appearance="primary"
+          onClick={() => run("run-audit-migration")}
+          disabled={running === "run-audit-migration"}
+        >
+          {running === "run-audit-migration" ? "Running…" : "Run migration"}
+        </Button>
+        {output["run-audit-migration"] && (
+          <pre style={pre}>{JSON.stringify(output["run-audit-migration"].data, null, 2)}</pre>
+        )}
+      </div>
+
+      {/* Audit verify */}
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Verify audit-log chain</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Walks the security-events hash chain and reports any breaks. Run after the migration, and again anytime you want a tamper check. <code>ok: true</code> with <code>breaks: []</code> is the healthy answer.
+        </p>
+        <Button
+          appearance="primary"
+          onClick={() => run("audit-verify", "GET")}
+          disabled={running === "audit-verify"}
+        >
+          {running === "audit-verify" ? "Running…" : "Verify chain"}
+        </Button>
+        {output["audit-verify"] && (
+          <pre style={pre}>{JSON.stringify(output["audit-verify"].data, null, 2)}</pre>
+        )}
+      </div>
+
+      <p style={{ color: tokens.colorNeutralForeground3, fontSize: 11, marginTop: 16 }}>
+        Every action is <code>requireAdmin()</code> gated server-side. This console only proxies clicks — there is no elevated state on the frontend.
+      </p>
+    </div>
+  );
+}
+
 // ---------- admin: CTI command center ----------
 function SecurityPanel({
   styles,
@@ -1937,9 +2051,9 @@ function SecurityPanel({
     <div>
       {/* ── Sub-nav ── */}
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-        {["overview", "campaigns", "credentials", "countermeasures"].map((t) => (
+        {["overview", "campaigns", "credentials", "countermeasures", "ops"].map((t) => (
           <button key={t} style={pillStyle(subTab === t)} onClick={() => setSubTab(t)}>
-            {t === "overview" ? "Threat Overview" : t === "campaigns" ? "Campaign Clusters" : t === "credentials" ? "Captured Creds" : "Countermeasures"}
+            {t === "overview" ? "Threat Overview" : t === "campaigns" ? "Campaign Clusters" : t === "credentials" ? "Captured Creds" : t === "countermeasures" ? "Countermeasures" : "Ops Console"}
           </button>
         ))}
         <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
@@ -2211,6 +2325,9 @@ function SecurityPanel({
           </div>
         </>
       )}
+
+      {/* ════ OPS CONSOLE TAB ════ */}
+      {subTab === "ops" && <OpsConsole />}
 
       {/* ── IP Investigation dialog (shared across tabs) ── */}
       {showInvestigate && (
