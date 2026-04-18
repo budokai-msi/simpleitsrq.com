@@ -819,6 +819,149 @@ async function handleAuditVerify(session) {
   return json(200, result);
 }
 
+// Run the audit-chain migration (001) — adds prev_hash + row_hash columns
+// and the supporting index. Safe to re-run; each statement is IF NOT EXISTS.
+// Admin-only. Gating on this action via requireAdmin means it can only be
+// triggered by someone already authorized to read the audit log, so there's
+// no privilege-escalation path from hitting it.
+async function handleRunAuditMigration(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const results = [];
+  try {
+    await sql`ALTER TABLE security_events ADD COLUMN IF NOT EXISTS prev_hash CHAR(64)`;
+    results.push({ step: "add prev_hash column", ok: true });
+  } catch (e) {
+    results.push({ step: "add prev_hash column", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`ALTER TABLE security_events ADD COLUMN IF NOT EXISTS row_hash CHAR(64)`;
+    results.push({ step: "add row_hash column", ok: true });
+  } catch (e) {
+    results.push({ step: "add row_hash column", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_security_events_row_hash_id
+        ON security_events (id DESC)
+        WHERE row_hash IS NOT NULL
+    `;
+    results.push({ step: "create index", ok: true });
+  } catch (e) {
+    results.push({ step: "create index", ok: false, error: String(e.message || e) });
+  }
+
+  const allOk = results.every((r) => r.ok);
+  return json(allOk ? 200 : 500, { ok: allOk, migration: "001_audit_chain", results });
+}
+
+// Programmatically create Stripe Payment Links for every product in the
+// catalog that doesn't already have one. Uses the same STRIPE_SECRET_KEY
+// that invoicing uses. Returns the full list of URLs for the admin to
+// paste into Vercel env vars. Idempotent: running twice produces the same
+// Payment Link per product because we look up the product by its name
+// before creating.
+async function handleCreatePaymentLinks(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const stripe = getStripe();
+  if (!stripe) return json(500, { ok: false, error: "stripe_not_configured" });
+
+  // Products mirror src/data/products.js — kept hardcoded here so this
+  // endpoint is self-contained and doesn't depend on the frontend bundle.
+  const CATALOG = [
+    { slug: "hipaa-starter-kit",      title: "Florida Small-Business HIPAA Starter Kit",       price: 79,  envVar: "VITE_PRODUCT_HIPAA_KIT_BUY_URL" },
+    { slug: "wisp-template",          title: "Written Information Security Program (WISP)",   price: 149, envVar: "VITE_PRODUCT_WISP_BUY_URL" },
+    { slug: "cyber-insurance-answers", title: "Cyber-Insurance Questionnaire Answer Kit",       price: 99,  envVar: "VITE_PRODUCT_INSURANCE_KIT_BUY_URL" },
+    { slug: "hurricane-it-playbook",  title: "Hurricane-Season IT Continuity Playbook",        price: 49,  envVar: "VITE_PRODUCT_HURRICANE_KIT_BUY_URL" },
+    { slug: "onboarding-runbook",     title: "Employee Onboarding + Offboarding IT Runbook",   price: 39,  envVar: "VITE_PRODUCT_ONBOARDING_KIT_BUY_URL" },
+    { slug: "compliance-library",     title: "Complete Florida Compliance Library",            price: 299, envVar: "VITE_PRODUCT_BUNDLE_BUY_URL" },
+  ];
+
+  const results = [];
+
+  for (const item of CATALOG) {
+    try {
+      // Idempotency — search for an existing active Stripe Product with the
+      // same name. Stripe's search API is eventually-consistent but fine
+      // for a manual admin trigger.
+      const existing = await stripe.products.search({
+        query: `active:'true' AND name:'${item.title.replace(/'/g, "\\'")}'`,
+        limit: 1,
+      }).catch(() => ({ data: [] }));
+
+      let productId;
+      if (existing.data?.length > 0) {
+        productId = existing.data[0].id;
+      } else {
+        const product = await stripe.products.create({
+          name: item.title,
+          description: `Simple IT SRQ — ${item.title}. Lifetime updates. 30-day refund.`,
+          metadata: { slug: item.slug, source: "simpleitsrq.com/store" },
+        });
+        productId = product.id;
+      }
+
+      // Look for an existing matching price so we don't spam new price IDs
+      // on re-runs.
+      const prices = await stripe.prices.list({ product: productId, active: true, limit: 10 });
+      let price = prices.data.find(
+        (p) => p.unit_amount === item.price * 100 && p.currency === "usd"
+      );
+      if (!price) {
+        price = await stripe.prices.create({
+          product: productId,
+          unit_amount: item.price * 100,
+          currency: "usd",
+        });
+      }
+
+      // Check for existing active Payment Link pointing at this price.
+      const existingLinks = await stripe.paymentLinks.list({ limit: 100, active: true });
+      let link = existingLinks.data.find(
+        (l) => l.line_items?.data?.[0]?.price?.id === price.id
+      );
+      if (!link) {
+        link = await stripe.paymentLinks.create({
+          line_items: [{ price: price.id, quantity: 1 }],
+          after_completion: {
+            type: "redirect",
+            redirect: { url: `https://simpleitsrq.com/store?purchased=${item.slug}` },
+          },
+          metadata: { slug: item.slug, source: "simpleitsrq.com/store" },
+        });
+      }
+
+      results.push({
+        slug: item.slug,
+        title: item.title,
+        price: item.price,
+        envVar: item.envVar,
+        productId,
+        priceId: price.id,
+        paymentLinkId: link.id,
+        url: link.url,
+        ok: true,
+      });
+    } catch (e) {
+      results.push({
+        slug: item.slug,
+        title: item.title,
+        envVar: item.envVar,
+        ok: false,
+        error: String(e.message || e),
+      });
+    }
+  }
+
+  return json(200, {
+    ok: true,
+    message: "Copy each URL into the matching Vercel env var, then redeploy. Re-running this action is safe — it reuses existing Stripe resources.",
+    created: results,
+  });
+}
+
 async function handleDrafts(session, url) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
@@ -1510,6 +1653,8 @@ async function dispatch(request, method) {
   if (action === "honeypot-creds"   && method === "GET")   return handleHoneypotCreds(session);
   if (action === "threat-intel"     && method === "GET")   return handleThreatIntel(session, url);
   if (action === "audit-verify"     && method === "GET")   return handleAuditVerify(session);
+  if (action === "run-audit-migration" && method === "POST") return handleRunAuditMigration(session);
+  if (action === "create-payment-links" && method === "POST") return handleCreatePaymentLinks(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
   if (action === "github-health"   && method === "GET")   return handleGithubHealth(session);
