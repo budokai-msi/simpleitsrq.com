@@ -4,7 +4,7 @@ import { ArrowRight, Calendar, User, Tag, ArrowLeft, Lock, Server, Cloud, FileCh
 import { posts } from "../data/posts";
 import { resolveAffiliate, postHasAffiliateContent } from "../data/affiliates";
 import { useSEO } from "../lib/seo";
-import { postImageUrl } from "../lib/postImage";
+import BlogCover from "../components/BlogCover";
 import LeadCaptureCTA from "../components/LeadCaptureCTA";
 import Newsletter from "../components/Newsletter";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
@@ -186,17 +186,7 @@ export default function BlogPost() {
             <span>{minutes} min read</span>
           </div>
           <div className="blog-post-hero">
-            <img
-              src={postImageUrl(post, { width: 1200, height: 630 })}
-              alt={post.heroAlt || ""}
-              loading="eager"
-              decoding="async"
-              width="1200"
-              height="630"
-            />
-            <div className="blog-post-hero-badge" aria-hidden="true">
-              <CategoryIcon category={post.category} size={32} />
-            </div>
+            <BlogCover post={post} variant="hero" />
           </div>
           <div className="blog-post-content">
             {(() => {

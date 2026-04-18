@@ -1,25 +1,11 @@
 ﻿import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Lock, Server, Cloud, FileCheck, Shield, Briefcase, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { posts } from "../data/posts";
 import { useSEO } from "../lib/seo";
-import { postImageUrl } from "../lib/postImage";
+import BlogCover from "../components/BlogCover";
 
 const CATEGORIES = ["All", "Cybersecurity", "AI & Productivity", "Cloud", "Compliance", "Privacy", "Business Tech", "Industry News"];
-
-function CategoryIcon({ category }) {
-  const map = {
-    "Cybersecurity": Lock,
-    "AI & Productivity": Server,
-    "Cloud": Cloud,
-    "Compliance": FileCheck,
-    "Privacy": Shield,
-    "Business Tech": Briefcase,
-    "Industry News": Star,
-  };
-  const Icon = map[category] || Briefcase;
-  return <Icon size={28} />;
-}
 
 export default function BlogIndex() {
   const [active, setActive] = useState("All");
@@ -68,15 +54,7 @@ export default function BlogIndex() {
             {filtered.map((p) => (
               <article key={p.slug} className="blog-card">
                 <Link to={`/blog/${p.slug}`} className="blog-card-img" aria-label={p.title}>
-                  <img
-                    src={postImageUrl(p, { width: 800, height: 450 })}
-                    alt={p.heroAlt || ""}
-                    loading="lazy"
-                    decoding="async"
-                    width="800"
-                    height="450"
-                  />
-                  <div className="blog-card-img-badge" aria-hidden="true"><CategoryIcon category={p.category} /></div>
+                  <BlogCover post={p} variant="card" />
                 </Link>
                 <div className="blog-card-body">
                   <span className="blog-card-category">{p.category}</span>
