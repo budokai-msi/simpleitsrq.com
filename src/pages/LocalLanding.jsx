@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cities } from "../data/cities";
 import { useSEO, SITE_URL } from "../lib/seo";
+import RecommendedTools from "../components/RecommendedTools";
 
 const SERVICES = [
   { Icon: Headphones, title: "Everyday IT Support", desc: "One flat monthly price covers unlimited help desk, monitoring, and software updates. A local tech answers the phone in under 15 minutes when something's critical." },
@@ -177,6 +178,11 @@ export default function LocalLanding() {
           </ul>
         </div>
       </section>
+
+      <RecommendedTools
+        title={`Tool shelf for ${city.city} small offices`}
+        subtitle="The three purchases we recommend every new client make before signing with an MSP — or with us."
+      />
 
       <section className="section section-alt">
         <div className="container">

@@ -10,6 +10,8 @@ import { useSEO } from "../lib/seo";
 import { useScrollReveal, useRevealChildren } from "../lib/useScrollReveal";
 import heroGrid from "../assets/hero-grid.svg";
 import { posts } from "../data/posts";
+import BlogCover from "../components/BlogCover";
+import RecommendedTools from "../components/RecommendedTools";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 
@@ -251,20 +253,6 @@ function Testimonial() {
   );
 }
 
-function CategoryIcon({ category }) {
-  const map = {
-    "Cybersecurity": Lock,
-    "AI & Productivity": Server,
-    "Cloud": Cloud,
-    "Compliance": FileCheck,
-    "Privacy": Shield,
-    "Business Tech": Briefcase,
-    "Industry News": Star,
-  };
-  const Icon = map[category] || Briefcase;
-  return <Icon size={28} />;
-}
-
 function BlogPreview() {
   const ref = useRef(null);
   useRevealChildren(ref);
@@ -281,7 +269,7 @@ function BlogPreview() {
           {recent.map((p) => (
             <article key={p.slug} className="blog-card card-hover reveal-up" data-reveal>
               <Link to={`/blog/${p.slug}`} className="blog-card-img" aria-label={p.title}>
-                <div className="blog-card-img-inner"><CategoryIcon category={p.category} /></div>
+                <BlogCover post={p} variant="card" />
               </Link>
               <div className="blog-card-body">
                 <span className="blog-card-category">{p.category}</span>
@@ -587,6 +575,7 @@ export default function Home() {
       <Compliance />
       <Testimonial />
       <BlogPreview />
+      <RecommendedTools />
       <StatsBar />
       <CtaBanner />
       <Contact />

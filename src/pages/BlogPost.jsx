@@ -220,7 +220,7 @@ export default function BlogPost() {
               {related.map((p) => (
                 <article key={p.slug} className="blog-card">
                   <Link to={`/blog/${p.slug}`} className="blog-card-img" aria-label={p.title}>
-                    <div className="blog-card-img-inner"><CategoryIcon category={p.category} /></div>
+                    <BlogCover post={p} variant="card" />
                   </Link>
                   <div className="blog-card-body">
                     <span className="blog-card-category">{p.category}</span>
