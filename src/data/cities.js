@@ -119,6 +119,44 @@ export const cities = {
       },
     ],
   },
+  nokomis: {
+    slug: "nokomis-it-support",
+    city: "Nokomis",
+    cityFull: "Nokomis, FL",
+    h1: "IT Support in Nokomis, FL",
+    title: "Nokomis IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
+    metaDescription: "Local IT support for Nokomis and Casey Key businesses. Same-day help, flat monthly pricing, HIPAA paperwork, and a real team based in Sarasota County. Free IT check-up.",
+    intro: "Nokomis sits at the quiet south end of Sarasota County where Casey Key meets the mainland — and the small businesses here deserve IT support that actually shows up. Simple IT SRQ supports the vacation rental companies, marine services, medical offices, real-estate firms, and professional-service practices along US-41 and Albee Road. We're 15 minutes away, not two hours from Tampa.",
+    landmarks: ["Nokomis Beach", "Casey Key", "US-41 corridor", "Albee Road", "North Jetty Park"],
+    neighborhoods: "Nokomis, Casey Key, Laurel, south Osprey, and the US-41 business corridor between Venice and Sarasota",
+    whyLocal: [
+      "Same-day on-site response from Sarasota County — we don't drive down from Tampa or Orlando like the big shops do.",
+      "Built for 5- to 30-person offices: vacation rental managers, marine service companies, medical practices, and professional firms that need reliable IT without enterprise pricing.",
+      "Hurricane-season backup and recovery plans made for the barrier-island reality: off-site backups, generator-safe networks, and a tested plan that doesn't assume you'll have power.",
+    ],
+    faqs: [
+      {
+        q: "How quickly can you get to Nokomis?",
+        a: "We're based in Bradenton and Sarasota. Nokomis is about 25 minutes from our Sarasota team — same-day for anything urgent, next business day for scheduled work. Most issues get resolved remotely in under 15 minutes."
+      },
+      {
+        q: "Do you support vacation rental management companies?",
+        a: "Yes. Several of our clients manage short-term rental properties across Casey Key and Nokomis. We handle their booking system uptime, guest Wi-Fi networks, smart-lock integrations, and the security cameras that property managers rely on."
+      },
+      {
+        q: "We're a small office with only 5 people. Is that too small?",
+        a: "Not at all. Our flat-rate plans start around $95 per person per month, so a 5-person office runs about $475 a month for fully managed IT including help desk, antivirus, backups, and on-site support. Most of our Nokomis clients are between 3 and 20 people."
+      },
+      {
+        q: "Can you help a Nokomis medical office with HIPAA?",
+        a: "Yes. We run the same written HIPAA security review, install the required protections, and hand over audit-ready documentation for medical practices in Nokomis, Laurel, and south Osprey."
+      },
+      {
+        q: "Do you cover Venice too?",
+        a: "Yes. We serve all of south Sarasota County including Venice, Nokomis, Laurel, Osprey, and Casey Key. It's all one service area with the same flat pricing."
+      },
+    ],
+  },
 };
 
 export const cityList = Object.values(cities);
