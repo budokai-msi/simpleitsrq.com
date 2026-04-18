@@ -1013,17 +1013,25 @@
 }
 
 .blog-back {
-  display: inline-flex;
+  display: flex;
+  width: fit-content;
   align-items: center;
   gap: 6px;
   color: #0F6CBD;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .blog-back:hover { text-decoration: underline; }
+
+/* Post-page category pill reuses .blog-card-category but needs its own
+   line + a bit more breathing room than the tight card variant. */
+.blog-post .blog-card-category {
+  display: block;
+  margin-bottom: 12px;
+}
 
 .blog-post-title {
   font-family: "Segoe UI", system-ui, sans-serif;
