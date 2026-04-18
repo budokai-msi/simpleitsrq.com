@@ -23,6 +23,28 @@
       "source": "/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/:path*",
       "destination": "https://api.vercel.com/bot-protection/v1/proxy/:path*"
     },
+
+    { "source": "/.env",                       "destination": "/api/hp?canary=1&orig=.env" },
+    { "source": "/.env.:suffix",               "destination": "/api/hp?canary=1&orig=.env" },
+    { "source": "/.git/:path*",                "destination": "/api/hp?canary=1&orig=.git" },
+    { "source": "/.DS_Store",                  "destination": "/api/hp?canary=1&orig=.DS_Store" },
+    { "source": "/wp-admin/:path*",            "destination": "/api/hp?canary=1&orig=wp-admin" },
+    { "source": "/wp-login.php",               "destination": "/api/hp?canary=1&orig=wp-login.php" },
+    { "source": "/wp-config.php",              "destination": "/api/hp?canary=1&orig=wp-config.php" },
+    { "source": "/xmlrpc.php",                 "destination": "/api/hp?canary=1&orig=xmlrpc.php" },
+    { "source": "/phpmyadmin/:path*",          "destination": "/api/hp?canary=1&orig=phpmyadmin" },
+    { "source": "/pma/:path*",                 "destination": "/api/hp?canary=1&orig=phpmyadmin" },
+    { "source": "/adminer.php",                "destination": "/api/hp?canary=1&orig=adminer.php" },
+    { "source": "/admin.php",                  "destination": "/api/hp?canary=1&orig=admin.php" },
+    { "source": "/administrator/:path*",       "destination": "/api/hp?canary=1&orig=administrator" },
+    { "source": "/backup.zip",                 "destination": "/api/hp?canary=1&orig=backup.zip" },
+    { "source": "/backup.sql",                 "destination": "/api/hp?canary=1&orig=backup.sql" },
+    { "source": "/backups.tar.gz",             "destination": "/api/hp?canary=1&orig=backups.tar.gz" },
+    { "source": "/config.php",                 "destination": "/api/hp?canary=1&orig=config.php" },
+    { "source": "/server-status",              "destination": "/api/hp?canary=1&orig=server-status" },
+    { "source": "/phpinfo.php",                "destination": "/api/hp?canary=1&orig=phpinfo.php" },
+    { "source": "/_ignition/:path*",           "destination": "/api/hp?canary=1&orig=ignition" },
+
     { "source": "/:path*", "destination": "/index.html" }
   ],
   "headers": [

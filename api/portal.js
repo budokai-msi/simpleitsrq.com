@@ -18,6 +18,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
+import { clientIp } from "./_lib/security.js";
 import { json } from "./_lib/http.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
@@ -1062,6 +1063,27 @@ async function handlePublishDraft(session, request) {
         published_at = now()
     WHERE id = ${id}
   `;
+
+  // Admin action audit log — who published what, when. Lives alongside the
+  // security events so the CTI dashboard can surface it alongside other
+  // portal activity.
+  try {
+    await sql`
+      INSERT INTO security_events (kind, severity, ip, user_agent, path, detail)
+      VALUES (
+        'admin.publish_draft', 'info', ${clientIp(request)},
+        ${request.headers.get('user-agent') || null},
+        '/api/portal?action=publish-draft',
+        ${JSON.stringify({
+          adminEmail: session?.user?.email || null,
+          draftId: id,
+          slug: draft.slug,
+          title: draft.title,
+          commitSha: commit.commitSha,
+        })}::jsonb
+      )
+    `;
+  } catch { /* audit log is best-effort; never block the publish */ }
 
   return json(200, { ok: true, commitSha: commit.commitSha, commitUrl: commit.htmlUrl });
 }

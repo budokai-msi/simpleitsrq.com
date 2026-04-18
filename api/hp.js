@@ -9,6 +9,7 @@
 // Everything goes into security_events with kind "honeypot.*".
 
 import { sql } from "./_lib/db.js";
+import { clientIp, rateLimit } from "./_lib/security.js";
 
 const noContent = () => new Response(null, { status: 204 });
 
@@ -33,9 +34,15 @@ async function hashPw(pw) {
 }
 
 export async function POST(request) {
-  const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
+  const ip = clientIp(request);
   const ua = request.headers.get("user-agent") || null;
   const country = request.headers.get("x-vercel-ip-country") || null;
+
+  // Rate limit: 60 beacons per minute per IP. Legitimate honeypot beacons
+  // from a single probing browser are well under this. Burst-mode scanners
+  // flooding us with fake creds get 204'd silently above the cap.
+  const rl = await rateLimit({ ip, bucket: "hp", windowSeconds: 60, max: 60 });
+  if (!rl.ok) return noContent();
 
   let body = {};
   try { body = await request.json(); } catch { return noContent(); }
@@ -122,4 +129,104 @@ export async function POST(request) {
   } catch { /* best effort */ }
 
   return noContent();
+}
+
+// ───────────────────────────────────────────────────────────────────
+// Canary GET handler — vercel.json rewrites classic attacker-recon
+// paths (/.env, /wp-admin, /backup.zip, etc.) into this endpoint with
+// ?canary=1&orig=<path>. Any hit is unambiguously malicious: these
+// URLs are not linked, not in sitemap, and only show up in scanner
+// wordlists. We log, auto-block, and return fake-but-plausible
+// content so the scanner's "200 OK" heuristic keeps them engaged
+// with a dead end while we build the intel file on them.
+// ───────────────────────────────────────────────────────────────────
+export async function GET(request) {
+  const url = new URL(request.url);
+  const canary = url.searchParams.get("canary");
+  if (canary !== "1") return new Response(null, { status: 404 });
+
+  const orig = url.searchParams.get("orig") || "unknown";
+  const ip = clientIp(request);
+  const ua = request.headers.get("user-agent") || null;
+  const country = request.headers.get("x-vercel-ip-country") || null;
+  const referrer = request.headers.get("referer") || null;
+
+  // Rate limit: 30 canary trips per minute per IP. A determined scanner
+  // will hit this fast; after the cap we stop logging duplicates but
+  // still return fake content.
+  const rl = await rateLimit({ ip, bucket: "hp_canary", windowSeconds: 60, max: 30 });
+
+  if (rl.ok) {
+    // Log to threat_actors so the CTI dashboard treats this like any
+    // other hostile signal, and to security_events as a CRITICAL hit.
+    try {
+      await sql`
+        INSERT INTO threat_actors (ip, country, user_agent, path, method, threat_class)
+        VALUES (${ip}, ${country}, ${ua}, ${orig}, 'GET', 'canary_trip')
+      `;
+    } catch { /* best effort */ }
+    try {
+      await sql`
+        INSERT INTO security_events (kind, severity, ip, user_agent, path, detail)
+        VALUES (
+          'canary.trip', 'critical', ${ip}, ${ua}, ${orig},
+          ${JSON.stringify({ country, referrer, canaryPath: orig })}::jsonb
+        )
+      `;
+    } catch { /* best effort */ }
+    // Auto-block: 30-day ban. Canary trips are unambiguous malicious
+    // intent — no legit user or crawler ever hits these paths.
+    try {
+      await sql`
+        INSERT INTO ip_blocklist (ip, reason, expires_at)
+        VALUES (${ip}, ${`canary: ${orig}`}, now() + interval '30 days')
+        ON CONFLICT (ip) DO UPDATE
+          SET reason = EXCLUDED.reason,
+              expires_at = EXCLUDED.expires_at
+      `;
+    } catch { /* best effort */ }
+  }
+
+  return canaryResponse(orig);
+}
+
+// Return fake-but-plausible content per path shape. The goal is not to
+// trick a human — it's to keep automated scanners hitting a dead end
+// rather than moving on to real attack surface. A 200 with a login form
+// shape is more enticing to a scanner than a 404.
+function canaryResponse(origPath) {
+  const p = origPath.toLowerCase();
+  const html200 = (body) => new Response(body, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" },
+  });
+  const text200 = (body) => new Response(body, {
+    status: 200,
+    headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex, nofollow" },
+  });
+
+  if (p.includes(".env")) {
+    return text200(
+      "# Environment\nNODE_ENV=production\n# The other values have been redacted by canary middleware.\n"
+    );
+  }
+  if (p.includes("/.git/head")) return text200("ref: refs/heads/main\n");
+  if (p.includes("/.git/config")) {
+    return text200("[core]\n\trepositoryformatversion = 0\n\tfilemode = true\n");
+  }
+  if (p.includes("/.git")) return text200("");
+  if (p.endsWith(".zip") || p.endsWith(".sql") || p.endsWith(".tar.gz") || p.endsWith(".bak")) {
+    return new Response("", { status: 403 });
+  }
+  if (p.includes("phpmyadmin") || p.includes("adminer")) {
+    return html200(`<!DOCTYPE html><html><head><title>phpMyAdmin</title></head><body><h3>Sign in</h3><form method="post"><label>Username<input name="pma_username" autocomplete="off"></label><label>Password<input type="password" name="pma_password"></label><button>Go</button></form></body></html>`);
+  }
+  if (p.includes("wp-admin") || p.includes("wp-login")) {
+    return html200(`<!DOCTYPE html><html><head><title>Log In</title></head><body><form method="post"><label>Username or Email<input name="log" autocomplete="off"></label><label>Password<input type="password" name="pwd"></label><input type="hidden" name="redirect_to" value="/wp-admin/"><button>Log In</button></form></body></html>`);
+  }
+  if (p.includes("admin") || p.includes(".php") || p.includes("server-status")) {
+    return html200(`<!DOCTYPE html><html><head><title>Administrator</title></head><body><form method="post"><label>User<input name="username" autocomplete="off"></label><label>Pass<input type="password" name="password"></label><button>Sign in</button></form></body></html>`);
+  }
+  if (p.includes(".ds_store")) return new Response("", { status: 403 });
+  return new Response("", { status: 404 });
 }

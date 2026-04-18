@@ -206,8 +206,9 @@ function SeriesCard({ product }) {
 
 export default function Store() {
   const featured = products.find((p) => p.featured) || products[0];
+  const bundle = products.find((p) => p.isBundle);
   const series = products
-    .filter((p) => p.featured && p.slug !== featured.slug)
+    .filter((p) => p.featured && p.slug !== featured.slug && !p.isBundle)
     .sort((a, b) => a.priority - b.priority);
 
   useSEO({
@@ -314,6 +315,34 @@ export default function Store() {
           </div>
         </div>
       </section>
+
+      {/* BUNDLE banner — shown between featured hero + the series grid */}
+      {bundle && (
+        <section className="section">
+          <div className="container">
+            <div className="bundle-banner">
+              <div className="bundle-banner-copy">
+                <span className="bundle-badge">Save ${bundle.originalPrice - bundle.price}</span>
+                <h2 className="title-1">{bundle.title}</h2>
+                <p>{bundle.description}</p>
+                <ul className="bundle-list">
+                  {bundle.contents.slice(0, 5).map((c) => (
+                    <li key={c}><Check size={14} color="#107C10" /> {c}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="bundle-banner-cta">
+                <div className="bundle-price">
+                  <span className="bundle-price-strike">${bundle.originalPrice}</span>
+                  <span className="bundle-price-now">${bundle.price}</span>
+                </div>
+                <BuyCta product={bundle} />
+                <p className="bundle-fineprint">Every template in the library. Lifetime updates. 30-day refund.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* SERIES */}
       {series.length > 0 && (
