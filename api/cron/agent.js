@@ -492,6 +492,99 @@ async function selfHealthCheck() {
 
 // ========== HANDLER ==========
 
+// ========== REVIEW REQUESTS (daily) ==========
+//
+// For every ticket that closed 2–4 days ago and hasn't had a review
+// request sent yet, email the client asking for a Google review. 2-day
+// delay gives the client time to be "happy" about the resolution; 4-day
+// cap avoids emailing long-stale closures. Tracks sent requests via
+// security_events (kind=review.requested) so we don't need a new column.
+async function sendReviewRequests() {
+  const summary = { candidates: 0, sent: 0, skipped: 0, errors: [] };
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    summary.errors.push("RESEND_API_KEY not set — review requests disabled");
+    return summary;
+  }
+
+  const reviewUrl = process.env.GOOGLE_REVIEW_URL
+    || "https://www.google.com/search?q=Simple+IT+SRQ+Sarasota";
+  const fromAddr = "Simple IT SRQ <hello@simpleitsrq.com>";
+
+  let candidates = [];
+  try {
+    candidates = await sql`
+      SELECT id, ticket_code, email, name, subject, category, closed_at
+      FROM tickets
+      WHERE status = 'closed'
+        AND closed_at BETWEEN (now() - interval '4 days') AND (now() - interval '2 days')
+        AND email IS NOT NULL
+      LIMIT 50
+    `;
+  } catch (e) {
+    summary.errors.push(`query_failed: ${String(e.message || e).slice(0, 200)}`);
+    return summary;
+  }
+  summary.candidates = candidates.length;
+
+  if (candidates.length === 0) return summary;
+
+  const resend = new Resend(apiKey);
+
+  for (const t of candidates) {
+    try {
+      // Idempotency — did we already ask for a review on this ticket?
+      const priorAsks = await sql`
+        SELECT 1 FROM security_events
+        WHERE kind = 'review.requested'
+          AND detail->>'ticketId' = ${String(t.id)}
+        LIMIT 1
+      `;
+      if (priorAsks.length > 0) { summary.skipped++; continue; }
+
+      const name = (t.name || "there").split(" ")[0];
+      const subject = `${name}, one quick favor?`;
+      const html = `<p>Hi ${name},</p>
+<p>Thanks for letting us handle that <strong>${t.category || "IT"}</strong> issue last week (ticket <strong>${t.ticket_code}</strong>). Hope everything's running smoothly now.</p>
+<p>If you've got <strong>30 seconds</strong>, would you mind leaving us a quick Google review? It helps small local IT shops like ours a ton — every review moves the needle for other Sarasota and Bradenton business owners deciding whether to reach out.</p>
+<p><a href="${reviewUrl}" style="display:inline-block;padding:10px 16px;background:#0F6CBD;color:#fff;text-decoration:none;border-radius:6px;font-weight:600">Leave a Google review →</a></p>
+<p>If anything is <em>not</em> running smoothly, just reply to this email — I read every one personally.</p>
+<p>Thanks again,<br/>The Simple IT SRQ team<br/><a href="https://simpleitsrq.com">simpleitsrq.com</a> · (941) ___-____</p>`;
+
+      const text = `Hi ${name},\n\nThanks for letting us handle that ${t.category || "IT"} issue last week (ticket ${t.ticket_code}). Hope everything's running smoothly now.\n\nIf you've got 30 seconds, would you mind leaving us a quick Google review? It helps small local IT shops like ours a ton.\n\nLeave a review: ${reviewUrl}\n\nIf anything is not running smoothly, just reply to this email.\n\nThanks again,\nThe Simple IT SRQ team`;
+
+      await resend.emails.send({
+        from: fromAddr,
+        to: [t.email],
+        subject,
+        html,
+        text,
+        headers: { "X-Ticket-Code": t.ticket_code || "" },
+      });
+
+      await sql`
+        INSERT INTO security_events (kind, severity, ip, user_agent, path, detail)
+        VALUES (
+          'review.requested', 'info', null, 'cron/agent', '/cron/review-request',
+          ${JSON.stringify({
+            ticketId: String(t.id),
+            ticketCode: t.ticket_code,
+            clientEmail: t.email,
+            category: t.category,
+          })}::jsonb
+        )
+      `;
+
+      summary.sent++;
+    } catch (e) {
+      summary.errors.push(`ticket ${t.id}: ${String(e.message || e).slice(0, 200)}`);
+    }
+  }
+
+  return summary;
+}
+
 export async function GET(request) {
   if (!verifyCron(request)) {
     return new Response("Unauthorized", { status: 401 });
@@ -506,6 +599,7 @@ export async function GET(request) {
   result.tasks.securityAnalysis = await securityAnalysis();
   result.tasks.supplyChain = await supplyChainAudit();
   result.tasks.healthCheck = await selfHealthCheck();
+  result.tasks.reviewRequests = await sendReviewRequests();
 
   return new Response(JSON.stringify(result, null, 2), {
     status: 200,
