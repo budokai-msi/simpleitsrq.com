@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Check, ShieldCheck, FileText, ArrowRight, Clock, RefreshCw, Mail, Building2,
+  BookOpen,
 } from "lucide-react";
 import { products } from "../data/products";
 import { useSEO } from "../lib/seo";
@@ -131,8 +132,83 @@ function BuyCta({ product, compact = false }) {
   );
 }
 
+function SeriesCard({ product }) {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+  const live = !!product.buyLink;
+
+  const joinWaitlist = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    try {
+      await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          name: "(product waitlist)",
+          message: `Waitlist signup for: ${product.title} ($${product.price})`,
+          source: `store-waitlist-${product.slug}`,
+        }),
+      }).catch(() => {});
+      setSent(true);
+    } catch {
+      setSent(true);
+    }
+  };
+
+  return (
+    <article className="series-card">
+      <header className="series-card-head">
+        <div className="series-card-icon"><FileText size={20} /></div>
+        <div className="series-card-price">${product.price}</div>
+      </header>
+      <h3 className="series-card-title">{product.title}</h3>
+      <p className="series-card-tagline">{product.tagline}</p>
+      <p className="series-card-desc">{product.description}</p>
+      {product.previewUrl && (
+        <a
+          className="series-card-preview"
+          href={product.previewUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <BookOpen size={13} /> Read preview ({product.contents.length} sections inside)
+        </a>
+      )}
+      <div className="series-card-cta">
+        {live ? (
+          <a href={product.buyLink} className="btn btn-primary" target="_blank" rel="noopener noreferrer">
+            Buy — ${product.price} <ArrowRight size={14} />
+          </a>
+        ) : sent ? (
+          <div className="series-card-sent">
+            <Check size={16} color="#107C10" />
+            <span>On the list — we'll email you at launch.</span>
+          </div>
+        ) : (
+          <form className="series-card-form" onSubmit={joinWaitlist}>
+            <input
+              type="email"
+              className="store-launch-input"
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <button type="submit" className="btn btn-secondary">Notify me</button>
+          </form>
+        )}
+      </div>
+    </article>
+  );
+}
+
 export default function Store() {
   const featured = products.find((p) => p.featured) || products[0];
+  const series = products
+    .filter((p) => p.featured && p.slug !== featured.slug)
+    .sort((a, b) => a.priority - b.priority);
 
   useSEO({
     title: "Florida HIPAA Starter Kit | Simple IT SRQ",
@@ -239,8 +315,24 @@ export default function Store() {
         </div>
       </section>
 
+      {/* SERIES */}
+      {series.length > 0 && (
+        <section className="section section-alt">
+          <div className="container">
+            <div className="section-head">
+              <span className="eyebrow">Complete Series</span>
+              <h2 className="title-1">More compliance templates for Florida small offices</h2>
+              <p className="section-sub">Each one stands alone; together they cover the paperwork every small practice in Sarasota or Bradenton eventually needs.</p>
+            </div>
+            <div className="series-grid">
+              {series.map((p) => <SeriesCard key={p.slug} product={p} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* FAQ */}
-      <section className="section section-alt">
+      <section className="section">
         <div className="container product-narrow">
           <div className="section-head">
             <span className="eyebrow">FAQ</span>

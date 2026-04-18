@@ -59,6 +59,8 @@ export const products = [
       "Fillable fields for your company name, roles, and locations",
     ],
     buyLink: env.VITE_PRODUCT_WISP_BUY_URL || null,
+    previewUrl: "/products/wisp-template-preview.md",
+    featured: true,
     priority: 2,
   },
   {
@@ -76,6 +78,8 @@ export const products = [
       "Evidence checklist — what to have ready if the insurer audits",
     ],
     buyLink: env.VITE_PRODUCT_INSURANCE_KIT_BUY_URL || null,
+    previewUrl: "/products/cyber-insurance-answers-preview.md",
+    featured: true,
     priority: 3,
   },
   {
@@ -96,6 +100,8 @@ export const products = [
       "List of the 6 things that actually survived the last three storms (and what did not)",
     ],
     buyLink: env.VITE_PRODUCT_HURRICANE_KIT_BUY_URL || null,
+    previewUrl: "/products/hurricane-it-playbook-preview.md",
+    featured: true,
     priority: 4,
   },
   {
@@ -115,6 +121,8 @@ export const products = [
       "Email forwarding / auto-reply templates",
     ],
     buyLink: env.VITE_PRODUCT_ONBOARDING_KIT_BUY_URL || null,
+    previewUrl: "/products/onboarding-runbook-preview.md",
+    featured: true,
     priority: 5,
   },
 ];
