@@ -21,6 +21,7 @@ export const products = [
     title: "Florida Small-Business HIPAA Starter Kit",
     tagline: "Pass your first HIPAA audit without paying a consultant $2,500.",
     price: 79,
+    featured: true,
     audience: "Dental, medical, physical therapy, and specialty-practice offices in Florida.",
     description:
       "Everything a 2-20 person Florida practice needs to document HIPAA compliance — written in plain English, pre-filled with Florida-specific defaults, and already formatted for your cyber-insurance renewal.",
