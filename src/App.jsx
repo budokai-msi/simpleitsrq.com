@@ -158,6 +158,7 @@ function Footer() {
             <li><Link to="/bradenton-it-support">Bradenton IT Support</Link></li>
             <li><Link to="/lakewood-ranch-it-support">Lakewood Ranch IT</Link></li>
             <li><Link to="/nokomis-it-support">Nokomis IT Support</Link></li>
+            <li><Link to="/venice-it-support">Venice IT Support</Link></li>
             <li><Link to="/book">Book a Call</Link></li>
             <li><Link to="/support">Support</Link></li>
             <li><Link to="/#contact">Contact</Link></li>
@@ -267,6 +268,7 @@ export default function App() {
               <Route path="/bradenton-it-support" element={<LocalLanding />} />
               <Route path="/lakewood-ranch-it-support" element={<LocalLanding />} />
               <Route path="/nokomis-it-support" element={<LocalLanding />} />
+              <Route path="/venice-it-support" element={<LocalLanding />} />
               <Route path="/book" element={<Book />} />
               <Route path="/support" element={<Support />} />
               <Route path="/tools" element={<Tools />} />

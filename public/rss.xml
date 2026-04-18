@@ -12,7 +12,7 @@
       <link>https://simpleitsrq.com/blog/ai-comprehension-debt-sarasota-it-teams</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-comprehension-debt-sarasota-it-teams</guid>
       <pubDate>Sun, 05 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>AI &amp; Productivity</category>
       <description>AI coding assistants are shipping code faster than ever - but a senior engineer warns the real risk is teams losing track of what their software actually does. Heres what that means locally.</description>
     </item>
@@ -21,7 +21,7 @@
       <link>https://simpleitsrq.com/blog/gamified-tech-training-sarasota-onboarding</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/gamified-tech-training-sarasota-onboarding</guid>
       <pubDate>Sat, 04 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>A viral browser game walks players through building a GPU from logic gates up. Its a sharp lesson in how serious technical training can hide inside something that feels like play.</description>
     </item>
@@ -30,7 +30,7 @@
       <link>https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</guid>
       <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>Anthropic quietly blocked third-party tools from using paid Claude Code subscriptions. The move sparked a debate about lock-in - and a useful checklist for any business buying AI tooling.</description>
     </item>
@@ -39,7 +39,7 @@
       <link>https://simpleitsrq.com/blog/linkedin-browser-fingerprinting-privacy-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/linkedin-browser-fingerprinting-privacy-sarasota</guid>
       <pubDate>Thu, 02 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Privacy</category>
       <description>Researchers found LinkedIns web client probing the users installed browser extensions for fingerprinting. Even boring SaaS apps are now running adversarial detection in production.</description>
     </item>
@@ -48,7 +48,7 @@
       <link>https://simpleitsrq.com/blog/claude-code-internals-it-evaluation-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/claude-code-internals-it-evaluation-sarasota</guid>
       <pubDate>Wed, 01 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>AI &amp; Productivity</category>
       <description>A new diagrammed walkthrough of how Claude Code actually works under the hood is the best free primer for IT teams trying to evaluate agentic coding tools for internal pilots.</description>
     </item>
@@ -57,7 +57,7 @@
       <link>https://simpleitsrq.com/blog/source-map-leak-build-pipeline-cleanup-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/source-map-leak-build-pipeline-cleanup-sarasota</guid>
       <pubDate>Tue, 31 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Cybersecurity</category>
       <description>An accidentally shipped source map exposed the bundled JavaScript behind Claude Code, including prompts and undisclosed product behaviors. Source maps in production remain a top OWASP-class leak.</description>
     </item>
@@ -66,7 +66,7 @@
       <link>https://simpleitsrq.com/blog/copilot-ad-injection-ai-supply-chain-risk</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/copilot-ad-injection-ai-supply-chain-risk</guid>
       <pubDate>Mon, 30 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Cybersecurity</category>
       <description>A developer caught GitHub Copilot inserting promotional language for a third-party product into a code review comment. Treat AI assistant output as untrusted content in your supply chain.</description>
     </item>
@@ -75,7 +75,7 @@
       <link>https://simpleitsrq.com/blog/bot-detection-privacy-cost-sarasota-saas-users</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/bot-detection-privacy-cost-sarasota-saas-users</guid>
       <pubDate>Sun, 29 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Privacy</category>
       <description>A reverse-engineering deep dive showed Cloudflare Turnstile inspecting browser internals and React state before letting users type into ChatGPT. Modern bot detection is far more invasive than CAPTCHAs.</description>
     </item>
@@ -84,7 +84,7 @@
       <link>https://simpleitsrq.com/blog/founder-succession-planning-bradenton-smb</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/founder-succession-planning-bradenton-smb</guid>
       <pubDate>Sat, 28 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>GitLabs founder went public this week about his cancer diagnosis and his plan to keep founding companies. Its a hard reminder that founder/owner risk is a real continuity issue for SMBs.</description>
     </item>
@@ -93,7 +93,7 @@
       <link>https://simpleitsrq.com/blog/github-copilot-private-repo-training-opt-out-april-24</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/github-copilot-private-repo-training-opt-out-april-24</guid>
       <pubDate>Fri, 27 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Compliance</category>
       <description>GitHub announced a policy change that defaults private repositories into Copilot training datasets unless users opt out before April 24, 2026. Audit your orgs settings now.</description>
     </item>
@@ -102,7 +102,7 @@
       <link>https://simpleitsrq.com/blog/eu-rejects-chat-control-end-to-end-encryption-win</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/eu-rejects-chat-control-end-to-end-encryption-win</guid>
       <pubDate>Thu, 26 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Privacy</category>
       <description>In a dramatic vote, the EU Parliament rejected the Chat Control proposal that would have mandated client-side scanning of private messages. End-to-end encryption survives - for now.</description>
     </item>
@@ -111,7 +111,7 @@
       <link>https://simpleitsrq.com/blog/chat-control-encryption-backdoors-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/chat-control-encryption-backdoors-sarasota</guid>
       <pubDate>Wed, 25 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Privacy</category>
       <description>A campaign site lays out why scan only CSAM is technically impossible. Its also a great explainer to share with non-technical clients about why surveillance backdoors are a business risk.</description>
     </item>
@@ -120,7 +120,7 @@
       <link>https://simpleitsrq.com/blog/wine-11-linux-windows-workstation-refresh</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/wine-11-linux-windows-workstation-refresh</guid>
       <pubDate>Tue, 24 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>Wine 11 introduces a kernel-assisted syscall translation layer that closes most of the gap with native Windows performance. For cost-conscious SRQ refresh cycles, that changes the math.</description>
     </item>
@@ -129,7 +129,7 @@
       <link>https://simpleitsrq.com/blog/data-sovereignty-eu-migration-florida-business</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/data-sovereignty-eu-migration-florida-business</guid>
       <pubDate>Mon, 23 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Cloud</category>
       <description>A founder documented the practical steps of moving SaaS infrastructure and personal data out of US providers to EU equivalents. A useful reference for clients exploring data sovereignty.</description>
     </item>
@@ -138,7 +138,7 @@
       <link>https://simpleitsrq.com/blog/post-git-version-control-engineering-leaders</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/post-git-version-control-engineering-leaders</guid>
       <pubDate>Sun, 22 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>BitTorrent creator Bram Cohen lays out what should come after Git: better merge semantics, content-addressed history, and first-class large-file support. Heres how SRQ engineering leaders should react.</description>
     </item>
@@ -147,7 +147,7 @@
       <link>https://simpleitsrq.com/blog/ubuntu-26-04-sudo-change-bradenton-sysadmins</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ubuntu-26-04-sudo-change-bradenton-sysadmins</guid>
       <pubDate>Sat, 21 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>Ubuntu 26.04 changes sudo so password entry produces audible and visible feedback, breaking a Unix convention from 1980. Small UX changes in LTS distros can break ancient automation.</description>
     </item>
@@ -156,7 +156,7 @@
       <link>https://simpleitsrq.com/blog/opencode-open-source-ai-coding-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/opencode-open-source-ai-coding-sarasota</guid>
       <pubDate>Fri, 20 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>AI &amp; Productivity</category>
       <description>OpenCode is a fully open-source alternative to Claude Code and Cursor with pluggable model backends. For shops that cannot ship code to closed AI vendors, its the most credible option to date.</description>
     </item>
@@ -165,7 +165,7 @@
       <link>https://simpleitsrq.com/blog/oss-acquisitions-vendor-risk-it-procurement</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/oss-acquisitions-vendor-risk-it-procurement</guid>
       <pubDate>Thu, 19 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>Astral, the team behind ultra-fast Python tools uv and ruff, announced acquisition by OpenAI. The Python community is debating the long-term fate of these critical OSS tools.</description>
     </item>
@@ -174,7 +174,7 @@
       <link>https://simpleitsrq.com/blog/rob-pike-rules-modern-it-decisions</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/rob-pike-rules-modern-it-decisions</guid>
       <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>Rob Pikes five rules - measure dont guess, fancy algorithms are slow on small n - resurfaced and dominated discussion this week. They still hold up 37 years later.</description>
     </item>
@@ -183,7 +183,7 @@
       <link>https://simpleitsrq.com/blog/style-transfer-llm-marketing-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/style-transfer-llm-marketing-sarasota</guid>
       <pubDate>Tue, 17 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>AI &amp; Productivity</category>
       <description>Kagi shipped a tongue-in-cheek translator that converts plain English into LinkedIn-flavored prose. Underneath the joke is a real demo of style-transfer LLM features SRQ marketing teams should know.</description>
     </item>
@@ -192,7 +192,7 @@
       <link>https://simpleitsrq.com/blog/prediction-markets-information-warfare-business-risk</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/prediction-markets-information-warfare-business-risk</guid>
       <pubDate>Mon, 16 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>A reporter described receiving death threats from Polymarket traders trying to manipulate his coverage. The piece exposes how prediction markets create perverse incentives around real-world reporting.</description>
     </item>
@@ -201,7 +201,7 @@
       <link>https://simpleitsrq.com/blog/surveillance-laws-cross-border-data-msp</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/surveillance-laws-cross-border-data-msp</guid>
       <pubDate>Sun, 15 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Privacy</category>
       <description>Canadian internet law expert Michael Geist breaks down Bill C-22, which still requires telcos and platforms to build interception capabilities. SRQ businesses with Canadian operations should track this.</description>
     </item>
@@ -210,7 +210,7 @@
       <link>https://simpleitsrq.com/blog/kiosk-linux-locked-down-deployments-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/kiosk-linux-locked-down-deployments-sarasota</guid>
       <pubDate>Sat, 14 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>A new Linux distribution explicitly designed for non-technical users focuses on large fonts, minimal menus, and tamper-resistant defaults. A potential kiosk Linux candidate for SRQ deployments.</description>
     </item>
@@ -219,7 +219,7 @@
       <link>https://simpleitsrq.com/blog/run-ai-locally-bradenton-small-business</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/run-ai-locally-bradenton-small-business</guid>
       <pubDate>Fri, 13 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>AI &amp; Productivity</category>
       <description>A new tool detects your hardware and tells you which open-weight models you can realistically run locally. Hand this to any SRQ client asking about on-prem AI.</description>
     </item>
@@ -228,7 +228,7 @@
       <link>https://simpleitsrq.com/blog/clean-room-reverse-engineering-legacy-vendor-lockin</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/clean-room-reverse-engineering-legacy-vendor-lockin</guid>
       <pubDate>Thu, 12 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>Malus is a new service offering on-demand clean-room reverse-engineering environments for teams reimplementing proprietary specs. A sign that legal-engineering hybrid services are productizing.</description>
     </item>
@@ -237,7 +237,7 @@
       <link>https://simpleitsrq.com/blog/ai-content-policy-sarasota-business</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-content-policy-sarasota-business</guid>
       <pubDate>Wed, 11 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>AI &amp; Productivity</category>
       <description>Hacker News updated its guidelines to explicitly prohibit AI-generated or AI-edited comments after a year of growing slop. Communities are pushing back. Whats your business policy?</description>
     </item>
@@ -246,7 +246,7 @@
       <link>https://simpleitsrq.com/blog/tony-hoare-quicksort-lessons-it-leaders</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/tony-hoare-quicksort-lessons-it-leaders</guid>
       <pubDate>Tue, 10 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Business Tech</category>
       <description>Tony Hoare - inventor of Quicksort, the null reference, and CSP - passed away at 91. The thread is a long retrospective on his influence and a reminder that the foundations are still young.</description>
     </item>
@@ -255,7 +255,7 @@
       <link>https://simpleitsrq.com/blog/ai-coding-cost-myth-smb-budgeting</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-coding-cost-myth-smb-budgeting</guid>
       <pubDate>Mon, 09 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>AI &amp; Productivity</category>
       <description>A detailed analysis pushed back on viral claims that Anthropic loses thousands per Claude Code power user. The unit economics are usually better than they look.</description>
     </item>
@@ -264,7 +264,7 @@
       <link>https://simpleitsrq.com/blog/sandboxing-ai-agents-mac-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/sandboxing-ai-agents-mac-sarasota</guid>
       <pubDate>Sun, 08 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>AI &amp; Productivity</category>
       <description>Agent Safehouse is a new tool that wraps AI coding agents in macOS native sandboxing so they can edit files and run commands with strong isolation. Sandboxing AI agents is becoming standard practice.</description>
     </item>
@@ -273,7 +273,7 @@
       <link>https://simpleitsrq.com/blog/decade-docker-containers-bradenton-business</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/decade-docker-containers-bradenton-business</guid>
       <pubDate>Sat, 07 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Cloud</category>
       <description>A retrospective in CACM on how containerization reshaped software delivery, with hard data on adoption and security incidents - and a look at what the next decade looks like.</description>
     </item>
@@ -282,7 +282,7 @@
       <link>https://simpleitsrq.com/blog/tight-tech-job-market-sarasota-msp-hiring</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/tight-tech-job-market-sarasota-msp-hiring</guid>
       <pubDate>Fri, 06 Mar 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Dancho Ivanov)</author>
+      <author>hello@simpleitsrq.com (Simple IT SRQ)</author>
       <category>Industry News</category>
       <description>BLS data shows tech-sector job losses now exceeding both the dot-com aftermath and the 2008 financial crisis. Heres what that means for SRQ businesses hiring IT talent.</description>
     </item>

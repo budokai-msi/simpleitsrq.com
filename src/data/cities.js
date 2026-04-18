@@ -157,6 +157,48 @@ export const cities = {
       },
     ],
   },
+  venice: {
+    slug: "venice-it-support",
+    city: "Venice",
+    cityFull: "Venice, FL",
+    h1: "IT Support in Venice, FL",
+    title: "Venice IT Support | Local IT Help and HIPAA Compliance | Simple IT SRQ",
+    metaDescription: "Local IT support for Venice, FL businesses. Same-day help for medical, legal, and professional offices along Venice Avenue, Jacaranda, and the airport corridor. Flat monthly pricing and HIPAA-ready compliance work.",
+    intro: "Venice has a business mix you don't find anywhere else on the Gulf Coast: a healthcare cluster around the hospital, a historic downtown full of long-running professional practices, and a wave of newer offices around the Jacaranda and airport corridors. Those offices also deal with something the rest of the region doesn't — a real snowbird season that doubles network load from November to April. Simple IT SRQ handles IT for the Venice medical groups, law firms, accounting practices, dental offices, and real-estate brokerages that need a local team who understands both the seasonal surge and the year-round compliance grind.",
+    landmarks: ["Historic Venice Avenue", "Shamrock Park business corridor", "ShoreView Hospital (formerly Venice Regional Bayfront Health)", "Venice Municipal Airport", "Jacaranda Plaza", "The Legacy Trail"],
+    neighborhoods: "Historic downtown Venice, Venice Island, the Jacaranda corridor, East Venice, the Venice airport business district, South Venice, and Englewood-adjacent offices off River Road",
+    whyLocal: [
+      "Seasonal-load planning: we size firewalls, Wi-Fi, and bandwidth for the Nov–Apr snowbird surge so your network doesn't crawl when every exam room, reception desk, and guest laptop is in use at once.",
+      "Healthcare and HIPAA depth — Venice has one of the highest concentrations of medical practices per capita in the state. We do written HIPAA risk assessments, BAAs, and audit-ready documentation, not just antivirus.",
+      "Onsite the same day. Venice is 30 minutes from our Sarasota team — not two hours from the Tampa mega-MSPs who bill four hours of drive time before they walk in.",
+    ],
+    faqs: [
+      {
+        q: "How fast can you get onsite in Venice?",
+        a: "30 minutes from Sarasota for anything urgent, same-day for scheduled work. Most issues get resolved remotely in under 15 minutes — often before the tech would have finished the drive. We also hold pre-scheduled weekly slots for Venice medical and legal clients who want predictable onsite coverage."
+      },
+      {
+        q: "Do you specialize in medical practice IT around the hospital?",
+        a: "Yes. A big share of our Venice work is dental offices, physical therapy groups, imaging centers, and specialty practices clustered near ShoreView Hospital and along Venice Avenue. We run written HIPAA risk assessments, sign BAAs, manage EHR uptime, and hand over audit-ready documentation for state and insurance renewals."
+      },
+      {
+        q: "Our office is dead slow during snowbird season — can you fix that?",
+        a: "That's one of the most common calls we get from November to April. It's almost always one of three things: an undersized firewall, Wi-Fi access points mounted for a half-empty office, or an ISP plan that hasn't been revisited since 2019. We do a free site survey, tell you which of the three is actually the bottleneck, and size the fix to the seasonal peak — not the summer lull."
+      },
+      {
+        q: "We're a 4-person Venice law firm. Is that too small for a managed IT plan?",
+        a: "Not at all — several of our clients are exactly that size. A 4-person firm runs about $380 a month for fully managed IT, which covers help desk, antivirus, backups, Microsoft 365 security, and onsite support. No long-term contract, no per-ticket billing, and you get the same written security documentation a 40-person firm would."
+      },
+      {
+        q: "Can you help us move into a new Venice office?",
+        a: "Yes. We run network cabling, install and tune the firewall and Wi-Fi, move phones and printers over, set up the security cameras, and stay onsite on opening day. We've done it for Venice offices in Jacaranda Plaza, along Venice Avenue, and out by the airport business district."
+      },
+      {
+        q: "Do you also cover Englewood and North Port?",
+        a: "We cover Englewood from our Venice service area — same flat pricing, same response time. North Port is on the edge of our range; we do support a handful of North Port offices, but we'll be upfront during the intake call about drive time for anything that absolutely requires same-day onsite."
+      },
+    ],
+  },
 };
 
 export const cityList = Object.values(cities);

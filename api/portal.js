@@ -881,7 +881,7 @@ function formatDraftAsPostEntry(draft, overrides = {}) {
     title: "${esc(title)}",
     metaDescription: "${esc(metaDesc)}",
     date: "${today}",
-    author: "Dancho Ivanov",
+    author: "Simple IT SRQ Team",
     category: "${esc(category)}",
     tags: [${tagList}],
     excerpt: "${esc(excerpt)}",
