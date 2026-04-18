@@ -2516,6 +2516,189 @@
   line-height: 1.5;
 }
 
+/* ── Store (digital products) page ── */
+.store-hero { padding-top: 48px; }
+.store-hero .display { margin-top: 12px; }
+.store-hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+.store-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.store-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+}
+.store-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 120ms ease, box-shadow 160ms ease;
+}
+.store-card:hover {
+  border-color: var(--accent, var(--border-strong));
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+.store-card-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: flex-start;
+}
+.store-card-badge {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--brand-subtle, #EAF3FB);
+  color: var(--brand, #0F6CBD);
+  flex-shrink: 0;
+}
+.store-card-title {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.25;
+}
+.store-card-tagline {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.45;
+}
+.store-card-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--brand, #0F6CBD);
+  white-space: nowrap;
+}
+.store-card-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.store-card-audience {
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+.store-card-audience strong { color: var(--text-2); }
+.store-card-contents summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand, #0F6CBD);
+  padding: 4px 0;
+}
+.store-card-contents ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: grid;
+  gap: 4px;
+}
+.store-card-contents li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.store-card-contents li svg { flex-shrink: 0; margin-top: 2px; }
+.store-card-cta {
+  margin-top: auto;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+}
+.store-card-waitlisted {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #F3FAF3;
+  border: 1px solid #C5E9C5;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #0E700E;
+}
+[data-theme="dark"] .store-card-waitlisted {
+  background: #0F2617;
+  border-color: #1E4D2E;
+  color: #7FDB9F;
+}
+.store-waitlist {
+  display: grid;
+  gap: 6px;
+}
+.store-waitlist-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.store-waitlist-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.store-waitlist-input {
+  flex: 1 1 160px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--surface);
+  color: var(--text-1);
+}
+.store-waitlist-input:focus { outline: 2px solid #0F6CBD; outline-offset: 1px; }
+.store-card-preview-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-3);
+  text-decoration: none;
+}
+.store-card-preview-link:hover { color: var(--brand, #0F6CBD); text-decoration: underline; }
+.store-note {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+.store-note p {
+  margin: 12px 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-2);
+}
+
 /* ── AdSense containers ───────────────────────────────── */
 .ad-container { margin: 24px 0; min-height: 90px; text-align: center; }
 .ad-in-article { margin: 32px 0; }
