@@ -3,6 +3,7 @@ import {
   LifeBuoy, AlertTriangle, Zap, AlertCircle, Loader2, Send, CheckCircle2, HelpCircle,
 } from "lucide-react";
 import { useSEO } from "../lib/seo";
+import LeadCaptureCTA from "../components/LeadCaptureCTA";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 
@@ -305,6 +306,12 @@ export default function Support() {
                 </div>
               </div>
             )}
+          </div>
+          <div style={{ maxWidth: 800, margin: "48px auto 0" }}>
+            <LeadCaptureCTA
+              title="Not a client yet? Get a free 15-min IT assessment"
+              subtitle="A local Sarasota/Bradenton engineer will spot-check your Microsoft 365, backups, and security posture. No sales pitch — you leave with a written punch list either way."
+            />
           </div>
         </div>
       </section>

@@ -70,7 +70,9 @@ export default function BlogCover({ post, variant = "card" }) {
   const blobR = 30 + ((h >> 12) % 20);
   const dotSeed = (h >> 16) % 7;
   const id = `bg-${h % 1000000}`;
-  const dims = variant === "hero" ? { w: 1200, h: 630 } : { w: 800, h: 450 };
+  // Smaller card request (600x300, 2:1) cuts LoremFlickr bandwidth ~50% vs
+  // the prior 800x450 while matching the card's new 2/1 aspect-ratio exactly.
+  const dims = variant === "hero" ? { w: 1200, h: 630 } : { w: 600, h: 300 };
 
   return (
     <div className={`blog-cover blog-cover-${variant}`}>
