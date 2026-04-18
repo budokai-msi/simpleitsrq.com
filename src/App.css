@@ -1805,7 +1805,7 @@
   cursor: pointer;
   font-weight: 600;
   font-size: 17px;
-  color: var(--text, #1b1b1b);
+  color: var(--text-1);
   list-style: none;
   outline: none;
 }
@@ -1821,7 +1821,7 @@
 .faq-item[open] summary::after { content: "–"; }
 .faq-item p {
   margin: 12px 0 0;
-  color: var(--text-secondary, #616161);
+  color: var(--text-2);
   line-height: 1.65;
 }
 
@@ -1847,7 +1847,7 @@
   display: grid;
   gap: 6px;
   font-size: 14px;
-  color: var(--text, #1b1b1b);
+  color: var(--text-1);
   font-weight: 500;
 }
 .lead-capture-form input,
@@ -1857,8 +1857,8 @@
   border-radius: 6px;
   font-size: 15px;
   font-family: inherit;
-  background: var(--input-bg, #fff);
-  color: var(--text, #1b1b1b);
+  background: var(--surface);
+  color: var(--text-1);
 }
 .lead-capture-form input:focus,
 .lead-capture-form textarea:focus {
@@ -1891,10 +1891,10 @@
   font-size: 22px;
   font-weight: 600;
   margin: 6px 0 8px;
-  color: var(--text, #1b1b1b);
+  color: var(--text-1);
 }
 .lead-cta-sub {
-  color: var(--text-secondary, #616161);
+  color: var(--text-2);
   font-size: 15px;
   line-height: 1.55;
   margin: 0 0 12px;
@@ -1911,7 +1911,7 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: var(--text-secondary, #616161);
+  color: var(--text-2);
 }
 .lead-cta-form {
   display: grid;
@@ -1923,15 +1923,15 @@
   gap: 4px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--text, #1b1b1b);
+  color: var(--text-1);
 }
 .lead-cta-input {
   padding: 10px 12px;
-  border: 1px solid var(--border, #d1d1d1);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 14px;
-  background: var(--input-bg, #fff);
-  color: var(--text, #1b1b1b);
+  background: var(--surface);
+  color: var(--text-1);
 }
 .lead-cta-input:focus {
   outline: 2px solid #0F6CBD;
@@ -1977,7 +1977,7 @@
 }
 .author-block p {
   margin: 4px 0 0;
-  color: var(--text-secondary, #616161);
+  color: var(--text-2);
   font-size: 14px;
   line-height: 1.55;
 }
@@ -2010,7 +2010,7 @@
   font-weight: 600;
 }
 .newsletter-sub {
-  color: var(--text-secondary, #616161);
+  color: var(--text-2);
   font-size: 14px;
   line-height: 1.55;
   margin: 0 0 14px;
@@ -2026,8 +2026,8 @@
   border: 1px solid var(--border, #d1d1d1);
   border-radius: 6px;
   font-size: 14px;
-  background: var(--input-bg, #fff);
-  color: var(--text, #1b1b1b);
+  background: var(--surface);
+  color: var(--text-1);
 }
 .newsletter-form input:focus {
   outline: 2px solid #0F6CBD;
@@ -2049,7 +2049,7 @@
   background: var(--surface-alt, #F8F9FA);
   font-size: 13px;
   line-height: 1.55;
-  color: var(--text-secondary, #616161);
+  color: var(--text-2);
   border-radius: 0 6px 6px 0;
 }
 [data-theme="dark"] .affiliate-disclosure { background: #161B22; }
