@@ -219,6 +219,7 @@ export default function Store() {
       { name: "Home", url: "https://simpleitsrq.com/" },
       { name: "Store", url: "https://simpleitsrq.com/store" },
     ],
+    products: products.filter((p) => p.featured || p.isBundle),
   });
 
   return (

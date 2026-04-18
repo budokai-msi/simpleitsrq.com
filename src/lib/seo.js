@@ -81,7 +81,7 @@ export function breadcrumbSchema(items) {
   };
 }
 
-export function useSEO({ title, description, canonical, image, post, breadcrumbs }) {
+export function useSEO({ title, description, canonical, image, post, breadcrumbs, products }) {
   useEffect(() => {
     if (title) document.title = title;
     if (description) {
@@ -111,7 +111,46 @@ export function useSEO({ title, description, canonical, image, post, breadcrumbs
     } else {
       removeJsonLd("jsonld-breadcrumb");
     }
-  }, [title, description, canonical, image, post, breadcrumbs]);
+    if (products && products.length) {
+      injectJsonLd("jsonld-products", productListSchema(products));
+    } else {
+      removeJsonLd("jsonld-products");
+    }
+  }, [title, description, canonical, image, post, breadcrumbs, products]);
+}
+
+// Build an ItemList of Product+Offer entries for a /store-style page. Google
+// uses this for "Merchant listings" rich results and for product knowledge
+// panel enrichment. Only include products that have a real buyLink or that
+// we explicitly mark as coming soon — hiding draft products keeps us out of
+// Merchant Center disapproval.
+export function productListSchema(products) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: products.map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: {
+        "@type": "Product",
+        name: p.title,
+        description: p.description || p.tagline,
+        brand: { "@type": "Brand", name: SITE_NAME },
+        image: `${SITE_URL}/og-image.png`,
+        url: `${SITE_URL}/store#${p.slug}`,
+        offers: {
+          "@type": "Offer",
+          price: String(p.price),
+          priceCurrency: "USD",
+          availability: p.buyLink
+            ? "https://schema.org/InStock"
+            : "https://schema.org/PreOrder",
+          url: p.buyLink || `${SITE_URL}/store`,
+          seller: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+        },
+      },
+    })),
+  };
 }
 
 export { SITE_URL, SITE_NAME };

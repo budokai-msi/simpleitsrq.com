@@ -2062,6 +2062,11 @@
   color: #0E700E;
   font-weight: 500;
 }
+.newsletter-error {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #C4314B;
+}
 
 /* Affiliate disclosure */
 .affiliate-disclosure {
