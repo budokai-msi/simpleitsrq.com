@@ -650,7 +650,7 @@ async function handleThreatIntel(session, url) {
 
   const [
     timeline, campaigns, topAsns, threatClasses,
-    tzDistribution, credStats, feedStats,
+    tzDistribution, credStats,
     autoActions, recentCritical, attackVelocity
   ] = await Promise.all([
     // Attack timeline — hourly buckets for charting
@@ -722,14 +722,6 @@ async function handleThreatIntel(session, url) {
       FROM security_events
       WHERE kind = 'honeypot.credential'
         AND ts > now() - ${interval}::interval
-    `,
-    // Threat feed ingest stats (from auto_actions log)
-    sql`
-      SELECT action, target, reason, detail, ts
-      FROM auto_actions
-      WHERE action IN ('threat_feed_ingest', 'ip_blocked')
-      ORDER BY ts DESC
-      LIMIT 30
     `,
     // Auto countermeasure actions taken
     sql`
@@ -1441,13 +1433,26 @@ async function handleSendInvoice(session, request) {
     // Send to customer.
     const sent = await stripe.invoices.sendInvoice(finalized.id);
 
+    // Resolve customer email — on freshly-finalized invoices Stripe often
+    // returns customer_email = null, so fall back to the Customer record.
+    // Without this the `users` lookup below always misses and invoices end
+    // up with user_id = NULL even when the email maps to a portal account.
+    let customerEmail = sent.customer_email || null;
+    if (!customerEmail && sent.customer) {
+      try {
+        const cust = await stripe.customers.retrieve(sent.customer);
+        if (cust && !cust.deleted) customerEmail = cust.email || null;
+      } catch (err) {
+        console.error("[portal] stripe customer lookup failed", err);
+      }
+    }
+
     // Mirror to local invoices table.
-    const userId = await (async () => {
-      const rows = await sql`
-        SELECT id FROM users WHERE lower(email) = lower(${sent.customer_email || ""}) LIMIT 1
-      `.catch(() => []);
-      return rows[0]?.id || null;
-    })();
+    const userId = customerEmail
+      ? (await sql`
+          SELECT id FROM users WHERE lower(email) = lower(${customerEmail}) LIMIT 1
+        `.catch(() => []))[0]?.id || null
+      : null;
 
     await sql`
       INSERT INTO invoices (
@@ -1488,13 +1493,22 @@ async function handleHoneypotCreds(session) {
   if (!(await resolveAdmin(session))) {
     return json(403, { ok: false, error: "forbidden" });
   }
+  // LATERAL + LIMIT 1 caps the threat_actors join at one row per event —
+  // plain LEFT JOIN on IP + time window could multiply rows (an attacker
+  // commonly has several hits inside a 2-minute window) and inflate total.
   const rows = await sql`
     SELECT se.id, se.ip, se.detail, se.ts,
            ta.country, ta.threat_class,
            ii.org, ii.isp, ii.abuse_score
     FROM security_events se
-    LEFT JOIN threat_actors ta ON ta.ip = se.ip
-      AND ta.ts BETWEEN se.ts - interval '2 minutes' AND se.ts + interval '30 seconds'
+    LEFT JOIN LATERAL (
+      SELECT country, threat_class
+      FROM threat_actors
+      WHERE ip = se.ip
+        AND ts BETWEEN se.ts - interval '2 minutes' AND se.ts + interval '30 seconds'
+      ORDER BY ts DESC
+      LIMIT 1
+    ) ta ON TRUE
     LEFT JOIN ip_intel ii ON ii.ip = se.ip
     WHERE se.kind = 'honeypot.credential'
     ORDER BY se.ts DESC
