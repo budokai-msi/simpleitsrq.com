@@ -1016,6 +1016,7 @@ async function runCreateAllPaymentLinks() {
     { slug: "cyber-insurance-answers", title: "Cyber-Insurance Questionnaire Answer Kit",       price: 99,  envVar: "VITE_PRODUCT_INSURANCE_KIT_BUY_URL" },
     { slug: "hurricane-it-playbook",  title: "Hurricane-Season IT Continuity Playbook",        price: 49,  envVar: "VITE_PRODUCT_HURRICANE_KIT_BUY_URL" },
     { slug: "onboarding-runbook",     title: "Employee Onboarding + Offboarding IT Runbook",   price: 39,  envVar: "VITE_PRODUCT_ONBOARDING_KIT_BUY_URL" },
+    { slug: "saas-incident-response-playbook", title: "SaaS Incident Response Playbook",        price: 29,  envVar: "VITE_PRODUCT_SAAS_IR_BUY_URL" },
     { slug: "compliance-library",     title: "Complete Florida Compliance Library",            price: 299, envVar: "VITE_PRODUCT_BUNDLE_BUY_URL" },
   ];
 
