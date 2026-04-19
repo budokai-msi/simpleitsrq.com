@@ -114,6 +114,12 @@ Simple IT SRQ sits on Vercel. We read today's Vercel incident update before writ
 
 If your Sarasota, Bradenton, or Venice small business wants a second set of eyes on the seven-step audit above — or wants someone to just do it for you once a quarter — [**reach out for a 30-minute SaaS risk review**](/#contact). No sales pitch, no automated scanner sold back to you as "AI-powered." Just one Florida-based engineer, your spreadsheet, and a plan.
 
+## The 14-page version you can print and hand to your office manager
+
+If you want the audit above as a printable, fillable document rather than a blog post you have to re-read every quarter, we wrote it up: the [**SaaS Incident Response Playbook**](/store/saas-incident-response-playbook) ($29). It includes the full 40-row inventory worksheet, a vendor-breach decision tree, pre-written client and vendor notification emails, the Florida FIPA 30-day-notification quick reference, and a fillable PDF version of every checklist above.
+
+We updated it this morning — the same morning both HN stories broke. Lifetime updates. 30-day refund. It exists because we built it for our own clients first and realized there was no reason to keep charging $2,000 of our time for a document that works just as well for the next 500 small businesses to download it.
+
 ---
 
 **Related reading on this site:**
