@@ -9,6 +9,7 @@
 
 import { sql } from "../_lib/db.js";
 import { Resend } from "resend";
+import { timingSafeEqual } from "node:crypto";
 
 const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
 const FROM = "Simple IT SRQ Analytics <analytics@simpleitsrq.com>";
@@ -19,9 +20,9 @@ function verifyCron(request) {
   const auth = request.headers.get("authorization") || "";
   const expected = `Bearer ${secret}`;
   if (auth.length !== expected.length) return false;
-  const a = new TextEncoder().encode(auth);
-  const b = new TextEncoder().encode(expected);
-  return crypto.subtle.timingSafeEqual(a, b);
+  const a = Buffer.from(auth);
+  const b = Buffer.from(expected);
+  return timingSafeEqual(a, b);
 }
 
 export async function GET(request) {
