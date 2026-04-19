@@ -1964,21 +1964,39 @@ function OpsConsole() {
         )}
       </div>
 
-      {/* Audit migration */}
+      {/* Audit migrations */}
       <div style={card}>
-        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Run audit-chain migration (001)</h4>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Run audit-chain migrations (001 + 002)</h4>
         <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
-          Adds <code>prev_hash</code> + <code>row_hash</code> columns on <code>security_events</code> and a supporting index. Safe to re-run — every statement is <code>IF NOT EXISTS</code>.
+          Adds <code>prev_hash</code> + <code>row_hash</code> columns and drops the <code>CHAR(64)</code> padding that made the first chain implementation unverifiable. Safe to re-run — every statement is idempotent.
         </p>
         <Button
           appearance="primary"
           onClick={() => run("run-audit-migration")}
           disabled={running === "run-audit-migration"}
         >
-          {running === "run-audit-migration" ? "Running…" : "Run migration"}
+          {running === "run-audit-migration" ? "Running…" : "Run migrations"}
         </Button>
         {output["run-audit-migration"] && (
           <pre style={pre}>{JSON.stringify(output["run-audit-migration"].data, null, 2)}</pre>
+        )}
+      </div>
+
+      {/* Audit chain reset (one-shot) */}
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Reset broken pre-fix audit chain</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          One-shot: nulls <code>prev_hash</code> and <code>row_hash</code> on every existing chained row. Run this <strong>once</strong> after the migration above if Verify still reports breaks. Pre-fix rows become <em>pre-chain</em> (verify skips them) and the chain restarts clean from the next event. The event payload itself is untouched — only the hash columns are cleared.
+        </p>
+        <Button
+          appearance="primary"
+          onClick={() => run("reset-audit-chain")}
+          disabled={running === "reset-audit-chain"}
+        >
+          {running === "reset-audit-chain" ? "Running…" : "Reset chain"}
+        </Button>
+        {output["reset-audit-chain"] && (
+          <pre style={pre}>{JSON.stringify(output["reset-audit-chain"].data, null, 2)}</pre>
         )}
       </div>
 
