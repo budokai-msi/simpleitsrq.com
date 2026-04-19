@@ -865,6 +865,14 @@ async function handleRunAuditMigration(session) {
 async function handleCreatePaymentLinks(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  return runCreateAllPaymentLinks();
+}
+
+// Bare helper — same logic, skips the admin gate. Called from the
+// admin-auth path above AND from the one-shot bootstrap branch in
+// dispatch(). Isolated so the bootstrap branch in dispatch can be
+// removed cleanly without disturbing the admin-auth path.
+async function runCreateAllPaymentLinks() {
   const stripe = getStripe();
   if (!stripe) return json(500, { ok: false, error: "stripe_not_configured" });
 
