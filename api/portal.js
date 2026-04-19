@@ -943,6 +943,64 @@ async function handleRunAuditMigration(session) {
   });
 }
 
+// Aggregate "system health" snapshot for the Ops Console. Runs one read
+// per subsystem so the admin can see at a glance what's installed, what
+// hasn't been run yet, and whether the chain is currently clean. All
+// queries degrade gracefully when their tables don't exist yet (pre-
+// migration state) — `ok: false, migrationNeeded: true` instead of 500.
+async function handleOpsStatus(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const [auditCols, feedTable, feedAgg, chainSnapshot] = await Promise.all([
+    sql`
+      SELECT column_name, data_type, character_maximum_length
+      FROM information_schema.columns
+      WHERE table_name = 'security_events'
+        AND column_name IN ('prev_hash', 'row_hash')
+    `.catch(() => []),
+    sql`
+      SELECT EXISTS(
+        SELECT 1 FROM information_schema.tables WHERE table_name = 'threat_feeds'
+      ) AS present
+    `.catch(() => [{ present: false }]),
+    sql`
+      SELECT feed_name, COUNT(*)::int AS n, MAX(fetched_at) AS last_fetched
+      FROM threat_feeds GROUP BY feed_name
+    `.catch(() => []),
+    sql`
+      SELECT COUNT(*)::int AS total,
+             COUNT(*) FILTER (WHERE row_hash IS NOT NULL)::int AS chained
+      FROM security_events
+    `.catch(() => [{ total: 0, chained: 0 }]),
+  ]);
+
+  const hasChainCols = auditCols.length === 2;
+  const hashType = auditCols.find((c) => c.column_name === "row_hash")?.data_type || null;
+  const paddedChar = hashType === "character"; // CHAR(N) pads; migration 002 flips it to varchar.
+  const threatFeedsInstalled = Boolean(feedTable[0]?.present);
+
+  return json(200, {
+    ok: true,
+    migrations: {
+      auditChainInstalled: hasChainCols,
+      auditChainFixApplied: hasChainCols && !paddedChar,
+      threatFeedsInstalled,
+    },
+    chain: {
+      totalRows: chainSnapshot[0]?.total || 0,
+      chainedRows: chainSnapshot[0]?.chained || 0,
+    },
+    osint: {
+      feeds: feedAgg,
+      totalCidrs: feedAgg.reduce((s, f) => s + f.n, 0),
+      oldestFetch: feedAgg.length
+        ? feedAgg.reduce((a, b) => (a.last_fetched < b.last_fetched ? a : b)).last_fetched
+        : null,
+    },
+  });
+}
+
 // GET the current OSINT cache summary (per-feed counts, last-fetched time,
 // 20 most-recent matches against real threat_actors visits). Cheap — runs
 // two small aggregate queries.
@@ -1815,6 +1873,7 @@ async function dispatch(request, method) {
   if (action === "run-audit-migration" && method === "POST") return handleRunAuditMigration(session);
   if (action === "reset-audit-chain"    && method === "POST") return handleResetAuditChain(session);
   if (action === "osint-status"         && method === "GET")  return handleOsintStatus(session);
+  if (action === "ops-status"           && method === "GET")  return handleOpsStatus(session);
   if (action === "osint-refresh"        && method === "POST") return handleOsintRefresh(session);
   if (action === "create-payment-links" && method === "POST") return handleCreatePaymentLinks(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
