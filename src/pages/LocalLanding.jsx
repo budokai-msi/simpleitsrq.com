@@ -20,6 +20,10 @@ const SERVICES = [
 ];
 
 function buildLocalBusinessLd(city) {
+  // telephone intentionally omitted — the business is email + form first,
+  // and Google treats a placeholder (000-0000) phone as a bad-schema signal
+  // that can downgrade the LocalBusiness rich result. If/when a tracked
+  // phone number is set up, add it here.
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -27,7 +31,6 @@ function buildLocalBusinessLd(city) {
     name: `Simple IT SRQ — ${city.city}`,
     image: `${SITE_URL}/logo.png`,
     url: `${SITE_URL}/${city.slug}`,
-    telephone: "+1-941-000-0000",
     email: "hello@simpleitsrq.com",
     address: {
       "@type": "PostalAddress",

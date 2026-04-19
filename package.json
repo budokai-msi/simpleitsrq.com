@@ -6,6 +6,7 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-sitemap.mjs && node scripts/generate-rss.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",

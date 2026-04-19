@@ -13,6 +13,7 @@ const TODAY = new Date().toISOString().slice(0, 10);
 const staticUrls = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
   { loc: "/blog", priority: "0.9", changefreq: "daily" },
+  { loc: "/store", priority: "0.9", changefreq: "weekly" },
   { loc: "/book", priority: "0.8", changefreq: "monthly" },
   { loc: "/support", priority: "0.6", changefreq: "monthly" },
   { loc: "/privacy", priority: "0.3", changefreq: "yearly" },
