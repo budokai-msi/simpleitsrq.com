@@ -117,6 +117,16 @@ const useStyles = makeStyles({
     fontSize: "15px",
     fontWeight: 600,
   },
+  providerBtnPrimary: {
+    // Force the primary provider button (Continue with Google) to the brand
+    // blue so it reads as the primary action. Without this the default Fluent
+    // primary button can render as a muted gray on some platforms.
+    backgroundColor: "#0F6CBD",
+    color: "#ffffff",
+    borderColor: "#0F6CBD",
+    "&:hover": { backgroundColor: "#0C5AA6", borderColor: "#0C5AA6", color: "#ffffff" },
+    "&:active": { backgroundColor: "#094A88", borderColor: "#094A88", color: "#ffffff" },
+  },
   signInFoot: {
     marginTop: "20px",
     color: tokens.colorNeutralForeground3,
@@ -136,19 +146,20 @@ const useStyles = makeStyles({
   },
   feature: {
     display: "flex",
-    gap: "12px",
-    alignItems: "flex-start",
+    gap: "14px",
+    alignItems: "center",
   },
   featureIcon: {
-    width: "36px",
-    height: "36px",
+    width: "40px",
+    height: "40px",
     flexShrink: 0,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: tokens.borderRadiusMedium,
-    backgroundColor: tokens.colorBrandBackground2,
-    color: tokens.colorBrandForeground1,
+    backgroundColor: "#EAF3FB",
+    color: "#0F6CBD",
+    "& svg": { width: "22px", height: "22px" },
   },
 
   // dashboard
@@ -553,7 +564,7 @@ function SignInView({ styles, authError, onLogin, providers }) {
           {hasGoogle && (
             <Button
               appearance="primary"
-              className={styles.providerBtn}
+              className={`${styles.providerBtn} ${styles.providerBtnPrimary}`}
               icon={<GoogleGlyph />}
               onClick={() => onLogin("google")}
             >
