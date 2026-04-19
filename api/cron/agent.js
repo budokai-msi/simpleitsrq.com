@@ -33,7 +33,9 @@ function verifyCron(request) {
 async function autoCounter() {
   const actions = [];
 
-  // 1. Auto-block IPs with 5+ threat actor hits in 24h
+  // 1. Auto-block IPs with 5+ threat actor hits in 24h. Skip any IP in
+  // admin_ip_immunity — otherwise the owner's own browser can get the
+  // owner banned by prefetching a scanner trap.
   const repeatThreats = await sql`
     SELECT ip, COUNT(*)::int AS hits
     FROM threat_actors
@@ -43,20 +45,22 @@ async function autoCounter() {
   `;
   for (const row of repeatThreats) {
     const existing = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${row.ip}`;
-    if (existing.length === 0) {
+    const immune = await sql`SELECT 1 FROM admin_ip_immunity WHERE ip = ${row.ip} AND expires_at > now() LIMIT 1`.catch(() => []);
+    if (existing.length === 0 && immune.length === 0) {
       await sql`INSERT INTO ip_blocklist (ip, reason) VALUES (${row.ip}, ${`auto: ${row.hits} threat hits in 24h`})`;
       actions.push({ action: "ip_blocked", target: row.ip, reason: `${row.hits} threat hits in 24h` });
     }
   }
 
-  // 2. Auto-block IPs with 20+ rate-limit trips on auth
+  // 2. Auto-block IPs with 20+ rate-limit trips on auth (same immunity rule).
   const authAbuse = await sql`
     SELECT ip, count FROM auth_throttle
     WHERE bucket = 'auth_login' AND count >= 20
   `;
   for (const row of authAbuse) {
     const existing = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${row.ip}`;
-    if (existing.length === 0) {
+    const immune = await sql`SELECT 1 FROM admin_ip_immunity WHERE ip = ${row.ip} AND expires_at > now() LIMIT 1`.catch(() => []);
+    if (existing.length === 0 && immune.length === 0) {
       await sql`INSERT INTO ip_blocklist (ip, reason) VALUES (${row.ip}, ${`auto: ${row.count} auth attempts`})`;
       actions.push({ action: "ip_blocked", target: row.ip, reason: `${row.count} auth attempts` });
     }

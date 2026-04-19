@@ -2155,6 +2155,63 @@ function OpsConsole() {
         <OutputBlock action="audit-verify" />
       </div>
 
+      {/* ── Countermeasures ── */}
+      <div style={sectionHeader}>Countermeasures — what the system did on its own</div>
+
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>View recent auto-actions</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Shows the last 50 auto-blocks from the scanner-trap / 3-in-1h realtime / 5-in-24h cron / OSINT match paths, plus every IP currently under admin-immunity. Use this view to spot false-positives before they burn a customer.
+        </p>
+        <Button appearance="primary" onClick={() => run("countermeasures", "GET")} disabled={running === "countermeasures"}>
+          {running === "countermeasures" ? "Loading…" : "Load countermeasures"}
+        </Button>
+        {output["countermeasures"]?.data?.ok && (
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
+            <div style={{ padding: 10, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+              <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Auto-blocks (7d)</div>
+              <div style={{ fontSize: 24, fontWeight: 700 }}>{output["countermeasures"].data.autoBlocks?.length || 0}</div>
+            </div>
+            <div style={{ padding: 10, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+              <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>OSINT-triggered blocks (7d)</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: (output["countermeasures"].data.osintBlocks?.length || 0) > 0 ? "#DC2626" : undefined }}>{output["countermeasures"].data.osintBlocks?.length || 0}</div>
+            </div>
+            <div style={{ padding: 10, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+              <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Active admin immunities</div>
+              <div style={{ fontSize: 24, fontWeight: 700 }}>{output["countermeasures"].data.immunities?.length || 0}</div>
+            </div>
+          </div>
+        )}
+        <OutputBlock action="countermeasures" />
+      </div>
+
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Grant manual admin-IP immunity</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Pre-authorize an IP before a trip (hotel network, coworking space, tethered phone) so the auto-block paths don't lock you out. Also removes the IP from the blocklist if it's currently there. Default 7-day TTL.
+        </p>
+        <Button
+          appearance="secondary"
+          onClick={() => {
+            const ip = typeof window !== "undefined" ? window.prompt("IP address to grant immunity:") : null;
+            if (!ip) return;
+            const days = typeof window !== "undefined" ? window.prompt("TTL in days (1–90):", "7") : "7";
+            fetch("/api/portal?action=grant-immunity", {
+              method: "POST",
+              credentials: "same-origin",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ip: ip.trim(), days: Number(days) || 7 }),
+            })
+              .then((r) => r.json())
+              .then((data) => setOutput((o) => ({ ...o, "grant-immunity": { status: 200, data } })));
+          }}
+          disabled={running === "grant-immunity"}
+        >
+          Grant immunity
+        </Button>
+        <OutputBlock action="grant-immunity" />
+      </div>
+
       {/* ── Operations ── */}
       <div style={sectionHeader}>Operations — commerce + integrations</div>
 

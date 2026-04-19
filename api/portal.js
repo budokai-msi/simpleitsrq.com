@@ -908,6 +908,23 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "alter row_hash to varchar(64)", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 004 — admin IP immunity cache (prevents owner lockout).
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS admin_ip_immunity (
+        ip          text PRIMARY KEY,
+        user_id     uuid REFERENCES users(id) ON DELETE SET NULL,
+        granted_at  timestamptz NOT NULL DEFAULT now(),
+        expires_at  timestamptz NOT NULL,
+        reason      text
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS admin_ip_immunity_expires_idx ON admin_ip_immunity (expires_at)`;
+    results.push({ step: "create admin_ip_immunity table", ok: true });
+  } catch (e) {
+    results.push({ step: "create admin_ip_immunity table", ok: false, error: String(e.message || e) });
+  }
+
   // Migration 003 — OSINT threat-feed cache (Spamhaus DROP/EDROP + ET).
   try {
     await sql`
@@ -938,9 +955,107 @@ async function handleRunAuditMigration(session) {
   const allOk = results.every((r) => r.ok);
   return json(allOk ? 200 : 500, {
     ok: allOk,
-    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds"],
+    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity"],
     results,
   });
+}
+
+// Countermeasures dashboard: what the system has auto-blocked lately,
+// which IPs are currently admin-immune, and the top OSINT matches that
+// got turned into blocks. Pure read, admin-gated.
+async function handleCountermeasures(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const [recentAutoActions, autoBlocks, immunities, osintBlocks] = await Promise.all([
+    sql`
+      SELECT action, target, reason, ts
+      FROM auto_actions
+      WHERE ts > now() - interval '7 days'
+      ORDER BY ts DESC
+      LIMIT 50
+    `.catch(() => []),
+    sql`
+      SELECT ip, reason, created_at
+      FROM ip_blocklist
+      WHERE reason LIKE 'auto:%'
+      ORDER BY created_at DESC
+      LIMIT 50
+    `.catch(() => []),
+    sql`
+      SELECT imm.ip, imm.granted_at, imm.expires_at, imm.reason, u.email AS user_email
+      FROM admin_ip_immunity imm
+      LEFT JOIN users u ON u.id = imm.user_id
+      WHERE imm.expires_at > now()
+      ORDER BY imm.expires_at DESC
+    `.catch(() => []),
+    sql`
+      SELECT ta.ip, ta.country, ta.ts, ta.threat_class
+      FROM threat_actors ta
+      WHERE ta.threat_class = 'osint_match'
+        AND ta.ts > now() - interval '7 days'
+      ORDER BY ta.ts DESC
+      LIMIT 30
+    `.catch(() => []),
+  ]);
+
+  return json(200, {
+    ok: true,
+    recentAutoActions,
+    autoBlocks,
+    immunities: immunities.map((i) => ({
+      ip: i.ip,
+      grantedAt: i.granted_at,
+      expiresAt: i.expires_at,
+      reason: i.reason,
+      userEmail: i.user_email,
+    })),
+    osintBlocks: osintBlocks.map((o) => ({
+      ip: o.ip,
+      country: o.country,
+      ts: o.ts,
+      threatClass: o.threat_class,
+    })),
+  });
+}
+
+// Grant or extend admin-IP immunity manually. Useful to pre-authorize a
+// travel IP before a trip so the owner doesn't get locked out from a
+// hotel network. Default TTL 7 days, overridable via days param.
+async function handleGrantImmunity(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const ip = String(body?.ip || "").trim();
+  const days = Math.min(Math.max(Number(body?.days) || 7, 1), 90);
+  if (!ip) return json(400, { ok: false, error: "missing_ip" });
+
+  const row = await sql`
+    INSERT INTO admin_ip_immunity (ip, user_id, expires_at, reason)
+    VALUES (${ip}, ${session?.user?.id || null}, now() + (${days}::int * interval '1 day'),
+            ${`manual: granted by ${session?.user?.email || "admin"}`})
+    ON CONFLICT (ip) DO UPDATE
+      SET user_id    = EXCLUDED.user_id,
+          granted_at = now(),
+          expires_at = EXCLUDED.expires_at,
+          reason     = EXCLUDED.reason
+    RETURNING ip, expires_at
+  `.catch((err) => {
+    console.error("[portal] grant-immunity failed", err);
+    return null;
+  });
+
+  if (!row) return json(500, { ok: false, error: "grant_failed" });
+
+  // Also remove from the blocklist if present — granting immunity should
+  // unblock the IP in one click, not leave them both blocked and immune.
+  const unblocked = await sql`
+    DELETE FROM ip_blocklist WHERE ip = ${ip} RETURNING ip, reason
+  `.catch(() => []);
+
+  return json(200, { ok: true, granted: row[0], unblocked: unblocked[0] || null });
 }
 
 // Aggregate "system health" snapshot for the Ops Console. Runs one read
@@ -1874,6 +1989,8 @@ async function dispatch(request, method) {
   if (action === "reset-audit-chain"    && method === "POST") return handleResetAuditChain(session);
   if (action === "osint-status"         && method === "GET")  return handleOsintStatus(session);
   if (action === "ops-status"           && method === "GET")  return handleOpsStatus(session);
+  if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
+  if (action === "grant-immunity"       && method === "POST") return handleGrantImmunity(session, request);
   if (action === "osint-refresh"        && method === "POST") return handleOsintRefresh(session);
   if (action === "create-payment-links" && method === "POST") return handleCreatePaymentLinks(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
