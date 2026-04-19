@@ -8,6 +8,7 @@
 // cron-triggered requests; manual calls require the same bearer token.
 
 import { sql } from "../_lib/db.js";
+import { refreshThreatFeeds } from "../_lib/osint.js";
 import { Resend } from "resend";
 import { timingSafeEqual } from "node:crypto";
 
@@ -29,6 +30,15 @@ export async function GET(request) {
   if (!verifyCron(request)) {
     return new Response("Unauthorized", { status: 401 });
   }
+
+  // Refresh OSINT threat feeds before the report runs so the summary below
+  // reflects the freshest Spamhaus/ET cache. Folded into the existing daily
+  // cron to stay under the Hobby 12-function limit; failures are logged but
+  // don't block the report itself.
+  const osint = await refreshThreatFeeds().catch((err) => {
+    console.error("[cron/report] osint refresh failed", err);
+    return { ok: false, error: String(err?.message || err).slice(0, 200) };
+  });
 
   const now = new Date();
   const since = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -196,6 +206,7 @@ export async function GET(request) {
       threatActors: threatActors.length,
       sessionAnomalies: sessionAnomalies.length,
       dnsHealthy: dnsResults.every((d) => d.match),
+      osintRefresh: osint,
     },
     topPages,
     topDevices: topDevices.map((d) => ({
