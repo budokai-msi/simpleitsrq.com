@@ -95,14 +95,46 @@ async function isBlocked(sql, ip) {
   } catch { return false; }
 }
 
+// Admin-IP immunity: never auto-block an IP that recently belonged to a
+// signed-in admin. Refreshed on every admin login callback with a 7-day
+// TTL. Prevents the pattern where the owner's browser prefetches a
+// scanner trap and the owner gets auto-banned from their own portal.
+async function isAdminImmune(sql, ip) {
+  if (!sql || !ip || ip === "unknown") return false;
+  try {
+    const rows = await sql`
+      SELECT 1 FROM admin_ip_immunity WHERE ip = ${ip} AND expires_at > now() LIMIT 1
+    `;
+    return rows.length > 0;
+  } catch { return false; }
+}
+
 async function autoBlockIp(sql, ip, reason) {
   if (!sql || !ip || ip === "unknown") return;
+  if (await isAdminImmune(sql, ip)) return;
   try {
     const existing = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${ip}`;
     if (existing.length === 0) {
       await sql`INSERT INTO ip_blocklist (ip, reason) VALUES (${ip}, ${reason})`;
     }
   } catch { /* best effort */ }
+}
+
+// Returns the list of OSINT feeds the IP matches right now — used as
+// Layer 1.5 (between blocklist and scanner traps) to auto-block any
+// visitor whose address is on Spamhaus DROP / EDROP or Emerging
+// Threats compromised-IPs. Passive detection becomes active defense.
+async function matchOsint(sql, ip) {
+  if (!sql || !ip || ip === "unknown") return [];
+  try {
+    const rows = await sql`
+      SELECT feed_name, cidr, category
+      FROM threat_feeds
+      WHERE ${ip}::inet <<= cidr
+      LIMIT 5
+    `;
+    return rows;
+  } catch { return []; }
 }
 
 async function logThreat(request, geo, threatClass) {
@@ -223,10 +255,28 @@ export default async function middleware(request) {
   const sql = getSql();
 
   // Layer 0: allowlist — owner/admin IPs skip every defensive check below.
+  //   - static allowlist via IP_ALLOWLIST env var
+  //   - dynamic allowlist via admin_ip_immunity (populated on admin login)
   if (IP_ALLOWLIST.has(ip)) return;
+  if (await isAdminImmune(sql, ip)) return;
 
   // Layer 1: IP blocklist — already-known bad actors get nothing.
   if (await isBlocked(sql, ip)) return BLOCKED_RESPONSE;
+
+  // Layer 1.5: OSINT auto-block. If the IP is in Spamhaus DROP/EDROP or
+  // Emerging Threats, add to the blocklist and serve 403 immediately.
+  // Logged as a threat_actor with class=osint_match so the admin can
+  // see which feed triggered the block.
+  const osintHits = await matchOsint(sql, ip);
+  if (osintHits.length > 0) {
+    const feeds = osintHits.map((f) => f.feed_name).join(",");
+    const p = Promise.all([
+      autoBlockIp(sql, ip, `auto: osint match (${feeds})`),
+      logThreat(request, geo, "osint_match"),
+    ]);
+    request.waitUntil?.(p) ?? p.catch(() => {});
+    return BLOCKED_RESPONSE;
+  }
 
   // Layer 2: Scanner traps — anyone probing wp-login, .env, phpmyadmin, etc.
   // is a scanner. Instant block, log as threat, serve the multi-page honeypot

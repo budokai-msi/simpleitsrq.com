@@ -183,7 +183,13 @@ export async function POST(request) {
     `.catch(() => [{ cnt: 0 }]);
     if ((hits[0]?.cnt || 0) >= 3) {
       const blocked = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${ip}`.catch(() => []);
-      if (blocked.length === 0) {
+      // Skip auto-block for any IP an admin has signed in from in the last
+      // 7 days. This is how the owner avoids self-banning from a stray
+      // /wp-admin prefetch their browser issued.
+      const immune = await sql`
+        SELECT 1 FROM admin_ip_immunity WHERE ip = ${ip} AND expires_at > now() LIMIT 1
+      `.catch(() => []);
+      if (blocked.length === 0 && immune.length === 0) {
         await sql`INSERT INTO ip_blocklist (ip, reason) VALUES (${ip}, ${`auto: ${hits[0].cnt} threat hits in 1h (realtime)`})`.catch(() => {});
         await sql`
           INSERT INTO security_events (kind, severity, ip, detail)

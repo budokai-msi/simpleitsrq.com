@@ -14,6 +14,7 @@ import {
 import { createSession } from "../../_lib/session.js";
 import { redirect, json, safeRedirectPath } from "../../_lib/http.js";
 import { clientIp, logSecurityEvent } from "../../_lib/security.js";
+import { sql } from "../../_lib/db.js";
 
 const SUPPORTED = new Set(["google", "github", "auth0"]);
 
@@ -61,6 +62,26 @@ export async function GET(request) {
     const user = await upsertUserFromProfile(provider, profile);
     const { cookie } = await createSession(user.id, request);
     const target = safeRedirectPath(consumed.redirectTo, "/portal");
+
+    // Grant IP immunity to admins on every successful login so the
+    // auto-block paths (scanner trap cron, 5-in-24h, 3-in-1h realtime)
+    // never lock the owner out of their own portal. 7-day TTL, refreshed
+    // on every login. Silently skipped for non-admins.
+    if (user.is_admin === true) {
+      const ip = clientIp(request);
+      if (ip && ip !== "unknown") {
+        await sql`
+          INSERT INTO admin_ip_immunity (ip, user_id, expires_at, reason)
+          VALUES (${ip}, ${user.id}, now() + interval '7 days',
+                  ${`auto: admin login via ${provider}`})
+          ON CONFLICT (ip) DO UPDATE
+            SET user_id    = EXCLUDED.user_id,
+                granted_at = now(),
+                expires_at = now() + interval '7 days',
+                reason     = EXCLUDED.reason
+        `.catch((err) => console.error("[auth/callback] admin immunity upsert failed", err));
+      }
+    }
     await logSecurityEvent({
       kind: "auth.login.success",
       severity: "info",
