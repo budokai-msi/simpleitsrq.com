@@ -3,7 +3,7 @@
 
 export const posts = [
   {
-    slug: "vercel-notion-saas-breach-day-what-small-business-should-do",
+    slug: "vercel-notion-breach-saas-audit",
     title: "Two SaaS Vendors Had a Bad Day — Here's the 30-Minute Check Every Small Business Should Run",
     metaDescription: "Vercel disclosed a breach. Notion leaked public-page editor emails. Neither story is about you, but both point to the same lesson for Sarasota and Bradenton small businesses: SaaS sprawl is your real threat surface. Here's the 30-minute audit.",
     date: "2026-04-19",
@@ -123,9 +123,9 @@ We updated it this morning — the same morning both HN stories broke. Lifetime 
 ---
 
 **Related reading on this site:**
-- [The shared-password problem in small offices](/blog/shared-passwords-small-business)
+- [The shared-password problem in small offices](/blog/sarasota-employee-password-sharing-security-risk)
 - [Why your guest WiFi should be a separate network](/blog/office-wifi-dead-spots-sarasota-bradenton-fix)
-- [Florida data-protection law changes you might have missed](/blog/florida-information-protection-act-2026)
+- [Florida data-protection law changes you might have missed](/blog/florida-data-privacy-law-sarasota-small-business)
 
 **Product links on this page are Amazon affiliate links — we earn a small commission on qualifying purchases, which helps keep these posts free.**`
   },
