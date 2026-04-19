@@ -1,15 +1,18 @@
-import { useState } from "react";
-import { Lock, Server, Cloud, FileCheck, Shield, Briefcase, Star } from "lucide-react";
+// Category → Synapse favicon (copied from /synapse/dist/favicons/). PNGs sit
+// in /public/icons/synapse/ and get served from the same origin. Each card
+// renders a gradient background + a large centered icon + a category label.
+// No external photos, no third-party image hosts.
 
-const ICONS = {
-  "Cybersecurity":     Lock,
-  "AI & Productivity": Server,
-  "Cloud":             Cloud,
-  "Compliance":        FileCheck,
-  "Privacy":           Shield,
-  "Business Tech":     Briefcase,
-  "Industry News":     Star,
+const ICON_SRC = {
+  "Cybersecurity":     "/icons/synapse/swords.png",
+  "AI & Productivity": "/icons/synapse/brain.png",
+  "Cloud":             "/icons/synapse/globe.png",
+  "Compliance":        "/icons/synapse/clipboardlist.png",
+  "Privacy":           "/icons/synapse/scale.png",
+  "Business Tech":     "/icons/synapse/barchart3.png",
+  "Industry News":     "/icons/synapse/bookopen.png",
 };
+const FALLBACK_ICON = "/icons/synapse/sparkles.png";
 
 const PALETTES = {
   "Cybersecurity":     { base: "#0F172A", accent: "#DC2626", mid: "#7F1D1D" },
@@ -21,47 +24,15 @@ const PALETTES = {
   "Industry News":     { base: "#422006", accent: "#F59E0B", mid: "#92400E" },
 };
 
-// Category → fallback search keywords when a post has no tags.
-const CATEGORY_KEYWORDS = {
-  "Cybersecurity":     "security,padlock,computer",
-  "AI & Productivity": "office,laptop,technology",
-  "Cloud":             "datacenter,server,cloud",
-  "Compliance":        "office,paperwork,documents",
-  "Privacy":           "computer,keyboard,privacy",
-  "Business Tech":     "office,technology,business",
-  "Industry News":     "newsroom,skyline,city",
-};
-
-// Tag-noise filter: location tags and identifiers aren't good photo keywords.
-const SKIP_TAGS = new Set([
-  "sarasota", "bradenton", "venice", "nokomis", "lakewood-ranch", "srq",
-  "smb", "florida", "fl", "local",
-]);
-
 function hashSlug(slug = "") {
   let h = 0;
   for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) | 0;
   return Math.abs(h);
 }
 
-function photoKeywords(post) {
-  const fromTags = (post?.tags || [])
-    .filter((t) => t && !SKIP_TAGS.has(String(t).toLowerCase()))
-    .slice(0, 3)
-    .join(",");
-  return fromTags || CATEGORY_KEYWORDS[post?.category] || "office,technology";
-}
-
-function photoUrl(post, w, h) {
-  const keywords = encodeURIComponent(photoKeywords(post));
-  const lock = hashSlug(post?.slug) % 100000;
-  return `https://loremflickr.com/${w}/${h}/${keywords}?lock=${lock}`;
-}
-
 export default function BlogCover({ post, variant = "card" }) {
-  const [photoFailed, setPhotoFailed] = useState(false);
   const category = post?.category || "Business Tech";
-  const Icon = ICONS[category] || Briefcase;
+  const iconSrc = ICON_SRC[category] || FALLBACK_ICON;
   const palette = PALETTES[category] || PALETTES["Business Tech"];
   const h = hashSlug(post?.slug);
   const angle = 110 + (h % 70);
@@ -70,22 +41,11 @@ export default function BlogCover({ post, variant = "card" }) {
   const blobR = 30 + ((h >> 12) % 20);
   const dotSeed = (h >> 16) % 7;
   const id = `bg-${h % 1000000}`;
-  // Smaller card request (600x300, 2:1) cuts LoremFlickr bandwidth ~50% vs
-  // the prior 800x450 while matching the card's new 2/1 aspect-ratio exactly.
-  const dims = variant === "hero" ? { w: 1200, h: 630 } : { w: 600, h: 300 };
+  const iconSize = variant === "hero" ? 160 : 96;
 
   return (
-    <div className={`blog-cover blog-cover-${variant}`}>
-      {/* Fallback SVG renders first, underneath. Shows through if the photo
-          fails to load or is slow — so cards never look broken. */}
-      <svg
-        className="blog-cover-fallback"
-        viewBox="0 0 1200 630"
-        width="100%"
-        height="100%"
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
-      >
+    <div className={`blog-cover blog-cover-${variant}`} aria-hidden="true">
+      <svg viewBox="0 0 1200 630" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
         <defs>
           <linearGradient id={`${id}-g`} gradientTransform={`rotate(${angle})`}>
             <stop offset="0%"   stopColor={palette.base} />
@@ -104,26 +64,15 @@ export default function BlogCover({ post, variant = "card" }) {
         <rect width="1200" height="630" fill={`url(#${id}-p)`} />
         <rect width="1200" height="630" fill={`url(#${id}-r)`} />
       </svg>
-
-      {!photoFailed && (
+      <div className="blog-cover-icon">
         <img
-          className="blog-cover-photo"
-          src={photoUrl(post, dims.w, dims.h)}
-          alt={post?.heroAlt || ""}
+          src={iconSrc}
+          alt=""
+          width={iconSize}
+          height={iconSize}
           loading={variant === "hero" ? "eager" : "lazy"}
           decoding="async"
-          width={dims.w}
-          height={dims.h}
-          onError={() => setPhotoFailed(true)}
         />
-      )}
-
-      {/* Dark-gradient scrim so the category label stays legible over any
-          photo tone (bright sky, white paperwork, dark datacenter — all work). */}
-      <div className="blog-cover-scrim" aria-hidden="true" />
-
-      <div className="blog-cover-badge" aria-hidden="true">
-        <Icon size={variant === "hero" ? 22 : 18} strokeWidth={2} />
       </div>
       <div className="blog-cover-label">{category.toUpperCase()}</div>
     </div>

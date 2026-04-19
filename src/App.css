@@ -836,73 +836,41 @@
   overflow: hidden;
 }
 
-/* ── BlogCover component (used on cards + post hero) ── */
+/* ── BlogCover — gradient + category icon + label. No photos. ── */
 .blog-cover {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: #0F172A;
 }
-.blog-cover-fallback,
-.blog-cover-photo {
+.blog-cover svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
-}
-.blog-cover-photo {
-  z-index: 1;
   transition: transform 500ms ease;
 }
-.blog-card:hover .blog-cover-photo,
-.blog-card:hover .blog-cover-fallback {
+.blog-card:hover .blog-cover svg {
   transform: scale(1.04);
 }
-.blog-cover-scrim {
+.blog-cover-icon {
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: linear-gradient(180deg,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0) 45%,
-    rgba(0, 0, 0, 0.55) 100%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.92);
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.35));
   pointer-events: none;
-}
-.blog-cover-badge {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 3;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(15, 23, 42, 0.78);
-  color: #fff;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-.blog-cover-hero .blog-cover-badge {
-  top: 18px;
-  left: 18px;
-  width: 44px;
-  height: 44px;
 }
 .blog-cover-label {
   position: absolute;
   left: 14px;
   bottom: 12px;
-  z-index: 3;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   pointer-events: none;
 }
 .blog-cover-hero .blog-cover-label {

@@ -37,6 +37,14 @@ dist-ssr
 # Claude Code local agent scratch
 .claude/
 
+# OneDrive / Google Drive restore duplicates — patterns like ".env(1).vault",
+# "dist(2)/", ".claude(1)/" that cloud-sync tools create when they restore
+# previously-deleted files. They always match "something (N)" or "something(N)".
+*\ \(?\)*
+*\(?\)*
+*\ \(??\)*
+*\(??\)*
+
 # Private strategy / TODO / setup docs — live alongside the repo in
 # SimpleITSRQ/private-notes/, never in git. If these patterns match a
 # file in the working tree, they will be ignored on every commit.
