@@ -33,3 +33,19 @@ dist-ssr
 *.sw?
 .vercel
 .env*.local
+
+# Claude Code local agent scratch
+.claude/
+
+# Private strategy / TODO / setup docs — live alongside the repo in
+# SimpleITSRQ/private-notes/, never in git. If these patterns match a
+# file in the working tree, they will be ignored on every commit.
+USER-TODO.md
+PASSIVE-INCOME-ROADMAP.md
+CLOUDFLARE-ZERO-TRUST-SETUP.md
+WEBAUTHN-IMPLEMENTATION-PLAN.md
+SITE-INVENTORY.md
+*-PLAN.md
+*-ROADMAP.md
+*-SETUP.md
+*-TODO.md
