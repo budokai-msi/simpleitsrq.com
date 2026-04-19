@@ -18,7 +18,7 @@ import Stripe from "stripe";
 import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
-import { clientIp, auditVerify } from "./_lib/security.js";
+import { clientIp, auditVerify, logSecurityEvent } from "./_lib/security.js";
 import { json } from "./_lib/http.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
@@ -592,9 +592,35 @@ async function handleInvestigateIp(session, url) {
     sql`SELECT ip, reason, created_at FROM ip_blocklist WHERE ip = ${ip}`,
   ]);
 
+  const rawIntel = intel[0] || null;
+  const intelOut = rawIntel
+    ? {
+        ip: rawIntel.ip,
+        asn: rawIntel.asn,
+        org: rawIntel.org,
+        isp: rawIntel.isp,
+        country: rawIntel.country,
+        region: rawIntel.region,
+        city: rawIntel.city,
+        isDatacenter: rawIntel.is_datacenter,
+        isTor: rawIntel.is_tor,
+        isProxy: rawIntel.is_proxy,
+        isVpn: rawIntel.is_vpn,
+        abuseScore: rawIntel.abuse_score,
+        abuseReports: rawIntel.abuse_reports,
+        abuseLastSeen: rawIntel.abuse_last_seen,
+        reverseDns: rawIntel.reverse_dns,
+        rdapName: rawIntel.rdap_name,
+        rdapRegistrant: rawIntel.rdap_registrant,
+        rdapAbuseEmail: rawIntel.rdap_abuse_email,
+        rdapNetRange: rawIntel.rdap_net_range,
+        enrichedAt: rawIntel.enriched_at,
+      }
+    : null;
+
   return json(200, {
     ip,
-    intel: intel[0] || null,
+    intel: intelOut,
     blocked: blocked.length > 0 ? blocked[0] : null,
     visits: visits.map((v) => ({
       ts: v.ts, path: v.path, deviceHash: v.device_hash, ua: v.user_agent,
@@ -852,8 +878,49 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "create index", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 002 — drop CHAR(64) padding on prev_hash/row_hash. Safe to
+  // re-run: ALTER COLUMN TYPE on a column that's already the target type
+  // is a no-op.
+  try {
+    await sql`ALTER TABLE security_events ALTER COLUMN prev_hash TYPE varchar(64)`;
+    results.push({ step: "alter prev_hash to varchar(64)", ok: true });
+  } catch (e) {
+    results.push({ step: "alter prev_hash to varchar(64)", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`ALTER TABLE security_events ALTER COLUMN row_hash TYPE varchar(64)`;
+    results.push({ step: "alter row_hash to varchar(64)", ok: true });
+  } catch (e) {
+    results.push({ step: "alter row_hash to varchar(64)", ok: false, error: String(e.message || e) });
+  }
+
   const allOk = results.every((r) => r.ok);
-  return json(allOk ? 200 : 500, { ok: allOk, migration: "001_audit_chain", results });
+  return json(allOk ? 200 : 500, { ok: allOk, migrations: ["001_audit_chain", "002_audit_chain_fix"], results });
+}
+
+// One-shot: null prev_hash/row_hash on every currently-chained row. Use
+// once after migration 002 to discard pre-fix rows whose hashes can never
+// verify (CHAR padding + ts drift). Verify then skips them (WHERE row_hash
+// IS NOT NULL) and the chain restarts clean from the next event.
+async function handleResetAuditChain(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const before = await sql`
+    SELECT COUNT(*)::int AS n FROM security_events WHERE row_hash IS NOT NULL
+  `;
+  const reset = await sql`
+    UPDATE security_events
+    SET prev_hash = NULL, row_hash = NULL
+    WHERE row_hash IS NOT NULL
+    RETURNING id
+  `;
+  return json(200, {
+    ok: true,
+    resetRows: reset.length,
+    chainedBefore: before[0]?.n || 0,
+    note: "Chain will restart from the next logSecurityEvent() call.",
+  });
 }
 
 // Programmatically create Stripe Payment Links for every product in the
@@ -1225,26 +1292,24 @@ async function handlePublishDraft(session, request) {
     WHERE id = ${id}
   `;
 
-  // Admin action audit log — who published what, when. Lives alongside the
-  // security events so the CTI dashboard can surface it alongside other
-  // portal activity.
-  try {
-    await sql`
-      INSERT INTO security_events (kind, severity, ip, user_agent, path, detail)
-      VALUES (
-        'admin.publish_draft', 'info', ${clientIp(request)},
-        ${request.headers.get('user-agent') || null},
-        '/api/portal?action=publish-draft',
-        ${JSON.stringify({
-          adminEmail: session?.user?.email || null,
-          draftId: id,
-          slug: draft.slug,
-          title: draft.title,
-          commitSha: commit.commitSha,
-        })}::jsonb
-      )
-    `;
-  } catch { /* audit log is best-effort; never block the publish */ }
+  // Admin action audit log — who published what, when. Runs through
+  // logSecurityEvent so the row gets chained into the tamper-evident
+  // audit log alongside the other security events.
+  await logSecurityEvent({
+    kind: "admin.publish_draft",
+    severity: "info",
+    ip: clientIp(request),
+    userId: session?.user?.id || null,
+    userAgent: request.headers.get("user-agent") || null,
+    path: "/api/portal?action=publish-draft",
+    detail: {
+      adminEmail: session?.user?.email || null,
+      draftId: id,
+      slug: draft.slug,
+      title: draft.title,
+      commitSha: commit.commitSha,
+    },
+  });
 
   return json(200, { ok: true, commitSha: commit.commitSha, commitUrl: commit.htmlUrl });
 }
@@ -1485,21 +1550,19 @@ async function handleBlockIp(session, request) {
     ON CONFLICT (ip) DO NOTHING
   `;
 
-  try {
-    await sql`
-      INSERT INTO security_events (kind, severity, ip, user_agent, path, detail)
-      VALUES (
-        'admin.block_ip', 'info', ${clientIp(request)},
-        ${request.headers.get('user-agent') || null},
-        '/api/portal?action=block-ip',
-        ${JSON.stringify({
-          adminEmail: session?.user?.email || null,
-          targetIp: ip,
-          reason,
-        })}::jsonb
-      )
-    `;
-  } catch { /* best effort */ }
+  await logSecurityEvent({
+    kind: "admin.block_ip",
+    severity: "info",
+    ip: clientIp(request),
+    userId: session?.user?.id || null,
+    userAgent: request.headers.get("user-agent") || null,
+    path: "/api/portal?action=block-ip",
+    detail: {
+      adminEmail: session?.user?.email || null,
+      targetIp: ip,
+      reason,
+    },
+  });
 
   return json(200, { ok: true });
 }
@@ -1617,7 +1680,7 @@ async function handleGithubHealth(session) {
     result.fileAccess = { ok: false, error: String(err.message || err).slice(0, 200) };
   }
 
-  result.ok = result.tokenSet && result.user?.login && result.fileAccess?.ok === true;
+  result.ok = Boolean(result.tokenSet && result.user?.login && result.fileAccess?.ok === true);
   return json(200, result);
 }
 
@@ -1662,6 +1725,7 @@ async function dispatch(request, method) {
   if (action === "threat-intel"     && method === "GET")   return handleThreatIntel(session, url);
   if (action === "audit-verify"     && method === "GET")   return handleAuditVerify(session);
   if (action === "run-audit-migration" && method === "POST") return handleRunAuditMigration(session);
+  if (action === "reset-audit-chain"    && method === "POST") return handleResetAuditChain(session);
   if (action === "create-payment-links" && method === "POST") return handleCreatePaymentLinks(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);

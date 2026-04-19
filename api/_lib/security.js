@@ -126,16 +126,19 @@ export async function logSecurityEvent({
       // Legacy path — row_hash columns don't exist yet. Log without chaining
       // so the event still lands in the DB and cron jobs still work.
       await sql`
-        INSERT INTO security_events (kind, severity, ip, user_id, user_agent, path, detail)
+        INSERT INTO security_events (kind, severity, ip, user_id, user_agent, path, detail, ts)
         VALUES (${kind}, ${severity}, ${ip}, ${userId}, ${userAgent}, ${path},
-                ${detailJson}::jsonb)
+                ${detailJson}::jsonb, ${ts})
       `;
     } else {
       const rowHash = await chainHash([prevHash, kind, severity, ip, userId, path, detailJson, ts]);
+      // ts is set explicitly so the value hashed here matches the value
+      // stored — relying on a DB DEFAULT would let NOW() drift past the JS
+      // timestamp and break every row_hash on verify.
       await sql`
-        INSERT INTO security_events (kind, severity, ip, user_id, user_agent, path, detail, prev_hash, row_hash)
+        INSERT INTO security_events (kind, severity, ip, user_id, user_agent, path, detail, ts, prev_hash, row_hash)
         VALUES (${kind}, ${severity}, ${ip}, ${userId}, ${userAgent}, ${path},
-                ${detailJson}::jsonb, ${prevHash}, ${rowHash})
+                ${detailJson}::jsonb, ${ts}, ${prevHash}, ${rowHash})
       `;
     }
 
