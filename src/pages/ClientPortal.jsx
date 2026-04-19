@@ -1550,6 +1550,7 @@ function VisitorsPanel({ styles, onBlockIp }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [blockBusyIp, setBlockBusyIp] = useState(null);
+  const [visitorView, setVisitorView] = useState("overview");
 
   const handleBlock = useCallback(async (ip) => {
     if (!onBlockIp || blockBusyIp) return;
@@ -1586,7 +1587,6 @@ function VisitorsPanel({ styles, onBlockIp }) {
   }
   if (!data) return null;
 
-  const [visitorView, setVisitorView] = useState("overview");
   const fmt = (iso) => new Date(iso).toLocaleString();
 
   const vpill = (v, label) => (
