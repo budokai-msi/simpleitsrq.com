@@ -1920,12 +1920,30 @@ function VisitorsPanel({ styles, onBlockIp }) {
 // ---------- admin: ops console ----------
 // One-click buttons for admin actions that would otherwise require curl
 // or a Vercel env-var trip: Stripe Payment Link creation, audit-chain
-// migration, audit-chain verification.
+// migration, audit-chain verification, OSINT feed refresh.
+//
+// Layout: a live health card at the top, buttons grouped by workflow
+// stage (Setup / Operations / Verification), a one-click "Run full
+// setup" orchestrator that chains migrations → reset → osint → verify,
+// and a confirmation gate on destructive actions.
 function OpsConsole() {
-  const [running, setRunning] = useState(null); // action name mid-flight
-  const [output, setOutput] = useState({});     // { [action]: result-object }
+  const [running, setRunning] = useState(null);
+  const [output, setOutput] = useState({});
+  const [status, setStatus] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(true);
 
-  const run = async (action, method = "POST") => {
+  const loadStatus = useCallback(async () => {
+    setStatusLoading(true);
+    try {
+      const res = await fetch("/api/portal?action=ops-status", { credentials: "same-origin" });
+      setStatus(await res.json());
+    } catch { /* status is best-effort — failures leave the card in "unknown" */ }
+    finally { setStatusLoading(false); }
+  }, []);
+
+  useEffect(() => { loadStatus(); }, [loadStatus]);
+
+  const run = useCallback(async (action, method = "POST") => {
     setRunning(action);
     try {
       const res = await fetch(`/api/portal?action=${action}`, {
@@ -1935,12 +1953,44 @@ function OpsConsole() {
       });
       const data = await res.json().catch(() => ({}));
       setOutput((o) => ({ ...o, [action]: { status: res.status, data } }));
+      return { status: res.status, data };
     } catch (e) {
-      setOutput((o) => ({ ...o, [action]: { error: String(e.message || e) } }));
+      const err = { error: String(e.message || e) };
+      setOutput((o) => ({ ...o, [action]: err }));
+      return err;
     } finally {
       setRunning(null);
     }
-  };
+  }, []);
+
+  // Runs the whole bootstrap path end-to-end. Stops on the first failing
+  // step so the admin can see exactly where it broke instead of cascading
+  // errors. Refreshes the status card after every step.
+  const runFullSetup = useCallback(async () => {
+    setRunning("full-setup");
+    const trail = [];
+    const steps = [
+      { action: "run-audit-migration", method: "POST", label: "Run migrations" },
+      { action: "reset-audit-chain",   method: "POST", label: "Reset chain" },
+      { action: "osint-refresh",       method: "POST", label: "Refresh OSINT" },
+      { action: "audit-verify",        method: "GET",  label: "Verify chain" },
+    ];
+    for (const s of steps) {
+      const r = await run(s.action, s.method);
+      trail.push({ step: s.label, status: r.status, ok: r.data?.ok !== false && r.status < 400 });
+      if (r.status >= 400 || r.data?.ok === false) break;
+    }
+    setOutput((o) => ({ ...o, "full-setup": { trail } }));
+    await loadStatus();
+    setRunning(null);
+  }, [run, loadStatus]);
+
+  // Reset is destructive — nulls hash columns on every chained row. Gate
+  // with a confirm() so an accidental click doesn't wipe the chain.
+  const runWithConfirm = useCallback((action, message) => {
+    if (typeof window !== "undefined" && !window.confirm(message)) return;
+    run(action, "POST");
+  }, [run]);
 
   const card = {
     padding: 18,
@@ -1963,6 +2013,49 @@ function OpsConsole() {
     whiteSpace: "pre-wrap",
     wordBreak: "break-all",
   };
+  const sectionHeader = {
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    color: tokens.colorNeutralForeground3,
+    margin: "20px 0 10px",
+  };
+
+  const StatusPill = ({ ok, label }) => (
+    <Badge
+      appearance="filled"
+      color={ok ? "success" : "warning"}
+      style={{ fontSize: 11, marginRight: 6, marginBottom: 4 }}
+    >
+      {ok ? "✓" : "•"} {label}
+    </Badge>
+  );
+
+  const OutputBlock = ({ action }) => {
+    const out = output[action];
+    if (!out) return null;
+    const data = out.data || out;
+    const ok = out.status == null ? true : out.status < 400 && data.ok !== false;
+    return (
+      <>
+        <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 6 }}>
+          <Badge appearance="filled" color={ok ? "success" : "danger"} style={{ fontSize: 10 }}>
+            {ok ? "OK" : "FAIL"}
+          </Badge>
+          {out.status != null && (
+            <span style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>HTTP {out.status}</span>
+          )}
+        </div>
+        <pre style={pre}>{JSON.stringify(data, null, 2)}</pre>
+      </>
+    );
+  };
+
+  const mig = status?.migrations || {};
+  const feedsLabel = status?.osint?.totalCidrs
+    ? `${status.osint.totalCidrs.toLocaleString()} CIDRs cached`
+    : "0 CIDRs cached";
 
   return (
     <div>
@@ -1970,98 +2063,110 @@ function OpsConsole() {
         One-click admin operations. Every button hits the matching <code>/api/portal?action=...</code> endpoint under your current session. Output is shown inline — no page reload.
       </p>
 
-      {/* Stripe payment links */}
-      <div style={card}>
-        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Create Stripe Payment Links</h4>
-        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
-          Creates (or reuses) a Stripe Product + Price + Payment Link for every store SKU. Idempotent — safe to run multiple times. Copy each <code>url</code> from the output into the matching Vercel env var, then redeploy.
-        </p>
-        <Button
-          appearance="primary"
-          onClick={() => run("create-payment-links")}
-          disabled={running === "create-payment-links"}
-        >
-          {running === "create-payment-links" ? "Running…" : "Create all 6 Payment Links"}
-        </Button>
-        {output["create-payment-links"] && (
-          <pre style={pre}>{JSON.stringify(output["create-payment-links"].data, null, 2)}</pre>
+      {/* ── Live health card ── */}
+      <div style={{ ...card, background: tokens.colorNeutralBackground2 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+          <div>
+            <h4 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 600 }}>System status</h4>
+            <p style={{ margin: 0, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+              Auto-loaded from <code>/api/portal?action=ops-status</code>. Refresh after each action.
+            </p>
+          </div>
+          <Button appearance="subtle" size="small" onClick={loadStatus} disabled={statusLoading}>
+            {statusLoading ? "Loading…" : "Refresh status"}
+          </Button>
+        </div>
+        {status && (
+          <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap" }}>
+            <StatusPill ok={mig.auditChainInstalled} label="Audit chain (001)" />
+            <StatusPill ok={mig.auditChainFixApplied} label="Schema fix (002)" />
+            <StatusPill ok={mig.threatFeedsInstalled} label="Threat feeds (003)" />
+            <StatusPill ok={(status.osint?.totalCidrs || 0) > 0} label={feedsLabel} />
+            <StatusPill ok={(status.chain?.chainedRows || 0) > 0} label={`${status.chain?.chainedRows || 0} chained / ${status.chain?.totalRows || 0} events`} />
+          </div>
+        )}
+        <div style={{ marginTop: 14 }}>
+          <Button appearance="primary" onClick={runFullSetup} disabled={running === "full-setup"}>
+            {running === "full-setup" ? "Running setup…" : "Run full setup (migrations → reset → OSINT → verify)"}
+          </Button>
+        </div>
+        {output["full-setup"] && (
+          <pre style={pre}>{JSON.stringify(output["full-setup"], null, 2)}</pre>
         )}
       </div>
 
-      {/* Audit migrations */}
+      {/* ── Setup (run in order the first time) ── */}
+      <div style={sectionHeader}>Setup — run in order the first time</div>
+
       <div style={card}>
-        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Run audit-chain migrations (001 + 002)</h4>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>1. Run database migrations (001 + 002 + 003)</h4>
         <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
-          Adds <code>prev_hash</code> + <code>row_hash</code> columns and drops the <code>CHAR(64)</code> padding that made the first chain implementation unverifiable. Safe to re-run — every statement is idempotent.
+          Creates the tamper-evident chain columns on <code>security_events</code>, drops the <code>CHAR(64)</code> padding, and installs the <code>threat_feeds</code> OSINT cache. Every statement is idempotent — safe to re-run.
         </p>
-        <Button
-          appearance="primary"
-          onClick={() => run("run-audit-migration")}
-          disabled={running === "run-audit-migration"}
-        >
+        <Button appearance="primary" onClick={() => run("run-audit-migration")} disabled={running === "run-audit-migration"}>
           {running === "run-audit-migration" ? "Running…" : "Run migrations"}
         </Button>
-        {output["run-audit-migration"] && (
-          <pre style={pre}>{JSON.stringify(output["run-audit-migration"].data, null, 2)}</pre>
-        )}
+        <OutputBlock action="run-audit-migration" />
       </div>
 
-      {/* OSINT threat feeds */}
       <div style={card}>
-        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>OSINT threat feeds</h4>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600, color: "#B75A00" }}>2. Reset pre-fix chain <span style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>· destructive · one-shot</span></h4>
         <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
-          Pulls Spamhaus DROP + EDROP and Emerging Threats compromised-IPs into the <code>threat_feeds</code> cache. The daily cron refreshes at 11:00 UTC; use <strong>Refresh now</strong> if you want the cache bumped mid-day. <strong>Status</strong> shows per-feed row counts + last fetch time and the 20 most-recent matches against real visitors.
+          Nulls <code>prev_hash</code> and <code>row_hash</code> on every currently-chained row so pre-fix rows become <em>pre-chain</em> (verify skips them) and the chain restarts clean from the next event. The event payload itself is untouched. Run this <strong>once</strong> after the migration, then leave it alone.
+        </p>
+        <Button
+          appearance="secondary"
+          onClick={() => runWithConfirm("reset-audit-chain", "This nulls prev_hash/row_hash on every currently-chained row. The event payload stays but the hash chain restarts. Proceed?")}
+          disabled={running === "reset-audit-chain"}
+        >
+          {running === "reset-audit-chain" ? "Running…" : "Reset chain"}
+        </Button>
+        <OutputBlock action="reset-audit-chain" />
+      </div>
+
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>3. Prime the OSINT feed cache</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Pulls Spamhaus DROP + EDROP and Emerging Threats compromised-IPs into <code>threat_feeds</code>. After this runs, every Visitors-panel IP gets a live OSINT match badge. Daily cron at 11:00 UTC refreshes automatically — this button is for the first run and on-demand bumps.
         </p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Button appearance="primary" onClick={() => run("osint-refresh")} disabled={running === "osint-refresh"}>
             {running === "osint-refresh" ? "Refreshing…" : "Refresh now"}
           </Button>
           <Button appearance="secondary" onClick={() => run("osint-status", "GET")} disabled={running === "osint-status"}>
-            {running === "osint-status" ? "Loading…" : "Status"}
+            {running === "osint-status" ? "Loading…" : "Feed details"}
           </Button>
         </div>
-        {output["osint-refresh"] && (
-          <pre style={pre}>{JSON.stringify(output["osint-refresh"].data, null, 2)}</pre>
-        )}
-        {output["osint-status"] && (
-          <pre style={pre}>{JSON.stringify(output["osint-status"].data, null, 2)}</pre>
-        )}
+        <OutputBlock action="osint-refresh" />
+        <OutputBlock action="osint-status" />
       </div>
 
-      {/* Audit chain reset (one-shot) */}
-      <div style={card}>
-        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Reset broken pre-fix audit chain</h4>
-        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
-          One-shot: nulls <code>prev_hash</code> and <code>row_hash</code> on every existing chained row. Run this <strong>once</strong> after the migration above if Verify still reports breaks. Pre-fix rows become <em>pre-chain</em> (verify skips them) and the chain restarts clean from the next event. The event payload itself is untouched — only the hash columns are cleared.
-        </p>
-        <Button
-          appearance="primary"
-          onClick={() => run("reset-audit-chain")}
-          disabled={running === "reset-audit-chain"}
-        >
-          {running === "reset-audit-chain" ? "Running…" : "Reset chain"}
-        </Button>
-        {output["reset-audit-chain"] && (
-          <pre style={pre}>{JSON.stringify(output["reset-audit-chain"].data, null, 2)}</pre>
-        )}
-      </div>
+      {/* ── Verification ── */}
+      <div style={sectionHeader}>Verification — run anytime</div>
 
-      {/* Audit verify */}
       <div style={card}>
         <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Verify audit-log chain</h4>
         <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
-          Walks the security-events hash chain and reports any breaks. Run after the migration, and again anytime you want a tamper check. <code>ok: true</code> with <code>breaks: []</code> is the healthy answer.
+          Walks the security-events hash chain and reports any breaks. <code>ok: true, breaks: []</code> is the healthy answer. Any break = tampering OR a code/schema mismatch.
         </p>
-        <Button
-          appearance="primary"
-          onClick={() => run("audit-verify", "GET")}
-          disabled={running === "audit-verify"}
-        >
+        <Button appearance="primary" onClick={() => run("audit-verify", "GET")} disabled={running === "audit-verify"}>
           {running === "audit-verify" ? "Running…" : "Verify chain"}
         </Button>
-        {output["audit-verify"] && (
-          <pre style={pre}>{JSON.stringify(output["audit-verify"].data, null, 2)}</pre>
-        )}
+        <OutputBlock action="audit-verify" />
+      </div>
+
+      {/* ── Operations ── */}
+      <div style={sectionHeader}>Operations — commerce + integrations</div>
+
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Create / reuse Stripe Payment Links</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Ensures every store SKU (currently 7 including the new $29 SaaS Incident Response Playbook) has a Stripe Product + Price + Payment Link. Idempotent — reuses existing ones. Copy each <code>url</code> from the output into the matching Vercel env var, then redeploy.
+        </p>
+        <Button appearance="primary" onClick={() => run("create-payment-links")} disabled={running === "create-payment-links"}>
+          {running === "create-payment-links" ? "Running…" : "Create all Payment Links"}
+        </Button>
+        <OutputBlock action="create-payment-links" />
       </div>
 
       <p style={{ color: tokens.colorNeutralForeground3, fontSize: 11, marginTop: 16 }}>
