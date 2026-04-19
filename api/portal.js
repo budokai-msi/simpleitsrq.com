@@ -19,6 +19,7 @@ import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { clientIp, auditVerify, logSecurityEvent } from "./_lib/security.js";
+import { refreshThreatFeeds, matchOsintFeeds, osintStatus } from "./_lib/osint.js";
 import { json } from "./_lib/http.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
@@ -506,6 +507,16 @@ async function handleVisitors(session) {
   }
   const blockedSet = new Set(blockedIps.map((b) => b.ip));
 
+  // Live OSINT feed matches for every IP in the rendered panel. Single
+  // query against the threat_feeds cache (daily-refreshed by the cron);
+  // returns {} silently if migration 003 hasn't been run yet.
+  const osintIps = [...new Set([
+    ...recent.map((r) => r.ip),
+    ...threatActors.map((t) => t.ip),
+    ...blockedIps.map((b) => b.ip),
+  ].filter(Boolean))];
+  const osintMap = await matchOsintFeeds(osintIps);
+
   return json(200, {
     stats: {
       total24h: stats24[0]?.total || 0,
@@ -545,6 +556,7 @@ async function handleVisitors(session) {
       isDatacenter: r.is_datacenter,
       org: r.org,
       intel: intelMap[r.ip] || null,
+      osintMatches: osintMap[r.ip] || [],
       blocked: blockedSet.has(r.ip),
     })),
     topPages,
@@ -555,6 +567,7 @@ async function handleVisitors(session) {
       deviceHash: t.device_hash, path: t.path, method: t.method,
       threatClass: t.threat_class, ts: t.ts,
       intel: intelMap[t.ip] || null,
+      osintMatches: osintMap[t.ip] || [],
       blocked: blockedSet.has(t.ip),
     })),
     sessionAnomalies: sessionAnomalies.map((s) => ({
@@ -565,8 +578,13 @@ async function handleVisitors(session) {
     blockedIps: blockedIps.map((b) => ({
       ip: b.ip, reason: b.reason, blockedAt: b.created_at,
       intel: intelMap[b.ip] || null,
+      osintMatches: osintMap[b.ip] || [],
     })),
     ipIntel: intelMap,
+    osintSummary: {
+      matchedIps: Object.keys(osintMap).length,
+      totalChecked: osintIps.length,
+    },
   });
 }
 
@@ -591,6 +609,9 @@ async function handleInvestigateIp(session, url) {
     `,
     sql`SELECT ip, reason, created_at FROM ip_blocklist WHERE ip = ${ip}`,
   ]);
+
+  const osintMap = await matchOsintFeeds([ip]);
+  const osintMatches = osintMap[ip] || [];
 
   const rawIntel = intel[0] || null;
   const intelOut = rawIntel
@@ -621,6 +642,7 @@ async function handleInvestigateIp(session, url) {
   return json(200, {
     ip,
     intel: intelOut,
+    osintMatches,
     blocked: blocked.length > 0 ? blocked[0] : null,
     visits: visits.map((v) => ({
       ts: v.ts, path: v.path, deviceHash: v.device_hash, ua: v.user_agent,
@@ -886,8 +908,59 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "alter row_hash to varchar(64)", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 003 — OSINT threat-feed cache (Spamhaus DROP/EDROP + ET).
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS threat_feeds (
+        id         bigserial PRIMARY KEY,
+        feed_name  text NOT NULL,
+        source_url text NOT NULL,
+        cidr       cidr NOT NULL,
+        category   text,
+        note       text,
+        fetched_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE (feed_name, cidr)
+      )
+    `;
+    results.push({ step: "create threat_feeds table", ok: true });
+  } catch (e) {
+    results.push({ step: "create threat_feeds table", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`CREATE INDEX IF NOT EXISTS threat_feeds_feed_idx    ON threat_feeds (feed_name)`;
+    await sql`CREATE INDEX IF NOT EXISTS threat_feeds_fetched_idx ON threat_feeds (fetched_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS threat_feeds_cidr_idx    ON threat_feeds (cidr)`;
+    results.push({ step: "create threat_feeds indexes", ok: true });
+  } catch (e) {
+    results.push({ step: "create threat_feeds indexes", ok: false, error: String(e.message || e) });
+  }
+
   const allOk = results.every((r) => r.ok);
-  return json(allOk ? 200 : 500, { ok: allOk, migrations: ["001_audit_chain", "002_audit_chain_fix"], results });
+  return json(allOk ? 200 : 500, {
+    ok: allOk,
+    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds"],
+    results,
+  });
+}
+
+// GET the current OSINT cache summary (per-feed counts, last-fetched time,
+// 20 most-recent matches against real threat_actors visits). Cheap — runs
+// two small aggregate queries.
+async function handleOsintStatus(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const status = await osintStatus();
+  return json(status.ok ? 200 : 500, status);
+}
+
+// POST force-refresh every configured feed. Idempotent: each feed's rows
+// are upserted on (feed_name, cidr), so re-running just bumps fetched_at
+// and purges CIDRs that disappeared upstream.
+async function handleOsintRefresh(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const result = await refreshThreatFeeds();
+  return json(result.ok ? 200 : 500, result);
 }
 
 // One-shot: null prev_hash/row_hash on every currently-chained row. Use
@@ -1740,6 +1813,8 @@ async function dispatch(request, method) {
   if (action === "audit-verify"     && method === "GET")   return handleAuditVerify(session);
   if (action === "run-audit-migration" && method === "POST") return handleRunAuditMigration(session);
   if (action === "reset-audit-chain"    && method === "POST") return handleResetAuditChain(session);
+  if (action === "osint-status"         && method === "GET")  return handleOsintStatus(session);
+  if (action === "osint-refresh"        && method === "POST") return handleOsintRefresh(session);
   if (action === "create-payment-links" && method === "POST") return handleCreatePaymentLinks(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);

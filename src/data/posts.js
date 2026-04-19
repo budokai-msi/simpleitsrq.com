@@ -3,6 +3,127 @@
 
 export const posts = [
   {
+    slug: "vercel-notion-saas-breach-day-what-small-business-should-do",
+    title: "Two SaaS Vendors Had a Bad Day — Here's the 30-Minute Check Every Small Business Should Run",
+    metaDescription: "Vercel disclosed a breach. Notion leaked public-page editor emails. Neither story is about you, but both point to the same lesson for Sarasota and Bradenton small businesses: SaaS sprawl is your real threat surface. Here's the 30-minute audit.",
+    date: "2026-04-19",
+    author: "Simple IT SRQ Team",
+    category: "Security",
+    tags: ["security", "saas", "incident-response", "smb", "sarasota", "bradenton"],
+    excerpt: "Today's top security stories are both about SaaS vendors, not ransomware crews. If you run a small business on Microsoft 365 + Notion + Vercel + half a dozen other tools, this is the 30-minute check you should run before Monday.",
+    heroAlt: "A security operations dashboard on a laptop screen in a Sarasota small-business office showing a map of authenticated login locations and a pending vendor-breach alert.",
+    content: `## Two Vendors, One Lesson
+
+Two of the top stories on Hacker News this morning are security incidents at SaaS companies you've probably never thought of as "part of your security perimeter":
+
+- **Vercel** disclosed that its internal systems were hit in a breach. A limited subset of customers is affected. The company has engaged incident response experts and notified law enforcement. Online chatter links the intrusion to ShinyHunters — a group known for social-engineering SaaS platforms.
+- **Notion** leaked the email addresses of everyone who has ever edited a public Notion page. Not a sophisticated 0-day — just an API endpoint that returned a little more than it should have. A researcher grabbed a screenshot and the story was on the front page within an hour.
+
+If you're running a small business in Sarasota or Bradenton, neither story is **about** you. But both stories are **for** you, because they illustrate something most small businesses never budget time for: the part of your attack surface you don't own and can't directly secure.
+
+## The SaaS Sprawl Problem
+
+Walk through a typical 15-person Sarasota professional-services firm and you'll find 10 to 20 SaaS apps in active use:
+
+- Microsoft 365 or Google Workspace (email, docs, calendar)
+- A CRM (HubSpot, Pipedrive, or Salesforce)
+- An accounting system (QuickBooks Online, Xero)
+- A payroll/HR platform (Gusto, Rippling)
+- A project/knowledge tool (Notion, Confluence, ClickUp)
+- A communication tool (Slack, Teams)
+- A file-sharing/e-signature tool (Dropbox, DocuSign)
+- A marketing/booking tool (Cal.com, Calendly, Mailchimp)
+- A payment processor (Stripe, Square)
+- Industry-specific tools (practice management, real-estate MLS, etc.)
+
+Each one holds some subset of your client data. Each one is a separate login, a separate password policy, a separate audit trail, a separate breach disclosure channel. When one of them has a bad day — like Vercel or Notion today — you find out from a news article, not from a monitoring alert.
+
+That is the real small-business threat model in 2026. It's not a hacker typing at a keyboard trying to crack your firewall. It's the vendor three layers deep in your stack having a bad Tuesday.
+
+## What Actually Changes After a Vendor Breach
+
+Most small businesses read a story like today's Vercel one, say "glad that's not us," and move on. That's the wrong reaction. Even if you don't use the vendor directly, there are two things you should do inside 30 minutes, for every vendor breach you hear about:
+
+**1. Check whether the vendor is anywhere in your stack.** This is harder than it sounds. You probably know you use Vercel directly — or you definitely know you don't. But does your marketing agency host your landing pages on Vercel? Does the SaaS tool you bought last year deploy on Vercel under the hood? Ask.
+
+**2. Rotate shared secrets.** If a vendor you depend on had their internal systems touched, assume the API keys, webhook secrets, and environment variables you gave them could have been read. Go into your account, rotate them, and redeploy. Vercel's own incident response note recommends exactly this: rotate environment variables as a precaution.
+
+Neither step takes long. Both steps are what separates a small business that weathers a supply-chain incident from one that becomes a footnote in someone else's breach disclosure six months later.
+
+## The 30-Minute SaaS Audit You Should Run Monday
+
+This is the concrete work. Block a half-hour this week and do all seven steps in order.
+
+### 1. List every SaaS app that holds client data or sends email on your behalf
+
+Open a spreadsheet. One row per app. Columns: **vendor name**, **what data they hold**, **who owns the account**, **admin email**, **billing method**. If you need help remembering, audit the last 12 months of your business bank card statement — every SaaS subscription shows up there.
+
+Most small businesses have never made this list. It takes 15 minutes the first time and 5 minutes every quarter after that. It is the single highest-leverage security document you can produce this year.
+
+### 2. Turn on MFA everywhere that holds production data
+
+For each row in the spreadsheet, check whether multi-factor authentication is on for every human account. Not just "available" — actually enabled. For the admin account in particular.
+
+If you find an app that doesn't support MFA in 2026 and it holds client data, that's a procurement decision you should escalate. There are MFA-capable competitors for every category.
+
+For shared passwords that staff need to log into multiple apps, a proper password manager is table stakes. [[amazon_search:1password business password manager|Business-tier 1Password]] or Bitwarden with seat-based pricing are both fine; the point is that every staff member has their own login, the admin can revoke access when someone leaves, and the shared vault is audited.
+
+### 3. Review third-party OAuth grants
+
+Most SaaS apps let you "connect" other SaaS apps. Your CRM probably has write access to your email. Your scheduling tool probably has write access to your calendar. Your invoicing tool probably has read access to your accounting system.
+
+Every one of those grants is a door into your data that doesn't require a password. Once a quarter, review the "connected apps" list in Microsoft 365 and Google Workspace and revoke anything you don't recognize. It takes five minutes per account and it closes doors you didn't know were open.
+
+### 4. Identify which vendors would be on the front page of Hacker News if they had a bad day
+
+This is the "blast radius" question. If your email provider went down for three hours, how many clients notice? If your accounting system was breached, which regulators do you have to notify? If your marketing CRM was breached, which prospects do you lose?
+
+You don't need to write a formal business continuity plan. You just need a mental model of which vendors are *load-bearing* in your business. Those are the ones you check first every time a breach story hits the news.
+
+### 5. Know your incident-response contacts — before you need them
+
+For each load-bearing vendor from step 4, save three things in your password manager (or wherever your company plays it safe): their status page URL, their security-incident disclosure email, and their dedicated breach notification process. Microsoft, Google, Stripe, and most of the big names all publish these clearly. Smaller vendors often don't — if you can't find it, that's a data point.
+
+When a breach hits, you don't want to be searching for the right inbox. You want to paste the URL and send the email.
+
+### 6. Keep environment variables in a rotation-friendly place
+
+If you run anything custom — a website, a Zapier automation, a script that talks to the APIs of the apps above — you have environment variables somewhere. API keys, webhook secrets, database passwords, email-sending tokens.
+
+The question: can you rotate any one of those today, in under 10 minutes, without breaking production? If the answer is "no, I'd have to hunt through six different places" that's a pre-incident project, not a during-incident scramble.
+
+Good patterns: environment variables stored in one platform (Vercel, AWS Secrets Manager, Doppler), one place to rotate, a clear redeploy step. Bad patterns: API keys pasted into Google Docs, into Slack threads, into README files in git. The second set of patterns is how vendor breaches become your breach.
+
+### 7. Keep an eye on Hacker News on Monday mornings
+
+Not as a professional habit — as a half-serious one. The security stories that hit the HN front page between 7am and 10am Eastern are usually real and usually relevant within a day. You don't need to read every comment thread. Just skim the top five links.
+
+This post exists because two SaaS vendors with a lot of overlap with small-business tooling both made the front page today. That's uncommon enough to be worth a blog post. Most mornings the news isn't about you. But you want to be the person who *notices* the one morning that it is.
+
+## The Harder Question: Who's Running This Check?
+
+In a larger company, there's a security team, a compliance officer, or at minimum a SOC 2 audit schedule that forces this kind of hygiene on a cadence. In a small business, the person running the 30-minute audit is usually "whoever has five minutes and cares." And "whoever has five minutes" doesn't stay consistent for long.
+
+If your Sarasota or Bradenton business is over about 15 people, this stops being something a non-IT founder or office manager can keep up with. At that size you either want a part-time virtual CISO engagement, a tightly-scoped MSP relationship that covers vendor hygiene, or both. The audit itself is straightforward; what's hard is doing it every time there's news, not just after your first incident.
+
+The tools help. A [[amazon_search:yubikey 5 nfc hardware security key|hardware security key like a YubiKey]] for every admin account closes an entire class of social-engineering risk that breaches like ShinyHunters' rely on. A password manager closes another class. A proper documentation platform with per-user access (not Notion public pages, in light of today's news) closes a third.
+
+## Our Two Cents
+
+Simple IT SRQ sits on Vercel. We read today's Vercel incident update before writing this post, rotated our internal environment variables as a precaution, and confirmed that our customer-facing honeypot + OSINT threat-feed pipeline caught nothing unusual in the last 24 hours. The transparency is the point — if a vendor we depend on has a bad day, you get to see the receipts.
+
+If your Sarasota, Bradenton, or Venice small business wants a second set of eyes on the seven-step audit above — or wants someone to just do it for you once a quarter — [**reach out for a 30-minute SaaS risk review**](/#contact). No sales pitch, no automated scanner sold back to you as "AI-powered." Just one Florida-based engineer, your spreadsheet, and a plan.
+
+---
+
+**Related reading on this site:**
+- [The shared-password problem in small offices](/blog/shared-passwords-small-business)
+- [Why your guest WiFi should be a separate network](/blog/office-wifi-dead-spots-sarasota-bradenton-fix)
+- [Florida data-protection law changes you might have missed](/blog/florida-information-protection-act-2026)
+
+**Product links on this page are Amazon affiliate links — we earn a small commission on qualifying purchases, which helps keep these posts free.**`
+  },
+  {
     slug: "office-wifi-dead-spots-sarasota-bradenton-fix",
     title: "Your Office WiFi Is Probably Costing You Money - Heres How to Fix It",
     metaDescription: "Dead spots, dropped video calls, and guest network risks plague Sarasota and Bradenton small offices. A proper business access point fixes all three for under $500.",

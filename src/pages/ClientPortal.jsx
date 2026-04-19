@@ -1649,6 +1649,15 @@ function VisitorsPanel({ styles, onBlockIp }) {
             {data.blockedIps?.length || 0} IPs blocked
           </span>
         </div>
+        <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+          <div className={styles.statLabel}>OSINT matches</div>
+          <div className={styles.statValue} style={{ color: data.osintSummary?.matchedIps ? "#DC2626" : undefined }}>
+            {data.osintSummary?.matchedIps || 0}
+          </div>
+          <span style={{ color: tokens.colorNeutralForeground3, fontSize: 12 }}>
+            of {data.osintSummary?.totalChecked || 0} IPs checked vs. Spamhaus / ET
+          </span>
+        </div>
       </div>
 
       {(visitorView === "overview" || visitorView === "traffic") && <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginTop: 24 }}>
@@ -1732,6 +1741,11 @@ function VisitorsPanel({ styles, onBlockIp }) {
               {v.intel?.isVpn && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>VPN</Badge>}
               {v.intel?.isProxy && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>PROXY</Badge>}
               {v.blocked && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>BLOCKED</Badge>}
+              {v.osintMatches?.map((m, k) => (
+                <Badge key={k} appearance="filled" color="danger" style={{ fontSize: 10 }} title={`${m.feed} · ${m.cidr}`}>
+                  OSINT: {m.feed.replace(/_/g, " ")}
+                </Badge>
+              ))}
             </div>
             <div className={styles.listMeta} style={{ flexWrap: "wrap", gap: 6, opacity: 0.85 }}>
               {v.platform && <span>Platform: <strong>{v.platform}</strong></span>}
@@ -1807,6 +1821,11 @@ function VisitorsPanel({ styles, onBlockIp }) {
                   {t.intel?.isDatacenter && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>DC</Badge>}
                   {t.intel?.isTor && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>TOR</Badge>}
                   {t.intel?.isVpn && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>VPN</Badge>}
+                  {t.osintMatches?.map((m, k) => (
+                    <Badge key={k} appearance="filled" color="danger" style={{ fontSize: 10 }} title={`${m.feed} · ${m.cidr}`}>
+                      OSINT: {m.feed.replace(/_/g, " ")}
+                    </Badge>
+                  ))}
                 </div>
                 {t.deviceHash && <div style={{ fontFamily: "monospace", fontSize: 10, color: tokens.colorNeutralForeground3 }}>Device: {t.deviceHash}</div>}
                 {t.ua && <div style={{ fontSize: 10, color: tokens.colorNeutralForeground3, wordBreak: "break-all" }}>{t.ua}</div>}
@@ -1880,6 +1899,11 @@ function VisitorsPanel({ styles, onBlockIp }) {
                     )}
                     {b.intel?.isDatacenter && <Badge appearance="outline" color="warning" style={{ fontSize: 10 }}>DC</Badge>}
                     {b.intel?.isTor && <Badge appearance="filled" color="danger" style={{ fontSize: 10 }}>TOR</Badge>}
+                    {b.osintMatches?.map((m, k) => (
+                      <Badge key={k} appearance="filled" color="danger" style={{ fontSize: 10 }} title={`${m.feed} · ${m.cidr}`}>
+                        OSINT: {m.feed.replace(/_/g, " ")}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1979,6 +2003,28 @@ function OpsConsole() {
         </Button>
         {output["run-audit-migration"] && (
           <pre style={pre}>{JSON.stringify(output["run-audit-migration"].data, null, 2)}</pre>
+        )}
+      </div>
+
+      {/* OSINT threat feeds */}
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>OSINT threat feeds</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Pulls Spamhaus DROP + EDROP and Emerging Threats compromised-IPs into the <code>threat_feeds</code> cache. The daily cron refreshes at 11:00 UTC; use <strong>Refresh now</strong> if you want the cache bumped mid-day. <strong>Status</strong> shows per-feed row counts + last fetch time and the 20 most-recent matches against real visitors.
+        </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Button appearance="primary" onClick={() => run("osint-refresh")} disabled={running === "osint-refresh"}>
+            {running === "osint-refresh" ? "Refreshing…" : "Refresh now"}
+          </Button>
+          <Button appearance="secondary" onClick={() => run("osint-status", "GET")} disabled={running === "osint-status"}>
+            {running === "osint-status" ? "Loading…" : "Status"}
+          </Button>
+        </div>
+        {output["osint-refresh"] && (
+          <pre style={pre}>{JSON.stringify(output["osint-refresh"].data, null, 2)}</pre>
+        )}
+        {output["osint-status"] && (
+          <pre style={pre}>{JSON.stringify(output["osint-status"].data, null, 2)}</pre>
         )}
       </div>
 
@@ -2378,6 +2424,18 @@ function SecurityPanel({
                           <div><span style={{ color: tokens.colorNeutralForeground3 }}>Datacenter:</span> {investigateData.intel.isDatacenter ? "Yes" : "No"}</div>
                         </div>
                       </div>
+                    )}
+                    {investigateData.osintMatches?.length > 0 && (
+                      <MessageBar intent="error">
+                        <MessageBarBody>
+                          <strong>OSINT match ({investigateData.osintMatches.length}):</strong>{" "}
+                          {investigateData.osintMatches.map((m, i) => (
+                            <span key={i} style={{ marginRight: 8 }}>
+                              {m.feed} ({m.category}, {m.cidr})
+                            </span>
+                          ))}
+                        </MessageBarBody>
+                      </MessageBar>
                     )}
                     {investigateData.blocked && <MessageBar intent="warning"><MessageBarBody>Blocked: {investigateData.blocked.reason}</MessageBarBody></MessageBar>}
                     {investigateData.visits?.length > 0 && (
