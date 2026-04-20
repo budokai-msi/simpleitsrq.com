@@ -952,11 +952,138 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "create threat_feeds indexes", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 005 — affiliate_clicks table (revenue-signal tracking).
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS affiliate_clicks (
+        id            bigserial PRIMARY KEY,
+        ts            timestamptz NOT NULL DEFAULT now(),
+        slug          text,
+        destination   text NOT NULL,
+        label         text,
+        network       text,
+        ip            text,
+        country       text,
+        anon_id       text,
+        user_id       uuid REFERENCES users(id) ON DELETE SET NULL,
+        referrer_path text
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS affiliate_clicks_ts_idx      ON affiliate_clicks (ts DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS affiliate_clicks_slug_idx    ON affiliate_clicks (slug, ts DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS affiliate_clicks_network_idx ON affiliate_clicks (network)`;
+    results.push({ step: "create affiliate_clicks table", ok: true });
+  } catch (e) {
+    results.push({ step: "create affiliate_clicks table", ok: false, error: String(e.message || e) });
+  }
+
   const allOk = results.every((r) => r.ok);
   return json(allOk ? 200 : 500, {
     ok: allOk,
-    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity"],
+    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks"],
     results,
+  });
+}
+
+// Revenue Signals: what's earning money. Combines three inputs:
+//   1. Blog traffic — visits to /blog/:slug grouped by post in last 30 days
+//   2. Affiliate clicks — outbound affiliate-link clicks grouped by slug + network
+//   3. Store traffic — visits to /store and each product page
+// Intentionally lightweight — all data already lives in the visits + new
+// affiliate_clicks tables, so this is just aggregate queries.
+async function handleRevenueSignals(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const [blogTraffic, clicksByPost, clicksByNetwork, clicksByProduct, storeTraffic, recentClicks] = await Promise.all([
+    sql`
+      SELECT path,
+             COUNT(*)::int AS views,
+             COUNT(DISTINCT COALESCE(anon_id, ip))::int AS unique_views
+      FROM visits
+      WHERE path LIKE '/blog/%'
+        AND ts > now() - interval '30 days'
+      GROUP BY path
+      ORDER BY views DESC
+      LIMIT 30
+    `.catch(() => []),
+    sql`
+      SELECT slug, COUNT(*)::int AS clicks
+      FROM affiliate_clicks
+      WHERE ts > now() - interval '30 days'
+        AND slug IS NOT NULL AND slug <> ''
+      GROUP BY slug
+      ORDER BY clicks DESC
+      LIMIT 30
+    `.catch(() => []),
+    sql`
+      SELECT COALESCE(network, 'unknown') AS network,
+             COUNT(*)::int AS clicks
+      FROM affiliate_clicks
+      WHERE ts > now() - interval '30 days'
+      GROUP BY network
+      ORDER BY clicks DESC
+    `.catch(() => []),
+    sql`
+      SELECT label, destination, COUNT(*)::int AS clicks
+      FROM affiliate_clicks
+      WHERE ts > now() - interval '30 days'
+        AND label IS NOT NULL
+      GROUP BY label, destination
+      ORDER BY clicks DESC
+      LIMIT 20
+    `.catch(() => []),
+    sql`
+      SELECT path,
+             COUNT(*)::int AS views
+      FROM visits
+      WHERE (path = '/store' OR path LIKE '/store/%')
+        AND ts > now() - interval '30 days'
+      GROUP BY path
+      ORDER BY views DESC
+    `.catch(() => []),
+    sql`
+      SELECT ts, slug, label, network, country
+      FROM affiliate_clicks
+      ORDER BY ts DESC
+      LIMIT 20
+    `.catch(() => []),
+  ]);
+
+  // Compute CTR per post: clicks on that post's slug / views of /blog/:slug.
+  const viewsBySlug = {};
+  for (const r of blogTraffic) {
+    const m = r.path.match(/^\/blog\/(.+)$/);
+    if (m) viewsBySlug[m[1]] = r.views;
+  }
+  const clicksBySlug = {};
+  for (const c of clicksByPost) clicksBySlug[c.slug] = c.clicks;
+  const postLeaderboard = Object.keys(viewsBySlug)
+    .map((slug) => ({
+      slug,
+      views: viewsBySlug[slug],
+      clicks: clicksBySlug[slug] || 0,
+      ctr: viewsBySlug[slug] ? +(((clicksBySlug[slug] || 0) / viewsBySlug[slug]) * 100).toFixed(2) : 0,
+    }))
+    .sort((a, b) => b.clicks - a.clicks || b.views - a.views)
+    .slice(0, 20);
+
+  const totalClicks = clicksByNetwork.reduce((s, r) => s + r.clicks, 0);
+  const totalBlogViews = blogTraffic.reduce((s, r) => s + r.views, 0);
+
+  return json(200, {
+    ok: true,
+    window: "30 days",
+    totals: {
+      blogViews: totalBlogViews,
+      affiliateClicks: totalClicks,
+      overallCtr: totalBlogViews ? +((totalClicks / totalBlogViews) * 100).toFixed(2) : 0,
+    },
+    postLeaderboard,
+    clicksByNetwork,
+    clicksByProduct,
+    storeTraffic,
+    recentClicks,
   });
 }
 
@@ -1990,6 +2117,7 @@ async function dispatch(request, method) {
   if (action === "osint-status"         && method === "GET")  return handleOsintStatus(session);
   if (action === "ops-status"           && method === "GET")  return handleOpsStatus(session);
   if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
+  if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
   if (action === "grant-immunity"       && method === "POST") return handleGrantImmunity(session, request);
   if (action === "osint-refresh"        && method === "POST") return handleOsintRefresh(session);
   if (action === "create-payment-links" && method === "POST") return handleCreatePaymentLinks(session);

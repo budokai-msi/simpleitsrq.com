@@ -35,6 +35,35 @@ export async function POST(request) {
   let body = {};
   try { body = await request.json(); } catch { body = {}; }
 
+  // Affiliate-click tracking piggybacks on the same endpoint so we don't
+  // spend a function slot on a dedicated route. One row per outbound
+  // affiliate-link click; used by the Revenue Signals admin panel to
+  // attribute CTR per blog post.
+  if (body.kind === "affiliate_click" && body.destination) {
+    const geo = geoFromHeaders(request);
+    let userId = null;
+    try {
+      const session = await getSession(request);
+      if (session) userId = session.user.id;
+    } catch { /* unauthenticated is fine */ }
+    await sql`
+      INSERT INTO affiliate_clicks (
+        slug, destination, label, network, ip, country,
+        anon_id, user_id, referrer_path
+      ) VALUES (
+        ${String(body.slug || "").slice(0, 200) || null},
+        ${String(body.destination).slice(0, 2000)},
+        ${body.label ? String(body.label).slice(0, 200) : null},
+        ${body.network ? String(body.network).slice(0, 40) : null},
+        ${ip}, ${geo.country},
+        ${body.anonId ? String(body.anonId).slice(0, 64) : null},
+        ${userId},
+        ${body.referrerPath ? String(body.referrerPath).slice(0, 500) : null}
+      )
+    `.catch((err) => console.error("[track] affiliate_click insert failed", err));
+    return noContent();
+  }
+
   const path       = String(body.path || "/").slice(0, 500);
   const referrer   = body.referrer ? String(body.referrer).slice(0, 1000) : null;
   const anonIdIn   = body.anonId ? String(body.anonId).slice(0, 64) : null;

@@ -7,6 +7,7 @@
 // without touching the body prose.
 
 import { resolveAffiliate } from "../data/affiliates";
+import { trackAffiliateClick } from "../lib/trackClick";
 
 const TOKEN_RE = /\[\[(amazon(?:_search)?:[^\]]+)\]\]/g;
 
@@ -26,7 +27,7 @@ function extractTools(content) {
   return Array.from(seen.values());
 }
 
-export default function ToolsUsedFooter({ content }) {
+export default function ToolsUsedFooter({ content, slug }) {
   const tools = extractTools(content);
   if (tools.length === 0) return null;
   return (
@@ -42,6 +43,9 @@ export default function ToolsUsedFooter({ content }) {
               rel="sponsored noopener noreferrer"
               className="tools-used-link"
               title={t.blurb}
+              onClick={() => trackAffiliateClick({
+                slug, destination: t.href, label: t.label, network: t.vendor,
+              })}
             >
               {t.label}
             </a>

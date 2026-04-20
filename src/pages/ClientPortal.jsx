@@ -2155,6 +2155,65 @@ function OpsConsole() {
         <OutputBlock action="audit-verify" />
       </div>
 
+      {/* ── Revenue Signals ── */}
+      <div style={sectionHeader}>Revenue signals — what's earning</div>
+
+      <div style={card}>
+        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Blog + affiliate + store performance (30 days)</h4>
+        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          Top blog posts by views, affiliate clicks per post, CTR, clicks by Amazon / Gusto / 1Password network, and the last 20 outbound clicks. Tells you which posts to write more of.
+        </p>
+        <Button appearance="primary" onClick={() => run("revenue-signals", "GET")} disabled={running === "revenue-signals"}>
+          {running === "revenue-signals" ? "Loading…" : "Load revenue signals"}
+        </Button>
+        {output["revenue-signals"]?.data?.ok && (
+          <>
+            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+              <div style={{ padding: 10, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Blog views (30d)</div>
+                <div style={{ fontSize: 24, fontWeight: 700 }}>{(output["revenue-signals"].data.totals?.blogViews || 0).toLocaleString()}</div>
+              </div>
+              <div style={{ padding: 10, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Affiliate clicks (30d)</div>
+                <div style={{ fontSize: 24, fontWeight: 700 }}>{(output["revenue-signals"].data.totals?.affiliateClicks || 0).toLocaleString()}</div>
+              </div>
+              <div style={{ padding: 10, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Overall CTR</div>
+                <div style={{ fontSize: 24, fontWeight: 700 }}>{output["revenue-signals"].data.totals?.overallCtr || 0}%</div>
+              </div>
+            </div>
+            {output["revenue-signals"].data.postLeaderboard?.length > 0 && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Top posts by affiliate clicks</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12 }}>
+                  {output["revenue-signals"].data.postLeaderboard.slice(0, 10).map((p) => (
+                    <div key={p.slug} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "4px 8px", background: tokens.colorNeutralBackground2, borderRadius: 4 }}>
+                      <span style={{ fontFamily: "monospace", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.slug}</span>
+                      <span>{p.views.toLocaleString()} views</span>
+                      <span style={{ fontWeight: 600, color: p.clicks > 0 ? tokens.colorBrandForeground1 : undefined }}>{p.clicks} clicks</span>
+                      <span style={{ fontSize: 11, color: tokens.colorNeutralForeground3, minWidth: 50, textAlign: "right" }}>{p.ctr}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {output["revenue-signals"].data.clicksByNetwork?.length > 0 && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Clicks by affiliate network</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {output["revenue-signals"].data.clicksByNetwork.map((n) => (
+                    <Badge key={n.network} appearance="filled" color="brand">
+                      {n.network}: {n.clicks}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        <OutputBlock action="revenue-signals" />
+      </div>
+
       {/* ── Countermeasures ── */}
       <div style={sectionHeader}>Countermeasures — what the system did on its own</div>
 
