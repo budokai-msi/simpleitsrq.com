@@ -2947,6 +2947,101 @@
 .ad-in-article { margin: 32px 0; }
 .ad-in-feed    { grid-column: 1 / -1; min-height: 120px; margin: 8px 0; }
 
+/* ── Password-check tool ─────────────────────────────────── */
+.pw-check-form {
+  padding: 28px 28px 22px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+.pw-check-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted, #6b7280);
+  margin-bottom: 8px;
+}
+.pw-check-input-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pw-check-input {
+  flex: 1;
+  padding: 14px 44px 14px 16px;
+  font-size: 16px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: var(--text, #1a1a1a);
+  background: var(--surface-alt, #f7f7f8);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color .15s ease;
+}
+.pw-check-input:focus { border-color: var(--brand, #0F6CBD); }
+.pw-check-toggle {
+  position: absolute;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--muted, #6b7280);
+  border-radius: 6px;
+}
+.pw-check-toggle:hover { background: rgba(0, 0, 0, 0.05); }
+.pw-check-submit { margin-top: 14px; width: 100%; }
+.pw-check-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 16px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted, #6b7280);
+}
+.pw-check-privacy svg { flex-shrink: 0; margin-top: 2px; }
+.pw-check-privacy a { color: var(--brand, #0F6CBD); text-decoration: underline; }
+
+.pw-result {
+  margin-top: 28px;
+  padding: 28px;
+  border-radius: 14px;
+  text-align: left;
+}
+.pw-result > svg { margin-bottom: 12px; }
+.pw-result h2 { margin: 0 0 8px; font-size: 22px; font-weight: 700; }
+.pw-result p { margin: 0 0 18px; font-size: 15px; line-height: 1.6; }
+.pw-result-next { margin: 20px 0; padding: 18px 20px; background: rgba(0, 0, 0, 0.03); border-radius: 10px; }
+.pw-result-next h3 { margin: 0 0 12px; font-size: 14px; font-weight: 600; }
+.pw-result-next ol { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.65; }
+.pw-result-next li { margin-bottom: 6px; }
+.pw-result-safe { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+.pw-result-safe > svg { color: #059669; }
+.pw-result-pwned { background: #FEF2F2; border: 1px solid #FECACA; color: #7F1D1D; }
+.pw-result-pwned > svg { color: #DC2626; }
+.pw-result-error { background: #FFFBEB; border: 1px solid #FCD34D; color: #78350F; }
+.pw-result-error > svg { color: #D97706; }
+
+[data-theme="dark"] .pw-check-form {
+  background: var(--surface, #1a1d23);
+  border-color: var(--border, #2a2d35);
+}
+[data-theme="dark"] .pw-check-input {
+  background: var(--surface-alt, #0f1115);
+  color: var(--text, #fff);
+  border-color: var(--border, #2a2d35);
+}
+[data-theme="dark"] .pw-result-safe { background: rgba(6, 95, 70, 0.15); color: #A7F3D0; border-color: #065F46; }
+[data-theme="dark"] .pw-result-pwned { background: rgba(127, 29, 29, 0.2); color: #FECACA; border-color: #7F1D1D; }
+[data-theme="dark"] .pw-result-error { background: rgba(120, 53, 15, 0.2); color: #FCD34D; border-color: #78350F; }
+[data-theme="dark"] .pw-result-next { background: rgba(255, 255, 255, 0.04); }
+
 /* ── Security Academy landing page (pricing + CTA) ─────────── */
 .pricing-grid {
   display: grid;

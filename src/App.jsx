@@ -29,6 +29,7 @@ const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ defa
 const Tools = lazy(() => import("./pages/Tools"));
 const Store = lazy(() => import("./pages/Store"));
 const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
+const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
 
 function RouteFallback() {
   return (
@@ -277,6 +278,7 @@ export default function App() {
               <Route path="/tools" element={<Tools />} />
               <Route path="/store" element={<Store />} />
               <Route path="/security-academy" element={<SecurityAcademy />} />
+              <Route path="/password-check" element={<PasswordCheck />} />
               <Route path="/portal" element={<ClientPortal />} />
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/terms" element={<TermsPage />} />
