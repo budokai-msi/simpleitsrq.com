@@ -13,6 +13,12 @@ export const cities = {
     title: "Sarasota IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
     metaDescription: "Local IT support for Sarasota businesses. Flat monthly pricing, same-day response, HIPAA paperwork, and a real team that picks up the phone. Free IT check-up.",
     intro: "From the galleries on Main Street to the medical offices off Fruitville Road, Sarasota businesses depend on computers and internet that just work. Simple IT SRQ is the local IT team for dental groups, law firms, real-estate brokerages, boutique retailers, and professional-services firms from Lido Key to the UTC corridor. We watch your computers, email, and network around the clock — and when you need someone in person, we show up.",
+    servicesIntro: "Most Sarasota offices we support fall into one of three patterns: a medical or dental practice in the Fruitville corridor, a law or financial firm downtown, or a boutique retailer on St. Armands or Main Street. The services below apply to all three — the emphasis just shifts with the business.",
+    localPatterns: [
+      { title: "Medical practice, Fruitville corridor", body: "EHR uptime on whatever platform the practice uses, HIPAA paperwork built for cyber-insurance renewals, and a Wi-Fi plan that handles 10 providers plus chair-side tablets on the same network without dropping the imaging software." },
+      { title: "Law firm, downtown Sarasota", body: "Microsoft 365 security tuned for law firms, Clio or PracticePanther integrations, encrypted client-document sharing with audit trails, and the cyber-insurance evidence package insurers now demand at renewal — ready to hand over on day one." },
+      { title: "Boutique retailer, St. Armands / Main Street", body: "Point-of-sale uptime during peak tourist weekends, guest Wi-Fi that's isolated from the register network, security cameras that actually get reviewed after an incident, and back-office systems that survive a hurricane-season power dip." },
+    ],
     landmarks: ["Main Street Sarasota", "St. Armands Circle", "Lido Key", "Fruitville Road medical corridor", "Downtown Sarasota"],
     neighborhoods: "downtown Sarasota, St. Armands, Lido Key, Siesta Key, Osprey, the Rosemary District, and the Fruitville medical corridor",
     whyLocal: [
@@ -51,6 +57,12 @@ export const cities = {
     title: "Bradenton IT Support | Local Tech Team | Simple IT SRQ",
     metaDescription: "Local IT support, cybersecurity, and cloud services for Bradenton, FL businesses. Flat monthly pricing, HIPAA paperwork, same-day help. Free IT check-up.",
     intro: "Bradenton is our home. From the Riverwalk and downtown Old Main Street to the business parks off SR-64 and the medical offices on Manatee Avenue, Simple IT SRQ supports the local businesses that keep Manatee County running. We're the IT team for construction firms, marine businesses, independent medical practices, manufacturers, and professional-services companies across Bradenton, Palmetto, and Ellenton.",
+    servicesIntro: "Bradenton clients split roughly into three buckets: medical and dental practices on Manatee Avenue, construction and marine businesses near SR-64 and the Port, and professional-services firms across Palmetto and Ellenton. The services below apply everywhere — the priorities just shift with the trade.",
+    localPatterns: [
+      { title: "Construction firm, SR-64 corridor", body: "Rugged field laptops that survive the truck cab, cellular-backup networks at the job-site trailer, MDM for the foreman tablets, and a plan for the days when the office loses power but a concrete pour is still on the schedule." },
+      { title: "Marine business, Bradenton / Palmetto waterfront", body: "Reliable Wi-Fi that reaches the dock and the lift, mobile-device management for fleet iPads, invoicing systems that survive a hurricane-season power outage, and offsite backups that don't assume the mainland is online." },
+      { title: "Medical practice, Manatee Avenue", body: "EHR integration with the imaging or lab vendor the practice actually uses, quarterly tabletop exercises documented for the insurance binder, and the audit-ready HIPAA documentation the state surveyor opens first." },
+    ],
     landmarks: ["Bradenton Riverwalk", "Old Main Street", "Manatee Avenue medical corridor", "SR-64 business parks", "Downtown Bradenton"],
     neighborhoods: "downtown Bradenton, the Riverwalk and Old Main Street, West Bradenton, Palma Sola, Bayshore Gardens, and the Manatee Avenue medical corridor",
     whyLocal: [
@@ -89,6 +101,12 @@ export const cities = {
     title: "Lakewood Ranch IT Support | Local IT Help | Simple IT SRQ",
     metaDescription: "Local IT support for Lakewood Ranch professional services, medical, and finance offices. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone.",
     intro: "Lakewood Ranch is one of the fastest-growing planned communities in the country, and the professional offices clustered around Main Street, Lakewood Ranch Medical Center, and the UTC mall need IT that keeps up. Simple IT SRQ supports the law firms, financial advisors, medical practices, and real-estate brokerages building their businesses across Lakewood Ranch — from Waterside Place to the shops at University Town Center.",
+    servicesIntro: "Lakewood Ranch is a professional-services town: law, finance, medical, insurance, real estate. Most of our LWR clients are 15-to-50-person offices chasing a cyber-insurance renewal or building out a new suite at Center Point or Waterside Place. The services below show up on every engagement — the order on the list just rearranges.",
+    localPatterns: [
+      { title: "Financial advisory firm, LWR Main Street", body: "SEC + GLBA documentation written to what examiners actually ask in 2026, MFA hardware keys on every admin account, encrypted email workflows that don't break Outlook, and quarterly phishing tests with results packaged for the compliance binder." },
+      { title: "Real estate brokerage, UTC corridor", body: "Agent account churn without the lost-email drama, shared-drive governance per team, MLS and transaction-management integrations, and commission-software uptime the day before every closing." },
+      { title: "Medical specialist, LWR Medical Center area", body: "HIPAA, cyber-insurance evidence, and the EHR-vendor coordination nobody wants to do themselves — we book the vendor calls, document the integrations, and keep the audit file current between renewal cycles." },
+    ],
     landmarks: ["Lakewood Ranch Main Street", "University Town Center (UTC) mall", "Waterside Place", "Lakewood Ranch Medical Center", "Center Point corporate park"],
     neighborhoods: "Lakewood Ranch Main Street, Waterside Place, Country Club East, Central Park, the UTC corridor, and the business parks along SR-70",
     whyLocal: [
@@ -127,6 +145,12 @@ export const cities = {
     title: "Nokomis IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
     metaDescription: "Local IT support for Nokomis and Casey Key businesses. Same-day help, flat monthly pricing, HIPAA paperwork, and a real team based in Sarasota County. Free IT check-up.",
     intro: "Nokomis sits at the quiet south end of Sarasota County where Casey Key meets the mainland — and the small businesses here deserve IT support that actually shows up. Simple IT SRQ supports the vacation rental companies, marine services, medical offices, real-estate firms, and professional-service practices along US-41 and Albee Road. We're 15 minutes away, not two hours from Tampa.",
+    servicesIntro: "Nokomis clients are mostly 5-to-30-person offices along US-41 and Casey Key. The mix leans vacation rental, marine services, and independent medical — each with its own seasonal rhythm. We size everything for the November-through-April surge, not the sleepy summer.",
+    localPatterns: [
+      { title: "Vacation rental management, Casey Key", body: "Smart-lock integrations that stay synced with the booking calendar, guest Wi-Fi per property separated from the owner network, booking-system uptime during Jan-Mar peak, and an off-island data backup nobody in the Casey Key rental world is actually doing." },
+      { title: "Marine services, US-41 corridor", body: "Shop-floor Wi-Fi that reaches past the lift, invoicing systems that work from a captain's phone when the tech is at the dock, inventory for parts that ride out the SR-681 gap during a storm, and hurricane plans written for a week without power." },
+      { title: "Independent medical, Laurel / south Osprey", body: "HIPAA-ready documentation, phone coverage that survives barrier-island weather (cellular backup + call-forwarding to personal devices), and an incident response that assumes the EHR vendor hotline has a 90-minute hold time." },
+    ],
     landmarks: ["Nokomis Beach", "Casey Key", "US-41 corridor", "Albee Road", "North Jetty Park"],
     neighborhoods: "Nokomis, Casey Key, Laurel, south Osprey, and the US-41 business corridor between Venice and Sarasota",
     whyLocal: [
@@ -165,6 +189,12 @@ export const cities = {
     title: "Venice IT Support | Local IT Help and HIPAA Compliance | Simple IT SRQ",
     metaDescription: "Local IT support for Venice, FL businesses. Same-day help for medical, legal, and professional offices along Venice Avenue, Jacaranda, and the airport corridor. Flat monthly pricing and HIPAA-ready compliance work.",
     intro: "Venice has a business mix you don't find anywhere else on the Gulf Coast: a healthcare cluster around the hospital, a historic downtown full of long-running professional practices, and a wave of newer offices around the Jacaranda and airport corridors. Those offices also deal with something the rest of the region doesn't — a real snowbird season that doubles network load from November to April. Simple IT SRQ handles IT for the Venice medical groups, law firms, accounting practices, dental offices, and real-estate brokerages that need a local team who understands both the seasonal surge and the year-round compliance grind.",
+    servicesIntro: "Venice is really two towns at once — a downtown of long-running professional practices, and a healthcare cluster around ShoreView Hospital. Both roughly double in network load November through April. We build for that seasonal reality, not the summer average.",
+    localPatterns: [
+      { title: "Dental or medical specialist, Venice Avenue / near ShoreView", body: "Snowbird-season network sizing (firewalls, APs, and ISP plans spec'd for the peak), HIPAA paperwork aligned to 2026 cyber-insurance renewal forms, and an EHR vendor point-of-contact log that saves an hour on every support call." },
+      { title: "Law firm, historic downtown Venice", body: "Document security with matter-level access, client portal uptime, matter-based backups that ignore the rest of the drive, and the three-times-a-year phishing-simulation evidence the Florida Bar's risk-management CLEs now quietly expect." },
+      { title: "Imaging or physical therapy, Jacaranda corridor", body: "DICOM uptime with cross-site replication to a second suite, badge-reader access control that ties into the practice's HR onboarding, and an incident-response runbook the front desk can actually read at 7:45am when things go sideways." },
+    ],
     landmarks: ["Historic Venice Avenue", "Shamrock Park business corridor", "ShoreView Hospital (formerly Venice Regional Bayfront Health)", "Venice Municipal Airport", "Jacaranda Plaza", "The Legacy Trail"],
     neighborhoods: "Historic downtown Venice, Venice Island, the Jacaranda corridor, East Venice, the Venice airport business district, South Venice, and Englewood-adjacent offices off River Road",
     whyLocal: [
