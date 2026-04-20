@@ -17,6 +17,34 @@ const env = import.meta.env;
 
 export const products = [
   {
+    slug: "security-academy",
+    title: "Simple IT SRQ Security Academy",
+    tagline: "Security awareness training your team will actually finish — required by every 2026 cyber-insurance policy.",
+    price: 12,
+    priceSuffix: "/user/mo",
+    priceNote: "10-user minimum · annually billed · cancel anytime",
+    annualPrice: 100,
+    audience: "Any Florida small business whose cyber-insurance carrier requires annual security training — which is all of them in 2026. Also any HIPAA-covered dental, medical, physical-therapy, or specialty practice.",
+    description:
+      "A branded, fully-managed security awareness program for your staff. Monthly 5-minute training modules, quarterly phishing simulations keyed to your industry, user-by-user risk scoring, and an annual compliance report that drops straight into your Cyber-Insurance Evidence Binder. White-labeled under the Simple IT SRQ brand, operated by our team end-to-end.",
+    contents: [
+      "Monthly 5-minute training modules covering phishing, password hygiene, device security, data handling, incident reporting, remote-work safety",
+      "Quarterly phishing simulations with industry-specific lures — medical-office templates for dental/physical therapy, legal for law firms, listing-based for real estate, invoice-fraud for retail",
+      "User-by-user risk score updated monthly — see which staff members need extra attention before they cost you a breach",
+      "Annual compliance report in Simple IT SRQ branding — drops into your Cyber-Insurance Evidence Binder (or the HIPAA Starter Kit binder)",
+      "Automated new-hire enrollment via Microsoft 365 / Google Workspace directory sync — new staff auto-enrolled on hire, auto-removed on departure",
+      "Admin dashboard for HR / office manager to see completion + scoring — under 15 minutes/month to operate",
+      "Monthly executive summary email to the owner — three sentences, not three pages",
+      "HIPAA-specific training track for medical/dental practices at no extra cost",
+      "Direct engineer support from our Sarasota team — ask us anything, we answer in hours not days",
+    ],
+    waitlistOnly: true,
+    buyLink: null,
+    previewUrl: "/products/security-academy-preview.md",
+    featured: true,
+    priority: 0.5,
+  },
+  {
     slug: "compliance-library",
     title: "Complete Florida Compliance Library",
     tagline: "All five templates. One download. Save $116 vs. buying them separately.",
