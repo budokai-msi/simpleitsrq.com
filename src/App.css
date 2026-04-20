@@ -2947,6 +2947,70 @@
 .ad-in-article { margin: 32px 0; }
 .ad-in-feed    { grid-column: 1 / -1; min-height: 120px; margin: 8px 0; }
 
+/* ── Security Academy landing page (pricing + CTA) ─────────── */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 32px;
+}
+.pricing-card {
+  position: relative;
+  padding: 28px 24px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 14px;
+  text-align: center;
+}
+.pricing-card.is-featured {
+  border-color: var(--brand, #0F6CBD);
+  box-shadow: 0 0 0 1px var(--brand, #0F6CBD);
+}
+.pricing-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  background: var(--brand, #0F6CBD);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.pricing-card h3 { margin: 0 0 12px; font-size: 16px; color: var(--muted, #6b7280); font-weight: 600; }
+.pricing-price { display: flex; align-items: baseline; justify-content: center; gap: 2px; margin-bottom: 8px; }
+.pricing-amount { font-size: 44px; font-weight: 800; color: var(--text, #1a1a1a); letter-spacing: -0.02em; }
+.pricing-unit { font-size: 14px; color: var(--muted, #6b7280); }
+.pricing-min { margin: 0 0 4px; font-size: 12px; color: var(--muted, #6b7280); }
+.pricing-best { margin: 0 0 18px; font-size: 13px; color: var(--muted, #6b7280); }
+.pricing-examples {
+  margin-top: 40px;
+  padding: 24px 28px;
+  background: var(--surface-alt, #f7f7f8);
+  border-radius: 12px;
+  border: 1px solid var(--border, #e5e7eb);
+}
+.pricing-examples h3 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+.pricing-examples ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.pricing-examples li { font-size: 14px; color: var(--text, #1a1a1a); }
+
+.section-cta { background: linear-gradient(135deg, #0F6CBD 0%, #2563eb 100%); color: #fff; }
+.section-cta .eyebrow,
+.section-cta h2 { color: #fff; }
+.cta-card { text-align: center; padding: 20px 0; }
+.cta-card h2 { margin: 0 0 14px; font-size: 30px; color: #fff; }
+.cta-card p { margin: 0 auto 22px; max-width: 620px; font-size: 15px; line-height: 1.6; opacity: 0.95; }
+.cta-card .btn-primary { background: #fff; color: var(--brand, #0F6CBD); }
+.cta-card .btn-primary:hover { background: #f7f7f8; }
+
+[data-theme="dark"] .pricing-card { background: var(--surface, #1a1d23); border-color: var(--border, #2a2d35); }
+[data-theme="dark"] .pricing-amount { color: var(--text, #fff); }
+[data-theme="dark"] .pricing-examples { background: var(--surface, #1a1d23); border-color: var(--border, #2a2d35); }
+
 /* ── Tools-used footer (auto-extracted Amazon affiliate block) ─────── */
 .tools-used-footer {
   margin: 40px 0;

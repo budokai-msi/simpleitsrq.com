@@ -161,7 +161,7 @@ function SeriesCard({ product }) {
     <article className="series-card">
       <header className="series-card-head">
         <div className="series-card-icon"><FileText size={20} /></div>
-        <div className="series-card-price">${product.price}</div>
+        <div className="series-card-price">${product.price}{product.priceSuffix || ""}</div>
       </header>
       <h3 className="series-card-title">{product.title}</h3>
       <p className="series-card-tagline">{product.tagline}</p>
