@@ -31,6 +31,16 @@ export async function GET(request) {
     return json(400, { ok: false, error: "invalid_provider" });
   }
 
+  // Feature-gate: if the provider's client-id env var isn't set, return a
+  // clean 400 instead of letting buildAuthorizeUrl throw and cascade into
+  // a 500. UI already hides unavailable providers via /api/auth/session;
+  // this just makes the direct-URL case non-scary for bots + crawlers.
+  const cfg = PROVIDERS[provider];
+  const providerId = process.env[cfg.clientIdEnv];
+  if (!providerId) {
+    return json(400, { ok: false, error: "provider_not_configured", provider });
+  }
+
   try {
     const state = await createOAuthState(provider, redirectTo);
     const authorizeUrl = buildAuthorizeUrl(provider, state, request);

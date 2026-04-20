@@ -45,7 +45,7 @@
     { "source": "/phpinfo.php",                "destination": "/api/hp?canary=1&orig=phpinfo.php" },
     { "source": "/_ignition/:path*",           "destination": "/api/hp?canary=1&orig=ignition" },
 
-    { "source": "/:path*", "destination": "/index.html" }
+    { "source": "/((?!api/|_vercel/|assets/|fonts/).*)", "destination": "/index.html" }
   ],
   "headers": [
     {
