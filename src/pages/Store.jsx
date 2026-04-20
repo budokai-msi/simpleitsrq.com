@@ -210,6 +210,7 @@ export default function Store() {
   const series = products
     .filter((p) => p.featured && p.slug !== featured.slug && !p.isBundle)
     .sort((a, b) => a.priority - b.priority);
+  const managedServices = products.filter((p) => p.isManagedService);
 
   useSEO({
     title: "Florida HIPAA Starter Kit | Simple IT SRQ",
@@ -316,6 +317,37 @@ export default function Store() {
           </div>
         </div>
       </section>
+
+      {/* MANAGED SERVICES — recurring-revenue offerings like Security Academy.
+          Distinct card style from the one-shot templates so visitors see this
+          as a different kind of product. */}
+      {managedServices.length > 0 && (
+        <section className="section">
+          <div className="container">
+            <div className="section-head">
+              <span className="eyebrow">Managed service</span>
+              <h2 className="title-1">Prefer a recurring program to a one-shot template?</h2>
+              <p className="section-sub">Fully-managed security-awareness training for your team — monthly 5-minute modules, quarterly phishing simulations, annual compliance report. Priced per user per month. Waitlist open for Q3 2026 launch.</p>
+            </div>
+            <div className="managed-service-grid">
+              {managedServices.map((s) => (
+                <Link key={s.slug} to="/security-academy" className="managed-service-card">
+                  <div className="managed-service-head">
+                    <span className="managed-service-badge">Ongoing service</span>
+                    <div className="managed-service-price">
+                      <span className="managed-service-amount">${s.price}</span>
+                      <span className="managed-service-unit">{s.priceSuffix || ""}</span>
+                    </div>
+                  </div>
+                  <h3>{s.title}</h3>
+                  <p>{s.tagline}</p>
+                  <span className="managed-service-cta">Learn more <ArrowRight size={14} /></span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* BUNDLE banner — shown between featured hero + the series grid */}
       {bundle && (

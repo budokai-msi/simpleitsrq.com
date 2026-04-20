@@ -193,6 +193,7 @@ export default function Support() {
                   <select
                     name="priority" value={form.priority} onChange={update("priority")}
                     disabled={submitting}
+                    aria-label="Ticket priority"
                   >
                     {PRIORITIES.map((p) => (
                       <option key={p.value} value={p.value}>{p.label}</option>
@@ -204,6 +205,7 @@ export default function Support() {
                   <select
                     name="category" value={form.category} onChange={update("category")}
                     disabled={submitting}
+                    aria-label="Ticket category"
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c} value={c}>{c}</option>

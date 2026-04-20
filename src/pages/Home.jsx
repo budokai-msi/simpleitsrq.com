@@ -2,7 +2,7 @@
   Headphones, Server, ShieldCheck, Lock, Cloud, FileCheck,
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
   Phone, Mail, MapPin, Clock, Star, Check, ArrowRight, Wifi, Briefcase,
-  Loader2, CheckCircle2, AlertCircle, Send
+  Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useRef } from "react";
@@ -248,6 +248,45 @@ function Testimonial() {
             <span> Practice Administrator, Sarasota dental group</span>
           </figcaption>
         </figure>
+      </div>
+    </section>
+  );
+}
+
+function FreeTools() {
+  return (
+    <section className="section" id="free-tools" aria-labelledby="free-tools-title">
+      <div className="container">
+        <div className="section-head">
+          <span className="eyebrow">Free + Upgrade</span>
+          <h2 id="free-tools-title" className="title-1">Try a tool, train your team, or skip ahead</h2>
+          <p className="section-sub">
+            Three ways to engage without ever calling us — one is free, one is recurring, one is a $29 one-shot.
+          </p>
+        </div>
+        <div className="free-tools-grid">
+          <Link to="/password-check" className="free-tools-card">
+            <span className="free-tools-icon"><Key size={22} /></span>
+            <span className="free-tools-tag">Free · No signup</span>
+            <h3>Is your password breached?</h3>
+            <p>Privacy-preserving check against 800M+ known-breached passwords. Password never leaves your browser. Same technique 1Password Watchtower uses.</p>
+            <span className="free-tools-cta">Run the check <ArrowRight size={14} /></span>
+          </Link>
+          <Link to="/security-academy" className="free-tools-card is-featured">
+            <span className="free-tools-icon"><GraduationCap size={22} /></span>
+            <span className="free-tools-tag">Recurring · From $12/user/mo</span>
+            <h3>Simple IT SRQ Security Academy</h3>
+            <p>Fully-managed security awareness training for your team. Monthly 5-minute modules, quarterly phishing sims, annual compliance report your carrier will love.</p>
+            <span className="free-tools-cta">Join the waitlist <ArrowRight size={14} /></span>
+          </Link>
+          <Link to="/store/saas-incident-response-playbook" className="free-tools-card">
+            <span className="free-tools-icon"><FileCheck size={22} /></span>
+            <span className="free-tools-tag">$29 · One-shot</span>
+            <h3>SaaS Incident Response Playbook</h3>
+            <p>The 14-page printable fillable version of our vendor-breach audit. Florida FIPA-aware. Drops into your cyber-insurance binder. Written the morning two SaaS vendors had a bad day.</p>
+            <span className="free-tools-cta">See the preview <ArrowRight size={14} /></span>
+          </Link>
+        </div>
       </div>
     </section>
   );
@@ -575,6 +614,7 @@ export default function Home() {
       <Compliance />
       <Testimonial />
       <BlogPreview />
+      <FreeTools />
       <RecommendedTools />
       <StatsBar />
       <CtaBanner />
