@@ -215,6 +215,8 @@ All of the above — the Notion audit, the SaaS inventory, the vendor-breach res
 
 If your Sarasota, Bradenton, or Venice business uses Notion for anything client-facing and wants a set of outside eyes on the public-page list, [**reach out**](/#contact). We'll spend 45 minutes walking through your workspace with you on a screen share. No charge. Just hand us the integration token and we'll produce the list.
 
+If you'd rather run the vendor piece yourself — Notion is just one vendor of many in the stack — our [**Vendor Risk Register**](/store/vendor-risk-register) ($19) is pre-populated with 40+ SaaS vendors including Notion's latest risk rating after this incident.
+
 ---
 
 **Product links are Amazon affiliate links.**`,
@@ -390,6 +392,8 @@ A few specific things we've talked ourselves out of:
 
 If your Sarasota, Bradenton, or Venice business wants a quick walk-through of which of your devices should be replaced this quarter vs. next year, [**reach out**](/#contact) — we'll look at your asset list and give you a 12-month hardware plan with actual dollar figures.
 
+If you'd rather work through the planning yourself with a template we've used across 30+ client offices, our [**365-Day IT Budget Calendar**](/store/it-budget-calendar) ($29) is the fastest way to map the next 12 months of hardware + SaaS + compliance spend onto one page.
+
 ---
 
 **Related reading:** [WiFi dead spots in small offices](/blog/office-wifi-dead-spots-sarasota-bradenton-fix) · [Docking stations for hybrid offices](/blog/laptop-docking-station-hybrid-office-bradenton)
@@ -485,6 +489,8 @@ Three questions to ask before you copy this playbook:
 **3. Can you absorb a 4-week productivity dip?** Real designers need 2-4 weeks to re-learn keyboard shortcuts and panel layouts. Light users absorb the change in a single afternoon. Plan around the difference.
 
 If your Sarasota or Bradenton office wants a read of which Creative Cloud seats are candidates for the chop and what to replace them with, [**we'll audit your seats for free**](/#contact) — it's usually a 30-minute conversation and saves most small offices $3-10k a year.
+
+For a more general "what SaaS are we actually using and what's the risk profile" audit, our [**Vendor Risk Register**](/store/vendor-risk-register) ($19) ships with 40+ common Sarasota SMB SaaS vendors pre-populated. Opening it gives you most of the answers before you fill in anything.
 
 ---
 

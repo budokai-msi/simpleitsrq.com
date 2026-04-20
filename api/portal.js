@@ -1317,6 +1317,10 @@ async function runCreateAllPaymentLinks() {
     { slug: "hurricane-it-playbook",  title: "Hurricane-Season IT Continuity Playbook",        price: 49,  envVar: "VITE_PRODUCT_HURRICANE_KIT_BUY_URL" },
     { slug: "onboarding-runbook",     title: "Employee Onboarding + Offboarding IT Runbook",   price: 39,  envVar: "VITE_PRODUCT_ONBOARDING_KIT_BUY_URL" },
     { slug: "saas-incident-response-playbook", title: "SaaS Incident Response Playbook",        price: 29,  envVar: "VITE_PRODUCT_SAAS_IR_BUY_URL" },
+    { slug: "vendor-risk-register",   title: "Vendor Risk Register for Small Business",         price: 19,  envVar: "VITE_PRODUCT_VENDOR_RISK_BUY_URL" },
+    { slug: "it-budget-calendar",     title: "365-Day IT Budget Calendar Template",             price: 29,  envVar: "VITE_PRODUCT_BUDGET_CALENDAR_BUY_URL" },
+    { slug: "cyber-insurance-evidence-binder", title: "Cyber-Insurance Evidence Binder Template", price: 39, envVar: "VITE_PRODUCT_INSURANCE_BINDER_BUY_URL" },
+    { slug: "ransomware-tabletop-kit", title: "Ransomware Tabletop Exercise Kit",               price: 49,  envVar: "VITE_PRODUCT_TABLETOP_KIT_BUY_URL" },
     { slug: "compliance-library",     title: "Complete Florida Compliance Library",            price: 299, envVar: "VITE_PRODUCT_BUNDLE_BUY_URL" },
   ];
 
