@@ -6,7 +6,34 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Sun, 19 Apr 2026 23:32:23 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 20 Apr 2026 01:36:56 GMT</lastBuildDate>
+    <item>
+      <title>The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here&apos;s What to Buy Now.</title>
+      <link>https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>If you have a laptop refresh cycle coming up in the next 18 months, pull the decision forward. DDR5 pricing already doubled in Q1 and the AI data-center buildout means it may not come back down until 2028. Here&apos;s what a Sarasota office should buy now.</description>
+    </item>
+    <item>
+      <title>What We Replaced Adobe Creative Cloud With in a 14-Person Sarasota Office (and Kept)</title>
+      <link>https://simpleitsrq.com/blog/adobe-alternatives-small-office-creative-stack-2026</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/adobe-alternatives-small-office-creative-stack-2026</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>We migrated a Sarasota real-estate-marketing agency off Adobe Creative Cloud this spring. Twelve of fourteen seats moved to a cheaper stack. Two didn&apos;t. Here&apos;s the tool-by-tool breakdown — and why we didn&apos;t chase the last two.</description>
+    </item>
+    <item>
+      <title>Claude Opus 4.7 Dropped This Week. Your Small Business Should Not Care.</title>
+      <link>https://simpleitsrq.com/blog/ai-model-switching-small-business-claude-gemini-chatgpt</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-model-switching-small-business-claude-gemini-chatgpt</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>AI &amp; Productivity</category>
+      <description>Opus 4.7 replaced 4.6 last week. Benchmarks traded places. Your staff didn&apos;t notice. For small businesses, the conversation that matters isn&apos;t &apos;which model is best,&apos; it&apos;s &apos;which subscription and which habits.&apos; Here&apos;s the framework we use with clients.</description>
+    </item>
     <item>
       <title>Two SaaS Vendors Had a Bad Day — Here&apos;s the 30-Minute Check Every Small Business Should Run</title>
       <link>https://simpleitsrq.com/blog/vercel-notion-breach-saas-audit</link>
@@ -15,6 +42,15 @@
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Security</category>
       <description>Today&apos;s top security stories are both about SaaS vendors, not ransomware crews. If you run a small business on Microsoft 365 + Notion + Vercel + half a dozen other tools, this is the 30-minute check you should run before Monday.</description>
+    </item>
+    <item>
+      <title>Your Employees Are Using AI at Work (And You Need a Policy)</title>
+      <link>https://simpleitsrq.com/blog/employee-ai-policy-sarasota-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/employee-ai-policy-sarasota-small-business</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>AI &amp; Productivity</category>
+      <description>ChatGPT, Claude, and other AI tools are in your office right now—whether you know it or not. Heres why you need an AI policy before something goes wrong.</description>
     </item>
     <item>
       <title>Floridas New Data Privacy Law: What Sarasota Small Businesses Need to Know</title>
