@@ -3,6 +3,291 @@
 
 export const posts = [
   {
+    slug: "ram-shortage-small-business-hardware-budget-sarasota",
+    title: "The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here's What to Buy Now.",
+    metaDescription: "AI workloads have spiked DDR5 demand so hard that analysts expect a 2-3 year RAM shortage. For Sarasota small businesses this is an IT budget conversation, not a tech headline. What to buy this quarter to avoid paying 2X next year.",
+    date: "2026-04-19",
+    author: "Simple IT SRQ Team",
+    category: "Business Tech",
+    tags: ["hardware", "budgeting", "ram", "ddr5", "smb", "sarasota", "bradenton"],
+    excerpt: "If you have a laptop refresh cycle coming up in the next 18 months, pull the decision forward. DDR5 pricing already doubled in Q1 and the AI data-center buildout means it may not come back down until 2028. Here's what a Sarasota office should buy now.",
+    heroAlt: "Close-up of DDR5 memory modules on a motherboard in a Sarasota small office, with a calendar and budget spreadsheet visible in the background.",
+    content: `## The story nobody told you about your next laptop
+
+If you've priced out a new workstation or laptop in the last few weeks and felt like the numbers didn't quite match what you remembered from last fall, you're not imagining it. DDR5 memory prices are up about 100% since January, DDR4 is up close to 70%, and most server-grade RAM has either a waitlist, a premium surcharge, or both.
+
+The reason is upstream of your office entirely. Hyperscalers — the AWS, Google, Microsoft, Oracle set — are building out AI inference capacity on a schedule that consumes roughly 50% of global DRAM production for the next three years. Samsung and SK Hynix have both publicly guided that they don't expect meaningful spot relief until late 2027 or 2028.
+
+For someone running a 12-person office in Sarasota or Bradenton, that abstract supply-chain story maps to a very concrete question: **what do we buy this quarter, and what do we delay?**
+
+## The math on a typical office refresh
+
+Say you have 15 staff members, 12 workstations on a rolling 4-year refresh, and three aging servers you were planning to consolidate this summer. Back-of-envelope at today's prices:
+
+- **Laptop with 16 GB DDR5:** ~$1,200–1,600
+- **Same laptop with 32 GB DDR5:** ~$1,700–2,100
+- **Workstation desktop with 64 GB DDR5:** ~$2,400–3,000
+- **Rack server refresh, 256 GB ECC:** ~$14,000+
+
+Last year at this time, those prices were $900 / $1,200 / $1,800 / $8,500. The gap is going to get wider before it gets better. The question is whether your staff can tolerate cheaper 8 GB or 16 GB machines if you're buying right now, or whether spending an extra $500 per device to hit 32 GB is worth it before next year's 32-GB price equals today's 64 GB.
+
+Our advice to clients this spring has been: **don't trade down on memory.** The rest of the spec — CPU generation, SSD, display — holds value for roughly the full refresh cycle. Memory is the component that most limits how long a machine stays useful. A laptop with 16 GB in 2026 is what a laptop with 4 GB was in 2018: fine for email, unusable for anything real. We're pushing clients toward 32 GB as the new floor for any employee doing Excel, Teams, or browser-heavy work, and 64 GB for anyone running CAD, video editing, or virtual machines.
+
+## What to actually do this quarter
+
+Here's the playbook we're running with our Sarasota and Bradenton managed-services clients right now:
+
+**1. Pull forward any refresh scheduled for Q3 or Q4.** If you had a budget line item to replace three workstations in October, buy two of them in May or June instead. The price delta between "today" and "October" is estimated at 15-25% for the same spec. Even factoring in the carrying cost of gear you won't deploy for three months, you come out ahead.
+
+**2. Buy 32 GB as the floor, 64 GB if there's any chance of long-term use.** Two years from now, when the shortage has worked itself out and DDR5 is back to 2024 pricing, the extra $200-400 you spent today will feel like a rounding error. The machine with 16 GB will feel obsolete.
+
+**3. Top off existing machines before they hit EOL.** That 5-year-old desktop with 8 GB that's limping along? A stick of DDR4 to bring it to 16 GB still runs $40-70 if you move soon. That same stick next year will probably be $90-130 or on backorder. If the machine's motherboard supports the upgrade and the SSD is under 80% full, buy a [[amazon_search:crucial 16gb ddr4 laptop ram upgrade|compatible DDR4 kit]] and extend the life by another 18 months. It's the cheapest productivity upgrade in IT right now.
+
+**4. Don't panic-buy server RAM.** Server-grade ECC RAM is the hardest-hit part of the market but it's also the component most businesses don't need more of. Before you sign a $14,000 PO for a new rack, ask whether consolidating onto a smaller cloud footprint (Microsoft 365 file shares + cloud apps + a single local NAS for backup) removes the need for the hardware entirely. For a 15-person office with no special compliance need to keep workloads on-prem, the answer is almost always yes.
+
+**5. Buy a UPS while you're at it.** Unrelated to the RAM story but relevant to the "buy now" theme: lithium-iron-phosphate UPS units have roughly doubled in utility since we last recommended them and prices have finally stabilized. A [[amazon_search:apc lithium ups 1500va rack mount|rack-mount LiFePO4 UPS]] now outlasts the lead-acid units at roughly 1.5x the upfront cost and 4x the lifespan. For small offices with a single server closet, this is the "buy once, forget about it" upgrade we push on every refresh cycle.
+
+## The cloud math just got better
+
+There's a second-order effect nobody talks about yet: the RAM shortage makes cloud migration cheaper in relative terms. Microsoft 365 per-seat pricing doesn't fluctuate with spot DDR5 prices — but a hardware refresh to keep on-prem Exchange or SharePoint running absolutely does.
+
+Florida small businesses that have been putting off the move to Microsoft 365 or Google Workspace because "we already own the server" are doing the math wrong. The server you own has a RAM-replacement cost that just moved from $800 to $1,500. The migration you've been avoiding now pays back in 18 months instead of 36.
+
+This is the calendar we're using with clients who are still on a Windows Server in a closet:
+
+- **Q2 2026:** Audit current server workloads. Identify which can move to Microsoft 365, which to a $20/mo cloud VM, and which genuinely need to stay local.
+- **Q3 2026:** Run the migration for the cloud-ready workloads (email, shared files, basic line-of-business apps with web versions).
+- **Q4 2026:** Consolidate what remains onto a single workstation-class machine with 64 GB. Decommission the old server. Sell the hardware if there's any resale value, recycle it if not.
+
+A 15-person office that runs this plan saves roughly $9,000-12,000 in hardware avoided (server refresh deferred into the shortage window) plus 2-3 hours a week of IT time, at the cost of a migration project that's billable but finite. Every RAM price bump makes that math better.
+
+## What we're not doing
+
+A few specific things we've talked ourselves out of:
+
+- **Over-buying memory "just in case."** Nobody is hoarding. Capacity that sits idle is value that depreciates. Buy what you need for 3 years of the refresh cycle, then stop.
+- **Switching to older DDR4-only hardware to save money today.** It looks cheaper now but the platform is end-of-life. You'll be back in this same conversation in 2028 with an even worse market.
+- **Panic-migrating to public cloud IaaS.** Running your workloads on AWS EC2 in 2026 is expensive even at normal RAM prices. The cost curve is not in your favor unless you have variable workloads that genuinely need autoscaling.
+
+## The short version
+
+- Pull any Q3/Q4 hardware refresh forward into Q2 if you can.
+- 32 GB is the new 16 GB. Don't undershoot.
+- Upgrade in-place before replacing. A [[amazon_search:crucial 32gb ddr5 desktop memory|32 GB DDR5 kit]] right now is cheaper than the refresh it postpones.
+- If you've been on the fence about cloud, the fence just got a lot tippier. Run the math again.
+- Quality peripherals hold value longer than RAM right now. A [[amazon_search:logitech mx master 3s|pro-tier keyboard and mouse]] that outlasts three laptops is a better buy today than it was last year.
+
+If your Sarasota, Bradenton, or Venice business wants a quick walk-through of which of your devices should be replaced this quarter vs. next year, [**reach out**](/#contact) — we'll look at your asset list and give you a 12-month hardware plan with actual dollar figures.
+
+---
+
+**Related reading:** [WiFi dead spots in small offices](/blog/office-wifi-dead-spots-sarasota-bradenton-fix) · [Docking stations for hybrid offices](/blog/laptop-docking-station-hybrid-office-bradenton)
+
+**Product links on this page are Amazon affiliate links — we earn a small commission on qualifying purchases, which helps keep the advice here free.**`,
+  },
+  {
+    slug: "adobe-alternatives-small-office-creative-stack-2026",
+    title: "What We Replaced Adobe Creative Cloud With in a 14-Person Sarasota Office (and Kept)",
+    metaDescription: "Adobe Creative Cloud at $70/seat/month adds up fast for a small Florida office. Here's the mixed stack we moved a 14-person agency to — what worked, what didn't, and what we had to keep Adobe for anyway.",
+    date: "2026-04-19",
+    author: "Simple IT SRQ Team",
+    category: "Business Tech",
+    tags: ["adobe", "software", "saas", "budgeting", "creative", "smb", "sarasota"],
+    excerpt: "We migrated a Sarasota real-estate-marketing agency off Adobe Creative Cloud this spring. Twelve of fourteen seats moved to a cheaper stack. Two didn't. Here's the tool-by-tool breakdown — and why we didn't chase the last two.",
+    heroAlt: "A laptop screen in a Sarasota agency office showing Affinity Designer, Figma, and Canva side by side, with a monthly subscription comparison on paper beside it.",
+    content: `## The $12,000 question
+
+A 14-person real-estate-marketing agency we support in west Bradenton called us in February with a specific complaint. Adobe Creative Cloud was costing them $980 a month across 14 seats, which translated to just under $12,000 a year. Three of the seats were used intensively. Six were used maybe 2-3 times a month for minor edits. Five were on the license because the staff member had asked at some point and nobody had ever reclaimed them.
+
+The conversation started with "can we cut the unused seats?" It ended three weeks later with us migrating 12 of the 14 seats off Adobe entirely and saving roughly $8,700 a year. Two seats stayed on Creative Cloud because there are workflows nothing else handles yet. That's the story most Adobe-alternative articles skip: the honest version is a mixed stack, not a triumphant all-out migration.
+
+Here's what we replaced, what we kept, and what we learned.
+
+## Who got moved off, and to what
+
+**Six light users moved to Canva Pro.** These were the staff who needed to drop a logo on a listing flyer, resize a social media graphic, or update a listing presentation from a template. [Canva](https://www.canva.com) at $15/month per seat does this job better than Photoshop ever did, because the template ecosystem and brand-kit management are actually designed for shared use across a team. Migration took a weekend — we exported each staff member's "most used" templates from Photoshop, rebuilt them in Canva's brand-kit system, and flipped the licenses on Monday morning. Three of those six people told us they were *relieved* they didn't have to open Photoshop anymore.
+
+**Three design-heavy users moved to Affinity.** The real designers on the team — the ones producing print brochures, detailed property renderings, and custom marketing collateral — moved to Affinity Designer, Affinity Photo, and Affinity Publisher. One-time license of $170 per app, no subscription. For the three seats combined that's about $1,500 as a one-shot versus $2,500/year in Creative Cloud fees. Payback was ~7 months. The designers grumbled for the first two weeks (keyboard shortcuts, missing filters they had memorized) and then settled in. By month three they weren't asking to go back.
+
+**Three web/brand people moved to Figma.** Our agency's web-and-brand work mostly lives in Figma already. Anyone who was using Illustrator for logos, Photoshop for mockups, or XD for prototypes moved fully to Figma. The one pushback point was print prep — Figma is not a print tool — which is why two of these three still occasionally open Affinity Publisher for a trifold brochure. But for the 80% case (web mockups, brand systems, social media specs), Figma absorbed the whole workflow.
+
+## Who stayed on Adobe
+
+Two seats kept Creative Cloud:
+
+**The lead motion designer.** After Effects has no honest competitor yet. DaVinci Resolve's Fusion tab is close for compositing, but the integrated-with-Illustrator-and-Photoshop workflow that After Effects has is genuinely load-bearing for how this designer works. We moved her from the $70/mo single-app plan... no wait, to the single-app AE subscription, which is $23/mo. Creative Cloud wasn't worth the upgrade.
+
+**The PDF-heavy admin.** Acrobat Pro is the one tool Adobe makes that the open-source alternatives (PDFgear, LibreOffice Draw, Foxit) aren't quite as good at. For an agency that sends out 30-40 signed contracts a month and marks up 10-15 PDF proofs a week, Acrobat Pro Standalone at $20/month was cheaper than the risk of a bad PDF export on a client contract.
+
+Between those two, the remaining Adobe bill was $43/month — down from $980. That's the headline number.
+
+## What we bought to make it work
+
+Moving three designers to Affinity wasn't a zero-cost switch. We budgeted roughly $400 per seat in peripherals that Adobe-world is less forgiving about. The stuff we actually bought:
+
+- **Graphics tablets.** Two of the three designers had been using Wacom Intuos Medium tablets with Adobe. Affinity works fine with them, so no change there. One designer was still on trackpad. We bought her a [[amazon_search:wacom intuos pro medium graphics tablet|Wacom Intuos Pro Medium]] and it paid for itself in two weeks of complaints no longer heard.
+- **Color-calibrated external displays.** Part of the Creative Cloud bundle that nobody thinks about: Adobe ships color profiles that handle a lot of display variance invisibly. Affinity is less forgiving. We added two [[amazon_search:27 inch 4k ips monitor usb-c|27-inch 4K USB-C IPS monitors]] with factory sRGB calibration for the print-heavy designers. Single-cable setup, great color, no more "it looked right on my screen" emails.
+- **A dedicated color calibrator.** For the one designer who does paid print work where color has to match exactly, we bought a [[amazon_search:datacolor spyder x pro|Datacolor Spyder X Pro]]. $170 one-shot, handles calibration for three displays. Paid for itself on the first big print job that didn't need a reprint.
+- **External SSDs for project archives.** Affinity files are smaller than PSDs but a big agency accumulates terabytes. A [[amazon_search:samsung t7 shield 2tb external ssd|2 TB portable SSD per designer]] for archiving wrapped projects. Saves money vs. cloud storage tiers; risk-free because the main working set is already on the NAS.
+
+Total hardware spend: ~$1,700 across the three designer seats. That's recovered in 3 months of Adobe savings.
+
+## What didn't work
+
+Not every substitution held up. Two we rolled back:
+
+**GIMP instead of Photoshop.** We tried. Two of the light-user staff asked for "free Photoshop" and we suggested GIMP. Within two weeks both had either gone back to Photoshop (via the one remaining Creative Cloud seat) or moved to Canva. GIMP's muscle-memory cost is too high for a light user who just wants to crop an image.
+
+**Inkscape instead of Illustrator.** The lead web designer tried this for a week on a logo project. The output was fine but the day-to-day friction (layer management, text-on-path, clipping mask behavior) cost enough hours that the $23/month for the standalone Illustrator seat we briefly considered looked like a bargain. She's on Figma now instead and doesn't miss Illustrator, but if she did, she'd want Illustrator, not Inkscape.
+
+## The "soft" costs we underestimated
+
+Two things cost more than we planned:
+
+1. **Template re-creation.** Every brand asset, every marketing template, every "use this as a starting point" file that existed in Photoshop or Illustrator had to be re-exported, re-imported, and sometimes rebuilt. We budgeted a week; it took three. Budget 3x whatever your gut says.
+
+2. **Client handoffs.** Some clients expect to receive their files in Adobe formats (especially print vendors and out-of-town agencies). Affinity exports to PSD, AI, and PDF, but the fidelity isn't always 100%. We had two cases where a printer bounced an Affinity-exported PDF and we had to re-open the file in the one remaining Acrobat Pro seat to clean it up. Build this into your workflow before migrating client-facing work.
+
+## The final stack
+
+- **Canva Pro** — light users, social media, quick marketing
+- **Affinity Designer / Photo / Publisher** — dedicated designers, print work, brand deliverables
+- **Figma** — web, brand systems, product mockups, collaborative work
+- **DaVinci Resolve** — video editing (replaced Premiere Pro, migration went clean)
+- **Adobe After Effects (single-app)** — the one motion designer, single seat
+- **Adobe Acrobat Pro (single-app)** — the PDF-heavy admin, single seat
+
+Annual cost: ~$3,200 (Affinity one-shots amortized at zero after year one; Canva + Figma + two Adobe single-app seats).
+
+Previous annual cost: ~$11,800.
+
+Savings: ~$8,600/year.
+
+## Should you do this?
+
+Three questions to ask before you copy this playbook:
+
+**1. Who are the actual intensive users?** If most of your Creative Cloud seats are "just in case" or occasional-use, the migration is obvious. Canva handles 80% of those workflows for less than a quarter of the price. If most of your seats are on Adobe all day for specialized work, the savings shrink.
+
+**2. How much of your work leaves your office in Adobe formats?** If your agency sends final files to a print vendor who demands INDD or AI files, Affinity can produce those, but fidelity is not perfect. Budget for the friction.
+
+**3. Can you absorb a 4-week productivity dip?** Real designers need 2-4 weeks to re-learn keyboard shortcuts and panel layouts. Light users absorb the change in a single afternoon. Plan around the difference.
+
+If your Sarasota or Bradenton office wants a read of which Creative Cloud seats are candidates for the chop and what to replace them with, [**we'll audit your seats for free**](/#contact) — it's usually a 30-minute conversation and saves most small offices $3-10k a year.
+
+---
+
+**Product links are Amazon affiliate links.**`,
+  },
+  {
+    slug: "ai-model-switching-small-business-claude-gemini-chatgpt",
+    title: "Claude Opus 4.7 Dropped This Week. Your Small Business Should Not Care.",
+    metaDescription: "Every few weeks a new AI model version ships and the benchmark discourse explodes. For Sarasota small businesses actually using AI to run payroll, draft emails, and summarize client calls, none of it matters. Here's the boring framework that does.",
+    date: "2026-04-19",
+    author: "Simple IT SRQ Team",
+    category: "AI & Productivity",
+    tags: ["ai", "claude", "chatgpt", "gemini", "smb", "productivity", "sarasota"],
+    excerpt: "Opus 4.7 replaced 4.6 last week. Benchmarks traded places. Your staff didn't notice. For small businesses, the conversation that matters isn't 'which model is best,' it's 'which subscription and which habits.' Here's the framework we use with clients.",
+    heroAlt: "A Sarasota small-business owner at their desk comparing AI tool subscriptions on paper, with Claude, Gemini, and ChatGPT open in three browser tabs.",
+    content: `## A confession
+
+I read the Claude Opus 4.7 system-prompt changelog yesterday. Forty-eight changes from 4.6. Three-paragraph discussion on Hacker News about whether the new "do not assume user intent" clause will cause the model to under-commit on agentic work. Four hundred comments.
+
+I run a managed IT business for small companies in Sarasota and Bradenton. Not one of our clients will read that thread. Not one will benefit from any of those 48 changes unless they're already using Claude for something structured. And the ones who *aren't* using it yet — which is most of them — are already one model version behind before they even start.
+
+This is the disconnect I want to close in this post. The AI-model discourse online is almost entirely about what the top 0.1% of users need. The conversation a small-business owner in Sarasota actually needs to have is completely different. Here it is, the way we have it with clients.
+
+## The four questions that matter
+
+Forget benchmarks. Forget leaderboards. Forget the three-decimal-point MMLU score. These are the four questions:
+
+**1. Is your team actually using any AI tool today?**
+
+Not "do you have a ChatGPT subscription." *Using.* As in, if I asked your admin how they drafted the last client-facing email, would they say "I asked Claude to rewrite my first pass"?
+
+If the answer is no, then the model version doesn't matter. What matters is getting a tool in front of them and giving them one or two starting use cases. We usually start with: "draft a reply to this email" and "summarize this voicemail transcript." Nothing fancy.
+
+**2. Is your data going somewhere you'd be comfortable explaining to your insurance carrier?**
+
+Every major AI tool has a business plan that contractually excludes your data from being used for training. The personal / free plans often don't. If your staff is pasting client information into a free ChatGPT tab, your cyber-insurance policy has opinions about that even if your staff doesn't.
+
+Fix: either (a) buy a business subscription for the tool your staff has already adopted, or (b) block the consumer version at the network level and fund the business version. One of the two. "We'll just trust staff to use it right" is not a policy that survives an audit.
+
+**3. Does your team's tool integrate with the tools they already use?**
+
+This is where the model-version arms race actually doesn't matter, because the difference between a 3% improvement on a coding benchmark and a 30-second round trip to copy-paste the output from a chat tab into Outlook is... the 30-second round trip, every time.
+
+The winning setup is not "the best model" — it's "the AI that runs inside the tool your staff lives in." For Microsoft 365 shops, that's Copilot. For Google Workspace shops, Gemini inside Docs and Gmail. For teams already in Claude or ChatGPT, the answer is whichever one has the browser extension or desktop app that your staff won't forget about.
+
+**4. Do you actually need to change tools again this quarter?**
+
+The real answer, 90% of the time, is no. Tool-switching is cost. Re-training the team on a new interface is cost. Migrating prompts and habits is cost. Unless the current tool is materially failing at a specific task — which you can usually pin down — changing because "Opus 4.7 scores higher on SWE-bench" is an expensive hobby.
+
+## The Claude 4.6 → 4.7 change in plain English
+
+Since I brought it up: Opus 4.6 to 4.7 changed the system prompt that governs the model's default behavior. The headline changes are (a) more explicit "do not assume what the user wants if it's ambiguous," (b) tighter instructions around tool use, and (c) clearer guidance about when to hand control back to the user.
+
+For a developer using Claude through an API for agentic coding work, these matter. For a real-estate agent in Venice using Claude to rewrite a listing description, the change is effectively invisible. The model was good enough for that task six months ago. It's slightly better now. It'll be slightly better again in September. Compound interest, not breakthrough.
+
+## What we actually recommend
+
+The framework we use with clients, boiled down to three choices:
+
+### Choice A: Microsoft 365 Copilot ($30/user/month)
+
+For any business that already runs on Microsoft 365. Copilot sits inside Outlook, Word, Excel, PowerPoint, and Teams. The model is GPT-5 class. It's a native integration. Staff doesn't have to remember to open a separate tool.
+
+The downside: $30/user/month adds up fast. For a 15-person office that's $5,400/year. We usually recommend rolling it out to 3-5 "heavy users" first and evaluating the value before fleet-rolling.
+
+### Choice B: Claude Pro or Team ($20-25/user/month)
+
+For a business that either isn't on Microsoft 365, or whose staff have already adopted Claude and would lose weeks re-learning Copilot. Claude's browser experience is arguably the best of the big three right now, and the model (4.7 as of this week, 4.8 probably by August) is as capable as anything else for general office work.
+
+The downside: no native Office integration. Staff has to copy-paste between tabs. For a 5-person law office this is fine. For a 25-person operations team this is friction.
+
+### Choice C: Google Gemini + Google Workspace (bundled)
+
+For businesses already on Google Workspace, Gemini-inside-Gmail and Gemini-inside-Docs is genuinely the path-of-least-resistance AI rollout. No extra subscription, no copy-paste, already integrated. Quality is a tier behind Copilot and Claude for specialized work, but for the everyday "draft this email" / "summarize this thread" task, it's often what actually gets used.
+
+The downside: if you're not already on Google Workspace, this means migrating off Microsoft 365. That's a year-long project, not a quarter-long one.
+
+## What we explicitly don't recommend
+
+A few anti-patterns we see repeatedly:
+
+**"Free ChatGPT for the whole team."** Works for three weeks, then somebody pastes a client's Social Security number into the prompt and your legal team has a bad day.
+
+**"One AI subscription to rule them all."** The 18-year-old on your marketing team wants Midjourney or Suno. Your bookkeeper wants a tool that's HIPAA-covered. Your CEO wants to try every new model. One tool can't be all of these.
+
+**"Wait for the next model."** There is always a next model. The one you don't buy today because Opus 4.8 is coming will be three versions behind by the time Opus 4.8 is actually worth a migration.
+
+**"AI-generated client work without a human review step."** This is the one that bites small businesses hardest. AI is useful as a first draft, a summarizer, a re-writer. It is not useful as a "send this without reading it" tool. The hallucination rate on model versions in 2026 is low enough that you *can* skip the review. You just shouldn't.
+
+## The ergonomics nobody talks about
+
+A last note, because the hot-model discourse misses this completely: using AI tools well is a physical activity. You're at your desk for longer stretches, staring at more text, making more clicks per task. The ergonomics of your AI-use setup matter more than the model version.
+
+Things we've installed for AI-heavy staff that paid back quickly:
+
+- [[amazon_search:logitech ergo k860 split keyboard|A split ergonomic keyboard]] — for the staff who now type 30% more because AI-assisted work shifts more of the day toward drafting
+- [[amazon_search:humanscale monitor arm adjustable|A proper adjustable monitor arm]] — the reading-heavy workflow of reviewing AI output rewards being able to tilt/raise a screen on demand
+- [[amazon_search:noise cancelling over ear headphones wireless|Decent noise-cancelling headphones]] — for open offices where AI-dictation workflows need quiet. Also for Zoom. Also just for focus.
+
+Total cost per staff member: ~$400-600. Total productivity effect: more than whatever model upgrade you pick this year.
+
+## The bottom line
+
+The AI model you pick is a short-term decision that reverses in a year if it turns out to be wrong. The subscription discipline, the data policy, and the ergonomic setup are decisions that compound.
+
+If your Sarasota, Bradenton, or Venice small business wants to walk through this framework in 30 minutes — which tool to pick, what to license, what policy to hand your staff — [**we'll do it for free**](/#contact). No sales pitch for a specific AI tool. We don't resell any of them.
+
+And if you want the actual "policy your staff will read," it's in the [**SaaS Incident Response Playbook**](/store/saas-incident-response-playbook) we published yesterday. $29. Fillable. Florida-compliance-aware. That one has your employee-AI-use template in it, among other things.
+
+---
+
+**Product links are Amazon affiliate links. The Playbook link goes to our own store.**`,
+  },
+  {
     slug: "vercel-notion-breach-saas-audit",
     title: "Two SaaS Vendors Had a Bad Day — Here's the 30-Minute Check Every Small Business Should Run",
     metaDescription: "Vercel disclosed a breach. Notion leaked public-page editor emails. Neither story is about you, but both point to the same lesson for Sarasota and Bradenton small businesses: SaaS sprawl is your real threat surface. Here's the 30-minute audit.",
