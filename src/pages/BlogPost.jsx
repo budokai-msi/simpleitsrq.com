@@ -9,6 +9,7 @@ import LeadCaptureCTA from "../components/LeadCaptureCTA";
 import Newsletter from "../components/Newsletter";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
 import AdUnit from "../components/AdSense";
+import ToolsUsedFooter from "../components/ToolsUsedFooter";
 
 function CategoryIcon({ category, size = 28 }) {
   const map = {
@@ -204,6 +205,7 @@ export default function BlogPost() {
             <Tag size={14} />
             {post.tags.map((t) => <span key={t} className="blog-tag">{t}</span>)}
           </div>
+          <ToolsUsedFooter content={post.content} />
           <LeadCaptureCTA />
           <Newsletter />
           <AffiliateDisclosure variant={hasAffiliate ? "affiliate" : "partnership"} />

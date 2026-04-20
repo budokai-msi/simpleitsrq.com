@@ -6,7 +6,34 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 20 Apr 2026 01:36:56 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 20 Apr 2026 02:03:09 GMT</lastBuildDate>
+    <item>
+      <title>An Archive of BYTE Magazine from 1975 Reminded Me of a Client&apos;s Server Closet</title>
+      <link>https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist.</description>
+    </item>
+    <item>
+      <title>What We Found When We Audited a Sarasota Law Firm&apos;s Notion Workspace This Morning</title>
+      <link>https://simpleitsrq.com/blog/notion-public-pages-legal-office-audit-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/notion-public-pages-legal-office-audit-sarasota</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Privacy</category>
+      <description>This morning&apos;s Notion story was specific: a public API endpoint returned the email addresses of every editor on any public page. We immediately audited a Sarasota law firm that uses Notion for case intake. Here&apos;s what we found, what we rotated, and the one-page audit every business using Notion should run this week.</description>
+    </item>
+    <item>
+      <title>The $420 Desk Upgrade That Made a Sarasota Client&apos;s AI Rollout Actually Stick</title>
+      <link>https://simpleitsrq.com/blog/desk-upgrade-sarasota-ai-heavy-staff-ergonomics</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/desk-upgrade-sarasota-ai-heavy-staff-ergonomics</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>AI &amp; Productivity</category>
+      <description>When a Sarasota accounting firm&apos;s Copilot rollout stalled at 60% adoption, the root cause was not training or licensing. It was desks. Three hardware purchases per workstation totaling about $420 took adoption to 95% in three weeks. Here&apos;s what we bought and why.</description>
+    </item>
     <item>
       <title>The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here&apos;s What to Buy Now.</title>
       <link>https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</link>

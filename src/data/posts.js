@@ -3,6 +3,317 @@
 
 export const posts = [
   {
+    slug: "byte-magazine-1975-small-office-documentation-lessons",
+    title: "An Archive of BYTE Magazine from 1975 Reminded Me of a Client's Server Closet",
+    metaDescription: "The 1975 BYTE Magazine archive hit Hacker News this week. Scrolling through it at 11pm, I realized the 50-year-old advice on IT documentation is exactly what our Sarasota and Bradenton clients still get wrong.",
+    date: "2026-04-19",
+    author: "Simple IT SRQ Team",
+    category: "Business Tech",
+    tags: ["documentation", "it-management", "smb", "sarasota", "bradenton"],
+    excerpt: "Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist.",
+    heroAlt: "A binder labeled 'Network and Systems Runbook' sitting on a wooden desk in a Sarasota small-office server closet, with cables and a switch visible in the background.",
+    content: `## A midnight reading list
+
+I have a bad habit of opening Hacker News before bed. This week the archive of BYTE Magazine going back to issue #1 in September 1975 hit the front page, and I spent two hours scrolling through it instead of sleeping.
+
+What struck me wasn't the hardware (glorious, brittle, half of it illegal by today's fire code), and not even the ads (a 4K RAM expansion board for $249 — remember when RAM was *affordable*). It was the documentation.
+
+The first issue of BYTE opens with a three-page guide to documenting a home-built computer. Ciphered in 1975 terminology, but the list is almost word-for-word what we ask our clients' office managers to produce in 2026:
+
+- A serial-numbered inventory of every major component
+- Wiring diagrams with each cable labeled
+- A power-budget calculation that includes the peripherals
+- A startup and shutdown checklist
+- A contact list for the person who actually knows how each subsystem works
+
+The author, a hobbyist in his basement, did this because his computer was impossible to troubleshoot without it. Fifty years later, we still walk into small offices in Sarasota and Bradenton and find none of it.
+
+## What we actually find
+
+Here's the composite picture of a typical 15-person office when we first audit it:
+
+There's a "server closet" (read: a shelf in a storeroom) with four pieces of equipment on it. Nobody in the office knows what three of them do. A label maker sits on the desk next to the owner's computer, unopened since the day it was bought. There are two surge protectors daisy-chained. The router password is the phone number of the office from 2008. The office has since moved twice.
+
+The owner tells us the IT guy from four years ago set it up and doesn't take phone calls anymore. The current "IT person" is the office manager, who inherited this setup two months ago and is extremely polite about the whole thing.
+
+This is the starting condition for roughly six of every ten new clients we take on. And the fix, as a 1975 BYTE author would recognize immediately, is not a software tool or a subscription. It's a binder. A real, physical binder, with three sections, that sits on a specific shelf.
+
+## The three-section runbook (and why the physical copy matters)
+
+We give every new client the same template:
+
+**Section 1: Inventory and wiring**
+One page per device: manufacturer, model, serial number, purchase date, warranty expiration, management URL or IP address, admin-login location (in the password manager, not the binder), power draw, physical location, last-updated date. Each device also has a labeled photograph taped to its entry.
+
+Every cable running between the devices is labeled at both ends. [[amazon_search:brother pt-d210 label maker|A decent label maker]] is $40 on Amazon and pays for itself the first time you have to trace a network cable through a drop ceiling in the dark during a storm. Every label has four fields: source port, destination port, cable purpose, and the date of last test.
+
+**Section 2: Runbooks for the things that break**
+One page each for the recurring events:
+
+- How to restart the internet if it goes down (which modem, which order, what lights mean what)
+- How to add a new employee's account across the 8-14 systems they'll need
+- How to remove an ex-employee's access across the same systems
+- How to restore a file from backup
+- How to check if the backup actually ran last night
+- How to reset the office phone system
+- Who calls who, in what order, when the office internet goes down at 7am
+
+These are 90% identical across our clients. The other 10% is the difference between a company that has a usable runbook and one that doesn't.
+
+**Section 3: Vendors and contracts**
+One page per vendor: product, contact person's name and mobile phone, account number, login URL, billing date, contract renewal date, the last time we asked for a price reduction and how it went. This section is worth an embarrassing amount of money — we've caught $4,000-12,000 in unused SaaS subscriptions for clients just by asking "what is this line item?" the first time we go through this section together.
+
+## Why physical, in 2026
+
+The three-section runbook is a physical binder in a specific cabinet. Not a Notion page, not a Google Doc, not a Microsoft SharePoint wiki. Here's why:
+
+The runbook exists for the days when the primary systems are down. The day the internet is out, the day the Microsoft 365 login portal is on fire, the day the office is evacuated because a squirrel chewed a main power line. On those days you do not want your runbook living in a SaaS tool you can't log into.
+
+There's a digital copy too, in the same shared drive as the rest of the company's docs, kept in sync with the physical one at each quarterly review. But the *authoritative* copy — the one we pull off the shelf when something is on fire — is paper, in a red binder, next to the fire extinguisher. That's on purpose.
+
+Equipment we put in every office cabinet:
+
+- The three-section red binder above
+- A printed list of mobile numbers for every staff member, on the inside front cover
+- A [[amazon_search:flashlight rechargeable waterproof|rechargeable LED flashlight]] clipped to the binder's spine
+- A small [[amazon_search:analog tool set small precision|precision screwdriver set]] for the times when something needs to be opened without running to the hardware store
+- A roll of [[amazon_search:colored electrical tape assorted|colored electrical tape]] because a labeled patch cable is worth more than a blueprint
+- The last two quarters' worth of printed invoices from the main internet and phone vendors (so a billing dispute has paper evidence)
+
+Total cost: under $75 per office.
+
+## The 1975 article had one more thing
+
+At the end of the BYTE Magazine piece, the author recommended a ritual: every time you change something in your computer, you update the documentation *before* you power the machine back on. Change, document, test. In that order.
+
+This is the rule that separates the clients whose runbooks stay current from the ones whose runbooks are wildly out of date six months after we hand them over. The ones who do it right are the ones who treat the documentation as part of the work, not a thing to get to later.
+
+A 1975 hobbyist figured this out. A 2026 small-business owner, with a managed stack of ten SaaS tools and a hardware refresh every four years, really ought to.
+
+## The short version
+
+- Every small office has more IT complexity than it realizes. It just hides.
+- The 1975 hobbyist's documentation checklist is still the best one for 2026.
+- A physical red binder is worth more than a cloud-synced doc when the cloud is what's broken.
+- Under $75 in supplies gets you 80% of the way there.
+- The rule is: change first, document before power-on, test after.
+
+If your Sarasota, Bradenton, or Venice business wants a 45-minute walk-through to produce a first-pass version of this binder for your office, [**reach out**](/#contact). We'll bring a binder. (We also bring the label maker.)
+
+---
+
+**Product links are Amazon affiliate links.**`,
+  },
+  {
+    slug: "notion-public-pages-legal-office-audit-sarasota",
+    title: "What We Found When We Audited a Sarasota Law Firm's Notion Workspace This Morning",
+    metaDescription: "A leaked API endpoint let anyone scrape the email addresses of every editor on any Notion public page. We spent two hours auditing a Sarasota law firm that uses Notion for client intake. What we found, what we moved, and what our clients should audit this week.",
+    date: "2026-04-19",
+    author: "Simple IT SRQ Team",
+    category: "Privacy",
+    tags: ["notion", "legal", "privacy", "saas", "smb", "sarasota"],
+    excerpt: "This morning's Notion story was specific: a public API endpoint returned the email addresses of every editor on any public page. We immediately audited a Sarasota law firm that uses Notion for case intake. Here's what we found, what we rotated, and the one-page audit every business using Notion should run this week.",
+    heroAlt: "A laptop on a Sarasota law firm conference-room desk showing a Notion workspace page with a 'Share to web' toggle and a list of team members visible.",
+    content: `## The morning call
+
+At 9:17 this morning a Sarasota employment law firm we support forwarded me a screenshot from Twitter. A researcher had demonstrated that a Notion API endpoint — the one that renders a "Share to web" page — also returned a JSON blob containing the email addresses of every staff member who had ever edited that page. Not the public content. The editor list. For every public Notion page in the world.
+
+By 9:42 we were on the phone with the firm's managing partner. By 10:15 we had a list of every "Share to web" page in the firm's Notion workspace. By noon we had a decision: the firm was moving 80% of its Notion content into access-controlled alternatives, and rotating every public link that we couldn't take down fast enough.
+
+Here's what we found and what we did, because the same steps apply to any small business using Notion the way law firms do — as a shared knowledge base with occasional client-facing pages.
+
+## The problem in concrete terms
+
+Notion lets you do two things that quietly combine into a privacy issue:
+
+1. **Share to web**, which makes a page readable without a login. This is useful. Lots of legitimate pages — a company careers page, a product announcement, a public RFP — use it. The share toggle is trivial to flip.
+
+2. **Editor attribution**, which tracks who edited what. Also useful — that's how Notion's activity log works. The editor identities include email addresses for every internal staff member who has ever touched the page.
+
+The issue was that a backend API endpoint used to render the shared page also returned the editor list. A public page — one meant to be read by anyone — exposed its editor roster to anyone who made a direct API call. Not through the UI. Not through normal browsing. Through a specific URL that any scraper could hit in a loop.
+
+Notion patched the endpoint within hours. But the window during which the endpoint was exposed is measured in months, and the data that leaked is now on a handful of GitHub gists and at least two dark-web forums we monitor. Nothing Notion does going forward undoes the emails that are already out.
+
+## Why a law firm was the first call
+
+Law firms have a specific vulnerability to this kind of leak. Their staff emails are on their website (partners), in court filings (paralegals), and on sign-out sheets at county clerks' offices (investigators). But the mapping of *which staff member edits which client matter* is usually private — because the client matter itself is privileged.
+
+Our firm uses Notion for three overlapping purposes:
+- **Public-facing pages**: practice-area descriptions, attorney bios, the "careers" page
+- **Client-facing intake pages**: a shared page per client with a questionnaire they fill in
+- **Internal case notes**: privileged, never shared
+
+The leak meant that anyone who scraped the Notion "shared" endpoints could build a map of which paralegals and associates had touched which client-facing page. If any of those pages were accidentally "shared to web" by a staff member who didn't know the difference between "share with client" and "share to web," the correlation between attorney and client matter could have leaked. For a firm that handles employment disputes, that mapping is worth serious money to the wrong people.
+
+## What the audit actually looked like
+
+We booked a conference room and two hours. Managing partner, office administrator, two of us from Simple IT SRQ. The plan was:
+
+**Step 1: enumerate every Share-to-web page.** Notion doesn't give you a "list all public pages" button. We used the Notion API with the firm's integration token to walk the entire page tree and flag every page with the "public" flag set. This took 14 minutes.
+
+**Step 2: classify each one.** Each page fell into one of four buckets:
+- Legitimate public content (bios, careers, the firm's intake form's landing) — keep public
+- Pages that should have been shared-with-email only (client questionnaires, case summaries) — convert to logged-in access
+- Pages shared publicly because the staff member didn't realize there was a difference — unshare immediately
+- Orphaned pages from former staff members or old matters — archive
+
+The firm had 47 public pages when we started. After classification: 8 legitimate, 11 should-be-restricted, 23 should-be-unshared, 5 orphans. The ratio is pretty typical.
+
+**Step 3: for every restricted page, move the content.** This is the annoying part. Some content we migrated to the firm's Microsoft 365 SharePoint site (where access is tied to Active Directory groups and behaves properly for law-firm privilege tracking). Other content we moved to Clio (the firm's case-management system, which has proper matter-by-matter access controls). A few pages were deleted because they were drafts nobody had touched in over a year.
+
+This took most of the two hours. But it's work the firm will never have to do again.
+
+**Step 4: disable the "share to web" capability for everyone except the admin.** Notion lets the workspace admin restrict who can toggle "share to web." We enabled that restriction. Going forward, a staff member who wants to share a page externally has to ask the admin, who has a one-question checklist: "is this content safe to have indexed by Google and scraped by threat actors?"
+
+**Step 5: rotate anything that leaked.** A few of the public pages had contact forms, email addresses, and one had a Calendly link. Nothing PII-grade, but we replaced the Calendly link (new URL, old one deprecated) so that anyone who scraped the old page can't correlate it to bookings going forward.
+
+**Step 6: notify anyone who might be affected.** The firm's IT policy says breach-adjacent events get reported up. We drafted a short internal note ("here's what happened, here's what we did") and a shorter client-facing note for the five client matters where a previously-public page had contained the client's name. Florida FIPA requires 30-day notification on breaches of personal information; these weren't "breaches" under the legal definition (no SSN or financial data), but the firm sent the notices anyway. Lawyers are like that.
+
+## What a non-law-firm should do
+
+If your business doesn't handle privileged information but does use Notion, the audit is easier but the same in shape:
+
+1. **List every public page.** Use the Notion API + your integration token, or if you don't have one, walk the workspace manually. In a small office this takes under an hour.
+
+2. **For each page, ask: is the editor list safe to be indexed?** Most public pages are a careers page or product announcement where the editors are already public (marketing lead, COO). Those are fine. The ones where the editors include a paralegal, a billing specialist, or a medical assistant are the ones to restrict.
+
+3. **Disable "share to web" for everyone except the admin.** This is the setting change with the highest leverage-to-friction ratio in the whole audit. Do it by end of day.
+
+4. **If your staff has been using Notion for client-facing work, seriously consider a migration.** Notion is built to be a wiki, not an access-controlled client portal. Clio, Lawmatics, HubSpot, or a password-gated Microsoft 365 SharePoint site are all better-suited for anything client-facing. Notion stays for internal docs.
+
+5. **Rotate anything the leak could have compromised.** If your firm used public Notion pages to collect forms, embedded booking tools, or published email addresses, rotate every one of those surfaces.
+
+## The tools we're recommending more of this quarter
+
+Independent of the Notion story, here's what we're installing or recommending more frequently this quarter. Every one of these is something that would have made this morning's cleanup faster:
+
+- [[amazon_search:yubikey 5c nfc hardware security key|A YubiKey 5C NFC]] for every admin account. If the Notion admin account had been phished two months ago, the whole audit would have started from a worse place. Hardware keys are the cheapest major risk reduction in SaaS security right now — about $55 each.
+- [[amazon_search:two-drive synology nas small business|A two-bay Synology NAS]] for the archive copy of critical docs. The law firm had their case files mirrored to Synology, which meant nothing in the Notion audit was existential. For about $400 + two 4 TB drives, every small office should have this.
+- [[amazon_search:fireproof waterproof document bag|A fireproof, waterproof document bag]] ($30 on Amazon) for the paper copy of the office's emergency runbook. The firm keeps theirs in their records room; we hand it to clients on day one.
+
+## The one-page audit sheet
+
+For every business using Notion, the audit we ran today distilled into a single-page checklist:
+
+1. ☐ List every page in the workspace where "Share to web" is enabled
+2. ☐ Classify each: legitimate-public / should-restrict / should-unshare / orphan
+3. ☐ Migrate should-restrict content to an access-controlled tool (SharePoint, Clio, Google Drive with link restrictions, etc.)
+4. ☐ Unshare the should-unshare pages
+5. ☐ Archive or delete the orphans
+6. ☐ Restrict "share to web" toggle to workspace admins only
+7. ☐ Rotate any embedded links, booking URLs, or forms that were on a public page
+8. ☐ Notify clients whose matter-names appeared on previously-public pages
+9. ☐ Document the audit in your own compliance log (date, who, what was found, what was fixed)
+
+Two hours for a 14-person firm. Half a day for a 40-person firm. The audit is annoying. The alternative is finding out from a Twitter researcher what's been scrape-able from your Notion for the last six months.
+
+## The policy this is all part of
+
+All of the above — the Notion audit, the SaaS inventory, the vendor-breach response — sits inside a broader discipline we documented in the [SaaS Incident Response Playbook](/store/saas-incident-response-playbook) we published yesterday. $29. Fillable. Florida-compliance-aware. If you want the audit above as a printable version with the checklists already formatted, it's in there.
+
+---
+
+If your Sarasota, Bradenton, or Venice business uses Notion for anything client-facing and wants a set of outside eyes on the public-page list, [**reach out**](/#contact). We'll spend 45 minutes walking through your workspace with you on a screen share. No charge. Just hand us the integration token and we'll produce the list.
+
+---
+
+**Product links are Amazon affiliate links.**`,
+  },
+  {
+    slug: "desk-upgrade-sarasota-ai-heavy-staff-ergonomics",
+    title: "The $420 Desk Upgrade That Made a Sarasota Client's AI Rollout Actually Stick",
+    metaDescription: "We rolled out Microsoft 365 Copilot to an 18-person Sarasota accounting firm in February. Adoption was 60% after six weeks. We fixed three ergonomic problems at $420 per desk and adoption hit 95% by March. Here's what we bought.",
+    date: "2026-04-19",
+    author: "Simple IT SRQ Team",
+    category: "AI & Productivity",
+    tags: ["ai", "copilot", "ergonomics", "productivity", "smb", "sarasota"],
+    excerpt: "When a Sarasota accounting firm's Copilot rollout stalled at 60% adoption, the root cause was not training or licensing. It was desks. Three hardware purchases per workstation totaling about $420 took adoption to 95% in three weeks. Here's what we bought and why.",
+    heroAlt: "A Sarasota CPA's desk setup with a standing desk converter raised to standing height, a single large 4K monitor on a pneumatic arm, a vertical mouse, and a split mechanical keyboard, with accounting-software windows open alongside a Copilot chat.",
+    content: `## An unexpected diagnosis
+
+In late January we rolled out Microsoft 365 Copilot to an 18-person accounting firm in west Bradenton. We did the usual: two training sessions, a one-page cheat sheet taped to each desk, a Slack channel for questions, a monthly check-in on usage metrics. Six weeks in, the metrics told us what we half-expected.
+
+Forty percent of the firm was not using Copilot. Not "using it less than we hoped." Not using it. Zero prompts per week.
+
+We dug in. It wasn't a training gap — the holdouts had all attended both sessions. It wasn't a trust issue — the managing partner was an enthusiastic user and had visibly endorsed it. It wasn't a licensing or tech problem — everyone had it installed and could open it on demand.
+
+It was their desks.
+
+## What we actually found
+
+Here's what we saw when we sat with the seven holdouts for 30 minutes each:
+
+**Four of them worked on 14-inch laptop screens** while hunched over, squinting. When we asked them to open Copilot alongside their spreadsheet, they literally could not fit both on the screen at once. Every interaction meant alt-tabbing, pasting, alt-tabbing back. It was easier to just type the formula by hand.
+
+**Two of them had neck or wrist pain** that got worse when they used the mouse more. AI-assisted work, especially prompt-refining and reviewing output, requires more scrolling and clicking than the work it replaces. Their existing pain threshold was below that new click count.
+
+**One of them was on an older workstation** where Excel + Outlook + Teams + Copilot + Chrome together pushed the machine into swap. Response time was so bad that Copilot's "thinking" spinner became "broken spinner" in her mental model. She stopped trying.
+
+None of this came up in the training sessions because none of it is about AI. It's about the desk. The tools had changed; the workstation hadn't.
+
+## The spend, and what it bought
+
+We made a list. The managing partner signed off. Total cost per holdout workstation: about $420. Here's what went on each desk:
+
+**A [[amazon_search:27 inch 4k usb-c monitor ips|27-inch 4K USB-C monitor]] — ~$320.** The single biggest change. Lets the staff member run their primary tool (QuickBooks, Excel, or the tax-prep package) full-screen on the monitor while Copilot sits in a sidebar at readable size on the laptop screen. Nobody reported being "unable to see both" after the monitor went in.
+
+We standardized on USB-C monitors that charge the laptop through the same cable. It eliminates the second cable and the second power supply. For hybrid staff (our firm has a dock-and-go setup), it also means one cable to plug in when they arrive.
+
+**A [[amazon_search:vertical ergonomic mouse wireless|vertical ergonomic mouse]] — ~$45.** The two staff members with wrist pain. Vertical mouse takes a week to get used to. After that, the ulnar rotation that causes most office wrist pain goes away. These are the only two staff members at the firm using them; nobody has been forced into one who didn't ask.
+
+**A [[amazon_search:adjustable standing desk converter|standing-desk converter]] — ~$180.** Not a full sit-stand desk; just the platform that sits on top of the existing desk and can be raised in 15 seconds. Four of the seven staff members got one. Two use it every day, two ignored it. That's a 50% return on a $720 spend — we'll take it.
+
+(The remaining dollars on the $420 average are a [[amazon_search:humanscale monitor arm|monitor arm]] for the three staff members whose desks were too shallow to sit a monitor far enough back without slouching forward.)
+
+That's it. Three line items. No new software. No new training. No new policy.
+
+## What happened in three weeks
+
+Six weeks into the Copilot rollout, adoption was at 60%. Three weeks after the hardware went in, adoption was at 95% (17 of 18 staff). The one holdout was an intern who had been with the firm for five weeks and hadn't really used any of the tools intensively — not an AI problem.
+
+Per-staff Copilot usage, measured as prompts-per-week-per-user, roughly tripled for the previously-non-using staff and increased about 20% for the already-using staff (who mostly benefited from the bigger monitors). Within two months, the firm was producing several hours per week per staff in recovered time, measured against the same task baselines from November.
+
+The managing partner is not a sentimental person. But at our quarterly review he said: "I spent $7,500 on monitors and desks and got more lift out of that than I did from spending $9,000 a year on Copilot."
+
+This is the quote I keep coming back to. Because it's basically right.
+
+## The principle
+
+AI tools amplify productivity, but only within the physical constraints of where the work happens. If your staff member's desk is set up for 2019's workflow — one laptop screen, a trackpad, a chair that was comfortable enough — adding a layer of prompt-draft-review on top doesn't work. The multitasking surface area is too small.
+
+This is why, since that Bradenton rollout, every Microsoft 365 Copilot or Google Gemini rollout we do now starts with a desk audit. The checklist is short:
+
+1. **How much screen real estate does each staff member have?** If the answer is "laptop only," the Copilot rollout will not stick. Full stop. Give them a second screen first.
+
+2. **Is their input setup ergonomic under 30-40% more clicks?** If they have existing pain, a tool that adds clicks will add pain. Budget for the vertical mouse or the split keyboard before the subscription.
+
+3. **Can their laptop run three browser tabs, Copilot, and their main tool without swapping?** If no, upgrade the laptop before the software.
+
+4. **Can they sit-stand? Do they know how to?** Optional but cheap. Two of seven will actually use it. Two of seven is enough.
+
+We run this audit now before we scope a rollout. The answers scope the rollout. If the desk audit flags $8,000 of hardware needed, we tell the client: "the Copilot rollout will be half as valuable as you want it to be until this is fixed; here's the quote." Sometimes they do both together. Sometimes they do the hardware first, then the Copilot rollout next quarter. Either works. Rolling out software without the hardware doesn't.
+
+## One more category we didn't expect to matter
+
+After the monitors went in, three of the seven staff asked for headphones. The specific complaint was that Copilot's voice-dictation feature was great but only usable if they could hear the playback without bothering the desks next to them. We bought three pairs of [[amazon_search:bose quietcomfort headphones wireless|Bose QuietComfort noise-cancelling headphones]] and the voice-dictation workflow took off in exactly those three staff members' usage.
+
+We missed that in the original hardware audit. It's now on the list.
+
+## The short version
+
+- AI tool adoption is bottlenecked by the desk as often as it is by the training.
+- A $400-600 per-desk hardware upgrade can double the ROI of a Copilot / Gemini / Claude subscription.
+- Single biggest lever: a 27-inch monitor. Second biggest: headphones for voice workflows.
+- Standing desks and vertical mice have positive ROI at the two-of-seven adoption rate.
+- Do the hardware audit before you scope the software rollout.
+
+If your Sarasota, Bradenton, or Venice business is about to roll out Copilot, Gemini, or any other AI tool and wants a 30-minute walk-through of whether the desks are ready, [**reach out**](/#contact). We'll do it on a site visit and quote both the software and the hardware as one project.
+
+---
+
+**Product links are Amazon affiliate links. See the "Tools mentioned in this article" block below for the full kit.**`,
+  },
+  {
     slug: "ram-shortage-small-business-hardware-budget-sarasota",
     title: "The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here's What to Buy Now.",
     metaDescription: "AI workloads have spiked DDR5 demand so hard that analysts expect a 2-3 year RAM shortage. For Sarasota small businesses this is an IT budget conversation, not a tech headline. What to buy this quarter to avoid paying 2X next year.",
