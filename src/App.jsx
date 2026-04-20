@@ -28,6 +28,7 @@ const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.T
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
 const Tools = lazy(() => import("./pages/Tools"));
 const Store = lazy(() => import("./pages/Store"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
 
@@ -277,6 +278,7 @@ export default function App() {
               <Route path="/support" element={<Support />} />
               <Route path="/tools" element={<Tools />} />
               <Route path="/store" element={<Store />} />
+              <Route path="/store/:slug" element={<ProductDetail />} />
               <Route path="/security-academy" element={<SecurityAcademy />} />
               <Route path="/password-check" element={<PasswordCheck />} />
               <Route path="/portal" element={<ClientPortal />} />

@@ -139,10 +139,30 @@ function renderMarkdown(md, slug = null) {
   return out;
 }
 
+// Score each other post by tag-overlap count; break ties by same-category
+// match then recency. Returns the top 3. Compounds with every new post
+// because the relationship graph is derived from metadata, not hand-maintained.
 function relatedPosts(current) {
+  const currentTags = new Set(current.tags || []);
   return posts
-    .filter((p) => p.slug !== current.slug && p.category === current.category)
-    .slice(0, 3);
+    .filter((p) => p.slug !== current.slug)
+    .map((p) => {
+      const pTags = p.tags || [];
+      const overlap = pTags.reduce((n, t) => n + (currentTags.has(t) ? 1 : 0), 0);
+      return {
+        post: p,
+        score: overlap,
+        sameCategory: p.category === current.category ? 1 : 0,
+      };
+    })
+    .filter((r) => r.score > 0 || r.sameCategory)
+    .sort((a, b) => (
+      b.score - a.score
+      || b.sameCategory - a.sameCategory
+      || b.post.date.localeCompare(a.post.date)
+    ))
+    .slice(0, 3)
+    .map((r) => r.post);
 }
 
 function readingTime(text) {

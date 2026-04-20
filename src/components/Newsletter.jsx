@@ -12,16 +12,17 @@ export default function Newsletter() {
     setState("submitting");
     setErr("");
     try {
-      // /api/contact accepts a generic message; we piggyback on it as a
-      // newsletter signup so we don't consume another serverless function.
-      // Tagged so the inbox filter can route newsletter sign-ups separately.
+      // Double-opt-in subscribe via /api/contact's newsletter branch.
+      // Creates an unconfirmed row in newsletter_subscribers and emails
+      // a confirm link; the subscription only becomes active after the
+      // user clicks. Reuses the contact-form serverless function so we
+      // stay under the Hobby 12-function cap.
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          kind: "newsletter_subscribe",
           email,
-          name: "(newsletter)",
-          message: "Newsletter subscription request",
           source: "newsletter",
         }),
       });
@@ -45,7 +46,7 @@ export default function Newsletter() {
           One email a month. Plain-English security, AI, and cloud news for Sarasota and Bradenton business owners. No spam, unsubscribe with one click.
         </p>
         {state === "done" ? (
-          <p className="newsletter-success"><Check size={16} color="#107C10" /> You're on the list.</p>
+          <p className="newsletter-success"><Check size={16} color="#107C10" /> Check your inbox — we sent a confirmation link. Click it and you're on the list.</p>
         ) : (
           <form className="newsletter-form" onSubmit={submit} noValidate>
             <input

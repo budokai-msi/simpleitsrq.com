@@ -13,7 +13,10 @@
 // Adding a product: drop a new entry here. /store renders everything
 // in `priority` order. Lower number = shown first.
 
-const env = import.meta.env;
+// Vite replaces `import.meta.env` with an object in the browser bundle;
+// in plain Node (our sitemap/RSS generators) it's undefined. Falling back
+// to {} lets the same module import cleanly in both worlds.
+const env = import.meta.env || {};
 
 export const products = [
   {

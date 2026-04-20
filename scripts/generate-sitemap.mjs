@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { posts } from "../src/data/posts.js";
 import { cityList } from "../src/data/cities.js";
+import { products } from "../src/data/products.js";
 
 const SITE = "https://simpleitsrq.com";
 const TODAY = new Date().toISOString().slice(0, 10);
@@ -36,7 +37,13 @@ const postUrls = posts.map((p) => ({
   lastmod: p.date,
 }));
 
-const all = [...staticUrls, ...cityUrls, ...postUrls];
+const productUrls = products.map((p) => ({
+  loc: `/store/${p.slug}`,
+  priority: "0.8",
+  changefreq: "weekly",
+}));
+
+const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls];
 
 const body = all
   .map((u) => {
