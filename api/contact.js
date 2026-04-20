@@ -23,9 +23,12 @@
 import { checkBotId } from "botid/server";
 import { Resend } from "resend";
 import { clientIp, rateLimit } from "./_lib/security.js";
+import { sql } from "./_lib/db.js";
 
 const CONTACT_FROM = "Simple IT SRQ Website <contact@simpleitsrq.com>";
+const NEWSLETTER_FROM = "Simple IT Brief <hello@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
+const SITE_URL = "https://simpleitsrq.com";
 const TURNSTILE_VERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -94,6 +97,133 @@ async function verifyTurnstile(token, ip) {
 }
 
 // ---------- Handler ----------
+// Random 32-char URL-safe token for confirm + unsubscribe links.
+function randomToken() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Double-opt-in newsletter subscribe. Creates or refreshes a row in
+// newsletter_subscribers, emails a confirmation link. Does NOT add
+// the subscriber to the list until they click the link. Re-subscribing
+// over an existing confirmed row is a no-op (returns ok without sending
+// a second email).
+async function handleNewsletterSubscribe(request, body, ip) {
+  const email = String(body.email || "").trim().toLowerCase().slice(0, 320);
+  if (!email || !isEmail(email)) return json(400, { ok: false, error: "email_invalid" });
+  const source = String(body.source || "newsletter").slice(0, 64);
+
+  const existing = await sql`
+    SELECT id, confirmed_at, confirm_token FROM newsletter_subscribers
+    WHERE lower(email) = ${email} LIMIT 1
+  `.catch(() => []);
+
+  let confirmToken, unsubscribeToken;
+  if (existing[0]?.confirmed_at) {
+    // Already confirmed — behave idempotently, no second email.
+    return json(200, { ok: true, alreadyConfirmed: true });
+  }
+  if (existing[0]) {
+    confirmToken = existing[0].confirm_token;
+    // reuse existing unsubscribe token to keep mail-log traceability
+    const row = await sql`
+      UPDATE newsletter_subscribers
+      SET source = ${source}, ip = ${ip}, created_at = now()
+      WHERE id = ${existing[0].id}
+      RETURNING unsubscribe_token
+    `;
+    unsubscribeToken = row[0]?.unsubscribe_token;
+  } else {
+    confirmToken = randomToken();
+    unsubscribeToken = randomToken();
+    await sql`
+      INSERT INTO newsletter_subscribers (email, confirm_token, unsubscribe_token, source, ip)
+      VALUES (${email}, ${confirmToken}, ${unsubscribeToken}, ${source}, ${ip})
+    `;
+  }
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn("[newsletter] RESEND_API_KEY not set — subscribe request logged but confirm email not sent");
+    return json(200, { ok: true, sent: false });
+  }
+
+  const confirmUrl = `${SITE_URL}/api/contact?confirm=${confirmToken}`;
+  const unsubscribeUrl = `${SITE_URL}/api/contact?unsubscribe=${unsubscribeToken}`;
+
+  try {
+    const resend = new Resend(apiKey);
+    await resend.emails.send({
+      from: NEWSLETTER_FROM,
+      to: [email],
+      subject: "Please confirm your subscription to The Simple IT Brief",
+      text: [
+        `Hi,`,
+        ``,
+        `Please confirm your subscription to The Simple IT Brief by clicking this link:`,
+        confirmUrl,
+        ``,
+        `If you didn't sign up, ignore this email — you won't receive anything else.`,
+        ``,
+        `— Simple IT SRQ`,
+        ``,
+        `To unsubscribe at any time: ${unsubscribeUrl}`,
+      ].join("\n"),
+      html: `
+        <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+          <h2 style="margin:0 0 16px;color:#0F6CBD">Confirm your subscription</h2>
+          <p style="font-size:15px;line-height:1.6;color:#1a1a1a">Please confirm your subscription to <strong>The Simple IT Brief</strong> — one email a month, plain-English security, AI, and cloud news for Sarasota and Bradenton business owners.</p>
+          <p style="margin:24px 0"><a href="${confirmUrl}" style="display:inline-block;padding:12px 22px;background:#0F6CBD;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Confirm subscription</a></p>
+          <p style="font-size:13px;color:#6b7280;margin-top:24px">If you didn't sign up, just ignore this email.</p>
+          <p style="font-size:11px;color:#9ca3af;margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb">Not interested? <a href="${unsubscribeUrl}" style="color:#9ca3af">Unsubscribe</a>.</p>
+        </div>
+      `,
+      headers: { "List-Unsubscribe": `<${unsubscribeUrl}>` },
+    });
+    return json(200, { ok: true, sent: true });
+  } catch (err) {
+    console.error("[newsletter] confirm email failed", err);
+    return json(200, { ok: true, sent: false });
+  }
+}
+
+export async function GET(request) {
+  const url = new URL(request.url);
+  const confirm = url.searchParams.get("confirm");
+  const unsubscribe = url.searchParams.get("unsubscribe");
+
+  if (confirm) {
+    const rows = await sql`
+      UPDATE newsletter_subscribers
+      SET confirmed_at = COALESCE(confirmed_at, now())
+      WHERE confirm_token = ${confirm}
+      RETURNING email
+    `.catch(() => []);
+    const ok = rows.length > 0;
+    return new Response(ok ? `<!doctype html><meta http-equiv="refresh" content="0; url=/?newsletter=confirmed"><title>Confirmed</title><p>Subscription confirmed. Redirecting…</p>` : `<!doctype html><title>Link expired</title><p>That confirmation link has expired or was already used. <a href="/">Back to home</a>.</p>`, {
+      status: ok ? 200 : 410,
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
+    });
+  }
+
+  if (unsubscribe) {
+    const rows = await sql`
+      UPDATE newsletter_subscribers
+      SET unsubscribed_at = COALESCE(unsubscribed_at, now())
+      WHERE unsubscribe_token = ${unsubscribe}
+      RETURNING email
+    `.catch(() => []);
+    const ok = rows.length > 0;
+    return new Response(ok ? `<!doctype html><title>Unsubscribed</title><p>You've been unsubscribed. Sorry to see you go. <a href="/">Back to home</a>.</p>` : `<!doctype html><title>Unknown link</title><p>That unsubscribe link is not recognized. <a href="/">Back to home</a>.</p>`, {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
+    });
+  }
+
+  return json(405, { ok: false, error: "method_not_allowed" });
+}
+
 export async function POST(request) {
   // 1. Vercel BotID — non-blocking. Log but don't reject — iOS Safari
   //    often fails client-side verification. Turnstile + rate-limit still apply.
@@ -117,6 +247,15 @@ export async function POST(request) {
   }
   if (!body || typeof body !== "object") {
     return json(400, { ok: false, error: "invalid_body" });
+  }
+
+  // Short-circuit: newsletter subscribe path. Uses the same rate-limit
+  // bucket as the contact form so a bot can't enumerate by sending 1000
+  // subscribe requests an hour.
+  if (body.kind === "newsletter_subscribe") {
+    const rl = await rateLimit({ ip, bucket: "contact", windowSeconds: RATE_WINDOW_S, max: RATE_MAX });
+    if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
+    return handleNewsletterSubscribe(request, body, ip);
   }
 
   // 3. Cloudflare Turnstile

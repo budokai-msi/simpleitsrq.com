@@ -952,6 +952,29 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "create threat_feeds indexes", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 006 — newsletter subscribers (double-opt-in).
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id                  bigserial PRIMARY KEY,
+        email               text NOT NULL,
+        confirm_token       text NOT NULL UNIQUE,
+        unsubscribe_token   text NOT NULL UNIQUE,
+        source              text,
+        ip                  text,
+        created_at          timestamptz NOT NULL DEFAULT now(),
+        confirmed_at        timestamptz,
+        unsubscribed_at     timestamptz,
+        UNIQUE (email)
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS newsletter_confirmed_idx ON newsletter_subscribers (confirmed_at) WHERE confirmed_at IS NOT NULL`;
+    await sql`CREATE INDEX IF NOT EXISTS newsletter_email_idx     ON newsletter_subscribers (lower(email))`;
+    results.push({ step: "create newsletter_subscribers table", ok: true });
+  } catch (e) {
+    results.push({ step: "create newsletter_subscribers table", ok: false, error: String(e.message || e) });
+  }
+
   // Migration 005 — affiliate_clicks table (revenue-signal tracking).
   try {
     await sql`
@@ -980,7 +1003,7 @@ async function handleRunAuditMigration(session) {
   const allOk = results.every((r) => r.ok);
   return json(allOk ? 200 : 500, {
     ok: allOk,
-    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks"],
+    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers"],
     results,
   });
 }
