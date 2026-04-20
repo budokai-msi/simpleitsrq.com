@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { products } from "../data/products";
 import { useSEO } from "../lib/seo";
+import Testimonials from "../components/Testimonials";
 
 const FAQ = [
   {
@@ -392,6 +393,9 @@ export default function Store() {
           </div>
         </section>
       )}
+
+      {/* TESTIMONIALS — self-hides when empty, no fake content ever */}
+      <Testimonials subtitle="Short quotes from Florida small-business owners we support. Approved by the client before it ever appears here." />
 
       {/* FAQ */}
       <section className="section">

@@ -152,7 +152,9 @@ export default function LocalLanding() {
           <div className="section-head">
             <span className="eyebrow">Services</span>
             <h2 className="title-1">Managed IT services for {city.city} businesses</h2>
-            <p className="section-sub">Eight core services, one flat monthly rate, one local team.</p>
+            <p className="section-sub">
+              {city.servicesIntro || "Eight core services, one flat monthly rate, one local team."}
+            </p>
           </div>
           <div className="solution-grid">
             {SERVICES.map(({ Icon, title, desc }) => (
@@ -167,6 +169,28 @@ export default function LocalLanding() {
           </div>
         </div>
       </section>
+
+      {Array.isArray(city.localPatterns) && city.localPatterns.length > 0 && (
+        <section className="section" id="local-patterns">
+          <div className="container">
+            <div className="section-head">
+              <span className="eyebrow">What we see locally</span>
+              <h2 className="title-1">Three {city.city} client patterns, and how the playbook changes</h2>
+              <p className="section-sub">
+                The generic services list applies to every office. What changes between Sarasota, Bradenton, Lakewood Ranch, Nokomis, and Venice is the emphasis — what matters most for the specific work happening here. These are the three recurring shapes of {city.city} engagements.
+              </p>
+            </div>
+            <div className="local-patterns-grid">
+              {city.localPatterns.map((p) => (
+                <article key={p.title} className="local-pattern-card">
+                  <h3>{p.title}</h3>
+                  <p>{p.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="section">
         <div className="container">

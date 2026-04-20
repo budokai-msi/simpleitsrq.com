@@ -3,6 +3,7 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { Check, ShieldCheck, RefreshCw, ArrowRight, BookOpen, ArrowLeft, FileText, Calendar } from "lucide-react";
 import { products } from "../data/products";
 import { useSEO, SITE_URL } from "../lib/seo";
+import Testimonials from "../components/Testimonials";
 
 // Minimal markdown renderer — handles the subset we actually use in our
 // product preview .md files: ## h2, ### h3, bold **text**, italic *text*,
@@ -333,6 +334,11 @@ export default function ProductDetail() {
           <BuyCta product={product} />
         </div>
       </section>
+
+      {/* Per-product testimonials. Self-hides when no approved quotes exist
+          for this slug — so a never-reviewed product shows nothing here
+          instead of an empty placeholder. */}
+      <Testimonials productSlug={product.slug} title={`Clients who bought the ${product.title}`} />
 
       {related.length > 0 && (
         <section className="section section-alt">

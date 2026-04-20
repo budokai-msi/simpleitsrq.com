@@ -975,6 +975,30 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "create newsletter_subscribers table", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 007 — testimonials (no seed data; admin adds rows via UI).
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS testimonials (
+        id             bigserial PRIMARY KEY,
+        quote          text NOT NULL,
+        author_name    text NOT NULL,
+        author_role    text,
+        author_company text,
+        city           text,
+        product_slug   text,
+        rating         int CHECK (rating IS NULL OR (rating >= 1 AND rating <= 5)),
+        approved       boolean NOT NULL DEFAULT false,
+        created_at     timestamptz NOT NULL DEFAULT now(),
+        updated_at     timestamptz NOT NULL DEFAULT now()
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS testimonials_approved_idx ON testimonials (approved, created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS testimonials_product_idx  ON testimonials (product_slug) WHERE product_slug IS NOT NULL`;
+    results.push({ step: "create testimonials table", ok: true });
+  } catch (e) {
+    results.push({ step: "create testimonials table", ok: false, error: String(e.message || e) });
+  }
+
   // Migration 005 — affiliate_clicks table (revenue-signal tracking).
   try {
     await sql`
@@ -1003,9 +1027,87 @@ async function handleRunAuditMigration(session) {
   const allOk = results.every((r) => r.ok);
   return json(allOk ? 200 : 500, {
     ok: allOk,
-    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers"],
+    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers", "007_testimonials"],
     results,
   });
+}
+
+// --- Testimonials (admin CRUD; public read is on /api/contact) ---
+async function handleTestimonialsList(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const rows = await sql`
+    SELECT id, quote, author_name, author_role, author_company, city,
+           product_slug, rating, approved, created_at, updated_at
+    FROM testimonials
+    ORDER BY approved ASC, created_at DESC
+  `.catch(() => []);
+  return json(200, {
+    ok: true,
+    testimonials: rows.map((t) => ({
+      id: t.id,
+      quote: t.quote,
+      authorName: t.author_name,
+      authorRole: t.author_role,
+      authorCompany: t.author_company,
+      city: t.city,
+      productSlug: t.product_slug,
+      rating: t.rating,
+      approved: t.approved,
+      createdAt: t.created_at,
+      updatedAt: t.updated_at,
+    })),
+  });
+}
+
+async function handleTestimonialSave(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+
+  const quote = String(body?.quote || "").trim().slice(0, 2000);
+  const authorName = String(body?.authorName || "").trim().slice(0, 120);
+  if (!quote) return json(400, { ok: false, error: "quote_required" });
+  if (!authorName) return json(400, { ok: false, error: "author_name_required" });
+
+  const authorRole    = body?.authorRole    ? String(body.authorRole).slice(0, 120) : null;
+  const authorCompany = body?.authorCompany ? String(body.authorCompany).slice(0, 200) : null;
+  const city          = body?.city          ? String(body.city).slice(0, 80) : null;
+  const productSlug   = body?.productSlug   ? String(body.productSlug).slice(0, 120) : null;
+  const rating        = body?.rating ? Math.min(Math.max(Number(body.rating), 1), 5) : null;
+  const approved      = body?.approved === true;
+
+  if (body?.id) {
+    const row = await sql`
+      UPDATE testimonials
+      SET quote = ${quote}, author_name = ${authorName}, author_role = ${authorRole},
+          author_company = ${authorCompany}, city = ${city}, product_slug = ${productSlug},
+          rating = ${rating}, approved = ${approved}, updated_at = now()
+      WHERE id = ${body.id}
+      RETURNING id
+    `;
+    return json(200, { ok: true, id: row[0]?.id || null, action: "updated" });
+  }
+  const row = await sql`
+    INSERT INTO testimonials (quote, author_name, author_role, author_company,
+                              city, product_slug, rating, approved)
+    VALUES (${quote}, ${authorName}, ${authorRole}, ${authorCompany},
+            ${city}, ${productSlug}, ${rating}, ${approved})
+    RETURNING id
+  `;
+  return json(200, { ok: true, id: row[0]?.id, action: "created" });
+}
+
+async function handleTestimonialDelete(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const id = Number(body?.id);
+  if (!id) return json(400, { ok: false, error: "id_required" });
+  await sql`DELETE FROM testimonials WHERE id = ${id}`;
+  return json(200, { ok: true });
 }
 
 // Revenue Signals: what's earning money. Combines three inputs:
@@ -2145,6 +2247,9 @@ async function dispatch(request, method) {
   if (action === "ops-status"           && method === "GET")  return handleOpsStatus(session);
   if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
   if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
+  if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);
+  if (action === "testimonial-save"     && method === "POST") return handleTestimonialSave(session, request);
+  if (action === "testimonial-delete"   && method === "POST") return handleTestimonialDelete(session, request);
   if (action === "grant-immunity"       && method === "POST") return handleGrantImmunity(session, request);
   if (action === "osint-refresh"        && method === "POST") return handleOsintRefresh(session);
   if (action === "create-payment-links" && method === "POST") return handleCreatePaymentLinks(session);

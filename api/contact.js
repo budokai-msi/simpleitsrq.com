@@ -192,6 +192,37 @@ export async function GET(request) {
   const url = new URL(request.url);
   const confirm = url.searchParams.get("confirm");
   const unsubscribe = url.searchParams.get("unsubscribe");
+  const testimonials = url.searchParams.get("testimonials");
+
+  if (testimonials) {
+    const productSlug = url.searchParams.get("product") || null;
+    const rows = productSlug
+      ? await sql`
+          SELECT id, quote, author_name, author_role, author_company, city, product_slug, rating
+          FROM testimonials
+          WHERE approved = true AND product_slug = ${productSlug}
+          ORDER BY created_at DESC LIMIT 12
+        `.catch(() => [])
+      : await sql`
+          SELECT id, quote, author_name, author_role, author_company, city, product_slug, rating
+          FROM testimonials
+          WHERE approved = true
+          ORDER BY created_at DESC LIMIT 12
+        `.catch(() => []);
+    return json(200, {
+      ok: true,
+      testimonials: rows.map((t) => ({
+        id: t.id,
+        quote: t.quote,
+        authorName: t.author_name,
+        authorRole: t.author_role,
+        authorCompany: t.author_company,
+        city: t.city,
+        productSlug: t.product_slug,
+        rating: t.rating,
+      })),
+    });
+  }
 
   if (confirm) {
     const rows = await sql`

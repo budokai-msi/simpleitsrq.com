@@ -1917,6 +1917,184 @@ function VisitorsPanel({ styles, onBlockIp }) {
   );
 }
 
+// ---------- admin: testimonials CRUD ----------
+// Minimal form: list, edit-inline, approve toggle, delete. No WYSIWYG
+// — quotes are plain text. Intentionally refuses to pre-populate anything.
+function TestimonialsAdmin() {
+  const [items, setItems] = useState(null);
+  const [editing, setEditing] = useState(null); // null | newForm | existing row
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/portal?action=testimonials", { credentials: "same-origin" });
+      const data = await res.json();
+      setItems(Array.isArray(data?.testimonials) ? data.testimonials : []);
+    } catch { setItems([]); }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const save = async (form) => {
+    setSaving(true); setMsg(null);
+    try {
+      const res = await fetch("/api/portal?action=testimonial-save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok || data.ok !== true) throw new Error(data.error || `http_${res.status}`);
+      setMsg({ kind: "ok", text: form.id ? "Updated." : "Added." });
+      setEditing(null);
+      await load();
+    } catch (e) {
+      setMsg({ kind: "error", text: String(e.message || e) });
+    } finally { setSaving(false); }
+  };
+
+  const remove = async (id) => {
+    if (typeof window !== "undefined" && !window.confirm("Delete this testimonial? This cannot be undone.")) return;
+    try {
+      await fetch("/api/portal?action=testimonial-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ id }),
+      });
+      await load();
+    } catch { /* best effort */ }
+  };
+
+  const toggleApprove = (t) => save({
+    id: t.id,
+    quote: t.quote, authorName: t.authorName, authorRole: t.authorRole,
+    authorCompany: t.authorCompany, city: t.city, productSlug: t.productSlug,
+    rating: t.rating, approved: !t.approved,
+  });
+
+  const card = {
+    padding: 18,
+    background: tokens.colorNeutralBackground1,
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: 10,
+    marginBottom: 14,
+  };
+  const approved = (items || []).filter((t) => t.approved).length;
+
+  return (
+    <div style={card}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+        <div>
+          <h4 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 600 }}>Testimonials</h4>
+          <p style={{ margin: 0, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+            {items == null ? "Loading…" : `${items.length} total · ${approved} approved · only approved show on the public site.`}
+          </p>
+        </div>
+        <Button appearance="primary" size="small" onClick={() => setEditing({ quote: "", authorName: "", authorRole: "", authorCompany: "", city: "", productSlug: "", rating: 5, approved: false })}>
+          Add testimonial
+        </Button>
+      </div>
+
+      {msg && (
+        <div style={{ marginTop: 10, padding: 8, borderRadius: 6, fontSize: 12, background: msg.kind === "ok" ? "#ECFDF5" : "#FEF2F2", color: msg.kind === "ok" ? "#065F46" : "#7F1D1D" }}>
+          {msg.text}
+        </div>
+      )}
+
+      {editing && (
+        <TestimonialForm
+          initial={editing}
+          saving={saving}
+          onCancel={() => setEditing(null)}
+          onSave={save}
+        />
+      )}
+
+      {items && items.length > 0 && (
+        <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+          {items.map((t) => (
+            <div key={t.id} style={{ padding: 12, background: tokens.colorNeutralBackground2, borderRadius: 8, border: `1px solid ${tokens.colorNeutralStroke2}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                <strong style={{ fontSize: 13 }}>
+                  {t.authorName}
+                  {t.authorRole && <span style={{ fontWeight: 400, color: tokens.colorNeutralForeground3 }}> · {t.authorRole}</span>}
+                  {t.authorCompany && <span style={{ fontWeight: 400, color: tokens.colorNeutralForeground3 }}> · {t.authorCompany}</span>}
+                </strong>
+                <Badge appearance="filled" color={t.approved ? "success" : "warning"} style={{ fontSize: 10 }}>
+                  {t.approved ? "LIVE" : "PENDING"}
+                </Badge>
+              </div>
+              <p style={{ fontSize: 13, margin: "0 0 8px", lineHeight: 1.5 }}>"{t.quote}"</p>
+              <div style={{ fontSize: 11, color: tokens.colorNeutralForeground3, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {t.city && <span>{t.city}</span>}
+                {t.productSlug && <span>Product: {t.productSlug}</span>}
+                {t.rating != null && <span>Rating: {t.rating}/5</span>}
+              </div>
+              <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
+                <Button size="small" appearance="secondary" onClick={() => setEditing(t)}>Edit</Button>
+                <Button size="small" appearance={t.approved ? "secondary" : "primary"} onClick={() => toggleApprove(t)}>
+                  {t.approved ? "Unpublish" : "Approve + publish"}
+                </Button>
+                <Button size="small" appearance="subtle" onClick={() => remove(t.id)} style={{ color: "#DC2626" }}>Delete</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {items && items.length === 0 && (
+        <p style={{ marginTop: 14, fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+          No testimonials yet. Add one with real client consent — nothing renders on /store or /store/:slug until at least one row is approved here.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function TestimonialForm({ initial, saving, onCancel, onSave }) {
+  const [form, setForm] = useState(initial);
+  const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
+  const submit = (e) => { e.preventDefault(); onSave(form); };
+  return (
+    <form onSubmit={submit} style={{ marginTop: 14, padding: 14, background: tokens.colorNeutralBackground2, borderRadius: 8, border: `1px solid ${tokens.colorNeutralStroke2}`, display: "flex", flexDirection: "column", gap: 10 }}>
+      <Field label="Quote (required)">
+        <Textarea required value={form.quote} onChange={(_, d) => set("quote")(d.value)} rows={3} placeholder="A real client-supplied quote. Get consent first." />
+      </Field>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <Field label="Author name (required)">
+          <Input required value={form.authorName} onChange={(_, d) => set("authorName")(d.value)} placeholder="Jane Smith" />
+        </Field>
+        <Field label="Role">
+          <Input value={form.authorRole || ""} onChange={(_, d) => set("authorRole")(d.value)} placeholder="Practice Manager" />
+        </Field>
+        <Field label="Company">
+          <Input value={form.authorCompany || ""} onChange={(_, d) => set("authorCompany")(d.value)} placeholder="Sarasota Dental Group" />
+        </Field>
+        <Field label="City">
+          <Input value={form.city || ""} onChange={(_, d) => set("city")(d.value)} placeholder="Sarasota" />
+        </Field>
+        <Field label="Product slug (optional — testimonial shows on that product page)">
+          <Input value={form.productSlug || ""} onChange={(_, d) => set("productSlug")(d.value)} placeholder="hipaa-starter-kit" />
+        </Field>
+        <Field label="Rating (1–5)">
+          <Input type="number" min={1} max={5} value={String(form.rating || 5)} onChange={(_, d) => set("rating")(Number(d.value) || null)} />
+        </Field>
+      </div>
+      <label style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}>
+        <input type="checkbox" checked={!!form.approved} onChange={(e) => set("approved")(e.target.checked)} />
+        Approved (will appear on the public site)
+      </label>
+      <div style={{ display: "flex", gap: 8 }}>
+        <Button appearance="primary" type="submit" disabled={saving}>{saving ? "Saving…" : form.id ? "Save changes" : "Add testimonial"}</Button>
+        <Button appearance="secondary" type="button" onClick={onCancel}>Cancel</Button>
+      </div>
+    </form>
+  );
+}
+
 // ---------- admin: ops console ----------
 // One-click buttons for admin actions that would otherwise require curl
 // or a Vercel env-var trip: Stripe Payment Link creation, audit-chain
@@ -2270,6 +2448,10 @@ function OpsConsole() {
         </Button>
         <OutputBlock action="grant-immunity" />
       </div>
+
+      {/* ── Content — testimonials ── */}
+      <div style={sectionHeader}>Content — testimonials</div>
+      <TestimonialsAdmin />
 
       {/* ── Operations ── */}
       <div style={sectionHeader}>Operations — commerce + integrations</div>
