@@ -10,6 +10,7 @@ import Newsletter from "../components/Newsletter";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
 import AdUnit from "../components/AdSense";
 import ToolsUsedFooter from "../components/ToolsUsedFooter";
+import { trackAffiliateClick } from "../lib/trackClick";
 
 function CategoryIcon({ category, size = 28 }) {
   const map = {
@@ -28,7 +29,7 @@ function CategoryIcon({ category, size = 28 }) {
 // [[token]] resolves through the affiliate registry. If the program is not
 // configured (env var missing), the token degrades to a plain-text label so
 // posts written ahead of signup do not break.
-function renderAffiliateToken(raw, key) {
+function renderAffiliateToken(raw, key, slug) {
   const aff = resolveAffiliate(raw);
   if (!aff) {
     // Strip any "amazon:ASIN|" prefix and show only the label half. For
@@ -46,13 +47,16 @@ function renderAffiliateToken(raw, key) {
       rel="sponsored noopener noreferrer"
       className="affiliate-link"
       title={aff.blurb}
+      onClick={() => trackAffiliateClick({
+        slug, destination: aff.href, label: aff.label, network: aff.vendor,
+      })}
     >
       {aff.label}
     </a>
   );
 }
 
-function renderInline(text, key = 0) {
+function renderInline(text, key = 0, slug = null) {
   const parts = [];
   let remaining = text;
   let idx = 0;
@@ -90,14 +94,14 @@ function renderInline(text, key = 0) {
       remaining = remaining.slice(nextIdx + full.length);
     } else {
       const [full, token] = affMatch;
-      parts.push(renderAffiliateToken(token, `${key}-a-${idx++}`));
+      parts.push(renderAffiliateToken(token, `${key}-a-${idx++}`, slug));
       remaining = remaining.slice(nextIdx + full.length);
     }
   }
   return parts;
 }
 
-function renderMarkdown(md) {
+function renderMarkdown(md, slug = null) {
   const lines = md.split("\n");
   const out = [];
   let i = 0;
@@ -106,19 +110,19 @@ function renderMarkdown(md) {
     const line = lines[i];
     if (!line.trim()) { i++; continue; }
     if (line.startsWith("## ")) {
-      out.push(<h2 key={key++}>{renderInline(line.slice(3), key)}</h2>);
+      out.push(<h2 key={key++}>{renderInline(line.slice(3), key, slug)}</h2>);
       i++;
       continue;
     }
     if (line.startsWith("### ")) {
-      out.push(<h3 key={key++}>{renderInline(line.slice(4), key)}</h3>);
+      out.push(<h3 key={key++}>{renderInline(line.slice(4), key, slug)}</h3>);
       i++;
       continue;
     }
     if (line.startsWith("- ")) {
       const items = [];
       while (i < lines.length && lines[i].startsWith("- ")) {
-        items.push(<li key={`${key}-li-${i}`}>{renderInline(lines[i].slice(2), key + i)}</li>);
+        items.push(<li key={`${key}-li-${i}`}>{renderInline(lines[i].slice(2), key + i, slug)}</li>);
         i++;
       }
       out.push(<ul key={key++}>{items}</ul>);
@@ -130,7 +134,7 @@ function renderMarkdown(md) {
       para.push(lines[i]);
       i++;
     }
-    out.push(<p key={key++}>{renderInline(para.join(" "), key)}</p>);
+    out.push(<p key={key++}>{renderInline(para.join(" "), key, slug)}</p>);
   }
   return out;
 }
@@ -191,7 +195,7 @@ export default function BlogPost() {
           </div>
           <div className="blog-post-content">
             {(() => {
-              const blocks = renderMarkdown(post.content);
+              const blocks = renderMarkdown(post.content, post.slug);
               const mid = Math.min(4, Math.floor(blocks.length / 2));
               return [
                 ...blocks.slice(0, mid),
@@ -205,7 +209,7 @@ export default function BlogPost() {
             <Tag size={14} />
             {post.tags.map((t) => <span key={t} className="blog-tag">{t}</span>)}
           </div>
-          <ToolsUsedFooter content={post.content} />
+          <ToolsUsedFooter content={post.content} slug={post.slug} />
           <LeadCaptureCTA />
           <Newsletter />
           <AffiliateDisclosure variant={hasAffiliate ? "affiliate" : "partnership"} />
