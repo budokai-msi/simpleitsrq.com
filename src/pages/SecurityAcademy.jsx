@@ -161,6 +161,32 @@ export default function SecurityAcademy() {
           </div>
         </div>
       </section>
+
+      <section className="section">
+        <div className="container">
+          <div className="section-head">
+            <span className="eyebrow">While you wait</span>
+            <h2 className="title-1">Two ways to start before Q3</h2>
+            <p className="section-sub">
+              The Academy is the long game. If you have a cyber-insurance renewal coming up sooner — or you just want to improve posture this month — these two get you moving today.
+            </p>
+          </div>
+          <div className="free-tools-grid">
+            <Link to="/password-check" className="free-tools-card">
+              <span className="free-tools-tag">Free · 5 seconds</span>
+              <h3>Check a password for known breaches</h3>
+              <p>Our privacy-preserving tool tests any password against 800M+ known-breached credentials without the password ever leaving your browser.</p>
+              <span className="free-tools-cta">Run the check <ArrowRight size={14} /></span>
+            </Link>
+            <Link to="/store/saas-incident-response-playbook" className="free-tools-card">
+              <span className="free-tools-tag">$29 · One-shot</span>
+              <h3>SaaS Incident Response Playbook</h3>
+              <p>14-page printable fillable playbook — vendor-breach decision tree, pre-written client notifications, Florida FIPA 30-day quick reference. Ship it today.</p>
+              <span className="free-tools-cta">See the preview <ArrowRight size={14} /></span>
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

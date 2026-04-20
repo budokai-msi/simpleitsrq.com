@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { TOOL_CATEGORIES } from "../data/toolCatalog";
 import { useSEO } from "../lib/seo";
 import { ExternalLink, ShieldCheck, Zap, HardDrive, Wifi, Monitor, FileCheck, Server } from "lucide-react";
+import { trackAffiliateClick } from "../lib/trackClick";
 
 const ICONS = {
   power: Zap,
@@ -21,6 +22,9 @@ function ToolCard({ item }) {
       target="_blank"
       rel="sponsored noopener noreferrer"
       className="tool-card"
+      onClick={() => trackAffiliateClick({
+        slug: "tools", destination: item.href, label: item.label, network: "Amazon",
+      })}
     >
       <strong>{item.label}</strong>
       <p>{item.desc}</p>

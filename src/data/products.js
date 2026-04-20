@@ -41,7 +41,12 @@ export const products = [
     waitlistOnly: true,
     buyLink: null,
     previewUrl: "/products/security-academy-preview.md",
-    featured: true,
+    // Intentionally featured:false. The Academy is a recurring service, not a
+    // one-shot template, so it gets its own dedicated landing page at
+    // /security-academy and a "Managed services" callout on /store rather
+    // than being rendered in the series-card grid next to the \$29 Playbook.
+    featured: false,
+    isManagedService: true,
     priority: 0.5,
   },
   {
