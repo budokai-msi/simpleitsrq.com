@@ -719,6 +719,35 @@
   margin: 14px 0 0;
   max-width: 240px;
 }
+
+/* Mobile-only sticky "Book a Call" bar. Mobile visitors lose the hero
+ * CTA the moment they scroll, and the burger-menu is an extra tap away.
+ * Giving them a permanent one-tap path to booking is the single highest-
+ * impact mobile conversion lever for a services business. */
+.mobile-sticky-cta { display: none; }
+@media (max-width: 720px) {
+  .mobile-sticky-cta {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg-elevated, var(--surface-1, #fff));
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.06);
+    z-index: 40;
+  }
+  .mobile-sticky-cta-btn {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    font-size: 15px;
+  }
+  /* Reserve space at page bottom so the sticky bar never covers content
+   * (footer, "Load more" button, cookie banner dismissal). */
+  body { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+}
 .footer h4 {
   font-size: 14px;
   font-weight: 600;
