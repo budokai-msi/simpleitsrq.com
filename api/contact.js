@@ -25,6 +25,7 @@ import { Resend } from "resend";
 import { clientIp, rateLimit } from "./_lib/security.js";
 import { sql } from "./_lib/db.js";
 import { validateEnv } from "./_lib/env.js";
+import { requireCsrf } from "./_lib/csrf.js";
 
 // Cold-start validation. Throws in production if any required secret is
 // missing; logs a warning in dev/preview so local iteration keeps working
@@ -265,6 +266,12 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  // 0. CSRF — double-submit cookie + Origin check. Layered ON TOP of
+  //    Turnstile/BotID/rate-limit below; this only rejects cross-origin
+  //    attempts from a page the user didn't intend to submit from.
+  const csrf = requireCsrf(request);
+  if (csrf) return csrf;
+
   // 1. Vercel BotID — non-blocking. Log but don't reject — iOS Safari
   //    often fails client-side verification. Turnstile + rate-limit still apply.
   try {

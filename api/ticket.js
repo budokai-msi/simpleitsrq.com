@@ -20,6 +20,7 @@ import { Resend } from "resend";
 import { sql } from "./_lib/db.js";
 import { clientIp, rateLimit } from "./_lib/security.js";
 import { getSession } from "./_lib/session.js";
+import { requireCsrf } from "./_lib/csrf.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
@@ -110,6 +111,11 @@ async function verifyTurnstile(token, ip) {
 
 // ---------- Handler ----------
 export async function POST(request) {
+  // 0. CSRF — double-submit cookie + Origin check. Layered ON TOP of
+  //    Turnstile/BotID/rate-limit below.
+  const csrf = requireCsrf(request);
+  if (csrf) return csrf;
+
   // 1. Vercel BotID — non-blocking. Log the result but don't reject real
   //    users whose browsers fail client-side verification (common on iOS
   //    Safari). Turnstile + honeypot + rate-limit still catch actual bots.

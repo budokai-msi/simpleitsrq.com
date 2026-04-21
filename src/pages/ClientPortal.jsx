@@ -67,6 +67,7 @@ import { useTheme } from "../lib/theme";
 import { brandedLightTheme, brandedDarkTheme } from "../lib/fluentTheme";
 import { useAuth } from "../lib/authContext.js";
 import { useSEO } from "../lib/seo";
+import { csrfFetch } from "../lib/csrf";
 
 // ---------- styles ----------
 const useStyles = makeStyles({
@@ -806,9 +807,8 @@ function TicketDetailDialog({ styles, code, isAdmin, onClose, onChange }) {
     if (!body || !code || submitting) return;
     setSubmitting(true);
     try {
-      const res = await fetch("/api/portal?action=ticket-message", {
+      const res = await csrfFetch("/api/portal?action=ticket-message", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, body }),
       });
@@ -830,9 +830,8 @@ function TicketDetailDialog({ styles, code, isAdmin, onClose, onChange }) {
     if (!code) return;
     setBusy(true);
     try {
-      const res = await fetch("/api/portal?action=ticket", {
+      const res = await csrfFetch("/api/portal?action=ticket", {
         method: "PATCH",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, ...patch }),
       });
@@ -1075,9 +1074,8 @@ function ProfilePanel({ styles, user, onSaved }) {
     setSaving(true);
     setStatus(null);
     try {
-      const res = await fetch("/api/portal?action=me", {
+      const res = await csrfFetch("/api/portal?action=me", {
         method: "PATCH",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, company, phone }),
       });
@@ -1154,9 +1152,8 @@ function NewInvoiceDialog({ styles, open, onClose, onSent }) {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/portal?action=create-invoice", {
+      const res = await csrfFetch("/api/portal?action=create-invoice", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, name: name || undefined, memo: memo || undefined, items: cleanItems }),
       });
@@ -1179,9 +1176,8 @@ function NewInvoiceDialog({ styles, open, onClose, onSent }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/portal?action=send-invoice", {
+      const res = await csrfFetch("/api/portal?action=send-invoice", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ invoiceId: draft.id }),
       });
@@ -1339,9 +1335,8 @@ function DraftsPanel({ styles }) {
     setBusyId(id);
     setStatus(null);
     try {
-      const res = await fetch("/api/portal?action=publish-draft", {
+      const res = await csrfFetch("/api/portal?action=publish-draft", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
@@ -1369,9 +1364,8 @@ function DraftsPanel({ styles }) {
     setBusyId(id);
     setStatus(null);
     try {
-      const res = await fetch("/api/portal?action=reject-draft", {
+      const res = await csrfFetch("/api/portal?action=reject-draft", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
       });
@@ -1939,10 +1933,9 @@ function TestimonialsAdmin() {
   const save = async (form) => {
     setSaving(true); setMsg(null);
     try {
-      const res = await fetch("/api/portal?action=testimonial-save", {
+      const res = await csrfFetch("/api/portal?action=testimonial-save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
         body: JSON.stringify(form),
       });
       const data = await res.json();
@@ -1958,10 +1951,9 @@ function TestimonialsAdmin() {
   const remove = async (id) => {
     if (typeof window !== "undefined" && !window.confirm("Delete this testimonial? This cannot be undone.")) return;
     try {
-      await fetch("/api/portal?action=testimonial-delete", {
+      await csrfFetch("/api/portal?action=testimonial-delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
         body: JSON.stringify({ id }),
       });
       await load();
@@ -2186,9 +2178,8 @@ function OpsConsole() {
   const run = useCallback(async (action, method = "POST") => {
     setRunning(action);
     try {
-      const res = await fetch(`/api/portal?action=${action}`, {
+      const res = await csrfFetch(`/api/portal?action=${action}`, {
         method,
-        credentials: "same-origin",
         headers: method === "POST" ? { "Content-Type": "application/json" } : {},
       });
       const data = await res.json().catch(() => ({}));
@@ -2439,9 +2430,8 @@ function OpsConsole() {
             const ip = typeof window !== "undefined" ? window.prompt("IP address to grant immunity:") : null;
             if (!ip) return;
             const days = typeof window !== "undefined" ? window.prompt("TTL in days (1–90):", "7") : "7";
-            fetch("/api/portal?action=grant-immunity", {
+            csrfFetch("/api/portal?action=grant-immunity", {
               method: "POST",
-              credentials: "same-origin",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ ip: ip.trim(), days: Number(days) || 7 }),
             })
@@ -2473,9 +2463,148 @@ function OpsConsole() {
         <OutputBlock output={output} action="create-payment-links" />
       </div>
 
+      {/* ── Newsletter ── */}
+      <div style={sectionHeader}>Newsletter — The Simple IT Brief</div>
+      <NewsletterAdmin card={card} />
+
       <p style={{ color: tokens.colorNeutralForeground3, fontSize: 11, marginTop: 16 }}>
         Every action is <code>requireAdmin()</code> gated server-side. This console only proxies clicks — there is no elevated state on the frontend.
       </p>
+    </div>
+  );
+}
+
+// ---------- admin: newsletter send ----------
+// Sends a one-shot newsletter to everyone on newsletter_subscribers who
+// has confirmed + not unsubscribed. Subject + markdown body, preview,
+// confirm modal. Subscribers are fetched from the same table that the
+// public /api/contact confirm flow writes to — nothing else to wire up.
+function NewsletterAdmin({ card }) {
+  const [count, setCount] = useState(null);
+  const [subject, setSubject] = useState("");
+  const [markdown, setMarkdown] = useState("");
+  const [sending, setSending] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [result, setResult] = useState(null);
+  const [err, setErr] = useState("");
+
+  const loadCount = useCallback(async () => {
+    try {
+      const res = await fetch("/api/portal?action=newsletter-count", { credentials: "same-origin" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) setCount(data.count);
+    } catch { /* leave count null */ }
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/portal?action=newsletter-count", { credentials: "same-origin" });
+        const data = await res.json().catch(() => ({}));
+        if (alive && res.ok && data.ok) setCount(data.count);
+      } catch { /* leave count null */ }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const send = useCallback(async () => {
+    setConfirming(false);
+    setSending(true);
+    setErr("");
+    setResult(null);
+    try {
+      const res = await csrfFetch("/api/portal?action=newsletter-send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, markdown }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        setErr(data.error || `http_${res.status}`);
+      } else {
+        setResult(data);
+        setSubject("");
+        setMarkdown("");
+        await loadCount();
+      }
+    } catch (e) {
+      setErr(e.message || "send_failed");
+    } finally {
+      setSending(false);
+    }
+  }, [subject, markdown, loadCount]);
+
+  const disabled = sending || !subject.trim() || markdown.trim().length < 20;
+
+  return (
+    <div style={card}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+        <div>
+          <h4 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 600 }}>Send newsletter</h4>
+          <p style={{ margin: 0, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+            {count == null
+              ? "Loading subscriber count…"
+              : `${count} confirmed subscriber${count === 1 ? "" : "s"} · will receive this blast`}
+          </p>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 10 }}>
+        <Field label="Subject line">
+          <Input
+            value={subject}
+            onChange={(_, d) => setSubject(d.value)}
+            placeholder="March 2026 — What happened in IT this month"
+            maxLength={200}
+            disabled={sending}
+          />
+        </Field>
+        <Field label="Body (markdown: # H1, ## H2, **bold**, *italic*, [link](url), - lists)">
+          <Textarea
+            value={markdown}
+            onChange={(_, d) => setMarkdown(d.value)}
+            rows={12}
+            placeholder={"# Hi there\n\nThis month we covered…\n\n- Thing 1\n- Thing 2\n\nRead more at [our blog](https://simpleitsrq.com/blog)."}
+            disabled={sending}
+          />
+        </Field>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <Button
+            appearance="primary"
+            onClick={() => setConfirming(true)}
+            disabled={disabled || count === 0}
+          >
+            {sending ? "Sending…" : count === 0 ? "No subscribers" : "Send newsletter"}
+          </Button>
+          {err && <span style={{ fontSize: 12, color: "#DC2626" }}>Failed: {err}</span>}
+          {result && (
+            <span style={{ fontSize: 12, color: "#065F46" }}>
+              Sent: {result.sent} · Failed: {result.failed}{result.log_id ? ` · log ${String(result.log_id).slice(0, 8)}` : ""}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <Dialog open={confirming} onOpenChange={(_, d) => !d.open && setConfirming(false)}>
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>Send to {count ?? "?"} subscriber{count === 1 ? "" : "s"}?</DialogTitle>
+            <DialogContent>
+              <p style={{ margin: 0, fontSize: 14, lineHeight: 1.55 }}>
+                This will email <strong>{count ?? "every confirmed subscriber"}</strong> right now. It cannot be undone — once a batch hits Resend there is no recall.
+              </p>
+              <p style={{ marginTop: 12, fontSize: 13, color: tokens.colorNeutralForeground3 }}>
+                Subject: <strong>{subject || "(empty)"}</strong>
+              </p>
+            </DialogContent>
+            <DialogActions>
+              <Button appearance="secondary" onClick={() => setConfirming(false)}>Cancel</Button>
+              <Button appearance="primary" onClick={send}>Yes, send to {count ?? 0}</Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
     </div>
   );
 }
@@ -3023,9 +3152,8 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
   const blockIp = useCallback(async (ip, reason = "manual: admin panel") => {
     setBlockBusy(true);
     try {
-      const res = await fetch("/api/portal?action=block-ip", {
+      const res = await csrfFetch("/api/portal?action=block-ip", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ip, reason }),
       });
