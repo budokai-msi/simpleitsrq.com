@@ -1,0 +1,48 @@
+---
+slug: "source-map-leak-build-pipeline-cleanup-sarasota"
+title: "The Claude Code Source Map Leak: Clean Up Your Build Pipeline"
+metaDescription: "A source map shipped with an NPM package exposed Anthropics Claude Code internals. Heres what every Sarasota dev shop should add to their CI pipeline."
+date: "2026-03-31"
+author: "Simple IT SRQ Team"
+category: "Cybersecurity"
+tags:
+  - "devsecops"
+  - "appsec"
+  - "ci-cd"
+excerpt: "An accidentally shipped source map exposed the bundled JavaScript behind Claude Code, including prompts and undisclosed product behaviors. Source maps in production remain a top OWASP-class leak."
+heroAlt: "An open laptop showing JavaScript source code with a warning icon overlaid."
+---
+
+## The Mistake That Dominated Hacker News
+
+A source map accidentally shipped with Anthropics Claude Code NPM package this week exposed the bundled JavaScript - including prompts, internal tool definitions, and undisclosed product behaviors. The story dominated Hacker News for two days. The technical details are interesting. The bigger story is that this kind of leak still happens in 2026.
+
+Source maps exist for a good reason: they let developers debug minified code in the browser by mapping back to the original sources. They are supposed to live on staging environments, not in production NPM packages. The fix is one CI step.
+
+## Why Source Maps Are an OWASP-Class Risk
+
+If you ship a ".map" file, anyone who downloads your package or visits your site can reconstruct your original source code, including comments, internal API endpoints, hard-coded URLs, environment defaults, and sometimes secrets that were supposed to be removed at build time. It is the same category of risk as committing an ".env" file to a public repo, just slower to surface.
+
+Most small dev shops never set up the CI step to strip source maps from their production builds because nobody told them to. The default behavior of Webpack, Vite, Rollup, and esbuild varies, and an upgrade can silently flip the setting.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+Most Sarasota businesses are not shipping NPM packages. But many do publish web apps - portals for clients, scheduling tools, intake forms - and many of those are built with the same modern JavaScript toolchains that produce source maps by default.
+
+If your developer (or a contractor) deployed a web app in the last two years, there is a real chance the production build is shipping a sourcemap right now. You can check in 30 seconds: open your site in Chrome, hit F12, switch to the Sources tab, and look for files in the webpack:// pseudo-folder. If they show up, your application source is browseable to anyone in the world.
+
+## A Five-Minute CI Hardening Checklist
+
+- Add an explicit "sourcemap: false" flag in your production build config. Vite, Webpack, Rollup, and esbuild all support this.
+- Add a CI step that fails the build if any ".map" file ends up in the upload artifact. Five lines of bash.
+- Audit your hosting bucket or CDN. Run a one-time scan for orphaned source maps from older deploys. They are still public.
+- Enable Subresource Integrity hashes on the scripts you serve so a tampered ".js" file fails closed.
+- Rotate any secrets that may have been exposed. If you cannot prove they were not in the bundle, assume they were.
+
+These five steps are the same baseline we deploy at clients with [in-house web applications](/#solutions). They take less than a day for an experienced engineer.
+
+## The Bottom Line
+
+The Claude Code leak is going to be on training-deck slides for the next year. Use the moment. Every app you ship with a JavaScript front end deserves a five-minute review of its build pipeline. The fix is cheap. The cost of doing nothing is whatever your worst-case secret exposure looks like.
+
+[Talk to Simple IT SRQ](/#contact) about a build pipeline review for your Bradenton or Sarasota application. We will also tie the findings into your [cyber-insurance evidence packet](/blog/github-copilot-private-repo-training-opt-out-april-24) so you have one less thing to scramble for at renewal.

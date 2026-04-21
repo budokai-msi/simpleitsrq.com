@@ -1,0 +1,116 @@
+---
+slug: "ai-model-switching-small-business-claude-gemini-chatgpt"
+title: "Claude Opus 4.7 Dropped This Week. Your Small Business Should Not Care."
+metaDescription: "Every few weeks a new AI model version ships and the benchmark discourse explodes. For Sarasota small businesses actually using AI to run payroll, draft emails, and summarize client calls, none of it matters. Here's the boring framework that does."
+date: "2026-04-19"
+author: "Simple IT SRQ Team"
+category: "AI & Productivity"
+tags:
+  - "ai"
+  - "claude"
+  - "chatgpt"
+  - "gemini"
+  - "smb"
+  - "productivity"
+  - "sarasota"
+excerpt: "Opus 4.7 replaced 4.6 last week. Benchmarks traded places. Your staff didn't notice. For small businesses, the conversation that matters isn't 'which model is best,' it's 'which subscription and which habits.' Here's the framework we use with clients."
+heroAlt: "A Sarasota small-business owner at their desk comparing AI tool subscriptions on paper, with Claude, Gemini, and ChatGPT open in three browser tabs."
+---
+
+## A confession
+
+I read the Claude Opus 4.7 system-prompt changelog yesterday. Forty-eight changes from 4.6. Three-paragraph discussion on Hacker News about whether the new "do not assume user intent" clause will cause the model to under-commit on agentic work. Four hundred comments.
+
+I run a managed IT business for small companies in Sarasota and Bradenton. Not one of our clients will read that thread. Not one will benefit from any of those 48 changes unless they're already using Claude for something structured. And the ones who *aren't* using it yet — which is most of them — are already one model version behind before they even start.
+
+This is the disconnect I want to close in this post. The AI-model discourse online is almost entirely about what the top 0.1% of users need. The conversation a small-business owner in Sarasota actually needs to have is completely different. Here it is, the way we have it with clients.
+
+## The four questions that matter
+
+Forget benchmarks. Forget leaderboards. Forget the three-decimal-point MMLU score. These are the four questions:
+
+**1. Is your team actually using any AI tool today?**
+
+Not "do you have a ChatGPT subscription." *Using.* As in, if I asked your admin how they drafted the last client-facing email, would they say "I asked Claude to rewrite my first pass"?
+
+If the answer is no, then the model version doesn't matter. What matters is getting a tool in front of them and giving them one or two starting use cases. We usually start with: "draft a reply to this email" and "summarize this voicemail transcript." Nothing fancy.
+
+**2. Is your data going somewhere you'd be comfortable explaining to your insurance carrier?**
+
+Every major AI tool has a business plan that contractually excludes your data from being used for training. The personal / free plans often don't. If your staff is pasting client information into a free ChatGPT tab, your cyber-insurance policy has opinions about that even if your staff doesn't.
+
+Fix: either (a) buy a business subscription for the tool your staff has already adopted, or (b) block the consumer version at the network level and fund the business version. One of the two. "We'll just trust staff to use it right" is not a policy that survives an audit.
+
+**3. Does your team's tool integrate with the tools they already use?**
+
+This is where the model-version arms race actually doesn't matter, because the difference between a 3% improvement on a coding benchmark and a 30-second round trip to copy-paste the output from a chat tab into Outlook is... the 30-second round trip, every time.
+
+The winning setup is not "the best model" — it's "the AI that runs inside the tool your staff lives in." For Microsoft 365 shops, that's Copilot. For Google Workspace shops, Gemini inside Docs and Gmail. For teams already in Claude or ChatGPT, the answer is whichever one has the browser extension or desktop app that your staff won't forget about.
+
+**4. Do you actually need to change tools again this quarter?**
+
+The real answer, 90% of the time, is no. Tool-switching is cost. Re-training the team on a new interface is cost. Migrating prompts and habits is cost. Unless the current tool is materially failing at a specific task — which you can usually pin down — changing because "Opus 4.7 scores higher on SWE-bench" is an expensive hobby.
+
+## The Claude 4.6 → 4.7 change in plain English
+
+Since I brought it up: Opus 4.6 to 4.7 changed the system prompt that governs the model's default behavior. The headline changes are (a) more explicit "do not assume what the user wants if it's ambiguous," (b) tighter instructions around tool use, and (c) clearer guidance about when to hand control back to the user.
+
+For a developer using Claude through an API for agentic coding work, these matter. For a real-estate agent in Venice using Claude to rewrite a listing description, the change is effectively invisible. The model was good enough for that task six months ago. It's slightly better now. It'll be slightly better again in September. Compound interest, not breakthrough.
+
+## What we actually recommend
+
+The framework we use with clients, boiled down to three choices:
+
+### Choice A: Microsoft 365 Copilot ($30/user/month)
+
+For any business that already runs on Microsoft 365. Copilot sits inside Outlook, Word, Excel, PowerPoint, and Teams. The model is GPT-5 class. It's a native integration. Staff doesn't have to remember to open a separate tool.
+
+The downside: $30/user/month adds up fast. For a 15-person office that's $5,400/year. We usually recommend rolling it out to 3-5 "heavy users" first and evaluating the value before fleet-rolling.
+
+### Choice B: Claude Pro or Team ($20-25/user/month)
+
+For a business that either isn't on Microsoft 365, or whose staff have already adopted Claude and would lose weeks re-learning Copilot. Claude's browser experience is arguably the best of the big three right now, and the model (4.7 as of this week, 4.8 probably by August) is as capable as anything else for general office work.
+
+The downside: no native Office integration. Staff has to copy-paste between tabs. For a 5-person law office this is fine. For a 25-person operations team this is friction.
+
+### Choice C: Google Gemini + Google Workspace (bundled)
+
+For businesses already on Google Workspace, Gemini-inside-Gmail and Gemini-inside-Docs is genuinely the path-of-least-resistance AI rollout. No extra subscription, no copy-paste, already integrated. Quality is a tier behind Copilot and Claude for specialized work, but for the everyday "draft this email" / "summarize this thread" task, it's often what actually gets used.
+
+The downside: if you're not already on Google Workspace, this means migrating off Microsoft 365. That's a year-long project, not a quarter-long one.
+
+## What we explicitly don't recommend
+
+A few anti-patterns we see repeatedly:
+
+**"Free ChatGPT for the whole team."** Works for three weeks, then somebody pastes a client's Social Security number into the prompt and your legal team has a bad day.
+
+**"One AI subscription to rule them all."** The 18-year-old on your marketing team wants Midjourney or Suno. Your bookkeeper wants a tool that's HIPAA-covered. Your CEO wants to try every new model. One tool can't be all of these.
+
+**"Wait for the next model."** There is always a next model. The one you don't buy today because Opus 4.8 is coming will be three versions behind by the time Opus 4.8 is actually worth a migration.
+
+**"AI-generated client work without a human review step."** This is the one that bites small businesses hardest. AI is useful as a first draft, a summarizer, a re-writer. It is not useful as a "send this without reading it" tool. The hallucination rate on model versions in 2026 is low enough that you *can* skip the review. You just shouldn't.
+
+## The ergonomics nobody talks about
+
+A last note, because the hot-model discourse misses this completely: using AI tools well is a physical activity. You're at your desk for longer stretches, staring at more text, making more clicks per task. The ergonomics of your AI-use setup matter more than the model version.
+
+Things we've installed for AI-heavy staff that paid back quickly:
+
+- <Affiliate token="amazon_search:logitech ergo k860 split keyboard|A split ergonomic keyboard" /> — for the staff who now type 30% more because AI-assisted work shifts more of the day toward drafting
+- <Affiliate token="amazon_search:humanscale monitor arm adjustable|A proper adjustable monitor arm" /> — the reading-heavy workflow of reviewing AI output rewards being able to tilt/raise a screen on demand
+- <Affiliate token="amazon_search:noise cancelling over ear headphones wireless|Decent noise-cancelling headphones" /> — for open offices where AI-dictation workflows need quiet. Also for Zoom. Also just for focus.
+
+Total cost per staff member: ~$400-600. Total productivity effect: more than whatever model upgrade you pick this year.
+
+## The bottom line
+
+The AI model you pick is a short-term decision that reverses in a year if it turns out to be wrong. The subscription discipline, the data policy, and the ergonomic setup are decisions that compound.
+
+If your Sarasota, Bradenton, or Venice small business wants to walk through this framework in 30 minutes — which tool to pick, what to license, what policy to hand your staff — [**we'll do it for free**](/#contact). No sales pitch for a specific AI tool. We don't resell any of them.
+
+And if you want the actual "policy your staff will read," it's in the [**SaaS Incident Response Playbook**](/store/saas-incident-response-playbook) we published yesterday. $29. Fillable. Florida-compliance-aware. That one has your employee-AI-use template in it, among other things.
+
+---
+
+**Product links are Amazon affiliate links. The Playbook link goes to our own store.**

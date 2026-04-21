@@ -1,0 +1,74 @@
+---
+slug: "small-business-backup-drive-bradenton-ransomware"
+title: "The 3-2-1 Backup Rule Still Works - Heres the Hardware Bradenton Offices Use"
+metaDescription: "Ransomware hits small businesses weekly. A $120 external drive plus cloud gives Bradenton and Sarasota offices the 3-2-1 backup every insurer now expects."
+date: "2026-04-14"
+author: "Simple IT SRQ Team"
+category: "Cybersecurity"
+tags:
+  - "backup"
+  - "ransomware"
+  - "hardware"
+  - "smb"
+  - "bradenton"
+excerpt: "Cyber-insurance applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes."
+heroAlt: "An external hard drive on a desk next to a laptop, with a padlock icon overlaid showing an encrypted backup."
+---
+
+## Why Your Insurer Keeps Asking About Backups
+
+Five years ago, cyber-insurance applications had maybe two backup questions. The 2026 applications we are seeing for Sarasota and Bradenton clients now have eight to twelve. Carriers want to know not just whether you back up, but how often, where the backups live, whether they are tested, and whether the backup destination can be reached by ransomware that gets into your network.
+
+There is a reason. Ransomware groups now specifically hunt and delete backups before they encrypt the live data, because a working backup is the one thing that makes a victim not pay. If your backup is an external drive that sits permanently plugged into the bookkeeping PC, it is not really a backup - it is a second copy that will get encrypted alongside the first.
+
+## The 3-2-1 Rule, Translated
+
+The industry shorthand everyone uses is 3-2-1:
+
+- **3** total copies of your important data
+- **2** different media types (so a drive failure does not take both copies)
+- **1** copy offsite (so a fire, flood, or ransomware attack cannot reach it)
+
+For a typical Bradenton small office, that translates to: the live copy on your working computer, a local backup on an external drive or NAS, and a cloud backup somewhere the ransomware cannot touch.
+
+## Copy 1: Live Data
+
+This is whatever you work on every day - QuickBooks files, the shared drive, the customer folder. You do not need to change anything about this copy. Just make sure you know where it actually lives. We get calls every month where a staff member saved everything important to their desktop instead of the shared drive, and nobody realized until the laptop died.
+
+## Copy 2: Local Backup
+
+A local backup is the one you restore from when something goes wrong in the next five minutes - a drive dies, a file gets corrupted, an employee deletes the wrong folder. Speed matters; this is what gets you back to work before lunch.
+
+**For a single PC:** a USB-C external SSD is the right answer. Fast, silent, compact, and good for a few years of daily backup rotation. <Affiliate token="amazon_search:samsung t7 portable ssd 2tb|a 2TB portable SSD" /> is plenty for most single-workstation offices. Plug it in overnight, run Windows File History or a free tool like Veeam Agent, unplug it in the morning. That last step - unplugging it - is what keeps ransomware from reaching it.
+
+**For a multi-person office with a shared drive:** a small NAS is the better answer. Two drives in a mirror, sitting on a shelf in the network closet, backing up every shared folder nightly. Look at <Affiliate token="amazon_search:synology 2 bay nas|a two-bay Synology NAS" /> as the reference. Add two <Affiliate token="amazon_search:wd red plus 4tb nas drive|WD Red Plus NAS drives" /> and you have a professional local backup tier for well under $700. Configure it so the NAS pulls backups from your computers rather than the other way around - that way a compromised PC cannot delete the backup.
+
+**Rotate at least one drive offsite.** The cheapest honest version of 3-2-1: buy two of the same external drive. Alternate them weekly. One is in the office this week, the other is at home or in a safety deposit box. Next week, swap. A fire in the office loses one drive and one working copy; it does not lose everything.
+
+## Copy 3: Cloud Backup
+
+This is the copy that survives the fire, the break-in, and the ransomware incident that encrypts every drive on the local network. It is also the copy most small offices get wrong - not because they skip it, but because they confuse file sync with backup.
+
+**OneDrive, Google Drive, and Dropbox are not backups.** They are sync tools. If ransomware encrypts a file on your PC, the encrypted version syncs to the cloud and overwrites the good copy within seconds. Most of these services have a recycle bin that can save you, but not always, and not reliably against a sophisticated attack.
+
+What you want is a real backup service - one that keeps multiple historical versions, has its own credentials (not your Microsoft login), and cannot be deleted by something running on your PC. For small offices, a dedicated backup service is the right shape: unlimited data per workstation, daily uploads, 30-day (or longer) version history, and a separate web portal to restore from. If you prefer all-in-one backup plus endpoint protection, <Affiliate token="acronis" /> does both.
+
+## What to Actually Test
+
+A backup you have never restored from is not a backup - it is a hope. Twice a year, pick one random file, delete it, and restore it from each of your backup layers. If either restore fails or takes more than 15 minutes to figure out, fix the process now, not during an incident.
+
+We also recommend testing a full-device restore at least once. Take an old spare laptop, wipe it, and restore a user profile from backup. If you cannot get back to a working desktop in a few hours, your real recovery time during an incident will be days. That is the gap cyber-insurance carriers are pricing for.
+
+## The Mistake Almost Every Small Office Makes
+
+External drive permanently plugged in. NAS on the same network with the same admin password as every PC. Cloud sync treated as cloud backup. Each of these looks like a backup and fails as one during an actual incident.
+
+The fix is the three separations: media (different hardware), time (versions going back weeks), and network (at least one copy that a ransomware payload on your PC cannot reach).
+
+## The Bottom Line
+
+A credible 3-2-1 backup for a typical Sarasota or Bradenton small office runs $300 to $800 in hardware and $10 to $30 per workstation per month for cloud. It is the single cheapest insurance policy against the most common disaster scenario your office will face. Every cyber-insurance carrier will ask about it. Every ransomware incident response document we have written starts with whether it existed.
+
+Build the stack before you need it.
+
+[Talk to Simple IT SRQ](/#contact) about setting up and monitoring a real 3-2-1 backup across your office - including the test-restore cycle that insurers now expect documented. The product links above are affiliate links; we earn a small commission when you buy through them.
