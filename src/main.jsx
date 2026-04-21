@@ -1,8 +1,27 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { initBotId } from 'botid/client/core'
+import { createDOMRenderer, RendererProvider } from '@griffel/react'
 import './index.css'
 import App from './App.jsx'
+
+// CSP nonce wiring — the middleware injects a per-request nonce into the
+// <meta name="csp-nonce"> tag and sets a matching `style-src 'nonce-<value>'`
+// directive on the response. We hand that same nonce to Griffel (Fluent UI's
+// CSS-in-JS engine) so every runtime-emitted <style> tag carries
+// nonce="<value>" and is accepted by the browser under the strict CSP.
+//
+// If the substitution didn't happen (e.g. middleware bypass, local `vite
+// dev`), the meta value is the literal "__CSP_NONCE__"; we treat that as
+// "no nonce" and let Griffel run without the attribute (the dev CSP is
+// relaxed anyway, and prod always has the middleware).
+const nonceMeta = document.querySelector('meta[name="csp-nonce"]')
+const rawNonce = nonceMeta?.getAttribute('content') || ''
+const cspNonce = rawNonce && rawNonce !== '__CSP_NONCE__' ? rawNonce : null
+const griffelRenderer = createDOMRenderer(
+  document,
+  cspNonce ? { styleElementAttributes: { nonce: cspNonce } } : {},
+)
 
 // Vercel BotID — invisible bot detection on the contact form.
 // Free Basic mode; protected paths must match the server route exactly.
@@ -28,6 +47,8 @@ if (typeof window !== 'undefined') {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <RendererProvider renderer={griffelRenderer} targetDocument={document}>
+      <App />
+    </RendererProvider>
   </StrictMode>,
 )
