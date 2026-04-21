@@ -1,7 +1,7 @@
 ﻿import { useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { posts } from "../data/posts";
+import posts from "../data/posts-meta.json";
 import { useSEO } from "../lib/seo";
 import BlogCover from "../components/BlogCover";
 import AdUnit from "../components/AdSense";
