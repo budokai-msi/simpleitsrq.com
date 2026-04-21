@@ -1,0 +1,40 @@
+name: Sitemap freshness
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  check-generated-files:
+    name: Verify prebuild artifacts are up to date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run prebuild (regenerate sitemap, rss, posts-meta)
+        run: npm run prebuild
+
+      - name: Fail if committed files drift from generated output
+        run: |
+          git diff --exit-code \
+            public/sitemap.xml \
+            public/rss.xml \
+            src/data/posts-meta.json \
+            || (
+              echo "::error::Generated files are stale. Run 'npm run prebuild' locally and commit the results." ;
+              exit 1
+            )
