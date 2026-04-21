@@ -7,8 +7,24 @@ export default class ErrorBoundary extends Component {
     return { hasError: true };
   }
 
-  componentDidCatch(err) {
+  componentDidCatch(err, errorInfo) {
     console.error("[ErrorBoundary]", err);
+    // Sentry is additive and lazy — the dynamic import keeps @sentry/react
+    // off the critical-path bundle. It's a no-op if VITE_SENTRY_DSN is unset.
+    import("../lib/sentry.js")
+      .then(({ captureException, initSentry }) => {
+        // Make sure init has happened (main.jsx kicks this off idle, but an
+        // error could beat it to the punch).
+        initSentry();
+        captureException(err, {
+          contexts: {
+            react: { componentStack: errorInfo?.componentStack },
+          },
+        });
+      })
+      .catch(() => {
+        // Swallow — reporting must never break the error UI.
+      });
   }
 
   render() {
