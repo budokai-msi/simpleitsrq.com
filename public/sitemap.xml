@@ -2,91 +2,97 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://simpleitsrq.com/</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/blog</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/security-academy</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/password-check</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/book</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://simpleitsrq.com/service-area</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://simpleitsrq.com/support</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/privacy</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/terms</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/accessibility</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/sarasota-it-support</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/bradenton-it-support</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/lakewood-ranch-it-support</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/nokomis-it-support</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/venice-it-support</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -409,74 +415,80 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://simpleitsrq.com/blog/sarasota-biggest-cyber-risk-2024</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://simpleitsrq.com/store/security-academy</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/compliance-library</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/hipaa-starter-kit</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/wisp-template</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/cyber-insurance-answers</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/hurricane-it-playbook</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/vendor-risk-register</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/it-budget-calendar</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/cyber-insurance-evidence-binder</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/ransomware-tabletop-kit</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/saas-incident-response-playbook</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://simpleitsrq.com/store/onboarding-runbook</loc>
-    <lastmod>2026-04-19</lastmod>
+    <lastmod>2026-04-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

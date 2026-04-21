@@ -31,6 +31,7 @@ const Store = lazy(() => import("./pages/Store"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
+const ServiceArea = lazy(() => import("./pages/ServiceArea"));
 
 function RouteFallback() {
   return (
@@ -173,6 +174,7 @@ function Footer() {
             <li><Link to="/lakewood-ranch-it-support"><MapPin size={12} /> Lakewood Ranch</Link></li>
             <li><Link to="/nokomis-it-support"><MapPin size={12} /> Nokomis</Link></li>
             <li><Link to="/venice-it-support"><MapPin size={12} /> Venice</Link></li>
+            <li><Link to="/service-area" className="footer-cities-all">View all markets →</Link></li>
           </ul>
           <p className="footer-area-note">Serving Southwest Florida. On-site response within 2 hours for Sarasota + Bradenton.</p>
         </div>
@@ -289,6 +291,7 @@ export default function App() {
               <Route path="/lakewood-ranch-it-support" element={<LocalLanding />} />
               <Route path="/nokomis-it-support" element={<LocalLanding />} />
               <Route path="/venice-it-support" element={<LocalLanding />} />
+              <Route path="/service-area" element={<ServiceArea />} />
               <Route path="/book" element={<Book />} />
               <Route path="/support" element={<Support />} />
               <Route path="/tools" element={<Tools />} />
