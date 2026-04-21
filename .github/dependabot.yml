@@ -1,0 +1,43 @@
+# Dependabot configuration.
+# Security alerts fire regardless of this file — this config adds scheduled
+# PRs for non-security version updates so we don't drift on minor / patch
+# bumps between CVE waves.
+# Docs: https://docs.github.com/code-security/dependabot/dependabot-version-updates
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/New_York
+    # Cap open PRs so Dependabot can't flood the queue — if the backlog
+    # grows past this, older PRs are auto-closed and re-opened after merge.
+    open-pull-requests-limit: 5
+    # Group minor + patch updates into a single weekly PR to cut noise.
+    # Major bumps still get their own PR since they usually need a human
+    # look at breaking changes.
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - dependencies
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - dependencies
+      - ci
