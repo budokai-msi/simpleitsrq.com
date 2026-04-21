@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, useEffect } from "react";
+﻿import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { posts } from "../data/posts";
@@ -13,14 +13,20 @@ const CATEGORIES = ["All", "Cybersecurity", "AI & Productivity", "Cloud", "Compl
 export default function BlogIndex() {
   const [active, setActive] = useState("All");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Reset visible count when the user switches category so "Load more"
+  // starts fresh rather than leaking state from the previous filter. Using
+  // the "prev value during render" pattern from the React 19 docs — lets
+  // us react to prop changes without a layout-effect round trip.
+  const [prevActive, setPrevActive] = useState(active);
+  if (prevActive !== active) {
+    setPrevActive(active);
+    setVisibleCount(PAGE_SIZE);
+  }
+
   const sorted = useMemo(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)), []);
   const filtered = active === "All" ? sorted : sorted.filter((p) => p.category === active);
   const visible = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
-
-  // Reset visible count when the user switches category so "Load more"
-  // starts fresh rather than leaking state from the previous filter.
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [active]);
 
   useSEO({
     title: "Blog | Simple IT SRQ - Insights for Sarasota and Bradenton Businesses",
