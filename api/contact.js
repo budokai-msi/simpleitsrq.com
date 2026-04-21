@@ -90,6 +90,19 @@ const escapeHtml = (s = "") =>
 
 const isEmail = (s = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 
+// Collapse C0 (U+0000..U+001F), DEL, and C1 (U+0080..U+009F) to spaces so
+// user input can't smuggle extra headers (Bcc:, etc.) into a Resend subject.
+// Some SMTP gateways treat the C1 range as line breaks.
+const stripHeaderCtrl = (s = "") => {
+  const str = String(s);
+  let out = "";
+  for (let k = 0; k < str.length; k++) {
+    const c = str.charCodeAt(k);
+    out += (c < 0x20 || c === 0x7F || (c >= 0x80 && c <= 0x9F)) ? " " : str[k];
+  }
+  return out.replace(/\s+/g, " ").trim();
+};
+
 const json = (status, body) =>
   new Response(JSON.stringify(body), {
     status,
@@ -570,10 +583,10 @@ export async function POST(request) {
   // 5. Honeypot — real users leave this blank; bots fill it.
   if (body._hp) return json(200, { ok: true });
 
-  const name = String(body.name || "").trim().slice(0, 200);
-  const company = String(body.company || "").trim().slice(0, 200);
-  const email = String(body.email || "").trim().slice(0, 320);
-  const phone = String(body.phone || "").trim().slice(0, 50);
+  const name = stripHeaderCtrl(String(body.name || "").slice(0, 200));
+  const company = stripHeaderCtrl(String(body.company || "").slice(0, 200));
+  const email = stripHeaderCtrl(String(body.email || "").slice(0, 320));
+  const phone = stripHeaderCtrl(String(body.phone || "").slice(0, 50));
   const message = String(body.message || "").trim().slice(0, 5000);
 
   // 6. Validate

@@ -42,6 +42,19 @@ const PRIORITY_COLORS = {
   critical: "#DC2626",
 };
 
+// Collapse C0 (U+0000..U+001F), DEL, and C1 (U+0080..U+009F) to spaces so
+// user input can't smuggle extra headers (Bcc:, etc.) into a Resend subject.
+// Some SMTP gateways treat the C1 range as line breaks.
+const stripHeaderCtrl = (s = "") => {
+  const str = String(s);
+  let out = "";
+  for (let k = 0; k < str.length; k++) {
+    const c = str.charCodeAt(k);
+    out += (c < 0x20 || c === 0x7F || (c >= 0x80 && c <= 0x9F)) ? " " : str[k];
+  }
+  return out.replace(/\s+/g, " ").trim();
+};
+
 const escapeHtml = (s = "") =>
   String(s)
     .replace(/&/g, "&amp;")
@@ -160,14 +173,14 @@ export async function POST(request) {
   // 5. Honeypot
   if (body._hp) return json(200, { ok: true, ticketId: generateTicketId() });
 
-  const name        = String(body.name || "").trim().slice(0, 200);
-  const company     = String(body.company || "").trim().slice(0, 200);
-  const email       = String(body.email || "").trim().slice(0, 320);
-  const phone       = String(body.phone || "").trim().slice(0, 50);
+  const name        = stripHeaderCtrl(String(body.name || "").slice(0, 200));
+  const company     = stripHeaderCtrl(String(body.company || "").slice(0, 200));
+  const email       = stripHeaderCtrl(String(body.email || "").slice(0, 320));
+  const phone       = stripHeaderCtrl(String(body.phone || "").slice(0, 50));
   const priorityRaw = String(body.priority || "normal").trim().toLowerCase();
   const priority    = ALLOWED_PRIORITIES.has(priorityRaw) ? priorityRaw : "normal";
-  const category    = String(body.category || "Other").trim().slice(0, 200);
-  const subject     = String(body.subject || "").trim().slice(0, 200);
+  const category    = stripHeaderCtrl(String(body.category || "Other").slice(0, 200));
+  const subject     = stripHeaderCtrl(String(body.subject || "").slice(0, 200));
   const description = String(body.description || "").trim().slice(0, 8000);
 
   // 6. Validate
