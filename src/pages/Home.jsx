@@ -14,6 +14,7 @@ import BlogCover from "../components/BlogCover";
 import RecommendedTools from "../components/RecommendedTools";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
+import { csrfFetch } from "../lib/csrf";
 
 function Hero() {
   return (
@@ -460,7 +461,7 @@ function Contact() {
     setErrorMsg("");
 
     try {
-      const r = await fetch("/api/contact", {
+      const r = await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, turnstileToken }),

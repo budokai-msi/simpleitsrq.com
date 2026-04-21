@@ -21,6 +21,8 @@ import { getSession } from "./_lib/session.js";
 import { clientIp, auditVerify, logSecurityEvent } from "./_lib/security.js";
 import { refreshThreatFeeds, matchOsintFeeds, osintStatus } from "./_lib/osint.js";
 import { json } from "./_lib/http.js";
+import { csrfValid } from "./_lib/csrf.js";
+import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
@@ -2084,6 +2086,160 @@ async function handleBlockIp(session, request) {
   return json(200, { ok: true });
 }
 
+// ---------- newsletter (admin only) ----------
+// NEWSLETTER_FROM is the mailbox used for the monthly Simple IT Brief.
+// The contact.js confirm flow already uses this string — reusing it keeps
+// From-addresses consistent across confirm + send.
+const NEWSLETTER_FROM = "Simple IT Brief <hello@simpleitsrq.com>";
+const NEWSLETTER_BATCH_SIZE = 100;
+const NEWSLETTER_SUBJECT_MAX = 200;
+const NEWSLETTER_MARKDOWN_MAX = 20000;
+const SITE_URL = "https://simpleitsrq.com";
+
+// Extremely small Markdown → HTML converter tailored to newsletter use:
+// paragraphs, headings (# / ## / ###), links, bold/italic, and lists.
+// Everything unrecognized passes through as escaped text so we never
+// emit attacker-controlled raw HTML into an email body.
+function escapeEmailHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+function newsletterMarkdownToHtml(md) {
+  const escaped = escapeEmailHtml(md);
+  const lines = escaped.split(/\r?\n/);
+  const out = [];
+  let listOpen = false;
+  const flushList = () => { if (listOpen) { out.push("</ul>"); listOpen = false; } };
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    if (/^###\s+/.test(line))      { flushList(); out.push(`<h3 style="margin:18px 0 8px;font-size:15px;color:#0F6CBD">${line.replace(/^###\s+/, "")}</h3>`); continue; }
+    if (/^##\s+/.test(line))       { flushList(); out.push(`<h2 style="margin:22px 0 8px;font-size:17px;color:#0F6CBD">${line.replace(/^##\s+/, "")}</h2>`); continue; }
+    if (/^#\s+/.test(line))        { flushList(); out.push(`<h1 style="margin:24px 0 10px;font-size:19px;color:#0F6CBD">${line.replace(/^#\s+/, "")}</h1>`); continue; }
+    if (/^[-*]\s+/.test(line))     { if (!listOpen) { out.push(`<ul style="margin:8px 0;padding-left:20px">`); listOpen = true; } out.push(`<li style="margin:4px 0">${line.replace(/^[-*]\s+/, "")}</li>`); continue; }
+    if (line === "")               { flushList(); out.push(""); continue; }
+    flushList();
+    out.push(`<p style="margin:10px 0;font-size:14px;line-height:1.6;color:#1a1a1a">${line}</p>`);
+  }
+  flushList();
+  let html = out.join("\n");
+  // bold + italic + links
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" style="color:#0F6CBD">$1</a>');
+  return html;
+}
+
+async function handleNewsletterCount(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const rows = await sql`
+    SELECT COUNT(*)::int AS count FROM newsletter_subscribers
+    WHERE confirmed_at IS NOT NULL AND unsubscribed_at IS NULL
+  `.catch(() => [{ count: 0 }]);
+  return json(200, { ok: true, count: rows[0]?.count || 0 });
+}
+
+async function handleNewsletterSend(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+
+  const subject = sanitizeHeader(body?.subject, NEWSLETTER_SUBJECT_MAX);
+  const markdown = clampString(body?.markdown, NEWSLETTER_MARKDOWN_MAX);
+  if (!subject) return json(400, { ok: false, error: "subject_required" });
+  if (!markdown) return json(400, { ok: false, error: "body_required" });
+  if (subject.length < 3) return json(400, { ok: false, error: "subject_too_short" });
+  if (markdown.length < 20) return json(400, { ok: false, error: "body_too_short" });
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return json(500, { ok: false, error: "resend_not_configured" });
+
+  const subs = await sql`
+    SELECT email, unsubscribe_token FROM newsletter_subscribers
+    WHERE confirmed_at IS NOT NULL AND unsubscribed_at IS NULL
+    ORDER BY id ASC
+  `.catch(() => []);
+
+  if (subs.length === 0) {
+    return json(200, { ok: true, sent: 0, failed: 0, log_id: null });
+  }
+
+  const resend = new Resend(apiKey);
+  let sent = 0;
+  let failed = 0;
+
+  const bodyHtml = newsletterMarkdownToHtml(markdown);
+
+  for (let i = 0; i < subs.length; i += NEWSLETTER_BATCH_SIZE) {
+    const chunk = subs.slice(i, i + NEWSLETTER_BATCH_SIZE);
+    const payload = chunk.map((s) => {
+      const unsubscribeUrl = `${SITE_URL}/api/contact?unsubscribe=${s.unsubscribe_token}`;
+      const html = `
+        <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:600px;margin:0 auto;color:#1a1a1a;padding:20px">
+          ${bodyHtml}
+          <p style="font-size:11px;color:#9ca3af;margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb">
+            You're receiving this because you confirmed a subscription to The Simple IT Brief.
+            <a href="${unsubscribeUrl}" style="color:#9ca3af">Unsubscribe</a>.
+          </p>
+        </div>
+      `;
+      return {
+        from: NEWSLETTER_FROM,
+        to: [s.email],
+        subject,
+        html,
+        headers: { "List-Unsubscribe": `<${unsubscribeUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+      };
+    });
+
+    try {
+      const result = await resend.batch.create(payload);
+      // Resend batch returns { data: { data: [{ id }], ... } } on success;
+      // per-recipient failures are rare but we count everything as sent
+      // unless the whole call threw.
+      if (result?.error) {
+        failed += chunk.length;
+        console.error("[portal] newsletter batch error", result.error);
+      } else {
+        sent += chunk.length;
+      }
+    } catch (err) {
+      failed += chunk.length;
+      console.error("[portal] newsletter batch threw", err);
+    }
+  }
+
+  let logId = null;
+  try {
+    const logged = await sql`
+      INSERT INTO newsletter_sends (subject, sent, failed, sent_by)
+      VALUES (${subject}, ${sent}, ${failed}, ${session.user.id})
+      RETURNING id
+    `;
+    logId = logged[0]?.id || null;
+  } catch (err) {
+    console.warn("[portal] newsletter_sends insert failed", err);
+  }
+
+  await logSecurityEvent({
+    kind: "admin.newsletter_send",
+    severity: "info",
+    ip: clientIp(request),
+    userId: session?.user?.id || null,
+    userAgent: request.headers.get("user-agent") || null,
+    path: "/api/portal?action=newsletter-send",
+    detail: { subject, sent, failed, subscribers: subs.length },
+  });
+
+  return json(200, { ok: true, sent, failed, log_id: logId });
+}
+
 // ---------- health (unauthenticated, for external uptime monitors) ----------
 async function handleHealth() {
   const checks = { db: "unknown", criticalEvents: 0, ok: false };
@@ -2202,17 +2358,10 @@ async function handleGithubHealth(session) {
 }
 
 // ---------- entry points ----------
-const ALLOWED_ORIGINS = new Set([
-  "https://simpleitsrq.com",
-  "https://www.simpleitsrq.com",
-]);
-
-function csrfCheck(request, method) {
-  if (method === "GET") return true;
-  const origin = request.headers.get("origin");
-  if (!origin) return true; // non-browser clients (curl, cron)
-  return ALLOWED_ORIGINS.has(origin);
-}
+// CSRF is enforced via the double-submit-cookie helper in _lib/csrf.js.
+// Mutating requests must (a) come from an allowed Origin and (b) echo the
+// `sit_csrf` cookie back as the `x-csrf-token` header. GET requests skip
+// the check so dashboards/feeds keep working.
 
 async function dispatch(request, method) {
   const url = new URL(request.url);
@@ -2221,8 +2370,8 @@ async function dispatch(request, method) {
   // Health check is unauthenticated — must be before requireSession.
   if (action === "health" && method === "GET") return handleHealth();
 
-  if (!csrfCheck(request, method)) {
-    return json(403, { ok: false, error: "csrf_origin_rejected" });
+  if (!csrfValid(request)) {
+    return json(403, { ok: false, error: "csrf_rejected" });
   }
 
   const { session, error } = await requireSession(request);
@@ -2259,6 +2408,8 @@ async function dispatch(request, method) {
   if (action === "reject-draft"    && method === "POST")  return handleRejectDraft(session, request);
   if (action === "create-invoice"  && method === "POST")  return handleCreateInvoice(session, request);
   if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);
+  if (action === "newsletter-count" && method === "GET")  return handleNewsletterCount(session);
+  if (action === "newsletter-send"  && method === "POST") return handleNewsletterSend(session, request);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

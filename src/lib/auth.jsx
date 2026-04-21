@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AuthContext } from "./authContext.js";
+import { csrfFetch } from "./csrf.js";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -47,10 +48,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "same-origin",
-      });
+      await csrfFetch("/api/auth/logout", { method: "POST" });
     } catch {
       // Ignore — we clear local state regardless.
     }
