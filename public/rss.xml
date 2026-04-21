@@ -6,7 +6,25 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Sun, 19 Apr 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 21 Apr 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>The 5 MFA Methods Your 2026 Cyber-Insurance Renewal Actually Accepts (And the 2 That&apos;ll Get You Denied)</title>
+      <link>https://simpleitsrq.com/blog/5-mfa-methods-2026-cyber-insurance-renewal</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/5-mfa-methods-2026-cyber-insurance-renewal</guid>
+      <pubDate>Tue, 21 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>If your renewal quote jumped this spring, check the MFA section of the questionnaire first. In Q1 2026, three of the five biggest small-business cyber carriers silently changed what counts as acceptable multi-factor authentication. SMS is out. Here&apos;s what&apos;s still in.</description>
+    </item>
+    <item>
+      <title>Your Businesss Biggest Cyber Risk Right Now (And Its Not What You Think)</title>
+      <link>https://simpleitsrq.com/blog/sarasota-biggest-cyber-risk-2024</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-biggest-cyber-risk-2024</guid>
+      <pubDate>Tue, 21 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Employee passwords are the #1 weak spot in small business security. Heres why and what to do about it.</description>
+    </item>
     <item>
       <title>An Archive of BYTE Magazine from 1975 Reminded Me of a Client&apos;s Server Closet</title>
       <link>https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</link>
