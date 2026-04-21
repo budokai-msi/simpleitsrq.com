@@ -10,6 +10,7 @@ import Newsletter from "../components/Newsletter";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
 import AdUnit from "../components/AdSense";
 import ToolsUsedFooter from "../components/ToolsUsedFooter";
+import StoreCrossSell from "../components/StoreCrossSell";
 import { trackAffiliateClick } from "../lib/trackClick";
 
 function CategoryIcon({ category, size = 28 }) {
@@ -229,6 +230,7 @@ export default function BlogPost() {
             <Tag size={14} />
             {post.tags.map((t) => <span key={t} className="blog-tag">{t}</span>)}
           </div>
+          <StoreCrossSell post={post} />
           <ToolsUsedFooter content={post.content} slug={post.slug} />
           <LeadCaptureCTA />
           <Newsletter />
