@@ -2158,11 +2158,56 @@ function OutputBlock({ action, output }) {
   );
 }
 
+// Classify auditVerify() output into a single-word health label + severity.
+// Order matters: migrationNeeded wins over legacy (zero-chain) wins over
+// broken (hash mismatch) wins over valid.
+function classifyAuditChain(data) {
+  if (!data) return { label: "Unknown", tone: "warning" };
+  if (data.migrationNeeded) return { label: "Migration Needed", tone: "warning" };
+  if (data.ok === false || (Array.isArray(data.breaks) && data.breaks.length > 0)) {
+    return { label: "Broken", tone: "danger" };
+  }
+  const chained = Number(data.chainedRows || 0);
+  const total = Number(data.totalRows || 0);
+  if (total > 0 && chained === 0) return { label: "Legacy", tone: "warning" };
+  return { label: "Valid", tone: "success" };
+}
+
+// Freshness buckets per the spec — <24h fresh, 24-72h stale, >72h stale-warn.
+function freshnessPill(isoTs) {
+  if (!isoTs) return { label: "Never", tone: "danger" };
+  const ageHours = (Date.now() - new Date(isoTs).getTime()) / 3_600_000;
+  if (ageHours < 24) return { label: "Fresh", tone: "success" };
+  if (ageHours < 72) return { label: "Stale", tone: "warning" };
+  return { label: "Stale-warn", tone: "danger" };
+}
+
+function relativeTime(isoTs) {
+  if (!isoTs) return "never";
+  const diff = Date.now() - new Date(isoTs).getTime();
+  if (diff < 60_000) return "just now";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return `${Math.floor(diff / 86_400_000)}d ago`;
+}
+
 function OpsConsole() {
   const [running, setRunning] = useState(null);
   const [output, setOutput] = useState({});
   const [status, setStatus] = useState(null);
   const [statusLoading, setStatusLoading] = useState(true);
+
+  // Widget data for the Operational Status section. Loaded in parallel on
+  // mount; each widget has its own refresh button so a slow feed-fetch
+  // can't block the audit/revenue cards from rendering.
+  const [auditData, setAuditData] = useState(null);
+  const [auditLoadedAt, setAuditLoadedAt] = useState(null);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [osintData, setOsintData] = useState(null);
+  const [osintLoading, setOsintLoading] = useState(false);
+  const [osintRefreshing, setOsintRefreshing] = useState(false);
+  const [revenueData, setRevenueData] = useState(null);
+  const [revenueLoading, setRevenueLoading] = useState(false);
 
   const loadStatus = useCallback(async () => {
     setStatusLoading(true);
@@ -2173,7 +2218,56 @@ function OpsConsole() {
     finally { setStatusLoading(false); }
   }, []);
 
+  const loadAudit = useCallback(async () => {
+    setAuditLoading(true);
+    try {
+      const res = await fetch("/api/portal?action=audit-verify", { credentials: "same-origin" });
+      const data = await res.json().catch(() => ({}));
+      setAuditData(data);
+      setAuditLoadedAt(new Date().toISOString());
+    } catch {
+      setAuditData({ ok: false, error: "fetch_failed" });
+    } finally {
+      setAuditLoading(false);
+    }
+  }, []);
+
+  const loadOsint = useCallback(async () => {
+    setOsintLoading(true);
+    try {
+      const res = await fetch("/api/portal?action=osint-status", { credentials: "same-origin" });
+      setOsintData(await res.json().catch(() => ({})));
+    } catch {
+      setOsintData({ ok: false });
+    } finally {
+      setOsintLoading(false);
+    }
+  }, []);
+
+  const loadRevenue = useCallback(async () => {
+    setRevenueLoading(true);
+    try {
+      const res = await fetch("/api/portal?action=revenue-summary", { credentials: "same-origin" });
+      setRevenueData(await res.json().catch(() => ({})));
+    } catch {
+      setRevenueData({ ok: false, configured: false });
+    } finally {
+      setRevenueLoading(false);
+    }
+  }, []);
+
   useEffect(() => { loadStatus(); }, [loadStatus]);
+  // Auto-load the three operational-status widgets on mount. Wrapped in an
+  // alive-flag IIFE so the lint-time "no setState in effect body" rule
+  // sees only post-await updates — same pattern NewsletterAdmin uses.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!alive) return;
+      await Promise.all([loadAudit(), loadOsint(), loadRevenue()]);
+    })();
+    return () => { alive = false; };
+  }, [loadAudit, loadOsint, loadRevenue]);
 
   const run = useCallback(async (action, method = "POST") => {
     setRunning(action);
@@ -2223,6 +2317,22 @@ function OpsConsole() {
     run(action, "POST");
   }, [run]);
 
+  // Trigger the existing osint-refresh mutation from the OSINT widget's
+  // "Refresh now" button, then re-pull osint-status so the freshness
+  // pills reflect the new fetched_at timestamps. csrfFetch handles the
+  // double-submit header for us.
+  const refreshOsintWidget = useCallback(async () => {
+    setOsintRefreshing(true);
+    try {
+      await csrfFetch("/api/portal?action=osint-refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      await loadOsint();
+    } catch { /* swallowed — widget stays on last-known data */ }
+    finally { setOsintRefreshing(false); }
+  }, [loadOsint]);
+
   const card = opsCard;
   const pre = opsPre;
   const sectionHeader = opsSectionHeader;
@@ -2231,6 +2341,21 @@ function OpsConsole() {
   const feedsLabel = status?.osint?.totalCidrs
     ? `${status.osint.totalCidrs.toLocaleString()} CIDRs cached`
     : "0 CIDRs cached";
+
+  // Derived widget values — memoize-on-render since the inputs are tiny.
+  const auditClass = classifyAuditChain(auditData);
+  const firstBreakId = Array.isArray(auditData?.breaks) && auditData.breaks.length > 0
+    ? auditData.breaks[0].id
+    : null;
+  const auditTotalRows = Number(auditData?.totalRows || 0);
+  const auditChainedRows = Number(auditData?.chainedRows || 0);
+
+  const osintFeeds = Array.isArray(osintData?.feeds) ? osintData.feeds : [];
+
+  const revenueConfigured = revenueData?.configured !== false;
+  const paidDollars = ((revenueData?.paid_total_cents || 0) / 100);
+  const mrrDollars = ((revenueData?.mrr_cents || 0) / 100);
+  const fmtUsd = (n) => n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
   return (
     <div>
@@ -2268,6 +2393,158 @@ function OpsConsole() {
         {output["full-setup"] && (
           <pre style={pre}>{JSON.stringify(output["full-setup"], null, 2)}</pre>
         )}
+      </div>
+
+      {/* ── Operational status widgets ── */}
+      <div style={sectionHeader}>Operational status — auto-loaded on open</div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14, marginBottom: 14 }}>
+        {/* Widget 1 — Audit-chain integrity */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+            <div>
+              <h4 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600 }}>Audit chain integrity</h4>
+              <p style={{ margin: 0, fontSize: 11, color: tokens.colorNeutralForeground3 }}>
+                Tamper-evident SHA-256 hash chain over <code>security_events</code>.
+              </p>
+            </div>
+            <Badge appearance="filled" color={auditClass.tone} style={{ fontSize: 11 }}>
+              {auditClass.label}
+            </Badge>
+          </div>
+          <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Chain length</div>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{auditChainedRows.toLocaleString()}</div>
+              <div style={{ fontSize: 10, color: tokens.colorNeutralForeground3 }}>of {auditTotalRows.toLocaleString()} events</div>
+            </div>
+            <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Last verified</div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{auditLoadedAt ? relativeTime(auditLoadedAt) : "—"}</div>
+            </div>
+          </div>
+          {auditClass.label === "Broken" && firstBreakId != null && (
+            <div style={{ marginTop: 10, padding: 10, background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.25)", borderRadius: 6 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#DC2626" }}>Chain broken at row id {String(firstBreakId)}</div>
+              <div style={{ fontSize: 11, color: tokens.colorNeutralForeground3, marginTop: 2 }}>
+                {auditData.breaks[0].reason}
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <Button
+                  appearance="secondary"
+                  size="small"
+                  onClick={() => runWithConfirm("reset-audit-chain", "This nulls prev_hash/row_hash on every currently-chained row. The event payload stays but the hash chain restarts. Proceed?")}
+                  disabled={running === "reset-audit-chain"}
+                >
+                  {running === "reset-audit-chain" ? "Resetting…" : "Reset chain"}
+                </Button>
+              </div>
+            </div>
+          )}
+          <div style={{ marginTop: 10 }}>
+            <Button appearance="subtle" size="small" onClick={loadAudit} disabled={auditLoading}>
+              {auditLoading ? "Verifying…" : "Re-verify"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Widget 2 — OSINT feed freshness */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+            <div>
+              <h4 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600 }}>OSINT feed freshness</h4>
+              <p style={{ margin: 0, fontSize: 11, color: tokens.colorNeutralForeground3 }}>
+                Cached CIDRs from Spamhaus + Emerging Threats.
+              </p>
+            </div>
+            <Button
+              appearance="subtle"
+              size="small"
+              onClick={refreshOsintWidget}
+              disabled={osintRefreshing || osintLoading}
+            >
+              {osintRefreshing ? "Refreshing…" : "Refresh now"}
+            </Button>
+          </div>
+          {osintFeeds.length === 0 ? (
+            <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+              {osintLoading ? "Loading feeds…" : "No feeds cached yet. Run OSINT refresh to prime the cache."}
+            </p>
+          ) : (
+            <div style={{ marginTop: 10, fontSize: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.7fr 0.8fr", gap: 6, padding: "4px 6px", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>
+                <span>Feed</span>
+                <span>Last refresh</span>
+                <span style={{ textAlign: "right" }}>CIDRs</span>
+                <span style={{ textAlign: "right" }}>Status</span>
+              </div>
+              {osintFeeds.map((f) => {
+                const pill = freshnessPill(f.last_fetched);
+                return (
+                  <div
+                    key={f.feed_name}
+                    style={{ display: "grid", gridTemplateColumns: "1.3fr 0.9fr 0.7fr 0.8fr", gap: 6, padding: "6px", alignItems: "center", background: tokens.colorNeutralBackground2, borderRadius: 4, marginBottom: 4 }}
+                  >
+                    <span style={{ fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.feed_name}</span>
+                    <span style={{ color: tokens.colorNeutralForeground3 }}>{relativeTime(f.last_fetched)}</span>
+                    <span style={{ textAlign: "right", fontWeight: 600 }}>{Number(f.cidr_count || 0).toLocaleString()}</span>
+                    <span style={{ textAlign: "right" }}>
+                      <Badge appearance="filled" color={pill.tone} style={{ fontSize: 10 }}>{pill.label}</Badge>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Widget 3 — Stripe revenue summary (last 30 days) */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+            <div>
+              <h4 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600 }}>Stripe revenue (30d)</h4>
+              <p style={{ margin: 0, fontSize: 11, color: tokens.colorNeutralForeground3 }}>
+                Live Stripe pull — paid invoices + active subscriptions.
+              </p>
+            </div>
+            {!revenueConfigured ? (
+              <Badge appearance="filled" color="warning" style={{ fontSize: 11 }}>Stripe not configured</Badge>
+            ) : (
+              <Button appearance="subtle" size="small" onClick={loadRevenue} disabled={revenueLoading}>
+                {revenueLoading ? "Loading…" : "Refresh"}
+              </Button>
+            )}
+          </div>
+          {!revenueConfigured ? (
+            <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+              Set <code>STRIPE_SECRET_KEY</code> in Vercel env vars to enable this widget.
+            </p>
+          ) : revenueData?.ok ? (
+            <>
+              <div style={{ marginTop: 10 }}>
+                <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Paid (last 30 days)</div>
+                <div style={{ fontSize: 28, fontWeight: 700 }}>{fmtUsd(paidDollars)}</div>
+                <div style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>
+                  across {revenueData.paid_count || 0} invoice{revenueData.paid_count === 1 ? "" : "s"}
+                </div>
+              </div>
+              <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Active subs</div>
+                  <div style={{ fontSize: 20, fontWeight: 700 }}>{revenueData.active_subs_count || 0}</div>
+                </div>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Est. MRR</div>
+                  <div style={{ fontSize: 20, fontWeight: 700 }}>{fmtUsd(mrrDollars)}</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+              {revenueLoading ? "Loading…" : (revenueData?.error || "Unable to load Stripe data.")}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* ── Setup (run in order the first time) ── */}
