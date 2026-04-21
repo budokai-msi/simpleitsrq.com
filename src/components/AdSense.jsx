@@ -1,10 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { readConsent, CONSENT_EVENT } from "../lib/consent.js";
 
 const CLIENT_ID = import.meta.env.VITE_ADSENSE_CLIENT || "";
 let scriptLoaded = false;
 
+function hasMarketingConsent() {
+  return !!readConsent()?.categories?.marketing;
+}
+
 function loadScript() {
   if (scriptLoaded || !CLIENT_ID) return;
+  if (!hasMarketingConsent()) return;
   scriptLoaded = true;
   const s = document.createElement("script");
   s.async = true;
@@ -13,11 +19,24 @@ function loadScript() {
   document.head.appendChild(s);
 }
 
+function useMarketingConsent() {
+  const [ok, setOk] = useState(() =>
+    typeof window === "undefined" ? false : hasMarketingConsent(),
+  );
+  useEffect(() => {
+    const onChange = () => setOk(hasMarketingConsent());
+    window.addEventListener(CONSENT_EVENT, onChange);
+    return () => window.removeEventListener(CONSENT_EVENT, onChange);
+  }, []);
+  return ok;
+}
+
 export default function AdUnit({ slot, format = "auto", responsive = true, className = "" }) {
   const pushed = useRef(false);
+  const consented = useMarketingConsent();
 
   useEffect(() => {
-    if (!CLIENT_ID) return;
+    if (!CLIENT_ID || !consented) return;
     loadScript();
     if (!pushed.current) {
       pushed.current = true;
@@ -25,9 +44,9 @@ export default function AdUnit({ slot, format = "auto", responsive = true, class
         (window.adsbygoogle = window.adsbygoogle || []).push({});
       } catch { /* ad blocker or not loaded yet */ }
     }
-  }, []);
+  }, [consented]);
 
-  if (!CLIENT_ID) return null;
+  if (!CLIENT_ID || !consented) return null;
 
   return (
     <div className={`ad-container ${className}`}>
@@ -44,9 +63,10 @@ export default function AdUnit({ slot, format = "auto", responsive = true, class
 }
 
 export function AutoAds() {
+  const consented = useMarketingConsent();
   useEffect(() => {
-    if (!CLIENT_ID) return;
+    if (!CLIENT_ID || !consented) return;
     loadScript();
-  }, []);
+  }, [consented]);
   return null;
 }
