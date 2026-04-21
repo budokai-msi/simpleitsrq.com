@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { readConsent, CONSENT_EVENT } from "../lib/consent.js";
 
 // Defaults to the production AdSense publisher ID so ads render even
 // without setting the env var (mirrors the ga-init.js fallback pattern).
@@ -9,12 +10,29 @@ const CLIENT_ID =
 
 // The adsbygoogle.js script is loaded from <head> in index.html so
 // AdSense's site-review crawler sees it on first paint (faster
-// approval, more reliable verification). Consent is centrally handled
-// via Consent Mode v2 (set in public/ga-init.js) — AdSense respects
-// the ad_storage / ad_user_data / ad_personalization flags and serves
-// non-personalized ads when those are denied. We don't need to gate
-// the <ins> slot here on consent: Google handles "show personalized
-// vs non-personalized" internally based on the Consent Mode state.
+// approval, more reliable verification). At runtime we layer one
+// additional gate on top: marketing consent must be granted before we
+// push() any ad slots or render any <ins> elements. AdSense's own
+// Consent Mode v2 (set in public/ga-init.js) already prevents
+// personalized advertising when consent is denied — this gate is
+// stricter, suppressing the ad request entirely until the visitor
+// opts in. Belt + suspenders for GDPR / state-privacy-law audits.
+
+function hasMarketingConsent() {
+  return !!readConsent()?.categories?.marketing;
+}
+
+function useMarketingConsent() {
+  const [ok, setOk] = useState(() =>
+    typeof window === "undefined" ? false : hasMarketingConsent(),
+  );
+  useEffect(() => {
+    const onChange = () => setOk(hasMarketingConsent());
+    window.addEventListener(CONSENT_EVENT, onChange);
+    return () => window.removeEventListener(CONSENT_EVENT, onChange);
+  }, []);
+  return ok;
+}
 
 // Per-page-load health beacon state — we send one summary per page
 // load instead of one per slot, so a 5-AdUnit page doesn't create 5
@@ -133,18 +151,19 @@ function observeSlot(el) {
 export default function AdUnit({ slot, format = "auto", responsive = true, className = "" }) {
   const pushed = useRef(false);
   const insRef = useRef(null);
+  const consented = useMarketingConsent();
 
   useEffect(() => {
-    if (!CLIENT_ID || pushed.current) return;
+    if (!CLIENT_ID || !consented || pushed.current) return;
     pushed.current = true;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch { /* ad blocker, script not yet loaded, or fast-nav cleanup */ }
     // Start watching this slot for fill/unfill outcomes.
     if (insRef.current) observeSlot(insRef.current);
-  }, []);
+  }, [consented]);
 
-  if (!CLIENT_ID) return null;
+  if (!CLIENT_ID || !consented) return null;
 
   return (
     <div className={`ad-container ${className}`}>
