@@ -1,6 +1,6 @@
 ﻿import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
-import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon } from "lucide-react";
+import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from "./pages/Home";
@@ -98,6 +98,7 @@ function Navbar() {
           <Link to="/#compliance">Compliance</Link>
           <Link to="/blog">Blog</Link>
           <Link to="/tools">Tools</Link>
+          <Link to="/store">Store</Link>
           <Link to="/support">Support</Link>
         </nav>
         <div className="nav-actions">
@@ -119,6 +120,7 @@ function Navbar() {
           <Link to="/#compliance" onClick={() => setOpen(false)}>Compliance</Link>
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
           <Link to="/tools" onClick={() => setOpen(false)}>Tools</Link>
+          <Link to="/store" onClick={() => setOpen(false)}>Store</Link>
           <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#contact" onClick={() => setOpen(false)}>Contact</Link>
           <Link to="/portal" onClick={() => setOpen(false)}>
@@ -152,29 +154,27 @@ function Footer() {
           </ul>
         </div>
         <div>
-          <h4>Company</h4>
+          <h4>Resources</h4>
           <ul>
-            <li><Link to="/#industries">Industries</Link></li>
-            <li><Link to="/#compliance">Compliance</Link></li>
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/tools">Recommended Tools</Link></li>
             <li><Link to="/store">Templates & Playbooks</Link></li>
-            <li><Link to="/sarasota-it-support">Sarasota IT Support</Link></li>
-            <li><Link to="/bradenton-it-support">Bradenton IT Support</Link></li>
-            <li><Link to="/lakewood-ranch-it-support">Lakewood Ranch IT</Link></li>
-            <li><Link to="/nokomis-it-support">Nokomis IT Support</Link></li>
-            <li><Link to="/venice-it-support">Venice IT Support</Link></li>
+            <li><Link to="/#industries">Industries</Link></li>
+            <li><Link to="/#compliance">Compliance</Link></li>
             <li><Link to="/book">Book a Call</Link></li>
             <li><Link to="/support">Support</Link></li>
-            <li><Link to="/#contact">Contact</Link></li>
           </ul>
         </div>
         <div>
-          <h4>Contact</h4>
-          <ul>
-            <li>hello@simpleitsrq.com</li>
-            <li>Bradenton, FL</li>
+          <h4>Service Area</h4>
+          <ul className="footer-cities">
+            <li><Link to="/sarasota-it-support"><MapPin size={12} /> Sarasota</Link></li>
+            <li><Link to="/bradenton-it-support"><MapPin size={12} /> Bradenton</Link></li>
+            <li><Link to="/lakewood-ranch-it-support"><MapPin size={12} /> Lakewood Ranch</Link></li>
+            <li><Link to="/nokomis-it-support"><MapPin size={12} /> Nokomis</Link></li>
+            <li><Link to="/venice-it-support"><MapPin size={12} /> Venice</Link></li>
           </ul>
+          <p className="footer-area-note">Serving Southwest Florida. On-site response within 2 hours for Sarasota + Bradenton.</p>
         </div>
       </div>
       <div className="footer-bottom">
