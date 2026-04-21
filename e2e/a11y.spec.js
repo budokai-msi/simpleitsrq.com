@@ -28,7 +28,6 @@ test.describe('a11y smoke', () => {
       );
 
       for (const v of advisory) {
-        // eslint-disable-next-line no-console
         console.log(
           `[a11y] ${route} advisory (${v.impact}): ${v.id} — ${v.help} (${v.nodes.length} node${v.nodes.length === 1 ? '' : 's'})`
         );
