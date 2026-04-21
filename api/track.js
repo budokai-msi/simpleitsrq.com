@@ -35,11 +35,50 @@ export async function POST(request) {
   let body = {};
   try { body = await request.json(); } catch { body = {}; }
 
+  // Client-side error telemetry. Fires from ErrorBoundary when a React
+  // render crash is caught — one row per session per error, enough to see
+  // regressions in prod without a third-party monitor.
+  if (body.kind === "client_error") {
+    const errRl = await rateLimit({ ip, bucket: "track:err", windowSeconds: 60, max: 30 });
+    if (!errRl.ok) return noContent();
+    const msg = body.message ? String(body.message).slice(0, 500) : null;
+    const stack = body.stack ? String(body.stack).slice(0, 4000) : null;
+    const path = body.path ? String(body.path).slice(0, 500) : null;
+    const ua = request.headers.get("user-agent") || null;
+    let userId = null;
+    try {
+      const session = await getSession(request);
+      if (session) userId = session.user.id;
+    } catch { /* ignore */ }
+    await sql`
+      INSERT INTO security_events (kind, severity, ip, user_id, user_agent, path, detail)
+      VALUES ('client_error', 'info', ${ip}, ${userId}, ${ua}, ${path},
+              ${JSON.stringify({ message: msg, stack })}::jsonb)
+    `.catch((err) => console.error("[track] client_error insert failed", err));
+    return noContent();
+  }
+
   // Affiliate-click tracking piggybacks on the same endpoint so we don't
   // spend a function slot on a dedicated route. One row per outbound
   // affiliate-link click; used by the Revenue Signals admin panel to
   // attribute CTR per blog post.
   if (body.kind === "affiliate_click" && body.destination) {
+    // Only accept plausibly-valid https URLs. Anyone can POST here; without
+    // a schema check a bad actor could flood the dashboard with garbage
+    // (`javascript:`, `data:`, or multi-KB junk strings).
+    let destination = null;
+    try {
+      const raw = String(body.destination).slice(0, 2000);
+      const parsed = new URL(raw);
+      if (parsed.protocol === "https:") destination = parsed.toString();
+    } catch { /* invalid URL → reject */ }
+    if (!destination) return noContent();
+
+    // Tighter per-IP rate than the shared track bucket — pageview traffic
+    // should not earn a budget for click amplification.
+    const clickRl = await rateLimit({ ip, bucket: "track:aff", windowSeconds: 60, max: 20 });
+    if (!clickRl.ok) return noContent();
+
     const geo = geoFromHeaders(request);
     let userId = null;
     try {
@@ -52,7 +91,7 @@ export async function POST(request) {
         anon_id, user_id, referrer_path
       ) VALUES (
         ${String(body.slug || "").slice(0, 200) || null},
-        ${String(body.destination).slice(0, 2000)},
+        ${destination},
         ${body.label ? String(body.label).slice(0, 200) : null},
         ${body.network ? String(body.network).slice(0, 40) : null},
         ${ip}, ${geo.country},
