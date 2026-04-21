@@ -16,6 +16,20 @@
 
 import { sql } from "./db.js";
 
+/** @typedef {import('./types.js').OsintFeedSummary} OsintFeedSummary */
+/** @typedef {import('./types.js').OsintRefreshResult} OsintRefreshResult */
+/** @typedef {import('./types.js').OsintMatch} OsintMatch */
+/** @typedef {import('./types.js').OsintStatus} OsintStatus */
+
+/**
+ * Static config for one OSINT feed.
+ * @typedef {Object} OsintFeed
+ * @property {string} name
+ * @property {string} url
+ * @property {string} category
+ */
+
+/** @type {OsintFeed[]} */
 const FEEDS = [
   {
     name: "spamhaus_drop",
@@ -34,8 +48,14 @@ const FEEDS = [
   },
 ];
 
-// Spamhaus DROP format: "203.0.113.0/24 ; SBL123456" (one CIDR per line).
-// ET format: "203.0.113.5" (one IP per line).
+/**
+ * Parse one line of a feed file into a normalized CIDR, or null if unparseable.
+ * Spamhaus DROP format: "203.0.113.0/24 ; SBL123456" (one CIDR per line).
+ * ET format: "203.0.113.5" (one IP per line).
+ *
+ * @param {string} line
+ * @returns {string|null}
+ */
 function parseLine(line) {
   const stripped = line.split(/[;#]/)[0].trim();
   if (!stripped) return null;
@@ -46,6 +66,12 @@ function parseLine(line) {
   return null;
 }
 
+/**
+ * Fetch and parse one feed over HTTP. Throws on a non-2xx response.
+ *
+ * @param {OsintFeed} feed
+ * @returns {Promise<string[]>}
+ */
 async function fetchFeed(feed) {
   const res = await fetch(feed.url, {
     signal: AbortSignal.timeout(8000),
@@ -60,12 +86,17 @@ async function fetchFeed(feed) {
   return cidrs;
 }
 
-// Pulls every configured feed in parallel and upserts each CIDR under its
-// (feed_name, cidr) unique constraint. Returns a per-feed summary so the
-// caller can log / surface it to the admin. A single-feed failure does not
-// abort the others — an outage on Spamhaus shouldn't block ET.
+/**
+ * Pulls every configured feed in parallel and upserts each CIDR under its
+ * (feed_name, cidr) unique constraint. Returns a per-feed summary so the
+ * caller can log / surface it to the admin. A single-feed failure does not
+ * abort the others — an outage on Spamhaus shouldn't block ET.
+ *
+ * @returns {Promise<OsintRefreshResult>}
+ */
 export async function refreshThreatFeeds() {
   const start = Date.now();
+  /** @type {OsintFeedSummary[]} */
   const summary = [];
 
   await Promise.all(
@@ -108,8 +139,15 @@ export async function refreshThreatFeeds() {
   return { ok: summary.some((s) => s.ok), elapsedMs: Date.now() - start, feeds: summary };
 }
 
-// Returns every threat_feeds row whose CIDR contains the given IP. Used by
-// the admin panels to badge live matches on visitor / threat-actor rows.
+/**
+ * Returns every threat_feeds row whose CIDR contains the given IP. Used by
+ * the admin panels to badge live matches on visitor / threat-actor rows.
+ *
+ * @param {string[]} ips
+ * @returns {Promise<Record<string, OsintMatch[]>>}
+ *   Map from IP → matching feed entries. Empty object when `ips` is empty or
+ *   the underlying query fails (e.g. migration not yet run).
+ */
 export async function matchOsintFeeds(ips) {
   if (!Array.isArray(ips) || ips.length === 0) return {};
   try {
@@ -121,6 +159,7 @@ export async function matchOsintFeeds(ips) {
       JOIN threat_feeds f ON v.ip::inet <<= f.cidr
       ORDER BY f.fetched_at DESC
     `;
+    /** @type {Record<string, OsintMatch[]>} */
     const byIp = {};
     for (const r of rows) {
       const key = r.ip;
@@ -140,8 +179,12 @@ export async function matchOsintFeeds(ips) {
   }
 }
 
-// Lightweight summary for the admin dashboard: row counts per feed, last
-// refresh time, and the 10 most-recent matches against actual visit data.
+/**
+ * Lightweight summary for the admin dashboard: row counts per feed, last
+ * refresh time, and the 10 most-recent matches against actual visit data.
+ *
+ * @returns {Promise<OsintStatus>}
+ */
 export async function osintStatus() {
   try {
     const perFeed = await sql`

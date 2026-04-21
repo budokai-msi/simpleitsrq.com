@@ -13,6 +13,8 @@
 // The honeypot pages form a linked experience: login → dashboard → admin,
 // keeping attackers engaged longer and collecting more intelligence.
 
+/** @typedef {import('./types.js').HoneypotPage} HoneypotPage */
+
 // ────────────────────────────────────────────────────────────────────────────
 // CSS — shared across all honeypot pages
 // ────────────────────────────────────────────────────────────────────────────
@@ -126,6 +128,10 @@ const FAKE_USERS = [
 // Page generators
 // ────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Render the fake login page HTML.
+ * @returns {string}
+ */
 function loginPage() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -155,6 +161,10 @@ function loginPage() {
 </html>`;
 }
 
+/**
+ * Render the fake client-portal dashboard HTML.
+ * @returns {string}
+ */
 function dashboardPage() {
   const ticketRows = FAKE_TICKETS.map(t => {
     const badge = t.status === "open" ? "badge-open" : t.status === "in_progress" ? "badge-progress" : "badge-resolved";
@@ -209,6 +219,10 @@ function dashboardPage() {
 </html>`;
 }
 
+/**
+ * Render the fake admin-panel HTML.
+ * @returns {string}
+ */
 function adminPage() {
   const userRows = FAKE_USERS.map(u => {
     const statusBadge = u.status === "active" ? "badge-resolved" : "badge-critical";
@@ -270,6 +284,10 @@ function adminPage() {
 </html>`;
 }
 
+/**
+ * Render the fake user-profile page HTML.
+ * @returns {string}
+ */
 function profilePage() {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -364,11 +382,23 @@ function s(e){
 // Tarpit — slows down automated scanners by introducing artificial delays.
 // This wastes attacker time and resources.
 // ────────────────────────────────────────────────────────────────────────────
+/**
+ * Random artificial delay for tarpitting. 2-8 seconds.
+ * @returns {number} Milliseconds to delay.
+ */
 function tarpitDelay() {
   // 2-8 second delay — long enough to be annoying, short enough to seem real
   return 2000 + Math.floor(Math.random() * 6000);
 }
 
+/**
+ * Wrap an HTML body in a `Response` after an artificial delay. Used to waste
+ * automated scanners' time.
+ *
+ * @param {string} html
+ * @param {Record<string, string>} [headers]
+ * @returns {Promise<Response>}
+ */
 async function withTarpit(html, headers = {}) {
   await new Promise(resolve => setTimeout(resolve, tarpitDelay()));
   return new Response(html, {
@@ -380,6 +410,7 @@ async function withTarpit(html, headers = {}) {
 // ────────────────────────────────────────────────────────────────────────────
 // Page router — serves different pages based on the honeypot path
 // ────────────────────────────────────────────────────────────────────────────
+/** @type {Record<HoneypotPage, () => string>} */
 const PAGE_GENERATORS = {
   "login": loginPage,
   "dashboard": dashboardPage,
@@ -387,11 +418,24 @@ const PAGE_GENERATORS = {
   "profile": profilePage,
 };
 
+/**
+ * Render one of the honeypot pages' HTML. Unknown page names fall back to
+ * the login page.
+ *
+ * @param {HoneypotPage | string} [page]
+ * @returns {string}
+ */
 export function getHoneypotPage(page = "login") {
   const gen = PAGE_GENERATORS[page] || PAGE_GENERATORS.login;
   return gen();
 }
 
+/**
+ * Return a tarpitted Response serving the named honeypot page.
+ *
+ * @param {HoneypotPage | string} [page]
+ * @returns {Promise<Response>}
+ */
 export async function honeypotResponse(page = "login") {
   const html = getHoneypotPage(page);
   return withTarpit(html);

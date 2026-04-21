@@ -28,6 +28,14 @@
 // The module also exposes envSnapshot() so ops tooling can render a masked
 // summary of what's configured without ever emitting raw secrets.
 
+/** @typedef {import('./types.js').EnvSpec} EnvSpec */
+/** @typedef {import('./types.js').EnvVarStatus} EnvVarStatus */
+
+/**
+ * True when the runtime is production on either Node or Vercel.
+ *
+ * @returns {boolean}
+ */
 function isProduction() {
   return (
     process.env.NODE_ENV === "production" ||
@@ -35,9 +43,15 @@ function isProduction() {
   );
 }
 
-// Return the value of the named env var, or throw with an operator-friendly
-// message if it's unset / empty. Use when the calling code genuinely cannot
-// proceed without the value (e.g. Resend send after body validation).
+/**
+ * Return the value of the named env var, or throw with an operator-friendly
+ * message if it's unset / empty. Use when the calling code genuinely cannot
+ * proceed without the value (e.g. Resend send after body validation).
+ *
+ * @param {string} name
+ * @returns {string}
+ * @throws {Error} when the variable is unset or empty.
+ */
 export function requireEnv(name) {
   const value = process.env[name];
   if (value === undefined || value === null || value === "") {
@@ -48,8 +62,15 @@ export function requireEnv(name) {
   return value;
 }
 
-// Return the value of the named env var, or the provided fallback. Never
-// throws. Use for truly optional config where a sensible default exists.
+/**
+ * Return the value of the named env var, or the provided fallback. Never
+ * throws. Use for truly optional config where a sensible default exists.
+ *
+ * @template T
+ * @param {string} name
+ * @param {T} fallback
+ * @returns {string | T}
+ */
 export function optionalEnv(name, fallback) {
   const value = process.env[name];
   if (value === undefined || value === null || value === "") {
@@ -58,13 +79,19 @@ export function optionalEnv(name, fallback) {
   return value;
 }
 
-// Validate a group of env vars in one shot. `spec` is an object keyed by env
-// var name whose values are either 'required' or 'optional'. Collects ALL
-// missing required vars and throws a single combined error so the operator
-// sees every gap at once instead of fixing them one cold-start at a time.
-//
-// In non-production environments this only logs a warning, preserving the
-// "fail open for iteration" UX that contact.js and friends already rely on.
+/**
+ * Validate a group of env vars in one shot. `spec` is an object keyed by env
+ * var name whose values are either 'required' or 'optional'. Collects ALL
+ * missing required vars and throws a single combined error so the operator
+ * sees every gap at once instead of fixing them one cold-start at a time.
+ *
+ * In non-production environments this only logs a warning, preserving the
+ * "fail open for iteration" UX that contact.js and friends already rely on.
+ *
+ * @param {EnvSpec} spec
+ * @returns {void}
+ * @throws {Error} in production when any required var is missing.
+ */
 export function validateEnv(spec) {
   const missing = [];
   for (const [name, requirement] of Object.entries(spec)) {
@@ -88,9 +115,14 @@ export function validateEnv(spec) {
   console.warn(`[env] ${message} — continuing because NODE_ENV !== 'production'`);
 }
 
-// Mask a secret for ops visibility: first 4 + "..." + last 4. For very short
-// values (< 8 chars) we just return "(set)" rather than leak more than half
-// the secret.
+/**
+ * Mask a secret for ops visibility: first 4 + "..." + last 4. For very short
+ * values (< 8 chars) we just return "(set)" rather than leak more than half
+ * the secret.
+ *
+ * @param {string | null | undefined} value
+ * @returns {string}
+ */
 function maskValue(value) {
   if (value === undefined || value === null || value === "") return "(unset)";
   const s = String(value);
@@ -98,12 +130,20 @@ function maskValue(value) {
   return `${s.slice(0, 4)}...${s.slice(-4)}`;
 }
 
-// Return a masked snapshot of the named env vars. Shape:
-//   { DATABASE_URL: { set: true,  masked: "post...uire" },
-//     RESEND_API_KEY: { set: false, masked: "(unset)"   } }
-// Never returns raw secret values — safe to log or expose behind an admin-
-// authenticated debug endpoint.
+/**
+ * Return a masked snapshot of the named env vars. Shape:
+ *   { DATABASE_URL: { set: true,  masked: "post...uire" },
+ *     RESEND_API_KEY: { set: false, masked: "(unset)"   } }
+ * Never returns raw secret values — safe to log or expose behind an admin-
+ * authenticated debug endpoint.
+ *
+ * @param {string[] | EnvSpec | null | undefined} names
+ *   Either an array of env var names, or an object whose keys are env var names
+ *   (typically an EnvSpec — the `required` / `optional` values are ignored).
+ * @returns {Record<string, EnvVarStatus>}
+ */
 export function envSnapshot(names) {
+  /** @type {Record<string, EnvVarStatus>} */
   const out = {};
   const list = Array.isArray(names) ? names : Object.keys(names || {});
   for (const name of list) {

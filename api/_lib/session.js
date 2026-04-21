@@ -6,27 +6,73 @@
 
 import { sql } from "./db.js";
 
+/** @typedef {import('./types.js').Session} Session */
+/** @typedef {import('./types.js').SessionIssue} SessionIssue */
+/** @typedef {import('./types.js').SessionClear} SessionClear */
+/** @typedef {import('./types.js').RequestMeta} RequestMeta */
+
+/**
+ * Event kinds recorded in the session_tracking table.
+ * @typedef {'created' | 'destroyed' | 'anomaly'} SessionEventKind
+ */
+
+/**
+ * Extra data attached to a session lifecycle log.
+ * @typedef {Object} SessionEventData
+ * @property {string|null} [sessionId]
+ * @property {string|null} [userId]
+ * @property {string|null} [ip]
+ * @property {string|null} [ua]
+ * @property {string|null} [country]
+ * @property {string|null} [city]
+ * @property {string|null} [deviceHash]
+ * @property {Record<string, unknown>} [detail]
+ */
+
 const SESSION_COOKIE = "sirq_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
+/**
+ * Mint 32 bytes of cryptographic randomness as a 64-char hex string.
+ *
+ * @returns {string}
+ */
 function randomToken() {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * SHA-256 the raw session token so only the hash ever touches the DB.
+ *
+ * @param {string} token
+ * @returns {Promise<string>} 64-char hex digest.
+ */
 async function hashToken(token) {
   const data = new TextEncoder().encode(token);
   const digest = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * SHA-256 of an arbitrary input, hex-encoded. Used for device fingerprints.
+ *
+ * @param {string} input
+ * @returns {Promise<string>}
+ */
 async function sha256(input) {
   const data = new TextEncoder().encode(input);
   const digest = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * Pull ip / ua / country / city out of Vercel's forwarding headers.
+ *
+ * @param {Request} request
+ * @returns {RequestMeta}
+ */
 function extractRequestMeta(request) {
   const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || null;
   const ua = request.headers.get("user-agent") || null;
@@ -37,13 +83,26 @@ function extractRequestMeta(request) {
   return { ip, ua, country, city };
 }
 
+/**
+ * Deterministic device-fingerprint hash for hijack heuristics.
+ *
+ * @param {Request} request
+ * @returns {Promise<string>}
+ */
 async function deviceHashFromRequest(request) {
   const { ip, ua } = extractRequestMeta(request);
   const acceptLang = request.headers.get("accept-language") || "";
   return sha256([ip, ua, acceptLang].map((v) => String(v ?? "")).join("|"));
 }
 
-// Fire-and-forget session lifecycle log.
+/**
+ * Fire-and-forget session lifecycle log. Errors are caught so callers never
+ * have to await on analytics writes.
+ *
+ * @param {SessionEventKind} event
+ * @param {SessionEventData} data
+ * @returns {void}
+ */
 function logSessionEvent(event, { sessionId, userId, ip, ua, country, city, deviceHash, detail }) {
   sql`
     INSERT INTO session_tracking (event, session_id, user_id, ip, user_agent, country, city, device_hash, detail)
@@ -52,8 +111,16 @@ function logSessionEvent(event, { sessionId, userId, ip, ua, country, city, devi
   `.catch((err) => console.error("[session] tracking failed", err));
 }
 
+/**
+ * Parse a `Cookie:` header into a flat key/value map. Values are
+ * URL-decoded; malformed parts (no `=`) are skipped.
+ *
+ * @param {Request} request
+ * @returns {Record<string, string>}
+ */
 export function parseCookies(request) {
   const header = request.headers.get("cookie") || "";
+  /** @type {Record<string, string>} */
   const out = {};
   for (const part of header.split(";")) {
     const eq = part.indexOf("=");
@@ -65,6 +132,13 @@ export function parseCookies(request) {
   return out;
 }
 
+/**
+ * Serialize the session cookie with a fixed lifetime.
+ *
+ * @param {string} token
+ * @param {number} maxAge Seconds.
+ * @returns {string}
+ */
 function sessionCookieValue(token, maxAge) {
   const parts = [
     `${SESSION_COOKIE}=${token}`,
@@ -77,6 +151,11 @@ function sessionCookieValue(token, maxAge) {
   return parts.join("; ");
 }
 
+/**
+ * Serialize a Max-Age=0 cookie to clear the browser session.
+ *
+ * @returns {string}
+ */
 function clearCookieValue() {
   const parts = [
     `${SESSION_COOKIE}=`,
@@ -89,6 +168,14 @@ function clearCookieValue() {
   return parts.join("; ");
 }
 
+/**
+ * Create a new session for `userId`, insert it into `sessions`, and return
+ * the raw token + Set-Cookie value. Only the token's SHA-256 hash is stored.
+ *
+ * @param {string} userId
+ * @param {Request} request
+ * @returns {Promise<SessionIssue>}
+ */
 export async function createSession(userId, request) {
   const token = randomToken();
   const tokenHash = await hashToken(token);
@@ -115,6 +202,14 @@ export async function createSession(userId, request) {
   };
 }
 
+/**
+ * Look up the current session from the request cookie. Returns null when
+ * the cookie is missing, the hash doesn't match, or the session expired.
+ * Flags hijack suspects when IP + UA both change mid-session.
+ *
+ * @param {Request} request
+ * @returns {Promise<Session|null>}
+ */
 export async function getSession(request) {
   const cookies = parseCookies(request);
   const token = cookies[SESSION_COOKIE];
@@ -192,6 +287,13 @@ export async function getSession(request) {
   };
 }
 
+/**
+ * Delete the session row for this request (if any) and return a
+ * clearing Set-Cookie value.
+ *
+ * @param {Request} request
+ * @returns {Promise<SessionClear>}
+ */
 export async function destroySession(request) {
   const cookies = parseCookies(request);
   const token = cookies[SESSION_COOKIE];
@@ -214,8 +316,15 @@ export async function destroySession(request) {
   return { cookie: clearCookieValue() };
 }
 
+/**
+ * Return a Max-Age=0 cookie string. Used by handlers that need to clear
+ * the session without looking up the DB.
+ *
+ * @returns {string}
+ */
 export function clearSessionCookie() {
   return clearCookieValue();
 }
 
+/** @type {string} */
 export const SESSION_COOKIE_NAME = SESSION_COOKIE;

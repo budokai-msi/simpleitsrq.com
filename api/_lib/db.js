@@ -11,4 +11,15 @@ if (!url && process.env.NODE_ENV === "production") {
   console.error("[db] DATABASE_URL is not set in production");
 }
 
+/**
+ * Tagged-template SQL client bound to `DATABASE_URL`.
+ *
+ * Usage: ``sql`SELECT * FROM users WHERE id = ${id}` `` — parameters are
+ * passed safely, never interpolated. Returns a Promise of the row array.
+ *
+ * Falls back to a placeholder URL in dev / preview so imports don't crash
+ * when `DATABASE_URL` is absent; every query would still fail at call time.
+ *
+ * @type {ReturnType<typeof neon>}
+ */
 export const sql = neon(url || "postgres://placeholder@localhost/placeholder");

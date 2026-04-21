@@ -5,6 +5,15 @@
 // form factor". Anything more accurate comes from the raw UA string which
 // we also store verbatim.
 
+/** @typedef {import('./types.js').UAParsed} UAParsed */
+
+/**
+ * Classify a user-agent string into a coarse { browser, os, device } triple
+ * for analytics. Returns all-null fields when given an empty / nullish UA.
+ *
+ * @param {string} [ua]
+ * @returns {UAParsed}
+ */
 export function parseUA(ua = "") {
   if (!ua) return { browser: null, os: null, device: null };
   const s = String(ua);
