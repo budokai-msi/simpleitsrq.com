@@ -1,7 +1,6 @@
 import { createElement, useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { ArrowRight, Calendar, User, Tag, ArrowLeft, Lock, Server, Cloud, FileCheck, Shield, Briefcase, Star } from "lucide-react";
-import { posts as legacyPosts } from "../data/posts";
 import postsMeta from "../data/posts-meta.json";
 import { resolveAffiliate, postHasAffiliateContent } from "../data/affiliates";
 import { useSEO } from "../lib/seo";
@@ -229,18 +228,39 @@ export default function BlogPost() {
 
   // Prefer the MDX meta entry (from posts-meta.json) so the page can render
   // SEO + hero without waiting for the MDX chunk. Fall back to the legacy
-  // posts.js entry (still has `content: string` on it) when the slug wasn't
-  // migrated yet.
+  // posts.js entry (loaded via dynamic import so readers who land on a
+  // migrated MDX post never pay for the ~550 kB legacy-posts chunk).
   const metaEntry = useMemo(() => postsMeta.find((p) => p.slug === slug), [slug]);
-  const legacyEntry = useMemo(() => legacyPosts.find((p) => p.slug === slug), [slug]);
   const isMdx = Boolean(mdxModules[slugToPath(slug)]);
+  const [legacyEntry, setLegacyEntry] = useState(null);
+  const [rawBody, setRawBody] = useState("");
+
+  // Fetch the legacy entry only if we can't resolve the slug via MDX. The
+  // setLegacyEntry(null) reset when switching to an MDX slug is required —
+  // without it, the previous legacy entry would linger in state and the
+  // page would try to render two different posts. Lint plugin can't see
+  // that, so the disable is intentional.
+  useEffect(() => {
+    if (!slug || isMdx) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLegacyEntry(null);
+      return undefined;
+    }
+    let cancelled = false;
+    import("../data/posts").then(({ posts }) => {
+      if (cancelled) return;
+      const entry = posts.find((p) => p.slug === slug) || null;
+      setLegacyEntry(entry);
+      if (entry) setRawBody(entry.content || "");
+    });
+    return () => { cancelled = true; };
+  }, [slug, isMdx]);
+
   const post = metaEntry || legacyEntry;
 
   // Raw MDX source — loaded lazily alongside the compiled module so the
   // ToolsUsedFooter and reading-time heuristic keep working without a
-  // second round trip. Falls back to the legacy string body when the post
-  // hasn't been migrated yet.
-  const [rawBody, setRawBody] = useState(legacyEntry?.content || "");
+  // second round trip.
   useEffect(() => {
     if (!slug || !isMdx) return;
     let cancelled = false;
