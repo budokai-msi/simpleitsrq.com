@@ -2104,6 +2104,68 @@ function TestimonialForm({ initial, saving, onCancel, onSave }) {
 // stage (Setup / Operations / Verification), a one-click "Run full
 // setup" orchestrator that chains migrations → reset → osint → verify,
 // and a confirmation gate on destructive actions.
+const opsCard = {
+  padding: 18,
+  background: tokens.colorNeutralBackground1,
+  border: `1px solid ${tokens.colorNeutralStroke2}`,
+  borderRadius: 10,
+  marginBottom: 14,
+};
+const opsPre = {
+  marginTop: 10,
+  padding: 12,
+  fontSize: 11,
+  fontFamily: "monospace",
+  lineHeight: 1.5,
+  background: tokens.colorNeutralBackground2,
+  border: `1px solid ${tokens.colorNeutralStroke2}`,
+  borderRadius: 6,
+  maxHeight: 360,
+  overflow: "auto",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-all",
+};
+const opsSectionHeader = {
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  color: tokens.colorNeutralForeground3,
+  margin: "20px 0 10px",
+};
+
+function StatusPill({ ok, label }) {
+  return (
+    <Badge
+      appearance="filled"
+      color={ok ? "success" : "warning"}
+      style={{ fontSize: 11, marginRight: 6, marginBottom: 4 }}
+    >
+      {ok ? "✓" : "•"} {label}
+    </Badge>
+  );
+}
+
+function OutputBlock({ action, output }) {
+  const out = output[action];
+  if (!out) return null;
+  const data = out.data || out;
+  const ok = out.status == null ? true : out.status < 400 && data.ok !== false;
+  return (
+    <>
+      <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 6 }}>
+        <Badge appearance="filled" color={ok ? "success" : "danger"} style={{ fontSize: 10 }}>
+          {ok ? "OK" : "FAIL"}
+        </Badge>
+        {out.status != null && (
+          <span style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>HTTP {out.status}</span>
+        )}
+      </div>
+      <pre style={opsPre}>{JSON.stringify(data, null, 2)}</pre>
+    </>
+  );
+}
+
 function OpsConsole() {
   const [running, setRunning] = useState(null);
   const [output, setOutput] = useState({});
@@ -2170,65 +2232,9 @@ function OpsConsole() {
     run(action, "POST");
   }, [run]);
 
-  const card = {
-    padding: 18,
-    background: tokens.colorNeutralBackground1,
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
-    borderRadius: 10,
-    marginBottom: 14,
-  };
-  const pre = {
-    marginTop: 10,
-    padding: 12,
-    fontSize: 11,
-    fontFamily: "monospace",
-    lineHeight: 1.5,
-    background: tokens.colorNeutralBackground2,
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
-    borderRadius: 6,
-    maxHeight: 360,
-    overflow: "auto",
-    whiteSpace: "pre-wrap",
-    wordBreak: "break-all",
-  };
-  const sectionHeader = {
-    fontSize: 11,
-    fontWeight: 700,
-    textTransform: "uppercase",
-    letterSpacing: "0.08em",
-    color: tokens.colorNeutralForeground3,
-    margin: "20px 0 10px",
-  };
-
-  const StatusPill = ({ ok, label }) => (
-    <Badge
-      appearance="filled"
-      color={ok ? "success" : "warning"}
-      style={{ fontSize: 11, marginRight: 6, marginBottom: 4 }}
-    >
-      {ok ? "✓" : "•"} {label}
-    </Badge>
-  );
-
-  const OutputBlock = ({ action }) => {
-    const out = output[action];
-    if (!out) return null;
-    const data = out.data || out;
-    const ok = out.status == null ? true : out.status < 400 && data.ok !== false;
-    return (
-      <>
-        <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 6 }}>
-          <Badge appearance="filled" color={ok ? "success" : "danger"} style={{ fontSize: 10 }}>
-            {ok ? "OK" : "FAIL"}
-          </Badge>
-          {out.status != null && (
-            <span style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>HTTP {out.status}</span>
-          )}
-        </div>
-        <pre style={pre}>{JSON.stringify(data, null, 2)}</pre>
-      </>
-    );
-  };
+  const card = opsCard;
+  const pre = opsPre;
+  const sectionHeader = opsSectionHeader;
 
   const mig = status?.migrations || {};
   const feedsLabel = status?.osint?.totalCidrs
@@ -2284,7 +2290,7 @@ function OpsConsole() {
         <Button appearance="primary" onClick={() => run("run-audit-migration")} disabled={running === "run-audit-migration"}>
           {running === "run-audit-migration" ? "Running…" : "Run migrations"}
         </Button>
-        <OutputBlock action="run-audit-migration" />
+        <OutputBlock output={output} action="run-audit-migration" />
       </div>
 
       <div style={card}>
@@ -2299,7 +2305,7 @@ function OpsConsole() {
         >
           {running === "reset-audit-chain" ? "Running…" : "Reset chain"}
         </Button>
-        <OutputBlock action="reset-audit-chain" />
+        <OutputBlock output={output} action="reset-audit-chain" />
       </div>
 
       <div style={card}>
@@ -2315,8 +2321,8 @@ function OpsConsole() {
             {running === "osint-status" ? "Loading…" : "Feed details"}
           </Button>
         </div>
-        <OutputBlock action="osint-refresh" />
-        <OutputBlock action="osint-status" />
+        <OutputBlock output={output} action="osint-refresh" />
+        <OutputBlock output={output} action="osint-status" />
       </div>
 
       {/* ── Verification ── */}
@@ -2330,7 +2336,7 @@ function OpsConsole() {
         <Button appearance="primary" onClick={() => run("audit-verify", "GET")} disabled={running === "audit-verify"}>
           {running === "audit-verify" ? "Running…" : "Verify chain"}
         </Button>
-        <OutputBlock action="audit-verify" />
+        <OutputBlock output={output} action="audit-verify" />
       </div>
 
       {/* ── Revenue Signals ── */}
@@ -2389,7 +2395,7 @@ function OpsConsole() {
             )}
           </>
         )}
-        <OutputBlock action="revenue-signals" />
+        <OutputBlock output={output} action="revenue-signals" />
       </div>
 
       {/* ── Countermeasures ── */}
@@ -2419,7 +2425,7 @@ function OpsConsole() {
             </div>
           </div>
         )}
-        <OutputBlock action="countermeasures" />
+        <OutputBlock output={output} action="countermeasures" />
       </div>
 
       <div style={card}>
@@ -2446,7 +2452,7 @@ function OpsConsole() {
         >
           Grant immunity
         </Button>
-        <OutputBlock action="grant-immunity" />
+        <OutputBlock output={output} action="grant-immunity" />
       </div>
 
       {/* ── Content — testimonials ── */}
@@ -2464,7 +2470,7 @@ function OpsConsole() {
         <Button appearance="primary" onClick={() => run("create-payment-links")} disabled={running === "create-payment-links"}>
           {running === "create-payment-links" ? "Running…" : "Create all Payment Links"}
         </Button>
-        <OutputBlock action="create-payment-links" />
+        <OutputBlock output={output} action="create-payment-links" />
       </div>
 
       <p style={{ color: tokens.colorNeutralForeground3, fontSize: 11, marginTop: 16 }}>
