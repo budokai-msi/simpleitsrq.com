@@ -32,6 +32,7 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
 const ServiceArea = lazy(() => import("./pages/ServiceArea"));
+const Partners = lazy(() => import("./pages/Partners"));
 
 function RouteFallback() {
   return (
@@ -160,6 +161,7 @@ function Footer() {
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/tools">Recommended Tools</Link></li>
             <li><Link to="/store">Templates & Playbooks</Link></li>
+            <li><Link to="/partners">Our Vendor Stack</Link></li>
             <li><Link to="/#industries">Industries</Link></li>
             <li><Link to="/#compliance">Compliance</Link></li>
             <li><Link to="/book">Book a Call</Link></li>
@@ -292,6 +294,7 @@ export default function App() {
               <Route path="/nokomis-it-support" element={<LocalLanding />} />
               <Route path="/venice-it-support" element={<LocalLanding />} />
               <Route path="/service-area" element={<ServiceArea />} />
+              <Route path="/partners" element={<Partners />} />
               <Route path="/book" element={<Book />} />
               <Route path="/support" element={<Support />} />
               <Route path="/tools" element={<Tools />} />
