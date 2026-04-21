@@ -114,6 +114,9 @@ function buildCsp(nonce) {
     "base-uri 'self'",
     "form-action 'self' https://accounts.google.com https://github.com",
     "object-src 'none'",
+    // We don't ship any service workers; lock down worker-src so a future
+    // CSP-bypass attempt can't smuggle one in via blob:/data:/cross-origin.
+    "worker-src 'none'",
     "upgrade-insecure-requests",
   ].join("; ");
 }
