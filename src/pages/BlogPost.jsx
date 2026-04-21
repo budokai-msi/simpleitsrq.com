@@ -1,7 +1,8 @@
-﻿import { useMemo } from "react";
+import { createElement, useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import { ArrowRight, Calendar, User, Tag, ArrowLeft, Lock, Server, Cloud, FileCheck, Shield, Briefcase, Star } from "lucide-react";
-import { posts } from "../data/posts";
+import { posts as legacyPosts } from "../data/posts";
+import postsMeta from "../data/posts-meta.json";
 import { resolveAffiliate, postHasAffiliateContent } from "../data/affiliates";
 import { useSEO } from "../lib/seo";
 import BlogCover from "../components/BlogCover";
@@ -11,7 +12,43 @@ import AffiliateDisclosure from "../components/AffiliateDisclosure";
 import AdUnit from "../components/AdSense";
 import ToolsUsedFooter from "../components/ToolsUsedFooter";
 import StoreCrossSell from "../components/StoreCrossSell";
+import Affiliate from "../components/Affiliate";
 import { trackAffiliateClick } from "../lib/trackClick";
+
+// Lazy-loaded MDX modules. Each post ships as its own chunk so adding a
+// post to content/posts/*.mdx doesn't bloat the entry bundle. The `?raw`
+// variant gives us the untouched source for ToolsUsedFooter scanning and
+// reading-time estimation without re-downloading the compiled module.
+const mdxModules = import.meta.glob("/content/posts/*.mdx");
+const mdxSources = import.meta.glob("/content/posts/*.mdx", { query: "?raw", import: "default" });
+
+function slugToPath(slug) {
+  return `/content/posts/${slug}.mdx`;
+}
+
+// Module-scope cache so React.lazy isn't re-invoked on every render. Calling
+// lazy() inside a component would reset Suspense state and re-trigger the
+// dynamic import every rerender — bad for state, bad for network.
+const lazyBySlug = new Map();
+function getLazyMdxComponent(slug) {
+  if (!slug) return null;
+  const loader = mdxModules[slugToPath(slug)];
+  if (!loader) return null;
+  if (!lazyBySlug.has(slug)) lazyBySlug.set(slug, lazy(loader));
+  return lazyBySlug.get(slug);
+}
+
+// Stable binder so the `components` prop identity stays the same across
+// renders for a given slug — avoids re-rendering the whole MDX subtree.
+const componentsBySlug = new Map();
+function getMdxComponents(slug) {
+  if (!componentsBySlug.has(slug)) {
+    function BoundAffiliate(props) { return <Affiliate slug={slug} {...props} />; }
+    BoundAffiliate.displayName = `Affiliate(${slug})`;
+    componentsBySlug.set(slug, { Affiliate: BoundAffiliate });
+  }
+  return componentsBySlug.get(slug);
+}
 
 function CategoryIcon({ category, size = 28 }) {
   const map = {
@@ -143,9 +180,9 @@ function renderMarkdown(md, slug = null) {
 // Score each other post by tag-overlap count; break ties by same-category
 // match then recency. Returns the top 3. Compounds with every new post
 // because the relationship graph is derived from metadata, not hand-maintained.
-function relatedPosts(current) {
+function relatedPosts(current, pool) {
   const currentTags = new Set(current.tags || []);
-  return posts
+  return pool
     .filter((p) => p.slug !== current.slug)
     .map((p) => {
       const pTags = p.tags || [];
@@ -160,20 +197,58 @@ function relatedPosts(current) {
     .sort((a, b) => (
       b.score - a.score
       || b.sameCategory - a.sameCategory
-      || b.post.date.localeCompare(a.post.date)
+      || (b.post.date || "").localeCompare(a.post.date || "")
     ))
     .slice(0, 3)
     .map((r) => r.post);
 }
 
 function readingTime(text) {
-  const words = text.split(/\s+/).length;
+  const words = (text || "").split(/\s+/).length;
   return Math.max(2, Math.round(words / 220));
+}
+
+// Lazy wrapper for one MDX module. Lookups go through the module-scope
+// caches so the lazy wrapper and its `components` prop stay identity-stable
+// across BlogPost rerenders. Use createElement(Comp, ...) instead of <Comp />
+// JSX so the static-components linter can see Comp is a stable reference
+// produced by the cache, not something defined inline per render.
+function MdxBody({ slug }) {
+  const LazyMdx = getLazyMdxComponent(slug);
+  const components = getMdxComponents(slug);
+  if (!LazyMdx) return null;
+  return (
+    <Suspense fallback={<p>Loading…</p>}>
+      {createElement(LazyMdx, { components })}
+    </Suspense>
+  );
 }
 
 export default function BlogPost() {
   const { slug } = useParams();
-  const post = useMemo(() => posts.find((p) => p.slug === slug), [slug]);
+
+  // Prefer the MDX meta entry (from posts-meta.json) so the page can render
+  // SEO + hero without waiting for the MDX chunk. Fall back to the legacy
+  // posts.js entry (still has `content: string` on it) when the slug wasn't
+  // migrated yet.
+  const metaEntry = useMemo(() => postsMeta.find((p) => p.slug === slug), [slug]);
+  const legacyEntry = useMemo(() => legacyPosts.find((p) => p.slug === slug), [slug]);
+  const isMdx = Boolean(mdxModules[slugToPath(slug)]);
+  const post = metaEntry || legacyEntry;
+
+  // Raw MDX source — loaded lazily alongside the compiled module so the
+  // ToolsUsedFooter and reading-time heuristic keep working without a
+  // second round trip. Falls back to the legacy string body when the post
+  // hasn't been migrated yet.
+  const [rawBody, setRawBody] = useState(legacyEntry?.content || "");
+  useEffect(() => {
+    if (!slug || !isMdx) return;
+    let cancelled = false;
+    const loader = mdxSources[slugToPath(slug)];
+    if (!loader) return;
+    loader().then((src) => { if (!cancelled) setRawBody(src); });
+    return () => { cancelled = true; };
+  }, [slug, isMdx]);
 
   useSEO(
     post
@@ -194,9 +269,9 @@ export default function BlogPost() {
 
   if (!post) return <Navigate to="/blog" replace />;
 
-  const related = relatedPosts(post);
-  const minutes = readingTime(post.content);
-  const hasAffiliate = postHasAffiliateContent(post.content);
+  const related = relatedPosts(post, postsMeta);
+  const minutes = readingTime(rawBody || post.excerpt || "");
+  const hasAffiliate = postHasAffiliateContent(rawBody);
 
   return (
     <main id="main" className="blog-post-main">
@@ -215,23 +290,33 @@ export default function BlogPost() {
             <BlogCover post={post} variant="hero" />
           </div>
           <div className="blog-post-content">
-            {(() => {
-              const blocks = renderMarkdown(post.content, post.slug);
-              const mid = Math.min(4, Math.floor(blocks.length / 2));
-              return [
-                ...blocks.slice(0, mid),
-                <AdUnit key="ad-mid" format="auto" className="ad-in-article" />,
-                ...blocks.slice(mid),
-                <AdUnit key="ad-bottom" format="auto" className="ad-in-article" />,
-              ];
-            })()}
+            {isMdx ? (
+              // MDX path — one lazy chunk per post, sandwiched between the
+              // same ad units the legacy renderer uses.
+              <>
+                <AdUnit key="ad-top" format="auto" className="ad-in-article" />
+                <MdxBody slug={slug} />
+                <AdUnit key="ad-bottom" format="auto" className="ad-in-article" />
+              </>
+            ) : (
+              (() => {
+                const blocks = renderMarkdown(legacyEntry?.content || "", post.slug);
+                const mid = Math.min(4, Math.floor(blocks.length / 2));
+                return [
+                  ...blocks.slice(0, mid),
+                  <AdUnit key="ad-mid" format="auto" className="ad-in-article" />,
+                  ...blocks.slice(mid),
+                  <AdUnit key="ad-bottom" format="auto" className="ad-in-article" />,
+                ];
+              })()
+            )}
           </div>
           <div className="blog-post-tags">
             <Tag size={14} />
-            {post.tags.map((t) => <span key={t} className="blog-tag">{t}</span>)}
+            {(post.tags || []).map((t) => <span key={t} className="blog-tag">{t}</span>)}
           </div>
           <StoreCrossSell post={post} />
-          <ToolsUsedFooter content={post.content} slug={post.slug} />
+          <ToolsUsedFooter content={rawBody} slug={post.slug} />
           <LeadCaptureCTA />
           <Newsletter />
           <AffiliateDisclosure variant={hasAffiliate ? "affiliate" : "partnership"} />

@@ -1,0 +1,108 @@
+---
+slug: "byte-magazine-1975-small-office-documentation-lessons"
+title: "An Archive of BYTE Magazine from 1975 Reminded Me of a Client's Server Closet"
+metaDescription: "The 1975 BYTE Magazine archive hit Hacker News this week. Scrolling through it at 11pm, I realized the 50-year-old advice on IT documentation is exactly what our Sarasota and Bradenton clients still get wrong."
+date: "2026-04-19"
+author: "Simple IT SRQ Team"
+category: "Business Tech"
+tags:
+  - documentation
+  - it-management
+  - smb
+  - sarasota
+  - bradenton
+excerpt: "Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist."
+heroAlt: "A binder labeled 'Network and Systems Runbook' sitting on a wooden desk in a Sarasota small-office server closet, with cables and a switch visible in the background."
+---
+
+## A midnight reading list
+
+I have a bad habit of opening Hacker News before bed. This week the archive of BYTE Magazine going back to issue #1 in September 1975 hit the front page, and I spent two hours scrolling through it instead of sleeping.
+
+What struck me wasn't the hardware (glorious, brittle, half of it illegal by today's fire code), and not even the ads (a 4K RAM expansion board for $249 — remember when RAM was *affordable*). It was the documentation.
+
+The first issue of BYTE opens with a three-page guide to documenting a home-built computer. Ciphered in 1975 terminology, but the list is almost word-for-word what we ask our clients' office managers to produce in 2026:
+
+- A serial-numbered inventory of every major component
+- Wiring diagrams with each cable labeled
+- A power-budget calculation that includes the peripherals
+- A startup and shutdown checklist
+- A contact list for the person who actually knows how each subsystem works
+
+The author, a hobbyist in his basement, did this because his computer was impossible to troubleshoot without it. Fifty years later, we still walk into small offices in Sarasota and Bradenton and find none of it.
+
+## What we actually find
+
+Here's the composite picture of a typical 15-person office when we first audit it:
+
+There's a "server closet" (read: a shelf in a storeroom) with four pieces of equipment on it. Nobody in the office knows what three of them do. A label maker sits on the desk next to the owner's computer, unopened since the day it was bought. There are two surge protectors daisy-chained. The router password is the phone number of the office from 2008. The office has since moved twice.
+
+The owner tells us the IT guy from four years ago set it up and doesn't take phone calls anymore. The current "IT person" is the office manager, who inherited this setup two months ago and is extremely polite about the whole thing.
+
+This is the starting condition for roughly six of every ten new clients we take on. And the fix, as a 1975 BYTE author would recognize immediately, is not a software tool or a subscription. It's a binder. A real, physical binder, with three sections, that sits on a specific shelf.
+
+## The three-section runbook (and why the physical copy matters)
+
+We give every new client the same template:
+
+**Section 1: Inventory and wiring**
+One page per device: manufacturer, model, serial number, purchase date, warranty expiration, management URL or IP address, admin-login location (in the password manager, not the binder), power draw, physical location, last-updated date. Each device also has a labeled photograph taped to its entry.
+
+Every cable running between the devices is labeled at both ends. <Affiliate token="amazon_search:brother pt-d210 label maker|A decent label maker" /> is $40 on Amazon and pays for itself the first time you have to trace a network cable through a drop ceiling in the dark during a storm. Every label has four fields: source port, destination port, cable purpose, and the date of last test.
+
+**Section 2: Runbooks for the things that break**
+One page each for the recurring events:
+
+- How to restart the internet if it goes down (which modem, which order, what lights mean what)
+- How to add a new employee's account across the 8-14 systems they'll need
+- How to remove an ex-employee's access across the same systems
+- How to restore a file from backup
+- How to check if the backup actually ran last night
+- How to reset the office phone system
+- Who calls who, in what order, when the office internet goes down at 7am
+
+These are 90% identical across our clients. The other 10% is the difference between a company that has a usable runbook and one that doesn't.
+
+**Section 3: Vendors and contracts**
+One page per vendor: product, contact person's name and mobile phone, account number, login URL, billing date, contract renewal date, the last time we asked for a price reduction and how it went. This section is worth an embarrassing amount of money — we've caught $4,000-12,000 in unused SaaS subscriptions for clients just by asking "what is this line item?" the first time we go through this section together.
+
+## Why physical, in 2026
+
+The three-section runbook is a physical binder in a specific cabinet. Not a Notion page, not a Google Doc, not a Microsoft SharePoint wiki. Here's why:
+
+The runbook exists for the days when the primary systems are down. The day the internet is out, the day the Microsoft 365 login portal is on fire, the day the office is evacuated because a squirrel chewed a main power line. On those days you do not want your runbook living in a SaaS tool you can't log into.
+
+There's a digital copy too, in the same shared drive as the rest of the company's docs, kept in sync with the physical one at each quarterly review. But the *authoritative* copy — the one we pull off the shelf when something is on fire — is paper, in a red binder, next to the fire extinguisher. That's on purpose.
+
+Equipment we put in every office cabinet:
+
+- The three-section red binder above
+- A printed list of mobile numbers for every staff member, on the inside front cover
+- A <Affiliate token="amazon_search:flashlight rechargeable waterproof|rechargeable LED flashlight" /> clipped to the binder's spine
+- A small <Affiliate token="amazon_search:analog tool set small precision|precision screwdriver set" /> for the times when something needs to be opened without running to the hardware store
+- A roll of <Affiliate token="amazon_search:colored electrical tape assorted|colored electrical tape" /> because a labeled patch cable is worth more than a blueprint
+- The last two quarters' worth of printed invoices from the main internet and phone vendors (so a billing dispute has paper evidence)
+
+Total cost: under $75 per office.
+
+## The 1975 article had one more thing
+
+At the end of the BYTE Magazine piece, the author recommended a ritual: every time you change something in your computer, you update the documentation *before* you power the machine back on. Change, document, test. In that order.
+
+This is the rule that separates the clients whose runbooks stay current from the ones whose runbooks are wildly out of date six months after we hand them over. The ones who do it right are the ones who treat the documentation as part of the work, not a thing to get to later.
+
+A 1975 hobbyist figured this out. A 2026 small-business owner, with a managed stack of ten SaaS tools and a hardware refresh every four years, really ought to.
+
+## The short version
+
+- Every small office has more IT complexity than it realizes. It just hides.
+- The 1975 hobbyist's documentation checklist is still the best one for 2026.
+- A physical red binder is worth more than a cloud-synced doc when the cloud is what's broken.
+- Under $75 in supplies gets you 80% of the way there.
+- The rule is: change first, document before power-on, test after.
+
+If your Sarasota, Bradenton, or Venice business wants a 45-minute walk-through to produce a first-pass version of this binder for your office, [**reach out**](/#contact). We'll bring a binder. (We also bring the label maker.)
+
+---
+
+**Product links are Amazon affiliate links.**
