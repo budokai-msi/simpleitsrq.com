@@ -1415,6 +1415,86 @@ async function handleResetAuditChain(session) {
   });
 }
 
+// Stripe revenue summary for the last 30 days + active subscriptions.
+// Pulls paid invoices and active subscriptions directly from Stripe so
+// the admin panel reflects the live account state (no local cache). When
+// STRIPE_SECRET_KEY is unset, returns a `stripe_not_configured` shape so
+// the widget can show a "Stripe not configured" pill instead of 500-ing.
+async function handleRevenueSummary(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const stripe = getStripe();
+  if (!stripe) {
+    return json(200, { ok: false, configured: false, error: "stripe_not_configured" });
+  }
+
+  const thirtyDaysAgo = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
+
+  try {
+    // Paginate once through the 30-day paid invoices window. Stripe caps
+    // each page at 100; auto_paging_to_array walks the cursor for us.
+    const paidInvoices = await stripe.invoices
+      .list({ status: "paid", created: { gte: thirtyDaysAgo }, limit: 100 })
+      .autoPagingToArray({ limit: 1000 })
+      .catch(async () => {
+        // autoPagingToArray isn't available in every SDK version — fall
+        // back to a single page, which covers the common case.
+        const single = await stripe.invoices.list({
+          status: "paid",
+          created: { gte: thirtyDaysAgo },
+          limit: 100,
+        });
+        return single.data || [];
+      });
+
+    const paidTotalCents = paidInvoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
+    const paidCount = paidInvoices.length;
+
+    // Active subscriptions → MRR. Normalize each plan to monthly regardless
+    // of billing interval (yearly/2 or weekly*4.33 etc) so one figure.
+    const activeSubs = await stripe.subscriptions
+      .list({ status: "active", limit: 100 })
+      .autoPagingToArray({ limit: 1000 })
+      .catch(async () => {
+        const single = await stripe.subscriptions.list({ status: "active", limit: 100 });
+        return single.data || [];
+      });
+
+    let mrrCents = 0;
+    for (const sub of activeSubs) {
+      const items = sub.items?.data || [];
+      for (const item of items) {
+        const price = item.price;
+        if (!price || price.unit_amount == null) continue;
+        const qty = item.quantity || 1;
+        const cents = price.unit_amount * qty;
+        const interval = price.recurring?.interval || "month";
+        const count = price.recurring?.interval_count || 1;
+        let monthly = cents;
+        if (interval === "year") monthly = cents / (12 * count);
+        else if (interval === "week") monthly = cents * (4.3333 / count);
+        else if (interval === "day") monthly = cents * (30 / count);
+        else if (interval === "month") monthly = cents / count;
+        mrrCents += monthly;
+      }
+    }
+
+    return json(200, {
+      ok: true,
+      configured: true,
+      paid_count: paidCount,
+      paid_total_cents: paidTotalCents,
+      active_subs_count: activeSubs.length,
+      mrr_cents: Math.round(mrrCents),
+      window_days: 30,
+    });
+  } catch (err) {
+    console.error("[portal] revenue-summary failed", err);
+    return json(500, { ok: false, configured: true, error: String(err?.message || err).slice(0, 200) });
+  }
+}
+
 // Programmatically create Stripe Payment Links for every product in the
 // catalog that doesn't already have one. Uses the same STRIPE_SECRET_KEY
 // that invoicing uses. Returns the full list of URLs for the admin to
@@ -2396,6 +2476,7 @@ async function dispatch(request, method) {
   if (action === "ops-status"           && method === "GET")  return handleOpsStatus(session);
   if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
   if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
+  if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);
   if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);
   if (action === "testimonial-save"     && method === "POST") return handleTestimonialSave(session, request);
   if (action === "testimonial-delete"   && method === "POST") return handleTestimonialDelete(session, request);
