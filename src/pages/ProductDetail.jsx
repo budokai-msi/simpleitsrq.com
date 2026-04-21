@@ -235,24 +235,14 @@ export default function ProductDetail() {
     return () => { s?.remove(); };
   }, [product, productJsonLd]);
 
-  // Flip loading on whenever previewUrl changes so the spinner shows before
-  // the next fetch starts. Previous-value pattern keeps this out of an
-  // effect body where it would cascade renders.
-  const [prevPreviewUrl, setPrevPreviewUrl] = useState(product?.previewUrl);
-  if (prevPreviewUrl !== product?.previewUrl) {
-    setPrevPreviewUrl(product?.previewUrl);
-    setPreviewLoading(true);
-  }
-
   useEffect(() => {
-    if (!product?.previewUrl) return undefined;
-    let cancelled = false;
+    if (!product?.previewUrl) return;
+    setPreviewLoading(true);
     fetch(product.previewUrl)
       .then((r) => (r.ok ? r.text() : null))
-      .then((text) => { if (!cancelled) setPreviewMd(text); })
-      .catch(() => { if (!cancelled) setPreviewMd(null); })
-      .finally(() => { if (!cancelled) setPreviewLoading(false); });
-    return () => { cancelled = true; };
+      .then((text) => setPreviewMd(text))
+      .catch(() => setPreviewMd(null))
+      .finally(() => setPreviewLoading(false));
   }, [product?.previewUrl]);
 
   if (!slug) return <Navigate to="/store" replace />;
