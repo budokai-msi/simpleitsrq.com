@@ -38,7 +38,10 @@ export default function BlogIndex() {
   const hasMore = visibleCount < filtered.length;
 
   // Reset pagination whenever category OR search query changes so
-  // "Load more" starts fresh.
+  // "Load more" starts fresh. Intentional setState in effect — this is
+  // the classic "derived reset" pattern that the lint plugin can't
+  // distinguish from a cascading-render bug.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [active, committedQuery]);
 
   // Keep ?q=... in sync with the committed search query. We use replace

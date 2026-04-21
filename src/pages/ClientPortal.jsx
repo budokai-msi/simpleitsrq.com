@@ -790,8 +790,12 @@ function TicketDetailDialog({ styles, code, isAdmin, onClose, onChange }) {
   }, [code]);
 
   // Initial load + 10s polling + focus refetch while the dialog is mounted.
+  // `load` is a stable useCallback whose body runs async; the synchronous
+  // setLoading(true) below is the "enter loading state" signal, not a
+  // cascading render.
   useEffect(() => {
     if (!code) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     load();
     const id = setInterval(load, 10000);
@@ -1341,6 +1345,7 @@ function DraftsPanel({ styles }) {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- load() is a stable useCallback
   useEffect(() => { load(); }, [load]);
 
   const publish = useCallback(async (id) => {
@@ -1579,6 +1584,7 @@ function VisitorsPanel({ styles, onBlockIp }) {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- load() is a stable useCallback
   useEffect(() => { load(); }, [load]);
 
   if (loading) {
@@ -1940,6 +1946,7 @@ function TestimonialsAdmin() {
     } catch { setItems([]); }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- load() is a stable useCallback
   useEffect(() => { load(); }, [load]);
 
   const save = async (form) => {
@@ -2268,6 +2275,7 @@ function OpsConsole() {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- loadStatus is a stable useCallback
   useEffect(() => { loadStatus(); }, [loadStatus]);
   // Auto-load the three operational-status widgets on mount. Wrapped in an
   // alive-flag IIFE so the lint-time "no setState in effect body" rule
@@ -2928,6 +2936,7 @@ function SecurityPanel({
     finally { setIntelLoading(false); }
   }, [range]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- loadIntel is a stable useCallback
   useEffect(() => { loadIntel(); }, [loadIntel]);
   useEffect(() => { if (subTab === "credentials") loadHpCreds?.(); }, [subTab, loadHpCreds]);
 

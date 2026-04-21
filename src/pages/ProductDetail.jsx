@@ -3,6 +3,7 @@ import { useParams, Link, Navigate } from "react-router-dom";
 import { Check, ShieldCheck, RefreshCw, ArrowRight, BookOpen, ArrowLeft, FileText, Calendar } from "lucide-react";
 import { products } from "../data/products";
 import { useSEO, SITE_URL } from "../lib/seo";
+import { useAsyncEffect } from "../lib/useAsyncEffect";
 import Testimonials from "../components/Testimonials";
 import { csrfFetch } from "../lib/csrf";
 
@@ -236,14 +237,18 @@ export default function ProductDetail() {
     return () => { s?.remove(); };
   }, [product, productJsonLd]);
 
-  useEffect(() => {
+  useAsyncEffect(async (signal) => {
     if (!product?.previewUrl) return;
     setPreviewLoading(true);
-    fetch(product.previewUrl)
-      .then((r) => (r.ok ? r.text() : null))
-      .then((text) => setPreviewMd(text))
-      .catch(() => setPreviewMd(null))
-      .finally(() => setPreviewLoading(false));
+    try {
+      const r = await fetch(product.previewUrl);
+      const text = r.ok ? await r.text() : null;
+      if (!signal.cancelled) setPreviewMd(text);
+    } catch {
+      if (!signal.cancelled) setPreviewMd(null);
+    } finally {
+      if (!signal.cancelled) setPreviewLoading(false);
+    }
   }, [product?.previewUrl]);
 
   if (!slug) return <Navigate to="/store" replace />;
