@@ -12,6 +12,20 @@ initBotId({
   ],
 })
 
+// Sentry — lazy-loaded so the SDK (~35 kB gzipped with Replay) stays off
+// the critical path. We kick off the dynamic import before render so
+// early errors are still captured by the top-level `captureException`
+// call inside our ErrorBoundary (which awaits module init implicitly via
+// the shared singleton in src/lib/sentry.js).
+const bootSentry = () => import('./lib/sentry.js').then((m) => m.initSentry())
+if (typeof window !== 'undefined') {
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(bootSentry, { timeout: 2000 })
+  } else {
+    setTimeout(bootSentry, 0)
+  }
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

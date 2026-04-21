@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/generate-posts-meta.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-rss.mjs",
@@ -17,6 +19,7 @@
     "@fluentui/react-components": "^9.73.7",
     "@fluentui/react-icons": "^2.0.323",
     "@neondatabase/serverless": "^1.0.2",
+    "@sentry/react": "^10.49.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "botid": "^1.5.11",
