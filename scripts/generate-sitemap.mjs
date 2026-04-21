@@ -1,12 +1,14 @@
-// Generates public/sitemap.xml from the posts.js + cities.js data files.
+// Generates public/sitemap.xml from MDX posts + legacy posts.js + cities.
 // Run with: node scripts/generate-sitemap.mjs
 
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { posts } from "../src/data/posts.js";
+import { loadAllPosts } from "./_posts-source.mjs";
 import { cityList } from "../src/data/cities.js";
 import { products } from "../src/data/products.js";
+
+const posts = loadAllPosts();
 
 const SITE = "https://simpleitsrq.com";
 // Default <lastmod> for URLs that don't carry their own date.

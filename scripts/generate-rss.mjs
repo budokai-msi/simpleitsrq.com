@@ -1,10 +1,12 @@
-// Generates public/rss.xml from posts.js
+// Generates public/rss.xml from MDX posts + legacy posts.js.
 // Run with: node scripts/generate-rss.mjs
 
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { posts } from "../src/data/posts.js";
+import { loadAllPosts } from "./_posts-source.mjs";
+
+const posts = loadAllPosts();
 
 const SITE = "https://simpleitsrq.com";
 const TITLE = "Simple IT SRQ Blog";

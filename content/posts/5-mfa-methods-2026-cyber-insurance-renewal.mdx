@@ -1,0 +1,118 @@
+---
+slug: "5-mfa-methods-2026-cyber-insurance-renewal"
+title: "The 5 MFA Methods Your 2026 Cyber-Insurance Renewal Actually Accepts (And the 2 That'll Get You Denied)"
+metaDescription: "Cyber-insurance carriers overhauled the MFA section of their 2026 renewal forms — SMS codes now disqualify you. Here are the 5 methods still accepted, the 2 to stop using tonight, and exactly what your renewal questionnaire will ask."
+date: "2026-04-21"
+author: "Simple IT SRQ Team"
+category: "Cybersecurity"
+tags:
+  - mfa
+  - cyber-insurance
+  - compliance
+  - bradenton
+  - sarasota
+excerpt: "If your renewal quote jumped this spring, check the MFA section of the questionnaire first. In Q1 2026, three of the five biggest small-business cyber carriers silently changed what counts as acceptable multi-factor authentication. SMS is out. Here's what's still in."
+heroAlt: "A laptop on a Bradenton office desk showing a two-factor login screen with a YubiKey plugged into the USB-C port."
+---
+
+## The email your carrier just sent you (if you haven't read it yet)
+
+If you run a Sarasota or Bradenton small business with cyber insurance, you probably got a notice from your carrier in the last 90 days that said something like: "Please confirm your current multi-factor authentication methods before your renewal is processed." Most owners skim it and forward it to whoever runs their IT.
+
+Don't.
+
+The MFA section of the 2026 renewal questionnaire is the single most common reason we see cyber-insurance renewals get delayed or — worse — quoted at 1.8x the 2025 premium. It's not the firewalls. It's not the backups. It's which flavor of two-factor authentication you actually have turned on.
+
+Specifically: carriers are finally done with SMS.
+
+## What changed in 2026
+
+For years, "we have 2FA on our email" was a good answer. Any carrier would check the box. Those days are over.
+
+In Q1 2026, at least three of the five biggest small-business cyber carriers — The Hartford, Travelers, and Coalition — updated the MFA section of their questionnaires. The new language disqualifies SMS codes entirely. Email-based codes get the same treatment. Even TOTP apps (Google Authenticator, Authy) are showing up on "additional review required" lists at two of them.
+
+The reason: attackers have gotten extremely good at SIM-swapping and phishing one-time codes over the last 18 months. A FIDO2 security key or a passkey can't be phished that way. Carriers now know the difference.
+
+If your renewal is coming up, here's the short list of what's still accepted — and what to stop using tonight.
+
+## Method 1: Hardware security keys (the best answer)
+
+Examples: YubiKey 5C NFC, Google Titan, SoloKeys.
+
+These are small USB-C or NFC fobs that plug into your computer or tap against your phone to approve a sign-in. They're built on a cryptographic standard called FIDO2 that physically can't be phished — the key will only authenticate you to the exact website it was registered for. A fake login page will get nothing.
+
+Every 2026 carrier accepts hardware keys as the strongest form of MFA. Some offer a premium discount for companies that mandate them on admin and executive accounts.
+
+They cost $50–$70 per user, one-time. Recommend: <Affiliate token="amazon_search:YubiKey 5C NFC|YubiKey 5C NFC security key" /> or <Affiliate token="amazon_search:Google Titan Security Key|Google Titan Security Key" />.
+
+Who this is non-negotiable for: any admin account, any email account with wire-transfer authority, any account that can approve a purchase order over $5,000. For those, hardware keys aren't optional — they're what the carrier will credit as "strong MFA."
+
+## Method 2: Passkeys
+
+New in 2024, mainstream in 2026. Passkeys are FIDO2 credentials stored on your phone or laptop instead of a separate hardware fob. Same anti-phishing guarantee, different storage.
+
+The catch: carriers differ on whether to count them as "strong" (same tier as hardware keys) or "medium" (second tier). Coalition counts them strong. Hartford counts them medium. Both are better than TOTP.
+
+If you're rolling MFA out to a practice with 20+ users and don't want to hand out $60 fobs to everyone, passkeys on company-managed iPhones and Androids are the most practical middle path. They auto-sync via iCloud Keychain or Google Password Manager and survive a lost device as long as you have iCloud or a Google account configured.
+
+## Method 3: Microsoft Authenticator with number matching
+
+If you're on Microsoft 365 Business Premium — which we install at most client offices in Bradenton, Sarasota, and Venice — you already own this feature. Turn it on.
+
+"Number matching" means when you log in from your laptop, the laptop shows a 2-digit number, and your phone prompts you to enter that exact number to approve the sign-in. It stops the most common 2026 attack pattern: the attacker keeps hammering your phone with push notifications at 2am until you tap "Approve" just to make the alerts stop.
+
+Every carrier we've seen in 2026 accepts Microsoft Authenticator with number matching as a valid MFA method. Without number matching, some now downgrade it to "acceptable but not strong."
+
+Turn it on at: Microsoft Entra admin center → Security → Authentication methods → Microsoft Authenticator → Enable number matching. Two clicks, takes effect within 24 hours.
+
+## Method 4: Duo Push (enterprise, healthcare)
+
+If you run a medical or dental practice, your EHR or practice-management vendor may have already onboarded you to Duo Push — it's the most common MFA method in US healthcare.
+
+Carriers accept Duo Push uniformly. Same caveat as Microsoft Authenticator: make sure "verified push" (Duo's equivalent of number matching) is enabled. Without it, Duo has the same push-fatigue weakness attackers now exploit.
+
+Duo Push is particularly common at practices running ModMed, Dentrix Ascend, or Epic — if your EHR's login prompt has Duo branding, you already pay for it. Use it for everything, not just the EHR. Your administrator account in Google Workspace or Microsoft 365 can authenticate against Duo too with a 30-minute configuration change.
+
+## Method 5: TOTP apps (Google Authenticator, Authy)
+
+This is the one on watch.
+
+TOTP apps generate 6-digit codes that rotate every 30 seconds. They're what most of the IT industry rolled out during the 2019–2023 push for "2FA on everything." Carriers accepted them without question through 2024.
+
+In 2026, it's mixed. Most carriers still accept TOTP as a valid MFA method. But some now flag TOTP-only setups as "additional review" — meaning a human underwriter reads your questionnaire more carefully, which often leads to follow-up questions and sometimes a higher premium.
+
+If you're already on TOTP across your company, don't panic. Keep it — it's still better than SMS. But plan to move your admin and high-privilege accounts to hardware keys or passkeys over the next 12 months. That's the direction every carrier is heading.
+
+## The 2 methods to stop using tonight
+
+**SMS codes.** Any setup where the 2nd factor is "we'll text you a 6-digit code" is disqualifying on most 2026 questionnaires. If your bank still only offers SMS 2FA, call them and ask for authenticator-app support — most have it now. If your email is still on SMS 2FA, switch it in the next hour.
+
+**Email codes.** Same problem, different delivery method. If an attacker has compromised the email, they also get the code. Carriers have always been wary of email-based 2FA; in 2026 most will reject it entirely on the questionnaire.
+
+There's one exception. Some older line-of-business apps — typically custom software built in the 2010s — only support email codes as a 2nd factor. If that's your situation, the honest answer on your renewal questionnaire is: "Application X only supports email-based MFA; compensating control is that Application X is only accessible from devices enrolled in Intune MDM and the Microsoft account they sign in with has FIDO2 MFA." That gets accepted as a documented compensating control on every carrier we've dealt with.
+
+## What your renewal questionnaire will actually ask
+
+Here are the specific MFA questions showing up on the 2026 cyber-insurance renewal forms we're seeing across our Bradenton, Sarasota, Lakewood Ranch, Venice, and Nokomis client base:
+
+- Is MFA required on **all** email accounts? (Yes/No)
+- Is MFA required on the **admin console** of your email platform? (Yes/No)
+- Which method is used? (check all — SMS, Email code, TOTP app, Push notification, Hardware key, Passkey)
+- Is MFA required on **remote access** (VPN, RDP, remote desktop)? (Yes/No)
+- Is MFA required on **privileged accounts** (domain admins, global admins, financial approvers)? (Yes/No)
+- Has MFA configuration been **tested** within the last 12 months?
+
+The last question is the one most offices miss. "Tested" means you have documentation — a written record — that shows MFA was verified working on every account during the period. Most small offices don't do this because they don't know it's being asked. Our [Cyber-Insurance Questionnaire Answer Kit](/store/cyber-insurance-answers) includes a pre-formatted MFA attestation template that covers this exact question for $99 — cheaper than the 15-minute tangent it'll cause at your renewal meeting.
+
+## What to do this week
+
+If you do nothing else before your next renewal:
+
+1. **Turn off SMS 2FA on every account that has it.** Replace with an authenticator app. 20 minutes per account.
+2. **Enable number matching** in Microsoft Authenticator if you're on Microsoft 365. Five minutes, admin-console toggle.
+3. **Order two hardware keys** for your two most privileged accounts — the owner and whoever can approve wire transfers. $120 total. <Affiliate token="amazon_search:YubiKey 5C NFC|YubiKey 5C NFC" /> is the standard.
+4. **Document the switch.** A one-page PDF showing what method is on what account, dated and signed by the office manager. Carriers accept this as evidence.
+
+If that's 20+ accounts and you'd rather not spend the weekend doing it yourself, we do this exact rollout as a two-hour engagement for Sarasota and Bradenton small businesses. Contact us at hello@simpleitsrq.com or book a free 30-minute call from the footer of this page.
+
+The 2026 renewals will not get easier. Get ahead of them now — the quote you'll see in Q4 depends on the answers you write in Q2.

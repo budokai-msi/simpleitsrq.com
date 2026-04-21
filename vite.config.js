@@ -1,9 +1,28 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import mdx from '@mdx-js/rollup'
+import remarkFrontmatter from 'remark-frontmatter'
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
 
 export default defineConfig({
   plugins: [
-    react(),
+    // MDX must run before @vitejs/plugin-react so the resulting JSX
+    // still passes through React Fast Refresh in dev.
+    // remark-frontmatter parses the --- YAML block; remark-mdx-frontmatter
+    // re-exports it as a named `frontmatter` export so BlogPost.jsx can
+    // read it directly off the lazy-loaded module.
+    {
+      enforce: 'pre',
+      ...mdx({
+        remarkPlugins: [
+          remarkFrontmatter,
+          [remarkMdxFrontmatter, { name: 'frontmatter' }],
+        ],
+        // No providerImportSource — MDX files receive `components`
+        // directly as a prop from BlogPost when rendered.
+      }),
+    },
+    react({ include: /\.(jsx|js|mdx|md|tsx|ts)$/ }),
     {
       name: 'security-headers',
       configureServer(server) {
