@@ -13,6 +13,7 @@ import ToolsUsedFooter from "../components/ToolsUsedFooter";
 import StoreCrossSell from "../components/StoreCrossSell";
 import Affiliate from "../components/Affiliate";
 import RelatedPosts from "../components/RelatedPosts";
+import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
 import { trackAffiliateClick } from "../lib/trackClick";
 
 // Lazy-loaded MDX modules. Each post ships as its own chunk so adding a
@@ -319,7 +320,27 @@ export default function BlogPost() {
           )}
         </div>
       </article>
+      {postMatchesCyberInsurance(post, rawBody) && (
+        <div className="container" style={{ maxWidth: 780 }}>
+          <CyberInsuranceCTA slug={slug} />
+        </div>
+      )}
       <RelatedPosts currentSlug={slug} />
     </main>
   );
+}
+
+// Decide whether a blog post should surface the cyber-insurance referral
+// CTA. Match any of: tag ∈ {cyber-insurance, insurance}, category ∈
+// {Cybersecurity, Compliance}, or body text mentions "cyber insurance".
+// Deliberately broad — these are exactly the readers most likely to be
+// weeks out from a renewal.
+function postMatchesCyberInsurance(post, body) {
+  if (!post) return false;
+  const tags = (post.tags || []).map((t) => String(t).toLowerCase());
+  if (tags.includes("cyber-insurance") || tags.includes("insurance")) return true;
+  const cat = String(post.category || "").toLowerCase();
+  if (cat === "cybersecurity" || cat === "compliance") return true;
+  if (typeof body === "string" && /cyber[- ]insurance/i.test(body)) return true;
+  return false;
 }

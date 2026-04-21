@@ -26,6 +26,7 @@ const staticUrls = [
   { loc: "/blog", priority: "0.9", changefreq: "daily" },
   { loc: "/store", priority: "0.9", changefreq: "weekly" },
   { loc: "/security-academy", priority: "0.9", changefreq: "monthly" },
+  { loc: "/cyber-insurance-quote", priority: "0.9", changefreq: "monthly" },
   { loc: "/password-check", priority: "0.9", changefreq: "monthly" },
   { loc: "/book", priority: "0.8", changefreq: "monthly" },
   { loc: "/service-area", priority: "0.85", changefreq: "monthly" },
