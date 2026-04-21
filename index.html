@@ -7,6 +7,12 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0F6CBD" />
+    <!-- Per-request CSP nonce. Middleware substitutes __CSP_NONCE__ with a
+         base64url random value on every HTML response, and the `style-src`
+         directive in the response CSP header allows `'nonce-<that value>'`
+         so Fluent UI's Griffel renderer can attach the same nonce to every
+         runtime-injected <style> tag. See src/main.jsx for the Griffel wiring. -->
+    <meta name="csp-nonce" content="__CSP_NONCE__" />
 
     <!-- Preconnect / DNS prefetch for third-party origins (fonts, analytics, tag manager) -->
     <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
