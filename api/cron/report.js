@@ -17,8 +17,12 @@ const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
 const FROM = "Simple IT SRQ Analytics <analytics@simpleitsrq.com>";
 
 function verifyCron(request) {
+  // Vercel sets x-vercel-cron: 1 on genuine cron invocations — this header
+  // cannot be spoofed from outside the Vercel edge. Accept either that or a
+  // valid CRON_SECRET bearer (for manual triggers). Fail closed if neither.
+  if (request.headers.get("x-vercel-cron") === "1") return true;
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
+  if (!secret) return false;
   const auth = request.headers.get("authorization") || "";
   const expected = `Bearer ${secret}`;
   if (auth.length !== expected.length) return false;
