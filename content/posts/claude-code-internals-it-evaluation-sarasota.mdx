@@ -1,0 +1,54 @@
+---
+slug: "claude-code-internals-it-evaluation-sarasota"
+title: "Evaluating Agentic Coding Tools: A Visual Primer for IT"
+metaDescription: "A new visual guide unpacks how Claude Codes agent loop, tool use, and context window actually work. Heres how Sarasota IT teams should use it for evaluation."
+date: "2026-04-01"
+author: "Simple IT SRQ Team"
+category: "AI & Productivity"
+tags:
+  - "ai"
+  - "developer-tools"
+  - "evaluation"
+excerpt: "A new diagrammed walkthrough of how Claude Code actually works under the hood is the best free primer for IT teams trying to evaluate agentic coding tools for internal pilots."
+heroAlt: "Diagram showing an AI agents loop with tool-use boxes and a context window."
+---
+
+## The Best Free Primer on Agentic Coding
+
+A new site called ccunpacked.dev published this week a diagrammed walkthrough of how Claude Codes agent loop, tool use, context window, and file editing actually work under the hood. It was built from public documentation plus reverse-engineering of a leaked source map. Within hours it became one of the most-shared technical explainers on Hacker News.
+
+If you are an IT decision-maker trying to evaluate whether your team should pilot an agentic coding tool, this is the primer to read first. Not because it is exhaustive, but because it forces you to ask the right questions instead of grading on marketing slides.
+
+## What an Agent Loop Actually Does
+
+Stripped of jargon, an agentic coding tool runs four steps in a loop until the task is done or the user stops it: read the current state, plan the next step, call a tool (file edit, shell command, web fetch), observe the result, and decide whether to keep going. Every step is a model call. Every step costs money. Every step is auditable - if you set up logging the right way.
+
+That last point is the one most IT evaluations skip. The model is interesting; the audit trail is what your auditor and your insurance carrier care about.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+Not every local business is going to deploy an autonomous coding agent. But more of them will use the same architecture for back-office automation: invoice processing, claim submission, intake routing, contract review. The same questions apply.
+
+- Where does the agent run? On a workstation, a VM, or a vendor cloud?
+- What tools can it call? Shell? File system? Email? Calendar? A customer database?
+- Who reviews its actions, and how often?
+- What gets logged, and where do those logs live for how long?
+
+Answer those four questions before your team turns on a single autonomous workflow. We use this same checklist when we [help clients evaluate Microsoft Copilot deployments](/blog/ai-comprehension-debt-sarasota-it-teams).
+
+## A Sensible Evaluation Plan
+
+If you want to actually pilot an agentic coding tool inside your business, do it the boring way:
+
+- Start with a non-production environment and a test repository.
+- Restrict the agent to a sandboxed workstation with no production credentials. Tools like Agent Safehouse for macOS or Microsoft Defender Application Guard for Windows are designed exactly for this.
+- Run a one-week pilot with two willing developers. Ask them to log every interaction.
+- At the end of the week, compare the logs against a written evaluation rubric. Velocity gain. Number of regressions. Time spent on review. Subjective trust score.
+
+If the numbers add up, expand the pilot. If they do not, you have learned something cheap and concrete instead of paying for a year of seats based on vibes.
+
+## The Bottom Line
+
+The ccunpacked.dev guide is worth an hour of your time - not because you need to ship an agent tomorrow, but because it gives you a vocabulary for evaluating any AI tool that runs more than one step on its own. That vocabulary is the difference between a productive pilot and an expensive distraction.
+
+[Talk to Simple IT SRQ](/#contact) about running a structured AI tooling pilot for your Bradenton business. You can also browse our [other AI and productivity posts](/blog) for more context, or read our take on [sandboxing agents on macOS](/blog/sandboxing-ai-agents-mac-sarasota).

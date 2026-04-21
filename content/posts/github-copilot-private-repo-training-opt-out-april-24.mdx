@@ -1,0 +1,50 @@
+---
+slug: "github-copilot-private-repo-training-opt-out-april-24"
+title: "Opt Out by April 24: GitHub Copilot Training on Private Repos"
+metaDescription: "GitHub will train Copilot on private repos by default unless you opt out by April 24, 2026. Heres what Sarasota businesses need to do this week."
+date: "2026-03-27"
+author: "Simple IT SRQ Team"
+category: "Compliance"
+tags:
+  - "github"
+  - "compliance"
+  - "ai"
+excerpt: "GitHub announced a policy change that defaults private repositories into Copilot training datasets unless users opt out before April 24, 2026. Audit your orgs settings now."
+heroAlt: "A laptop displaying GitHub privacy settings with a calendar reminder."
+---
+
+## A Policy Change With a Hard Deadline
+
+GitHub announced this week that private repositories will be opted into Copilot training datasets by default unless users actively opt out before April 24, 2026. The reaction was swift and largely negative. Enterprise customers, OSS maintainers, and several Fortune 500 legal teams sent strongly worded letters by the end of the day.
+
+Whatever your view of the policy itself, the practical implication for Sarasota and Bradenton businesses is unambiguous: if you have a GitHub organization, you need to audit it before April 24.
+
+## What the Policy Actually Says
+
+The relevant settings live under the organization-level Copilot features page. By default, private repositories owned by an organization will be available for Copilot model training unless an admin disables the feature. There is also a per-user toggle, and a separate one for "code suggestions matching public code."
+
+The defaults will not change retroactively for existing customers unless you cross the deadline without action. After April 24, the new defaults apply to your organization unless you have explicitly opted out.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+Three reasons Sarasota businesses should take this seriously:
+
+- **Confidentiality.** A private repository often contains proprietary business logic, hard-coded API keys (yes, still), database schemas, and customer data fixtures. Once that data is in a training set, it cannot be removed.
+- **Compliance.** HIPAA, GLBA, and PCI all require you to know where regulated data lives. "Possibly in an AI vendors training set" is not an answer that survives an audit.
+- **Contracts.** Many customer contracts include clauses prohibiting the use of customer data for model training. If you have not asked, you will not know what you signed up to.
+
+## A Five-Step Action Plan This Week
+
+- **Identify every GitHub organization** your business owns. This includes shadow organizations created by departing employees or contractors. Use the GitHub Enterprise admin console or contact your account rep.
+- **Set Copilot training to disabled** at the organization level for every org you control.
+- **Document the change** with a screenshot in your compliance evidence folder. Date it. This is exactly the kind of artifact your cyber-insurance carrier wants to see.
+- **Review repository contents** for hard-coded secrets. If you find any, rotate them now. Tools like GitGuardian and trufflehog scan for free.
+- **Add the setting to your offboarding checklist** so a future admin change does not silently re-enable the default.
+
+This is the kind of one-day project we run as part of our [compliance and cyber-insurance work](/#solutions) for local clients. If your team does not have time to do it before April 24, that is the highest-priority item we can take off your plate.
+
+## The Bottom Line
+
+GitHub will not extend the deadline. Your organizations default setting will change. You have until April 24, 2026 to make the call instead of having it made for you. Spend the hour.
+
+[Talk to Simple IT SRQ](/#contact) if you need a hand auditing your GitHub orgs before the deadline. You can also read our companion posts on [AI vendor lock-in](/blog/ai-vendor-lockin-procurement-playbook-bradenton) and the [Claude Code source map leak](/blog/source-map-leak-build-pipeline-cleanup-sarasota) for more on AI supply chain hygiene.

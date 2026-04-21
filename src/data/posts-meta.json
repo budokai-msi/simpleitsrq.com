@@ -45,78 +45,6 @@
     "heroAlt": "An illustration accompanying Your Employees Are Your Biggest Security Risk (And What To Do About It)."
   },
   {
-    "slug": "byte-magazine-1975-small-office-documentation-lessons",
-    "title": "An Archive of BYTE Magazine from 1975 Reminded Me of a Client's Server Closet",
-    "date": "2026-04-19",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "documentation",
-      "it-management",
-      "smb",
-      "sarasota",
-      "bradenton"
-    ],
-    "excerpt": "Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist.",
-    "metaDescription": "The 1975 BYTE Magazine archive hit Hacker News this week. Scrolling through it at 11pm, I realized the 50-year-old advice on IT documentation is exactly what our Sarasota and Bradenton clients still get wrong.",
-    "heroAlt": "A binder labeled 'Network and Systems Runbook' sitting on a wooden desk in a Sarasota small-office server closet, with cables and a switch visible in the background."
-  },
-  {
-    "slug": "notion-public-pages-legal-office-audit-sarasota",
-    "title": "What We Found When We Audited a Sarasota Law Firm's Notion Workspace This Morning",
-    "date": "2026-04-19",
-    "category": "Privacy",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "notion",
-      "legal",
-      "privacy",
-      "saas",
-      "smb",
-      "sarasota"
-    ],
-    "excerpt": "This morning's Notion story was specific: a public API endpoint returned the email addresses of every editor on any public page. We immediately audited a Sarasota law firm that uses Notion for case intake. Here's what we found, what we rotated, and the one-page audit every business using Notion should run this week.",
-    "metaDescription": "A leaked API endpoint let anyone scrape the email addresses of every editor on any Notion public page. We spent two hours auditing a Sarasota law firm that uses Notion for client intake. What we found, what we moved, and what our clients should audit this week.",
-    "heroAlt": "A laptop on a Sarasota law firm conference-room desk showing a Notion workspace page with a 'Share to web' toggle and a list of team members visible."
-  },
-  {
-    "slug": "desk-upgrade-sarasota-ai-heavy-staff-ergonomics",
-    "title": "The $420 Desk Upgrade That Made a Sarasota Client's AI Rollout Actually Stick",
-    "date": "2026-04-19",
-    "category": "AI & Productivity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "copilot",
-      "ergonomics",
-      "productivity",
-      "smb",
-      "sarasota"
-    ],
-    "excerpt": "When a Sarasota accounting firm's Copilot rollout stalled at 60% adoption, the root cause was not training or licensing. It was desks. Three hardware purchases per workstation totaling about $420 took adoption to 95% in three weeks. Here's what we bought and why.",
-    "metaDescription": "We rolled out Microsoft 365 Copilot to an 18-person Sarasota accounting firm in February. Adoption was 60% after six weeks. We fixed three ergonomic problems at $420 per desk and adoption hit 95% by March. Here's what we bought.",
-    "heroAlt": "A Sarasota CPA's desk setup with a standing desk converter raised to standing height, a single large 4K monitor on a pneumatic arm, a vertical mouse, and a split mechanical keyboard, with accounting-software windows open alongside a Copilot chat."
-  },
-  {
-    "slug": "ram-shortage-small-business-hardware-budget-sarasota",
-    "title": "The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here's What to Buy Now.",
-    "date": "2026-04-19",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hardware",
-      "budgeting",
-      "ram",
-      "ddr5",
-      "smb",
-      "sarasota",
-      "bradenton"
-    ],
-    "excerpt": "If you have a laptop refresh cycle coming up in the next 18 months, pull the decision forward. DDR5 pricing already doubled in Q1 and the AI data-center buildout means it may not come back down until 2028. Here's what a Sarasota office should buy now.",
-    "metaDescription": "AI workloads have spiked DDR5 demand so hard that analysts expect a 2-3 year RAM shortage. For Sarasota small businesses this is an IT budget conversation, not a tech headline. What to buy this quarter to avoid paying 2X next year.",
-    "heroAlt": "Close-up of DDR5 memory modules on a motherboard in a Sarasota small office, with a calendar and budget spreadsheet visible in the background."
-  },
-  {
     "slug": "adobe-alternatives-small-office-creative-stack-2026",
     "title": "What We Replaced Adobe Creative Cloud With in a 14-Person Sarasota Office (and Kept)",
     "date": "2026-04-19",
@@ -155,6 +83,92 @@
     "heroAlt": "A Sarasota small-business owner at their desk comparing AI tool subscriptions on paper, with Claude, Gemini, and ChatGPT open in three browser tabs."
   },
   {
+    "slug": "byte-magazine-1975-small-office-documentation-lessons",
+    "title": "An Archive of BYTE Magazine from 1975 Reminded Me of a Client's Server Closet",
+    "date": "2026-04-19",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "documentation",
+      "it-management",
+      "smb",
+      "sarasota",
+      "bradenton"
+    ],
+    "excerpt": "Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist.",
+    "metaDescription": "The 1975 BYTE Magazine archive hit Hacker News this week. Scrolling through it at 11pm, I realized the 50-year-old advice on IT documentation is exactly what our Sarasota and Bradenton clients still get wrong.",
+    "heroAlt": "A binder labeled 'Network and Systems Runbook' sitting on a wooden desk in a Sarasota small-office server closet, with cables and a switch visible in the background."
+  },
+  {
+    "slug": "desk-upgrade-sarasota-ai-heavy-staff-ergonomics",
+    "title": "The $420 Desk Upgrade That Made a Sarasota Client's AI Rollout Actually Stick",
+    "date": "2026-04-19",
+    "category": "AI & Productivity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "copilot",
+      "ergonomics",
+      "productivity",
+      "smb",
+      "sarasota"
+    ],
+    "excerpt": "When a Sarasota accounting firm's Copilot rollout stalled at 60% adoption, the root cause was not training or licensing. It was desks. Three hardware purchases per workstation totaling about $420 took adoption to 95% in three weeks. Here's what we bought and why.",
+    "metaDescription": "We rolled out Microsoft 365 Copilot to an 18-person Sarasota accounting firm in February. Adoption was 60% after six weeks. We fixed three ergonomic problems at $420 per desk and adoption hit 95% by March. Here's what we bought.",
+    "heroAlt": "A Sarasota CPA's desk setup with a standing desk converter raised to standing height, a single large 4K monitor on a pneumatic arm, a vertical mouse, and a split mechanical keyboard, with accounting-software windows open alongside a Copilot chat."
+  },
+  {
+    "slug": "employee-ai-policy-sarasota-small-business",
+    "title": "Your Employees Are Using AI at Work (And You Need a Policy)",
+    "date": "2026-04-19",
+    "category": "AI & Productivity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "ChatGPT, Claude, and other AI tools are in your office right now—whether you know it or not. Heres why you need an AI policy before something goes wrong.",
+    "metaDescription": "Small business owners: Your employees are using AI tools at work. Learn why you need a policy and how to create one.",
+    "heroAlt": "An illustration accompanying Your Employees Are Using AI at Work (And You Need a Policy)."
+  },
+  {
+    "slug": "notion-public-pages-legal-office-audit-sarasota",
+    "title": "What We Found When We Audited a Sarasota Law Firm's Notion Workspace This Morning",
+    "date": "2026-04-19",
+    "category": "Privacy",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "notion",
+      "legal",
+      "privacy",
+      "saas",
+      "smb",
+      "sarasota"
+    ],
+    "excerpt": "This morning's Notion story was specific: a public API endpoint returned the email addresses of every editor on any public page. We immediately audited a Sarasota law firm that uses Notion for case intake. Here's what we found, what we rotated, and the one-page audit every business using Notion should run this week.",
+    "metaDescription": "A leaked API endpoint let anyone scrape the email addresses of every editor on any Notion public page. We spent two hours auditing a Sarasota law firm that uses Notion for client intake. What we found, what we moved, and what our clients should audit this week.",
+    "heroAlt": "A laptop on a Sarasota law firm conference-room desk showing a Notion workspace page with a 'Share to web' toggle and a list of team members visible."
+  },
+  {
+    "slug": "ram-shortage-small-business-hardware-budget-sarasota",
+    "title": "The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here's What to Buy Now.",
+    "date": "2026-04-19",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hardware",
+      "budgeting",
+      "ram",
+      "ddr5",
+      "smb",
+      "sarasota",
+      "bradenton"
+    ],
+    "excerpt": "If you have a laptop refresh cycle coming up in the next 18 months, pull the decision forward. DDR5 pricing already doubled in Q1 and the AI data-center buildout means it may not come back down until 2028. Here's what a Sarasota office should buy now.",
+    "metaDescription": "AI workloads have spiked DDR5 demand so hard that analysts expect a 2-3 year RAM shortage. For Sarasota small businesses this is an IT budget conversation, not a tech headline. What to buy this quarter to avoid paying 2X next year.",
+    "heroAlt": "Close-up of DDR5 memory modules on a motherboard in a Sarasota small office, with a calendar and budget spreadsheet visible in the background."
+  },
+  {
     "slug": "vercel-notion-breach-saas-audit",
     "title": "Two SaaS Vendors Had a Bad Day — Here's the 30-Minute Check Every Small Business Should Run",
     "date": "2026-04-19",
@@ -173,18 +187,18 @@
     "heroAlt": "A security operations dashboard on a laptop screen in a Sarasota small-business office showing a map of authenticated login locations and a pending vendor-breach alert."
   },
   {
-    "slug": "employee-ai-policy-sarasota-small-business",
-    "title": "Your Employees Are Using AI at Work (And You Need a Policy)",
-    "date": "2026-04-19",
-    "category": "AI & Productivity",
+    "slug": "cyber-insurance-rates-bradenton-sarasota-2024",
+    "title": "Cyber-Insurance Rates Just Jumped—Heres Why Your Bradenton Business Needs to Act Now",
+    "date": "2026-04-17",
+    "category": "Cybersecurity",
     "author": "Simple IT SRQ Team",
     "tags": [
       "ai",
       "smb"
     ],
-    "excerpt": "ChatGPT, Claude, and other AI tools are in your office right now—whether you know it or not. Heres why you need an AI policy before something goes wrong.",
-    "metaDescription": "Small business owners: Your employees are using AI tools at work. Learn why you need a policy and how to create one.",
-    "heroAlt": "An illustration accompanying Your Employees Are Using AI at Work (And You Need a Policy)."
+    "excerpt": "Cyber-insurance premiums are climbing fast as breaches hit small businesses harder than ever. If you havent reviewed your coverage lately, costs could shock you.",
+    "metaDescription": "Cyber-insurance premiums rising for small businesses. Learn why rates jumped and what to do about it.",
+    "heroAlt": "An illustration accompanying Cyber-Insurance Rates Just Jumped—Heres Why Your Bradenton Business Needs to Act Now."
   },
   {
     "slug": "florida-data-privacy-law-sarasota-small-business",
@@ -215,6 +229,20 @@
     "heroAlt": "An illustration accompanying Your Business is Being Targeted Right Now—Heres What to Do About It."
   },
   {
+    "slug": "sarasota-employee-password-sharing-security-risk",
+    "title": "Your Employees Are Sharing Passwords (And You Should Know About It)",
+    "date": "2026-04-17",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "Password sharing might seem harmless, but its one of the fastest ways hackers get into your systems. Heres why it matters and what to do about it.",
+    "metaDescription": "Why password sharing among employees is a security risk and how to stop it safely without annoying your team.",
+    "heroAlt": "An illustration accompanying Your Employees Are Sharing Passwords (And You Should Know About It)."
+  },
+  {
     "slug": "windows-11-update-breaking-computers-sarasota",
     "title": "The Windows 11 Update Thats Breaking Small Business Computers (And How to Fix It)",
     "date": "2026-04-17",
@@ -229,32 +257,21 @@
     "heroAlt": "An illustration accompanying The Windows 11 Update Thats Breaking Small Business Computers (And How to Fix It)."
   },
   {
-    "slug": "cyber-insurance-rates-bradenton-sarasota-2024",
-    "title": "Cyber-Insurance Rates Just Jumped—Heres Why Your Bradenton Business Needs to Act Now",
-    "date": "2026-04-17",
-    "category": "Cybersecurity",
+    "slug": "laptop-docking-station-hybrid-office-bradenton",
+    "title": "The Right Docking Station Turns Any Desk Into a Workstation",
+    "date": "2026-04-16",
+    "category": "Business Tech",
     "author": "Simple IT SRQ Team",
     "tags": [
-      "ai",
-      "smb"
+      "hardware",
+      "hybrid-work",
+      "docking-station",
+      "smb",
+      "bradenton"
     ],
-    "excerpt": "Cyber-insurance premiums are climbing fast as breaches hit small businesses harder than ever. If you havent reviewed your coverage lately, costs could shock you.",
-    "metaDescription": "Cyber-insurance premiums rising for small businesses. Learn why rates jumped and what to do about it.",
-    "heroAlt": "An illustration accompanying Cyber-Insurance Rates Just Jumped—Heres Why Your Bradenton Business Needs to Act Now."
-  },
-  {
-    "slug": "sarasota-employee-password-sharing-security-risk",
-    "title": "Your Employees Are Sharing Passwords (And You Should Know About It)",
-    "date": "2026-04-17",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Password sharing might seem harmless, but its one of the fastest ways hackers get into your systems. Heres why it matters and what to do about it.",
-    "metaDescription": "Why password sharing among employees is a security risk and how to stop it safely without annoying your team.",
-    "heroAlt": "An illustration accompanying Your Employees Are Sharing Passwords (And You Should Know About It)."
+    "excerpt": "Hot-desking and hybrid schedules mean laptops are the default. But a laptop on a desk with no external monitor is a productivity and ergonomics problem. Heres the docking station setup that fixes both.",
+    "metaDescription": "Hybrid workers in Bradenton and Sarasota offices lose 10 minutes a day plugging in cables. A $150 docking station fixes the ergonomics and the security gap.",
+    "heroAlt": "A laptop connected to a docking station on a clean desk with dual monitors, keyboard, and mouse in a bright office."
   },
   {
     "slug": "office-wifi-dead-spots-sarasota-bradenton-fix",
@@ -275,21 +292,21 @@
     "heroAlt": "A ceiling-mounted white business access point in a modern office with a clear WiFi signal icon above it."
   },
   {
-    "slug": "laptop-docking-station-hybrid-office-bradenton",
-    "title": "The Right Docking Station Turns Any Desk Into a Workstation",
-    "date": "2026-04-16",
+    "slug": "business-ups-battery-backup-sarasota-storm-season",
+    "title": "The UPS Buying Guide for Sarasota Offices Heading Into Storm Season",
+    "date": "2026-04-15",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
     "tags": [
       "hardware",
-      "hybrid-work",
-      "docking-station",
+      "power",
+      "hurricane",
       "smb",
-      "bradenton"
+      "sarasota"
     ],
-    "excerpt": "Hot-desking and hybrid schedules mean laptops are the default. But a laptop on a desk with no external monitor is a productivity and ergonomics problem. Heres the docking station setup that fixes both.",
-    "metaDescription": "Hybrid workers in Bradenton and Sarasota offices lose 10 minutes a day plugging in cables. A $150 docking station fixes the ergonomics and the security gap.",
-    "heroAlt": "A laptop connected to a docking station on a clean desk with dual monitors, keyboard, and mouse in a bright office."
+    "excerpt": "A $150 battery backup pays for itself the first time a summer storm kills the power mid-QuickBooks sync. Heres what to buy - and what sizing shortcuts quietly leave you exposed.",
+    "metaDescription": "Hurricane-season power flickers cost Sarasota and Bradenton businesses more than they realize. Heres how to size a UPS that actually works when it counts.",
+    "heroAlt": "A row of desktop computers behind a business counter with a small rackmount UPS on the floor, power LEDs glowing during a storm."
   },
   {
     "slug": "document-shredder-hipaa-legal-sarasota-compliance",
@@ -325,23 +342,6 @@
     "excerpt": "If your network closet has a tangle of unlabeled cables, consumer switches stacked on a shelf, and a power strip dangling from a hook, you are one accidental unplug away from an office-wide outage.",
     "metaDescription": "A messy network closet causes outages, extends troubleshooting, and fails audits. Heres the $300 hardware list that turns chaos into a clean, labeled rack.",
     "heroAlt": "A clean small-office network rack with labeled patch cables, a managed switch, and a wall-mount UPS in a closet."
-  },
-  {
-    "slug": "business-ups-battery-backup-sarasota-storm-season",
-    "title": "The UPS Buying Guide for Sarasota Offices Heading Into Storm Season",
-    "date": "2026-04-15",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hardware",
-      "power",
-      "hurricane",
-      "smb",
-      "sarasota"
-    ],
-    "excerpt": "A $150 battery backup pays for itself the first time a summer storm kills the power mid-QuickBooks sync. Heres what to buy - and what sizing shortcuts quietly leave you exposed.",
-    "metaDescription": "Hurricane-season power flickers cost Sarasota and Bradenton businesses more than they realize. Heres how to size a UPS that actually works when it counts.",
-    "heroAlt": "A row of desktop computers behind a business counter with a small rackmount UPS on the floor, power LEDs glowing during a storm."
   },
   {
     "slug": "small-business-backup-drive-bradenton-ransomware",

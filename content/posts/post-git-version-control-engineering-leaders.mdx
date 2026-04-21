@@ -1,0 +1,53 @@
+---
+slug: "post-git-version-control-engineering-leaders"
+title: "Post-Git Version Control: Should Local Engineering Teams Care?"
+metaDescription: "Bram Cohen lays out what should come after Git: better merges, content addressing, large files. Heres what it means for local engineering leaders."
+date: "2026-03-22"
+author: "Simple IT SRQ Team"
+category: "Business Tech"
+tags:
+  - "devops"
+  - "version-control"
+  - "engineering"
+excerpt: "BitTorrent creator Bram Cohen lays out what should come after Git: better merge semantics, content-addressed history, and first-class large-file support. Heres how local engineering leaders should react."
+heroAlt: "A tree-like diagram showing branching and merging in a version control system."
+---
+
+## The Post That Reopened a Tired Debate
+
+Bram Cohen, the creator of BitTorrent, published a long essay this week arguing that Git has carried us as far as it can and that the next decade of version control should look very different. His pitch: better merge semantics, content-addressed history (not just content-addressed snapshots), and first-class support for large binary files. He singles out two existing projects, Jujutsu and Pijul, as pointing the way.
+
+The piece reopened a debate that engineering leaders have largely tried to avoid since 2010. Should we still be defending Git, or should we be quietly evaluating what comes next?
+
+## Why Git Won and Why It Hurts
+
+Git won because Linus Torvalds wrote it, Linux adopted it, and GitHub turned it into a social network. The technical merits - cheap branching, distributed model, content-addressed snapshots - earned it a permanent home in every engineering team. Once that happened, the cost of switching became enormous, and the conversation effectively closed.
+
+But Git has well-known sharp edges. Merge conflicts are still a regular cause of lost work. Large binary files are a second-class citizen, requiring LFS or similar workarounds. The internal model is still confusing to new developers a decade after winning. And the rebase-versus-merge holy war is a tax on every team.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+Most Sarasota businesses are not building hyperscale platforms. The relevant question is not "should we switch to Jujutsu next quarter." It is "is our internal version control hygiene actually serving us, and what would we change if we were free to."
+
+Three concrete questions to ask your engineering lead:
+
+- Are we losing time to merge conflicts that better tooling would prevent?
+- Are we storing large binary files in the right place? Or are we paying for Git LFS and complaining about it?
+- When new developers join, how long does it take them to feel comfortable with our branching model?
+
+If any of those answers makes you wince, the right move is not to migrate to a new VCS. It is to invest in branching policy, code review tooling, and developer onboarding. The new tools will arrive when they arrive. The hygiene is yours to fix today.
+
+## A Practical Engineering Hygiene List
+
+- **Adopt trunk-based development.** Short-lived branches, frequent merges, and small PRs reduce conflict pain by 80%.
+- **Move binaries off Git.** Use S3, Azure Blob, or DO Spaces with a clear naming convention. Treat the link in Git as the canonical pointer.
+- **Document your branching model in one page.** New developers should be able to read it on their first day and start contributing on the second.
+- **Watch the post-Git landscape.** Jujutsu in particular has gained real traction at large companies in the last year. It is reasonable to evaluate it for a side project.
+
+We help clients with [in-house engineering teams](/#solutions) think through these tradeoffs as part of vCIO engagements.
+
+## The Bottom Line
+
+Git is not going anywhere this year. It is also not perfect, and the conversation about what should come next is healthy. Your job as an engineering leader is to fix the hygiene problems Git makes worse, not to chase the next tool. When the next tool arrives, you will know.
+
+[Talk to Simple IT SRQ](/#contact) about an engineering hygiene review for your Sarasota or Bradenton dev team. You can also read our posts on [Rob Pikes rules](/blog/rob-pike-rules-modern-it-decisions) and [evaluating coding agents](/blog/claude-code-internals-it-evaluation-sarasota).

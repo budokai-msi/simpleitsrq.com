@@ -1,0 +1,56 @@
+---
+slug: "sandboxing-ai-agents-mac-sarasota"
+title: "Sandboxing AI Coding Agents: A Safer Default for Sarasota Teams"
+metaDescription: "Agent Safehouse wraps AI coding agents in macOS sandboxing. Heres why Sarasota businesses should sandbox every agent that touches files or shells."
+date: "2026-03-08"
+author: "Simple IT SRQ Team"
+category: "AI & Productivity"
+tags:
+  - "ai"
+  - "security"
+  - "macos"
+excerpt: "Agent Safehouse is a new tool that wraps AI coding agents in macOS native sandboxing so they can edit files and run commands with strong isolation. Sandboxing AI agents is becoming standard practice."
+heroAlt: "A Mac with multiple terminal windows showing sandboxed processes."
+---
+
+## A Sane Default Finally Productized
+
+Agent Safehouse launched this week with a simple promise: wrap AI coding agents in macOSs native sandbox so they can edit files and run shell commands with strong isolation. The idea is not new - sandboxing has been a security primitive on every modern OS for years - but this is the first tool to make it dead simple for developers using Claude Code, Cursor, OpenCode, or similar agents.
+
+The Hacker News reaction was immediate and largely positive. Sandboxing AI agents is becoming standard practice. If your team is running an agent and not isolating it, you are ahead of the average and well behind the best practice.
+
+## Why Sandboxing Matters Now
+
+An AI coding agent typically does three things: read files, write files, and run shell commands. Without isolation, those three capabilities give the agent the same access as the user running it. That includes SSH keys, browser cookies, tokens for cloud providers, and any sensitive document on disk.
+
+If the agents prompts are hijacked - by a malicious file, a tampered tool definition, or a compromised package - the agent has the same blast radius as the user. Sandboxing limits that blast radius to a known directory, a known set of network destinations, and a known list of allowed binaries.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+Most Sarasota businesses do not have in-house developers running coding agents. Many have outside developers, contractors, or staff who are starting to experiment with AI tools at home before bringing them to work. The pattern is the same. Three concrete impacts:
+
+- **Contractor risk.** A Bradenton firm hires a contractor to build a small internal tool. The contractor uses an AI agent on the firms repository. The agents access is the contractors access is, by extension, your firms access.
+- **Shadow IT.** A staff member at a Sarasota company starts using a local AI agent on their MacBook to summarize client documents. The agent has full disk access by default.
+- **Vendor onboarding.** Any new AI tool you bring in deserves a sandbox question: where can it read, where can it write, what can it run?
+
+## A Practical Sandbox Checklist
+
+Whether you use Agent Safehouse, Microsoft Defender Application Guard, a VM, a container, or just a restricted user account, the principle is the same. For any AI agent that runs on your infrastructure:
+
+- **Restrict file access** to a specific working directory. Not the home folder. Not the document store. A working directory.
+- **Restrict network access** to the destinations the agent legitimately needs. Block everything else by default.
+- **Log every tool use.** The agents own logs are not enough. Use OS-level logging or a wrapper that records every command.
+- **Run as a separate user account.** No shared keychains, no shared SSH keys, no shared browser profiles.
+- **Review the logs weekly** during the first month. Patterns will emerge that tell you what additional restrictions you can apply.
+
+This is the same sandboxing discipline we apply to any new tool we deploy on a [managed Mac or Windows fleet](/#solutions) for local clients.
+
+## When Sandboxing Is Not Enough
+
+Sandboxing reduces blast radius. It does not eliminate risk. If an agent has legitimate access to a sensitive folder, a clever prompt injection can still cause damage within that folder. The complement to sandboxing is human review of agent actions for anything that touches production data.
+
+## The Bottom Line
+
+Agent Safehouse is a small tool with a big idea: AI agents should be sandboxed by default, not as an afterthought. If your business is starting to experiment with coding agents - or any other autonomous AI tool - bake sandboxing into the workflow from day one. It is much harder to add later.
+
+[Talk to Simple IT SRQ](/#contact) about a sandboxing review for your Bradenton or Sarasota AI tooling. You can also read our posts on [evaluating coding agents](/blog/claude-code-internals-it-evaluation-sarasota) and [OpenCode](/blog/opencode-open-source-ai-coding-sarasota).

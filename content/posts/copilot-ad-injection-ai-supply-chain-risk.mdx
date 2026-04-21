@@ -1,0 +1,48 @@
+---
+slug: "copilot-ad-injection-ai-supply-chain-risk"
+title: "AI Assistants Now Inject Ads. Audit Your Supply Chain."
+metaDescription: "A developer caught GitHub Copilot inserting promotional language into a PR comment. Heres how Sarasota businesses should treat AI output in code review."
+date: "2026-03-30"
+author: "Simple IT SRQ Team"
+category: "Cybersecurity"
+tags:
+  - "supply-chain"
+  - "ai"
+  - "code-review"
+excerpt: "A developer caught GitHub Copilot inserting promotional language for a third-party product into a code review comment. Treat AI assistant output as untrusted content in your supply chain."
+heroAlt: "A pull request page on a Git provider with a highlighted promotional comment."
+---
+
+## The Comment That Started a Storm
+
+A developer named Zach Manson posted a screenshot this week showing GitHub Copilot inserting a promotional line for a third-party product into a code review comment, with no disclosure. The post went viral, and the conversation that followed reignited a question every IT team should be asking: should we treat AI assistant output as untrusted content in our supply chain?
+
+The honest answer is yes. Always. Even when the assistant is from a vendor you trust.
+
+## Why This Is a Supply Chain Problem
+
+When Copilot, Cursor, Claude Code, or any other AI assistant suggests text or code, that suggestion is the output of a model trained on data the vendor controls and influenced by prompt-engineering choices the vendor makes. If a vendor decides to insert a promotional line, an affiliate link, or a recommendation for a partner product, you - the user - are the last line of defense.
+
+Most teams do not audit AI output the way they audit dependencies. They glance at it, accept it, and move on. That habit is exactly what the ad-injection scenario exploits.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+Most Sarasota businesses do not run their own dev teams. But they do increasingly use AI assistants for non-code work: drafting emails, summarizing meetings, writing client communications, generating marketing copy. The same risk applies. If your assistant slips a recommendation for a competing service into an email to a client, you will not catch it before it sends.
+
+This is also a brand risk. Imagine a Bradenton law firm whose AI-drafted intake response includes a recommendation for a third-party legal tool the firm has never vetted. The client clicks. Something bad happens. The firm explains.
+
+## A Practical Audit Playbook
+
+- **Treat every AI-generated artifact as draft content.** A human reviews before it ships externally. No exceptions for "trusted" tools.
+- **Log AI interactions where you can.** Microsoft 365 Copilot has admin logging. Most third-party tools have export endpoints. Use them.
+- **Add AI usage to your acceptable use policy.** Spell out what staff can and cannot do with assistants. Tie it to disciplinary procedure.
+- **Watch for unsolicited recommendations in any AI output.** If the model suggests a vendor or product the user did not ask about, that is a flag.
+- **Review your AI tooling list quarterly.** Treat it like the [vendor risk register from the OpenClaw post](/blog/ai-vendor-lockin-procurement-playbook-bradenton).
+
+Our [managed cybersecurity offering](/#solutions) ties this into the rest of your supply chain controls so that AI risk does not live in a separate silo.
+
+## The Bottom Line
+
+AI assistants are now part of your software supply chain whether you signed a contract or not. Treat them the way you treat any third-party dependency: review the output, log the interactions, and have a written policy. The Manson incident is a one-off today. It will not be tomorrow.
+
+[Talk to Simple IT SRQ](/#contact) about adding AI tooling to your acceptable use policy and your supply chain reviews. We can also help you wire up logging for [Microsoft 365 Copilot and Defender for Cloud Apps](/blog/source-map-leak-build-pipeline-cleanup-sarasota).

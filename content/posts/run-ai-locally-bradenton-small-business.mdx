@@ -1,0 +1,59 @@
+---
+slug: "run-ai-locally-bradenton-small-business"
+title: "Can You Run AI On-Prem? A Practical Guide for Bradenton SMBs"
+metaDescription: "A new tool detects your hardware and tells you which open-weight models you can run locally. Heres a practical guide for Bradenton SMBs."
+date: "2026-03-13"
+author: "Simple IT SRQ Team"
+category: "AI & Productivity"
+tags:
+  - "ai"
+  - "on-prem"
+  - "smb"
+excerpt: "A new tool detects your hardware and tells you which open-weight models you can realistically run locally. Hand this to any local client asking about on-prem AI."
+heroAlt: "A workstation with a discrete GPU running an AI inference benchmark."
+---
+
+## A Tool That Answers a Common Question
+
+A simple site called canirun.ai launched this week. You give it your hardware specs, it tells you which open-weight LLMs you can realistically run locally, and at what speed. Like the gaming-era "Can You Run It?" tool, but for AI inference. It immediately became one of the most-shared developer links of the month.
+
+The site is small. The implications for Sarasota and Bradenton businesses are big - because the question "can we run AI on-prem instead of paying a monthly cloud bill?" is one we get from owners almost every week.
+
+## Why On-Prem AI Suddenly Makes Sense
+
+Two years ago, running a useful LLM on your own hardware required a $15,000 server and a part-time engineer to babysit it. Today, mid-tier hardware - a workstation with 24-32 GB of unified memory or a discrete GPU with 12-16 GB of VRAM - can run open-weight models that compare favorably to last years cloud offerings for many tasks. The math has changed.
+
+For an local business with sensitivity concerns - a Sarasota medical practice, a Bradenton law firm, a financial advisor - on-prem AI is no longer a research project. It is a tool that pays for itself in 18 to 24 months when you include the cloud subscription you stop paying for.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+A practical decision framework for Sarasota owners considering on-prem AI:
+
+- **What is the use case?** Document drafting? Email summarization? Internal Q-and-A? Each has different model requirements.
+- **What data goes in?** PHI, attorney work product, or financial statements all push you toward on-prem. Marketing copy or general research can stay in the cloud.
+- **What is the staff comfort level?** On-prem requires someone to update models, monitor disk space, and reboot the box occasionally. If nobody on your team can do that, factor in MSP support costs.
+- **What is the alternative?** A cloud subscription scales linearly with usage. On-prem has a higher upfront cost and a flat monthly cost. Run the math.
+
+## A Realistic Hardware Plan
+
+For a small local business that wants to start, the cheapest viable setup looks like this:
+
+- **Mac Studio with 64 GB unified memory.** Roughly $2,500. Runs most open-weight models that fit in memory at usable speeds.
+- **OR a workstation with an RTX 4090.** Roughly $3,000. Faster inference, more flexible, more setup work.
+- **Software stack:** Ollama for local model serving, OpenWebUI or LibreChat for the user interface, [OpenCode](/blog/opencode-open-source-ai-coding-sarasota) if you want a coding agent.
+- **Network access:** Restrict the box to internal IPs. No public exposure.
+- **Backup:** Treat the model files like any other critical data.
+
+That investment is enough to give 5 to 20 staff a real on-prem AI experience for 90% of typical SMB tasks.
+
+## Where On-Prem Falls Down
+
+Be honest with yourself. On-prem AI is not a fit for every workload. It is slower than top-tier cloud models on the most demanding tasks. It cannot be auto-scaled. It needs maintenance. And the model ecosystem moves fast - what is best-in-class today is mediocre in six months.
+
+For most Sarasota businesses the right answer is a mix: on-prem for sensitive data, cloud for general productivity, and a clear policy that staff understand. We help clients [build that policy and the technical guardrails](/#solutions) that go with it.
+
+## The Bottom Line
+
+The canirun.ai tool is a great icebreaker for the "can we do AI in-house?" conversation. The answer for an increasing number of Sarasota and Bradenton businesses is yes, with caveats. Run the math, pick the use case, and start small.
+
+[Talk to Simple IT SRQ](/#contact) about a 30-day on-prem AI pilot for your Bradenton or Sarasota business. You can also read our companion posts on [OpenCode](/blog/opencode-open-source-ai-coding-sarasota) and [AI vendor lock-in](/blog/ai-vendor-lockin-procurement-playbook-bradenton).

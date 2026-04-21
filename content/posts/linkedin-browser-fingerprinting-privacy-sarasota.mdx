@@ -1,0 +1,49 @@
+---
+slug: "linkedin-browser-fingerprinting-privacy-sarasota"
+title: "LinkedIn Is Fingerprinting Your Browser. Heres What to Do."
+metaDescription: "Researchers caught LinkedIn probing browser extensions for fingerprinting. What it means for Sarasota businesses and how to harden client browsers."
+date: "2026-04-02"
+author: "Simple IT SRQ Team"
+category: "Privacy"
+tags:
+  - "privacy"
+  - "browser-security"
+  - "saas"
+excerpt: "Researchers found LinkedIns web client probing the users installed browser extensions for fingerprinting. Even boring SaaS apps are now running adversarial detection in production."
+heroAlt: "An illustration of a magnifying glass over a browser window highlighting hidden trackers."
+---
+
+## A SaaS App You Use Every Day
+
+Researchers at browsergate.eu published findings this week showing that LinkedIns web client probes the users installed browser extensions in order to fingerprint the session. The technique works by quietly attempting to load resources from known extension IDs and watching the response. It bypasses the privacy expectations most users hold for a normal browser tab.
+
+LinkedIn is not unique. The story matters because it confirms what privacy researchers have been saying for years: even boring, mainstream SaaS applications are now running adversarial fingerprinting in production. Every page you load on a major site is also being interrogated by that site.
+
+## Why Browser Fingerprinting Is a Business Issue
+
+Most owners hear "fingerprinting" and assume it is a marketing problem. It is not. Three direct business impacts:
+
+- **Confidentiality leakage.** A vendor that can see your installed extensions can infer the rest of your software stack, your security tooling, and sometimes your role.
+- **Cross-account correlation.** A staff member who logs into a personal LinkedIn account from a work laptop now has those two identities tied together by the same vendor.
+- **Compliance friction.** Cyber-insurance questionnaires and HIPAA security rule audits both ask whether you have a documented browser hardening policy. Most small businesses do not.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+A typical Sarasota professional services firm has 20 to 80 staff, all on Microsoft 365 with Edge or Chrome, and all logging into ten or more SaaS apps a day. A handful of those staff also use the same browser for personal accounts. There is no IT control today that prevents fingerprinting at the network layer - the call is happening inside an HTTPS session you have explicitly authorized.
+
+What you can do is reduce attack surface and separate identities. That is the work.
+
+## A Practical Hardening Playbook
+
+- **Deploy a managed browser profile via Intune.** Edge for Business can be locked to specific extensions, with sync, telemetry, and password manager scoped to corporate accounts only.
+- **Block uncategorized extensions.** Most browser fingerprinting projects are interested in privacy and ad-blocker extensions because their presence is a strong signal. An allowlist of approved extensions reduces what is observable and also blocks the worst supply-chain risks.
+- **Separate work and personal sessions.** A browser profile per identity is the cheapest, most effective control we deploy at clients. It is also the one users complain about least once they get used to it.
+- **Use a web filter that logs outbound requests.** DNS filtering through Cisco Umbrella, DNSFilter, or Cloudflare Gateway gives you a record of which third parties your browsers talked to during a session. That log is gold during an incident.
+
+We bake all four of these into the [endpoint and identity baseline we deploy at Bradenton clients](/#solutions). It takes about a day per staff member and removes a class of risk that owners did not know they had.
+
+## The Bottom Line
+
+LinkedIn will keep doing what it does until enough customers complain or a regulator forces a change. In the meantime, your job is to harden the browsers your team is using to log into payroll, banking, and your medical record system. Fingerprinting cannot be stopped at the network edge, but it can be contained with a managed profile and a documented allowlist.
+
+[Talk to Simple IT SRQ](/#contact) about a browser hardening review. You can also read our post on [bot detection privacy costs](/blog/bot-detection-privacy-cost-sarasota-saas-users) and our [LinkedIn-style content automation piece](/blog/style-transfer-llm-marketing-sarasota) for more background.

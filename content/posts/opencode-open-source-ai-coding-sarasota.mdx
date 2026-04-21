@@ -1,0 +1,55 @@
+---
+slug: "opencode-open-source-ai-coding-sarasota"
+title: "OpenCode and the Case for Open-Source AI in Local Workshops"
+metaDescription: "OpenCode is a fully open-source alternative to Claude Code and Cursor. Heres why Sarasota businesses should consider it when data cant leave the building."
+date: "2026-03-20"
+author: "Simple IT SRQ Team"
+category: "AI & Productivity"
+tags:
+  - "ai"
+  - "open-source"
+  - "developer-tools"
+excerpt: "OpenCode is a fully open-source alternative to Claude Code and Cursor with pluggable model backends. For shops that cannot ship code to closed AI vendors, its the most credible option to date."
+heroAlt: "An open laptop running an AI coding tool with a self-hosted backend indicator."
+---
+
+## A Genuine Open-Source Alternative
+
+OpenCode launched this week as a fully open-source alternative to Claude Code and Cursor. It supports pluggable model backends - local LLMs via Ollama, hosted APIs from Anthropic, OpenAI, Google, and others - with a permissive license. The launch post made the front page of Hacker News for two days, which in 2026 is the closest thing the open-source world has to a parade.
+
+The reason it matters is not the feature set. Open-source AI tools have existed for years. It is that OpenCode is the first genuinely usable, polished, multi-vendor coding agent that runs end-to-end on hardware you control.
+
+## Why That Polish Matters
+
+Most open-source AI tools have suffered from the same disease: the demo looks great, the daily-driver experience is rough. Configuration is confusing. Model swaps require yak shaving. Documentation lags the code. The result is that organizations who care about data sovereignty have had to pick between a great UX from a closed vendor and a clunky UX from an open project.
+
+OpenCode appears to have closed that gap. Whether it stays closed is a question for the next six months of community maintenance.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+A few categories of local business have always had a hard time with AI tooling:
+
+- **Healthcare.** A Sarasota medical practice cannot ship patient records or related metadata to a third-party AI vendor without a BAA, and most consumer AI vendors do not sign BAAs.
+- **Legal.** Bradenton law firms have privilege concerns that close-vendor AI tools struggle to address.
+- **Defense and government contracting.** CMMC and ITAR controls make external AI vendors difficult by default.
+- **Financial advisors.** GLBA and broker-dealer rules require careful handling of customer data.
+
+For these businesses, an open-source coding agent that runs entirely on a hardened workstation - or on a small in-house GPU server - is a real option for the first time. It is also a perfect testbed for the broader idea of "what would AI tooling look like if our data never left the building?"
+
+## A Practical Pilot Plan
+
+If you want to evaluate OpenCode for an local business with sensitivity concerns, do it the boring way:
+
+- **Hardware.** Start with a single workstation that has 24+ GB of unified memory or a discrete GPU with 12+ GB VRAM. Apple Silicon Macs and recent gaming rigs both work.
+- **Model.** Pick a mid-sized open-weight model that fits the hardware. Llama 3.x, Qwen 2.5, and Mistral families all have good options.
+- **Sandbox.** Run the agent inside a restricted user account or VM with no production credentials. Use the same [sandboxing principles](/blog/sandboxing-ai-agents-mac-sarasota) as for any other AI agent.
+- **Logging.** Enable local prompt and tool-use logging. Review the logs weekly during the pilot.
+- **Compare.** Run the same tasks against a closed-vendor tool on a separate machine. Compare quality, latency, and friction.
+
+After 30 days you will know whether the open-source option works for your team. Most clients we have piloted with end up using both - open-source for sensitive data, closed-vendor for general productivity.
+
+## The Bottom Line
+
+OpenCode is the first credible open-source coding agent for businesses that cannot let their data leave the building. It is not perfect. It is finally good enough to evaluate. For Sarasota healthcare and Bradenton legal teams in particular, that is news.
+
+[Talk to Simple IT SRQ](/#contact) about a 30-day on-prem AI pilot for your business. You can also read our companion posts on [running AI locally](/blog/run-ai-locally-bradenton-small-business) and [AI vendor lock-in](/blog/ai-vendor-lockin-procurement-playbook-bradenton).

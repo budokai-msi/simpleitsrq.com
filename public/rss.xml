@@ -35,42 +35,6 @@
       <description>Hackers arent sneaking past your firewall—theyre getting in through your teams email inbox. Heres how to fix it without making everyone miserable.</description>
     </item>
     <item>
-      <title>An Archive of BYTE Magazine from 1975 Reminded Me of a Client&apos;s Server Closet</title>
-      <link>https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</guid>
-      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Business Tech</category>
-      <description>Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist.</description>
-    </item>
-    <item>
-      <title>What We Found When We Audited a Sarasota Law Firm&apos;s Notion Workspace This Morning</title>
-      <link>https://simpleitsrq.com/blog/notion-public-pages-legal-office-audit-sarasota</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/notion-public-pages-legal-office-audit-sarasota</guid>
-      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Privacy</category>
-      <description>This morning&apos;s Notion story was specific: a public API endpoint returned the email addresses of every editor on any public page. We immediately audited a Sarasota law firm that uses Notion for case intake. Here&apos;s what we found, what we rotated, and the one-page audit every business using Notion should run this week.</description>
-    </item>
-    <item>
-      <title>The $420 Desk Upgrade That Made a Sarasota Client&apos;s AI Rollout Actually Stick</title>
-      <link>https://simpleitsrq.com/blog/desk-upgrade-sarasota-ai-heavy-staff-ergonomics</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/desk-upgrade-sarasota-ai-heavy-staff-ergonomics</guid>
-      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>AI &amp; Productivity</category>
-      <description>When a Sarasota accounting firm&apos;s Copilot rollout stalled at 60% adoption, the root cause was not training or licensing. It was desks. Three hardware purchases per workstation totaling about $420 took adoption to 95% in three weeks. Here&apos;s what we bought and why.</description>
-    </item>
-    <item>
-      <title>The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here&apos;s What to Buy Now.</title>
-      <link>https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</guid>
-      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Business Tech</category>
-      <description>If you have a laptop refresh cycle coming up in the next 18 months, pull the decision forward. DDR5 pricing already doubled in Q1 and the AI data-center buildout means it may not come back down until 2028. Here&apos;s what a Sarasota office should buy now.</description>
-    </item>
-    <item>
       <title>What We Replaced Adobe Creative Cloud With in a 14-Person Sarasota Office (and Kept)</title>
       <link>https://simpleitsrq.com/blog/adobe-alternatives-small-office-creative-stack-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/adobe-alternatives-small-office-creative-stack-2026</guid>
@@ -89,13 +53,22 @@
       <description>Opus 4.7 replaced 4.6 last week. Benchmarks traded places. Your staff didn&apos;t notice. For small businesses, the conversation that matters isn&apos;t &apos;which model is best,&apos; it&apos;s &apos;which subscription and which habits.&apos; Here&apos;s the framework we use with clients.</description>
     </item>
     <item>
-      <title>Two SaaS Vendors Had a Bad Day — Here&apos;s the 30-Minute Check Every Small Business Should Run</title>
-      <link>https://simpleitsrq.com/blog/vercel-notion-breach-saas-audit</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/vercel-notion-breach-saas-audit</guid>
+      <title>An Archive of BYTE Magazine from 1975 Reminded Me of a Client&apos;s Server Closet</title>
+      <link>https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Security</category>
-      <description>Today&apos;s top security stories are both about SaaS vendors, not ransomware crews. If you run a small business on Microsoft 365 + Notion + Vercel + half a dozen other tools, this is the 30-minute check you should run before Monday.</description>
+      <category>Business Tech</category>
+      <description>Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist.</description>
+    </item>
+    <item>
+      <title>The $420 Desk Upgrade That Made a Sarasota Client&apos;s AI Rollout Actually Stick</title>
+      <link>https://simpleitsrq.com/blog/desk-upgrade-sarasota-ai-heavy-staff-ergonomics</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/desk-upgrade-sarasota-ai-heavy-staff-ergonomics</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>AI &amp; Productivity</category>
+      <description>When a Sarasota accounting firm&apos;s Copilot rollout stalled at 60% adoption, the root cause was not training or licensing. It was desks. Three hardware purchases per workstation totaling about $420 took adoption to 95% in three weeks. Here&apos;s what we bought and why.</description>
     </item>
     <item>
       <title>Your Employees Are Using AI at Work (And You Need a Policy)</title>
@@ -105,6 +78,42 @@
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>AI &amp; Productivity</category>
       <description>ChatGPT, Claude, and other AI tools are in your office right now—whether you know it or not. Heres why you need an AI policy before something goes wrong.</description>
+    </item>
+    <item>
+      <title>What We Found When We Audited a Sarasota Law Firm&apos;s Notion Workspace This Morning</title>
+      <link>https://simpleitsrq.com/blog/notion-public-pages-legal-office-audit-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/notion-public-pages-legal-office-audit-sarasota</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Privacy</category>
+      <description>This morning&apos;s Notion story was specific: a public API endpoint returned the email addresses of every editor on any public page. We immediately audited a Sarasota law firm that uses Notion for case intake. Here&apos;s what we found, what we rotated, and the one-page audit every business using Notion should run this week.</description>
+    </item>
+    <item>
+      <title>The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here&apos;s What to Buy Now.</title>
+      <link>https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>If you have a laptop refresh cycle coming up in the next 18 months, pull the decision forward. DDR5 pricing already doubled in Q1 and the AI data-center buildout means it may not come back down until 2028. Here&apos;s what a Sarasota office should buy now.</description>
+    </item>
+    <item>
+      <title>Two SaaS Vendors Had a Bad Day — Here&apos;s the 30-Minute Check Every Small Business Should Run</title>
+      <link>https://simpleitsrq.com/blog/vercel-notion-breach-saas-audit</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/vercel-notion-breach-saas-audit</guid>
+      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Security</category>
+      <description>Today&apos;s top security stories are both about SaaS vendors, not ransomware crews. If you run a small business on Microsoft 365 + Notion + Vercel + half a dozen other tools, this is the 30-minute check you should run before Monday.</description>
+    </item>
+    <item>
+      <title>Cyber-Insurance Rates Just Jumped—Heres Why Your Bradenton Business Needs to Act Now</title>
+      <link>https://simpleitsrq.com/blog/cyber-insurance-rates-bradenton-sarasota-2024</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/cyber-insurance-rates-bradenton-sarasota-2024</guid>
+      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Cyber-insurance premiums are climbing fast as breaches hit small businesses harder than ever. If you havent reviewed your coverage lately, costs could shock you.</description>
     </item>
     <item>
       <title>Floridas New Data Privacy Law: What Sarasota Small Businesses Need to Know</title>
@@ -125,6 +134,15 @@
       <description>Hackers dont take holidays, and theyre actively targeting small businesses in Sarasota and Bradenton. Heres whats happening and how to protect yourself.</description>
     </item>
     <item>
+      <title>Your Employees Are Sharing Passwords (And You Should Know About It)</title>
+      <link>https://simpleitsrq.com/blog/sarasota-employee-password-sharing-security-risk</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-employee-password-sharing-security-risk</guid>
+      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Password sharing might seem harmless, but its one of the fastest ways hackers get into your systems. Heres why it matters and what to do about it.</description>
+    </item>
+    <item>
       <title>The Windows 11 Update Thats Breaking Small Business Computers (And How to Fix It)</title>
       <link>https://simpleitsrq.com/blog/windows-11-update-breaking-computers-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/windows-11-update-breaking-computers-sarasota</guid>
@@ -134,22 +152,13 @@
       <description>A recent Windows 11 update is causing significant problems for small businesses, including file access issues and application crashes. Heres what you need to know and what to do about it.</description>
     </item>
     <item>
-      <title>Cyber-Insurance Rates Just Jumped—Heres Why Your Bradenton Business Needs to Act Now</title>
-      <link>https://simpleitsrq.com/blog/cyber-insurance-rates-bradenton-sarasota-2024</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/cyber-insurance-rates-bradenton-sarasota-2024</guid>
-      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
+      <title>The Right Docking Station Turns Any Desk Into a Workstation</title>
+      <link>https://simpleitsrq.com/blog/laptop-docking-station-hybrid-office-bradenton</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/laptop-docking-station-hybrid-office-bradenton</guid>
+      <pubDate>Thu, 16 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Cybersecurity</category>
-      <description>Cyber-insurance premiums are climbing fast as breaches hit small businesses harder than ever. If you havent reviewed your coverage lately, costs could shock you.</description>
-    </item>
-    <item>
-      <title>Your Employees Are Sharing Passwords (And You Should Know About It)</title>
-      <link>https://simpleitsrq.com/blog/sarasota-employee-password-sharing-security-risk</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-employee-password-sharing-security-risk</guid>
-      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Cybersecurity</category>
-      <description>Password sharing might seem harmless, but its one of the fastest ways hackers get into your systems. Heres why it matters and what to do about it.</description>
+      <category>Business Tech</category>
+      <description>Hot-desking and hybrid schedules mean laptops are the default. But a laptop on a desk with no external monitor is a productivity and ergonomics problem. Heres the docking station setup that fixes both.</description>
     </item>
     <item>
       <title>Your Office WiFi Is Probably Costing You Money - Heres How to Fix It</title>
@@ -161,13 +170,13 @@
       <description>The consumer router your ISP gave you was never designed for 15 people on Teams calls. Heres the hardware upgrade that kills dead spots, isolates your guest network, and actually shows you who is on it.</description>
     </item>
     <item>
-      <title>The Right Docking Station Turns Any Desk Into a Workstation</title>
-      <link>https://simpleitsrq.com/blog/laptop-docking-station-hybrid-office-bradenton</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/laptop-docking-station-hybrid-office-bradenton</guid>
-      <pubDate>Thu, 16 Apr 2026 00:00:00 GMT</pubDate>
+      <title>The UPS Buying Guide for Sarasota Offices Heading Into Storm Season</title>
+      <link>https://simpleitsrq.com/blog/business-ups-battery-backup-sarasota-storm-season</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/business-ups-battery-backup-sarasota-storm-season</guid>
+      <pubDate>Wed, 15 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Business Tech</category>
-      <description>Hot-desking and hybrid schedules mean laptops are the default. But a laptop on a desk with no external monitor is a productivity and ergonomics problem. Heres the docking station setup that fixes both.</description>
+      <description>A $150 battery backup pays for itself the first time a summer storm kills the power mid-QuickBooks sync. Heres what to buy - and what sizing shortcuts quietly leave you exposed.</description>
     </item>
     <item>
       <title>HIPAA and Legal Compliance Start at the Shredder - Heres What to Buy</title>
@@ -186,15 +195,6 @@
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Business Tech</category>
       <description>If your network closet has a tangle of unlabeled cables, consumer switches stacked on a shelf, and a power strip dangling from a hook, you are one accidental unplug away from an office-wide outage.</description>
-    </item>
-    <item>
-      <title>The UPS Buying Guide for Sarasota Offices Heading Into Storm Season</title>
-      <link>https://simpleitsrq.com/blog/business-ups-battery-backup-sarasota-storm-season</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/business-ups-battery-backup-sarasota-storm-season</guid>
-      <pubDate>Wed, 15 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Business Tech</category>
-      <description>A $150 battery backup pays for itself the first time a summer storm kills the power mid-QuickBooks sync. Heres what to buy - and what sizing shortcuts quietly leave you exposed.</description>
     </item>
     <item>
       <title>The 3-2-1 Backup Rule Still Works - Heres the Hardware Bradenton Offices Use</title>

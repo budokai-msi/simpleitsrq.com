@@ -1,0 +1,51 @@
+---
+slug: "ubuntu-26-04-sudo-change-bradenton-sysadmins"
+title: "Ubuntu 26.04 Breaks 46 Years of Sudo Habit. Test Before Upgrade."
+metaDescription: "Ubuntu 26.04 changes sudo to provide audible password feedback. A small UX change that breaks ancient automation. Test your provisioning scripts."
+date: "2026-03-21"
+author: "Simple IT SRQ Team"
+category: "Business Tech"
+tags:
+  - "linux"
+  - "sysadmin"
+  - "automation"
+excerpt: "Ubuntu 26.04 changes sudo so password entry produces audible and visible feedback, breaking a Unix convention from 1980. Small UX changes in LTS distros can break ancient automation."
+heroAlt: "A terminal window prompting for a sudo password."
+---
+
+## A Tiny Change With Outsized Impact
+
+Ubuntu 26.04, the next long-term-support release, ships with one small change to sudo that has split the sysadmin world: when you type your password, the prompt now produces audible and visible feedback. The convention of silent password entry dates to 1980 and is one of the oldest UX choices in Unix.
+
+The arguments for the change are reasonable. New users find silent prompts confusing. Accessibility tools struggle with them. And the historical reason - hiding the length of the password from a shoulder surfer - matters less when the screen is more likely to be a video call than a terminal at a CRT.
+
+The arguments against are also reasonable. Muscle memory is real. And, more importantly for businesses, automation that scripts sudo interactions may not handle the new behavior gracefully.
+
+## Why It Matters for Anyone Running Linux
+
+Most Sarasota businesses do not run Ubuntu workstations at scale. Plenty run Ubuntu servers somewhere in the stack. A web app on Hetzner. A monitoring host on a cheap VPS. A backup target. A self-hosted Bitwarden. Each one is a potential automation pipeline that touches sudo.
+
+If your scripts use Expect, pexpect, ansible-become, sshpass, or anything that programmatically responds to a password prompt, you should test before upgrading. The new behavior is unlikely to break things in catastrophic ways, but it will produce log noise and edge cases at exactly the time you do not want them.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+The bigger lesson is the one this story always teaches: small UX changes in LTS distros can break ancient automation. The same thing happens with macOS major releases, Windows feature updates, and even minor browser updates. The fix is not to refuse upgrades. It is to test the upgrade in a staging environment first, every single time.
+
+A practical staging plan for Sarasota businesses:
+
+- **Maintain a staging VM** that mirrors your production Linux server, including the version of every script that runs against it.
+- **Subscribe to the release notes** for the LTS distros you depend on. Ubuntu, Debian, Rocky, AlmaLinux all publish them.
+- **Run your provisioning scripts against staging** before you upgrade production. If something breaks, you find out at 10 a.m. on a Tuesday instead of 2 a.m. on a Sunday.
+- **Document the rollback path.** If the upgrade goes sideways, you should have a one-line command to roll back to a known good state.
+
+## Where We See This Trip Up Local Clients
+
+The most common breakage we see during LTS upgrades is not sudo. It is something more boring: a configuration file format that changed, a deprecated systemd unit, or a Python 3.x version bump that broke a library. The pattern is identical. Test in staging. Upgrade in production. Save the headache.
+
+We bake this into the [managed infrastructure work](/#solutions) we do for local clients with self-hosted Linux footprints. It is the unglamorous part of MSP work and it is the part that keeps phones from ringing at 3 a.m.
+
+## The Bottom Line
+
+Ubuntu 26.04 is a friendlier release for new users and a small surprise for old ones. Test before you upgrade. Test before you upgrade anything, every time. The discipline costs hours; the lack of discipline costs days.
+
+[Talk to Simple IT SRQ](/#contact) about a Linux infrastructure review for your Bradenton or Sarasota business. You can also read our posts on [Wine 11 workstation refreshes](/blog/wine-11-linux-windows-workstation-refresh) and [post-Git version control](/blog/post-git-version-control-engineering-leaders).

@@ -1,0 +1,62 @@
+---
+slug: "rob-pike-rules-modern-it-decisions"
+title: "Rob Pikes 1989 Rules That Still Drive Smart IT Decisions"
+metaDescription: "Rob Pikes five rules of programming resurfaced this week. Heres how they apply to modern IT decisions for Sarasota and Bradenton businesses."
+date: "2026-03-18"
+author: "Simple IT SRQ Team"
+category: "Business Tech"
+tags:
+  - "engineering"
+  - "decision-making"
+  - "principles"
+excerpt: "Rob Pikes five rules - measure dont guess, fancy algorithms are slow on small n - resurfaced and dominated discussion this week. They still hold up 37 years later."
+heroAlt: "A vintage manual page printed on paper with handwritten margin notes."
+---
+
+## Five Rules That Aged Surprisingly Well
+
+Rob Pikes five rules of programming, written in 1989, resurfaced on Hacker News this week and dominated discussion for a full day. The rules are short enough to print on a postcard:
+
+1. You cannot tell where a program is going to spend its time. Measure before optimizing.
+2. Measure. Even if you are sure where the bottleneck is, measure first.
+3. Fancy algorithms are slow when n is small, and n is usually small.
+4. Fancy algorithms are buggier than simple ones. Use simple algorithms.
+5. Data dominates. Pick the right data structures and the rest follows.
+
+The reason they spread again is that they apply directly to almost every modern IT decision, including ones that have nothing to do with code.
+
+## Translating Pikes Rules to IT Operations
+
+Substitute "your IT environment" for "a program" and the rules become uncomfortably useful:
+
+- **Measure before you optimize.** Before you "fix" your slow Microsoft 365 tenant, measure where the slowness actually is. Most of the time it is not where you think.
+- **Even if you are sure, measure.** The first thing we do at every new client is run a baseline. We are surprised, on average, twice per engagement.
+- **Fancy is usually wrong.** A small business does not need a Kubernetes cluster. It needs a documented backup, a tested restore, and a working firewall.
+- **Simple is buggier-resistant.** Every layer of abstraction you add to a small environment is a layer of failure surface. The simplest solution that works wins.
+- **Data wins.** What you measure shapes what you optimize. If you do not measure ticket volume by category, you will optimize the wrong thing.
+
+## Why This Matters for Sarasota and Bradenton Businesses
+
+Plenty of Sarasota businesses get sold complex solutions to simple problems. We see it constantly. The medical practice with a Kubernetes-based intake portal that an outgoing contractor left behind. The Bradenton manufacturer running its own Exchange server because someone in 2014 thought it was cheaper. The Sarasota law firm with a custom-built case management database that nobody knows how to back up.
+
+In every one of those cases, the right move is to apply Pikes rules in reverse. Measure what is actually being used. Replace fancy with simple. Pick the right data store and let the rest fall into place.
+
+## A Practical Decision Framework
+
+The next time youre facing an IT decision - new tool, new platform, new architecture - run it through five questions:
+
+- Have we measured the current state? With numbers, not gut feel.
+- Is the new option actually needed, or is it just newer?
+- Is the new option simpler than what we have? (Bigger is not simpler.)
+- Are we picking it because of the data we will store, or because of the brand on the box?
+- What is the rollback plan if it doesnt work?
+
+Five questions. Fifteen minutes. Hundreds of dollars saved per decision.
+
+We use this framework as part of [vCIO and technology strategy work](/#solutions) for local clients. Its not glamorous, and it doesnt require AI to apply.
+
+## The Bottom Line
+
+Rob Pikes rules are 37 years old and have aged better than most enterprise software. The principle behind them - measure, prefer simple, let the data drive - is the closest thing to a universal truth in IT decision-making. Print them. Pin them somewhere visible. Ask them out loud the next time someone proposes a new platform.
+
+[Talk to Simple IT SRQ](/#contact) about applying this framework to your next infrastructure decision. You can also read our posts on [post-Git tooling](/blog/post-git-version-control-engineering-leaders) and [evaluating AI coding tools](/blog/claude-code-internals-it-evaluation-sarasota).
