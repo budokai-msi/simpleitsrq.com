@@ -11,14 +11,34 @@
 import { sql } from "./db.js";
 import dns from "node:dns/promises";
 
+/** @typedef {import('./types.js').IpIntel} IpIntel */
+
+/**
+ * Summary RDAP record pulled by lookupRdap(). All fields are best-effort.
+ * @typedef {Object} RdapSummary
+ * @property {string|null} handle
+ * @property {string|null} name
+ * @property {string|null} netRange
+ * @property {string|null} registrant
+ * @property {string|null} abuseEmail
+ * @property {string|null} registrationDate
+ * @property {string|null} source
+ * @property {Record<string, unknown>} raw
+ */
+
 const ABUSEIPDB_KEY = () => process.env.ABUSEIPDB_API_KEY || "";
 const IPINFO_TOKEN  = () => process.env.IPINFO_TOKEN || "";
 
 const PRIVATE_IP = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|::1|fd|fe80)/;
 
-// Reverse DNS: PTR lookup. Resolves to the hostname associated with the IP
-// per the IP owner's in-addr.arpa / ip6.arpa records. Crawlers almost always
-// set a recognizable PTR (e.g. crawl-*.googlebot.com, *.amazonaws.com).
+/**
+ * Reverse DNS: PTR lookup. Resolves to the hostname associated with the IP
+ * per the IP owner's in-addr.arpa / ip6.arpa records. Crawlers almost always
+ * set a recognizable PTR (e.g. crawl-*.googlebot.com, *.amazonaws.com).
+ *
+ * @param {string} ip
+ * @returns {Promise<string|null>}
+ */
 async function lookupReverseDns(ip) {
   try {
     const names = await Promise.race([
@@ -36,6 +56,13 @@ async function lookupReverseDns(ip) {
 // range (ARIN for NA, RIPE for EU, APNIC, LACNIC, AFRINIC). Data includes
 // the registered allocation, the registrant organization, abuse contact
 // email, and registration/last-changed dates.
+
+/**
+ * Walk the RDAP entity tree and return the first `abuse` role's vcard email.
+ *
+ * @param {Array<Record<string, unknown>>|unknown} entities
+ * @returns {string|null}
+ */
 function pickAbuseEmail(entities) {
   if (!Array.isArray(entities)) return null;
   const stack = [...entities];
@@ -55,6 +82,12 @@ function pickAbuseEmail(entities) {
   return null;
 }
 
+/**
+ * Pick a display name for the registrant / admin contact in an RDAP response.
+ *
+ * @param {Array<Record<string, unknown>>|unknown} entities
+ * @returns {string|null}
+ */
 function pickRegistrant(entities) {
   if (!Array.isArray(entities)) return null;
   for (const e of entities) {
@@ -71,12 +104,26 @@ function pickRegistrant(entities) {
   return null;
 }
 
+/**
+ * Find an event by `eventAction` in an RDAP `events` list, returning its date.
+ *
+ * @param {Array<{ eventAction?: string, eventDate?: string }>|unknown} events
+ * @param {string} action
+ * @returns {string|null}
+ */
 function pickEvent(events, action) {
   if (!Array.isArray(events)) return null;
   const e = events.find((x) => x && x.eventAction === action);
   return e && e.eventDate ? e.eventDate : null;
 }
 
+/**
+ * Fetch RDAP data for `ip` via rdap.org (IANA bootstrap). Returns null on any
+ * failure — callers degrade gracefully without WHOIS info.
+ *
+ * @param {string} ip
+ * @returns {Promise<RdapSummary|null>}
+ */
 async function lookupRdap(ip) {
   try {
     const res = await fetch(`https://rdap.org/ip/${encodeURIComponent(ip)}`, {
@@ -102,6 +149,18 @@ async function lookupRdap(ip) {
   }
 }
 
+/**
+ * Return a fully-enriched IP intel record, either from the 7-day cache or by
+ * contacting ipinfo.io + AbuseIPDB + RDAP + DNS reverse lookup. Best-effort:
+ * any upstream failure leaves its slice of the record null. Returns null for
+ * empty / private IPs.
+ *
+ * Also auto-inserts high-confidence abusers (score >= 75) into ip_blocklist
+ * and emits a critical security_events row.
+ *
+ * @param {string|null|undefined} ip
+ * @returns {Promise<IpIntel|null>}
+ */
 export async function enrichIp(ip) {
   if (!ip || PRIVATE_IP.test(ip)) return null;
 
@@ -113,6 +172,7 @@ export async function enrichIp(ip) {
   `.catch(() => []);
   if (cached.length > 0) return cached[0];
 
+  /** @type {IpIntel} */
   const intel = {
     ip,
     asn: null, org: null, isp: null,

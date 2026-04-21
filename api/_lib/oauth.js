@@ -5,8 +5,18 @@
 
 import { sql } from "./db.js";
 
+/** @typedef {import('./types.js').OAuthProviderConfig} OAuthProviderConfig */
+/** @typedef {import('./types.js').OAuthProfile} OAuthProfile */
+/** @typedef {import('./types.js').UserRow} UserRow */
+
+/**
+ * Providers we know how to authenticate against.
+ * @typedef {'google' | 'github' | 'auth0'} OAuthProviderName
+ */
+
 const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
+/** @type {Record<OAuthProviderName, OAuthProviderConfig>} */
 export const PROVIDERS = {
   google: {
     authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
@@ -39,6 +49,14 @@ export const PROVIDERS = {
   },
 };
 
+/**
+ * Derive the deployment's public base URL (no trailing slash). Prefers the
+ * `APP_URL` env var, otherwise reconstructs from forwarded proto / host
+ * headers.
+ *
+ * @param {Request} request
+ * @returns {string}
+ */
 export function appBaseUrl(request) {
   if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
   const url = new URL(request.url);
@@ -47,16 +65,37 @@ export function appBaseUrl(request) {
   return `${proto}://${host}`;
 }
 
+/**
+ * Compute the OAuth callback URL for the given provider under this deployment.
+ *
+ * @param {Request} request
+ * @param {OAuthProviderName | string} provider
+ * @returns {string}
+ */
 export function redirectUri(request, provider) {
   return `${appBaseUrl(request)}/api/auth/callback/${provider}`;
 }
 
+/**
+ * Random 32-byte hex string used as the OAuth `state` parameter.
+ *
+ * @returns {string}
+ */
 function randomState() {
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * Mint a new OAuth state, persist it so the callback can verify it, and
+ * return the token for inclusion in the authorize redirect. Also prunes
+ * expired states best-effort.
+ *
+ * @param {OAuthProviderName | string} provider
+ * @param {string | null | undefined} redirectTo Post-login redirect path.
+ * @returns {Promise<string>}
+ */
 export async function createOAuthState(provider, redirectTo) {
   const state = randomState();
   await sql`
@@ -68,6 +107,15 @@ export async function createOAuthState(provider, redirectTo) {
   return state;
 }
 
+/**
+ * Atomically delete + return an OAuth state row if it matches `(state,
+ * provider)` and hasn't expired. Returns null when the state is missing or
+ * too old (>10 min).
+ *
+ * @param {string | null | undefined} state
+ * @param {OAuthProviderName | string} provider
+ * @returns {Promise<{ redirectTo: string | null } | null>}
+ */
 export async function consumeOAuthState(state, provider) {
   if (!state) return null;
   const rows = await sql`
@@ -85,6 +133,8 @@ export async function consumeOAuthState(state, provider) {
  * Resolve Auth0 endpoint URLs from the AUTH0_DOMAIN env var.
  * Auth0 is special: all URLs are derived from the tenant domain,
  * unlike Google/GitHub which have fixed authorize/token endpoints.
+ *
+ * @returns {{ authorizeUrl: string, tokenUrl: string, userInfoUrl: string } | null}
  */
 function resolveAuth0Urls() {
   const domain = process.env.AUTH0_DOMAIN;
@@ -97,6 +147,17 @@ function resolveAuth0Urls() {
   };
 }
 
+/**
+ * Build the provider-specific authorize URL the browser should be redirected
+ * to to begin sign-in.
+ *
+ * @param {OAuthProviderName} provider
+ * @param {string} state
+ * @param {Request} request
+ * @returns {string}
+ * @throws {Error} when the configured client ID (or AUTH0_DOMAIN for auth0)
+ *   is missing.
+ */
 export function buildAuthorizeUrl(provider, state, request) {
   const cfg = PROVIDERS[provider];
   const clientId = process.env[cfg.clientIdEnv];
@@ -132,6 +193,17 @@ export function buildAuthorizeUrl(provider, state, request) {
   return `${authorizeUrl}?${params.toString()}`;
 }
 
+/**
+ * Exchange an authorization `code` for an access token at the provider's
+ * token endpoint.
+ *
+ * @param {OAuthProviderName} provider
+ * @param {string} code
+ * @param {Request} request
+ * @returns {Promise<string>} The `access_token`.
+ * @throws {Error} on missing creds, non-2xx, or a response without
+ *   `access_token`.
+ */
 export async function exchangeCodeForToken(provider, code, request) {
   const cfg = PROVIDERS[provider];
   const clientId = process.env[cfg.clientIdEnv];
@@ -175,6 +247,15 @@ export async function exchangeCodeForToken(provider, code, request) {
   return data.access_token;
 }
 
+/**
+ * Fetch the authenticated user's profile from the provider's userinfo
+ * endpoint and normalize it to the common OAuthProfile shape. For GitHub,
+ * also falls back to /user/emails when the primary email is private.
+ *
+ * @param {OAuthProviderName} provider
+ * @param {string} accessToken
+ * @returns {Promise<OAuthProfile>}
+ */
 export async function fetchUserProfile(provider, accessToken) {
   const cfg = PROVIDERS[provider];
 
@@ -252,7 +333,19 @@ export async function fetchUserProfile(provider, accessToken) {
   };
 }
 
-// Upsert the user + link the oauth account. Returns the user row.
+/**
+ * Upsert the user + link the oauth account. Resolution order:
+ *   1. Existing oauth_accounts link for (provider, providerAccountId).
+ *   2. Existing user by email (case-insensitive).
+ *   3. New user row.
+ *
+ * Also adopts any tickets previously filed by this email while signed out.
+ *
+ * @param {OAuthProviderName | string} provider
+ * @param {OAuthProfile} profile
+ * @returns {Promise<UserRow>}
+ * @throws {Error} when the profile has no email (can't create a user).
+ */
 export async function upsertUserFromProfile(provider, profile) {
   if (!profile.email) {
     throw new Error(`${provider} account has no verified email`);

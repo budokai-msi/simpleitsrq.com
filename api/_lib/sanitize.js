@@ -4,9 +4,14 @@
 // email header, DB column, or outbound HTTP body. Intentionally tiny —
 // we don't pull in DOMPurify server-side for a few marketing forms.
 
-// Strip CR/LF and other control characters so an attacker can't inject
-// extra email headers by passing "Subject\nBcc: attacker@example.com".
-// Also collapse excessive whitespace.
+/**
+ * Strip CR/LF and other control characters so an attacker can't inject
+ * extra email headers by passing "Subject\nBcc: attacker@example.com".
+ * Also collapse excessive whitespace.
+ *
+ * @param {string} [s]
+ * @returns {string}
+ */
 export function stripHeaderControls(s = "") {
   return String(s)
     // eslint-disable-next-line no-control-regex
@@ -15,20 +20,37 @@ export function stripHeaderControls(s = "") {
     .trim();
 }
 
-// Clamp a string to `max` chars and trim. Returns "" if the input is
-// nullish.
+/**
+ * Clamp a string to `max` chars and trim. Returns "" if the input is
+ * nullish.
+ *
+ * @param {unknown} s
+ * @param {number} max
+ * @returns {string}
+ */
 export function clampString(s, max) {
   if (s == null) return "";
   return String(s).trim().slice(0, Math.max(0, max | 0));
 }
 
-// Sanitize a value destined for an email subject line or similar header
-// field. Strips header controls and clamps length.
+/**
+ * Sanitize a value destined for an email subject line or similar header
+ * field. Strips header controls and clamps length.
+ *
+ * @param {unknown} s
+ * @param {number} [max]
+ * @returns {string}
+ */
 export function sanitizeHeader(s, max = 200) {
   return clampString(stripHeaderControls(s), max);
 }
 
-// HTML escape for safe embedding in email/HTML templates.
+/**
+ * HTML escape for safe embedding in email/HTML templates.
+ *
+ * @param {string} [s]
+ * @returns {string}
+ */
 export function escapeHtml(s = "") {
   return String(s)
     .replace(/&/g, "&amp;")
