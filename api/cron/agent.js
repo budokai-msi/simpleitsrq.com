@@ -11,6 +11,15 @@
 import { sql } from "../_lib/db.js";
 import { Resend } from "resend";
 import { timingSafeEqual } from "node:crypto";
+import { validateEnv } from "../_lib/env.js";
+
+// Cold-start validation. The agent cron is useless without Claude + Resend —
+// throw loudly in production so a missing key surfaces on the first run
+// instead of silently skipping tasks every 15 minutes.
+validateEnv({
+  ANTHROPIC_API_KEY: "required",
+  RESEND_API_KEY: "required",
+});
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
 const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
