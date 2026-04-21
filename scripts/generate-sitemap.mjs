@@ -9,7 +9,15 @@ import { cityList } from "../src/data/cities.js";
 import { products } from "../src/data/products.js";
 
 const SITE = "https://simpleitsrq.com";
-const TODAY = new Date().toISOString().slice(0, 10);
+// Default <lastmod> for URLs that don't carry their own date.
+// Using the latest post date keeps the sitemap deterministic across builds
+// (avoids a noisy git diff every prebuild run) and still signals freshness
+// to search engines when new content actually ships.
+const LATEST_POST_DATE = [...posts]
+  .map((p) => p.date)
+  .sort()
+  .at(-1) || new Date().toISOString().slice(0, 10);
+const TODAY = LATEST_POST_DATE;
 
 const staticUrls = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
