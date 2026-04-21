@@ -26,6 +26,7 @@ const staticUrls = [
   { loc: "/security-academy", priority: "0.9", changefreq: "monthly" },
   { loc: "/password-check", priority: "0.9", changefreq: "monthly" },
   { loc: "/book", priority: "0.8", changefreq: "monthly" },
+  { loc: "/service-area", priority: "0.85", changefreq: "monthly" },
   { loc: "/support", priority: "0.6", changefreq: "monthly" },
   { loc: "/privacy", priority: "0.3", changefreq: "yearly" },
   { loc: "/terms", priority: "0.3", changefreq: "yearly" },
