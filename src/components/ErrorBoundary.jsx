@@ -1,5 +1,29 @@
 import { Component } from "react";
 
+function reportError(err) {
+  if (typeof window === "undefined") return;
+  try {
+    const payload = JSON.stringify({
+      kind: "client_error",
+      message: err?.message || String(err),
+      stack: err?.stack || null,
+      path: window.location.pathname + window.location.search,
+    });
+    // Prefer sendBeacon so the report survives a page-unload triggered by
+    // the user hitting Refresh. Fall back to fetch when the beacon API is
+    // unavailable (old Safari private mode).
+    const blob = new Blob([payload], { type: "application/json" });
+    if (!navigator.sendBeacon?.("/api/track", blob)) {
+      fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        keepalive: true,
+      }).catch(() => {});
+    }
+  } catch { /* telemetry must never throw */ }
+}
+
 export default class ErrorBoundary extends Component {
   state = { hasError: false };
 
@@ -9,22 +33,19 @@ export default class ErrorBoundary extends Component {
 
   componentDidCatch(err, errorInfo) {
     console.error("[ErrorBoundary]", err);
-    // Sentry is additive and lazy — the dynamic import keeps @sentry/react
-    // off the critical-path bundle. It's a no-op if VITE_SENTRY_DSN is unset.
+    // Two reporters in parallel: our own /api/track beacon (always-on,
+    // self-hosted, lands in security_events as kind='client_error') AND
+    // Sentry if configured (richer context, no-op without VITE_SENTRY_DSN).
+    // Both wrapped — reporting must never break the error UI.
+    reportError(err);
     import("../lib/sentry.js")
       .then(({ captureException, initSentry }) => {
-        // Make sure init has happened (main.jsx kicks this off idle, but an
-        // error could beat it to the punch).
         initSentry();
         captureException(err, {
-          contexts: {
-            react: { componentStack: errorInfo?.componentStack },
-          },
+          contexts: { react: { componentStack: errorInfo?.componentStack } },
         });
       })
-      .catch(() => {
-        // Swallow — reporting must never break the error UI.
-      });
+      .catch(() => { /* Sentry is additive */ });
   }
 
   render() {
