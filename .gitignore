@@ -16,6 +16,14 @@ dist
 dist-ssr
 *.local
 
+# Per-post Open Graph cards — regenerated deterministically at prebuild from
+# posts-meta.json via scripts/generate-og-images.mjs, and Vercel runs prebuild
+# on every deploy. Keeping them out of git avoids a ~3 MB diff every time a
+# post title changes (one file per slug x 56 posts). The fallback og-image.png
+# is still committed.
+public/og-blog-*.png
+public/.og-blog-cache.json
+
 # Environment — NEVER commit secrets
 .env
 .env.*
