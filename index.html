@@ -14,6 +14,12 @@
          runtime-injected <style> tag. See src/main.jsx for the Griffel wiring. -->
     <meta name="csp-nonce" content="__CSP_NONCE__" />
 
+    <!-- Preload self-hosted variable fonts so the browser fetches them in
+         parallel with the CSS rather than waiting to discover the @font-face
+         rule. Saves ~100-200ms on FCP. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/Geist-Variable.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/GeistMono-Variable.woff2" crossorigin />
+
     <!-- Preconnect / DNS prefetch for third-party origins (fonts, analytics, tag manager) -->
     <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
