@@ -214,8 +214,8 @@ export default function Store() {
   const managedServices = products.filter((p) => p.isManagedService);
 
   useSEO({
-    title: "Florida HIPAA Starter Kit | Simple IT SRQ",
-    description: "A 62-page HIPAA compliance kit written for Florida dental, medical, and specialty-practice offices. Administrative, Physical, and Technical Safeguards checklists, BAA template, risk assessment, and Florida-specific hurricane provisions. $79.",
+    title: "Store | HIPAA Kits, WISP Templates, Cyber-Insurance Docs | Simple IT SRQ",
+    description: "Florida-specific compliance templates for small businesses: HIPAA Starter Kit, FTC Safeguards WISP, cyber-insurance evidence packs, and SOC 2 readiness. Instant download, lifetime updates, 30-day refund.",
     canonical: "https://simpleitsrq.com/store",
     breadcrumbs: [
       { name: "Home", url: "https://simpleitsrq.com/" },

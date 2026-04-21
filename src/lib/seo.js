@@ -43,6 +43,68 @@ function removeJsonLd(id) {
   if (s) s.remove();
 }
 
+// Organization schema — identifies the business as a named entity Google
+// can link to logo, social profiles, and sameAs references. Lives on the
+// site root (Home) so knowledge-panel candidates can pick it up once.
+export function organizationSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${SITE_URL}#organization`,
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+    email: "hello@simpleitsrq.com",
+    telephone: "+1-407-242-1456",
+    areaServed: { "@type": "State", name: "Florida" },
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      email: "hello@simpleitsrq.com",
+      telephone: "+1-407-242-1456",
+      availableLanguage: "English",
+    },
+  };
+}
+
+// LocalBusiness schema for a specific city. Telephone omitted intentionally
+// on per-city pages — Google treats a shared 407 number spread across
+// multiple LocalBusiness entries as a weak signal; the Organization schema
+// on Home carries the canonical contact info instead.
+export function localBusinessSchema({ slug, city, description }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": `${SITE_URL}/${slug}#business`,
+    name: `${SITE_NAME} — ${city}`,
+    image: `${SITE_URL}/logo.png`,
+    url: `${SITE_URL}/${slug}`,
+    email: "hello@simpleitsrq.com",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: city,
+      addressRegion: "FL",
+      addressCountry: "US",
+    },
+    areaServed: city,
+    priceRange: "$$",
+    description,
+    openingHours: "Mo-Fr 08:00-18:00",
+  };
+}
+
+export function faqSchema(faqs) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+}
+
 export function blogPostingSchema(post) {
   return {
     "@context": "https://schema.org",
@@ -81,7 +143,11 @@ export function breadcrumbSchema(items) {
   };
 }
 
-export function useSEO({ title, description, canonical, image, post, breadcrumbs, products }) {
+export function useSEO({
+  title, description, canonical, image,
+  post, breadcrumbs, products,
+  organization, localBusiness, faqs,
+}) {
   useEffect(() => {
     if (title) document.title = title;
     if (description) {
@@ -116,7 +182,22 @@ export function useSEO({ title, description, canonical, image, post, breadcrumbs
     } else {
       removeJsonLd("jsonld-products");
     }
-  }, [title, description, canonical, image, post, breadcrumbs, products]);
+    if (organization) {
+      injectJsonLd("jsonld-organization", organizationSchema());
+    } else {
+      removeJsonLd("jsonld-organization");
+    }
+    if (localBusiness) {
+      injectJsonLd("jsonld-localbusiness", localBusinessSchema(localBusiness));
+    } else {
+      removeJsonLd("jsonld-localbusiness");
+    }
+    if (faqs && faqs.length) {
+      injectJsonLd("jsonld-faq", faqSchema(faqs));
+    } else {
+      removeJsonLd("jsonld-faq");
+    }
+  }, [title, description, canonical, image, post, breadcrumbs, products, organization, localBusiness, faqs]);
 }
 
 // Build an ItemList of Product+Offer entries for a /store-style page. Google
