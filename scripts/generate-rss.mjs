@@ -45,7 +45,7 @@ const xml = `<?xml version="1.0" encoding="UTF-8"?>
     <atom:link href="${SITE}/rss.xml" rel="self" type="application/rss+xml" />
     <description>${DESCRIPTION}</description>
     <language>en-us</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <lastBuildDate>${new Date(sorted[0]?.date || Date.now()).toUTCString()}</lastBuildDate>
 ${items}
   </channel>
 </rss>
