@@ -24,6 +24,15 @@ import { checkBotId } from "botid/server";
 import { Resend } from "resend";
 import { clientIp, rateLimit } from "./_lib/security.js";
 import { sql } from "./_lib/db.js";
+import { validateEnv } from "./_lib/env.js";
+
+// Cold-start validation. Throws in production if any required secret is
+// missing; logs a warning in dev/preview so local iteration keeps working
+// (matches the existing fail-open behavior below).
+validateEnv({
+  RESEND_API_KEY: "required",
+  TURNSTILE_SECRET_KEY: "required",
+});
 
 const CONTACT_FROM = "Simple IT SRQ Website <contact@simpleitsrq.com>";
 const NEWSLETTER_FROM = "Simple IT Brief <hello@simpleitsrq.com>";
