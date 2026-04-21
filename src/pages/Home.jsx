@@ -640,6 +640,7 @@ export default function Home() {
     canonical: "https://simpleitsrq.com/",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [{ name: "Home", url: "https://simpleitsrq.com/" }],
+    organization: true,
   });
   return (
     <>
