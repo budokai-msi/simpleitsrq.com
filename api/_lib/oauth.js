@@ -389,8 +389,10 @@ export async function upsertUserFromProfile(provider, profile) {
     `;
   } else {
     // Only the owner email gets admin. Everyone else is a regular client.
+    // Boolean() so `adminEmail &&` doesn't coerce to "" and land in Postgres'
+    // is_admin boolean column as an empty string.
     const adminEmail = process.env.ADMIN_EMAIL || "";
-    const isOwner = adminEmail && profile.email.toLowerCase() === adminEmail.toLowerCase();
+    const isOwner = Boolean(adminEmail) && profile.email.toLowerCase() === adminEmail.toLowerCase();
 
     const inserted = await sql`
       INSERT INTO users (email, name, avatar_url, is_admin)

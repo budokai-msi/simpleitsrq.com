@@ -69,6 +69,18 @@ import { useAuth } from "../lib/authContext.js";
 import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 
+// Shared formatters — hoisted to module scope so React's purity rules don't
+// flag them as impure calls during render (Date.now inside a component body
+// is the actual complaint).
+const fmt = (iso) => (iso ? new Date(iso).toLocaleString() : "—");
+const ago = (iso) => {
+  if (!iso) return "—";
+  const ms = Date.now() - new Date(iso).getTime();
+  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m ago`;
+  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}h ago`;
+  return `${Math.floor(ms / 86_400_000)}d ago`;
+};
+
 // ---------- styles ----------
 const useStyles = makeStyles({
   shell: {
@@ -2919,15 +2931,6 @@ function SecurityPanel({
   useEffect(() => { loadIntel(); }, [loadIntel]);
   useEffect(() => { if (subTab === "credentials") loadHpCreds?.(); }, [subTab, loadHpCreds]);
 
-  const fmt = (iso) => iso ? new Date(iso).toLocaleString() : "—";
-  const ago = (iso) => {
-    if (!iso) return "—";
-    const ms = Date.now() - new Date(iso).getTime();
-    if (ms < 3600000) return `${Math.floor(ms / 60000)}m ago`;
-    if (ms < 86400000) return `${Math.floor(ms / 3600000)}h ago`;
-    return `${Math.floor(ms / 86400000)}d ago`;
-  };
-
   const pillStyle = (active) => ({
     padding: "6px 14px", borderRadius: 999, fontSize: 13, fontWeight: active ? 600 : 400, cursor: "pointer", border: "none",
     background: active ? tokens.colorBrandBackground : "transparent",
@@ -3316,8 +3319,11 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
   const [activeTicket, setActiveTicket] = useState(null);
   const [showNewInvoice, setShowNewInvoice] = useState(false);
 
+  // Keep the ref in sync with the latest search value. Assigning to
+  // ref.current in an effect (not in render) satisfies react-hooks/refs and
+  // still lets callbacks below read the freshest query without re-creating.
   const searchRef = useRef(search);
-  searchRef.current = search;
+  useEffect(() => { searchRef.current = search; }, [search]);
 
   const loadOpen = useCallback(async () => {
     setLoadingOpen(true);
@@ -3376,9 +3382,12 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
   // Drafts, and Visitors don't need a 20s refresh loop hammering the DB.
   const shouldPoll = tab === "overview" || tab === "open" || tab === "closed" || tab === "invoices";
 
-  useEffect(() => {
-    refreshAll();
-  }, [refreshAll]);
+  // Initial load + refresh when refreshAll identity changes (i.e. one of its
+  // loaders was re-memoized). The setState calls inside refreshAll are the
+  // load-start flags, not cascading renders — the lint plugin can't tell
+  // them apart.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { refreshAll(); }, [refreshAll]);
 
   useEffect(() => {
     if (!shouldPoll) return undefined;
