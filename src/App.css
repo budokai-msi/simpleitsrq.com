@@ -3891,3 +3891,117 @@
 [data-theme="dark"] .ad-container {
   background: transparent;
 }
+
+/* ─── Cyber-insurance referral CTA ──────────────────────────────────── */
+
+.cyber-ins-cta {
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--syn-surface, #ffffff);
+  margin: 32px 0;
+  overflow: hidden;
+}
+
+.cyber-ins-cta--full {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  align-items: flex-start;
+  border-left: 4px solid #0F6CBD;
+}
+
+.cyber-ins-cta__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: rgba(15, 108, 189, 0.08);
+  color: #0F6CBD;
+}
+
+.cyber-ins-cta__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cyber-ins-cta__title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--syn-text, #0B0D10);
+  letter-spacing: -0.01em;
+}
+
+.cyber-ins-cta__desc {
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--syn-text-muted, #4b5563);
+  margin: 0 0 14px;
+}
+
+.cyber-ins-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cyber-ins-cta__disclosure {
+  font-size: 0.78rem;
+  color: var(--syn-text-muted, #6b7280);
+  margin: 10px 0 0;
+  font-style: italic;
+}
+
+/* Inline variant — compact pill for mid-post placement. */
+.cyber-ins-cta--inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid #0F6CBD;
+  background: rgba(15, 108, 189, 0.06);
+  color: #0F6CBD;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 16px 0;
+}
+
+.cyber-ins-cta--inline .cyber-ins-cta__btn {
+  background: #0F6CBD;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.cyber-ins-cta--inline .cyber-ins-cta__btn:hover {
+  background: #0a5a9f;
+}
+
+@media (max-width: 640px) {
+  .cyber-ins-cta--full {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+  }
+  .cyber-ins-cta__icon { width: 44px; height: 44px; }
+  .cyber-ins-cta__title { font-size: 1.1rem; }
+}
+
+[data-theme="dark"] .cyber-ins-cta {
+  background: var(--syn-surface-hi, #161a20);
+  border-color: var(--syn-border, #2a2f37);
+}
+[data-theme="dark"] .cyber-ins-cta--full { border-left-color: #4CC2FF; }
+[data-theme="dark"] .cyber-ins-cta__icon { background: rgba(76, 194, 255, 0.12); color: #4CC2FF; }
+[data-theme="dark"] .cyber-ins-cta--inline {
+  border-color: #4CC2FF;
+  background: rgba(76, 194, 255, 0.08);
+  color: #4CC2FF;
+}
+[data-theme="dark"] .cyber-ins-cta--inline .cyber-ins-cta__btn { background: #4CC2FF; color: #0B0D10; }
