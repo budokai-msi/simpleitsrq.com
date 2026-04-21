@@ -2830,8 +2830,10 @@ async function handleHealth() {
     const r = await sql`SELECT 1 AS ping`;
     checks.db = r.length > 0 ? "connected" : "no_response";
   } catch (err) {
+    // Public endpoint — don't leak schema/host/connection details from
+    // the driver error. Log server-side, return a generic status.
+    console.error("[portal/health] db ping failed", err);
     checks.db = "error";
-    checks.dbError = String(err.message || err).slice(0, 200);
   }
   try {
     const r = await sql`
@@ -2941,10 +2943,25 @@ async function handleGithubHealth(session) {
 }
 
 // ---------- entry points ----------
-// CSRF is enforced via the double-submit-cookie helper in _lib/csrf.js.
-// Mutating requests must (a) come from an allowed Origin and (b) echo the
-// `sit_csrf` cookie back as the `x-csrf-token` header. GET requests skip
-// the check so dashboards/feeds keep working.
+// CSRF is enforced in two layers:
+//   1. csrfCheck() — Origin must be present AND match an allowed host.
+//      Browsers always set Origin on cross-origin non-GET fetches, so a
+//      missing Origin on a mutation is itself a CSRF signal. GET skips.
+//   2. csrfValid() (from _lib/csrf.js) — double-submit cookie pattern;
+//      mutating requests must echo the `sit_csrf` cookie back as the
+//      `x-csrf-token` header.
+// Both must pass for any mutation. Defense in depth.
+const ALLOWED_ORIGINS = new Set([
+  "https://simpleitsrq.com",
+  "https://www.simpleitsrq.com",
+]);
+
+function csrfCheck(request, method) {
+  if (method === "GET") return true;
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  return ALLOWED_ORIGINS.has(origin);
+}
 
 async function dispatch(request, method) {
   const url = new URL(request.url);
@@ -2953,6 +2970,12 @@ async function dispatch(request, method) {
   // Health check is unauthenticated — must be before requireSession.
   if (action === "health" && method === "GET") return handleHealth();
 
+  // Layer 1: Origin check (rejects cross-origin and missing-Origin
+  // mutations before any DB work).
+  if (!csrfCheck(request, method)) {
+    return json(403, { ok: false, error: "csrf_origin_rejected" });
+  }
+  // Layer 2: double-submit cookie (rejects same-origin XSS-driven CSRF).
   if (!csrfValid(request)) {
     return json(403, { ok: false, error: "csrf_rejected" });
   }
