@@ -3758,6 +3758,93 @@ Your data is valuable. Your clients trust you with sensitive information. A $15,
 
 If your business is still managing passwords the old way—or youre not sure—we can help. We work with Sarasota, Bradenton, and Venice businesses in healthcare, legal, finance, construction, and real estate. A lot of our clients start with password security and expand from there. [Lets talk about what makes sense for your business.](/#contact)`
   },
+  {
+    slug: "sarasota-employee-security-risk-training",
+    title: "Your Employees Are Your Biggest Security Risk (And What To Do About It)",
+    metaDescription: "Stop hackers targeting your Sarasota business through employee email. Simple security training that actually works.",
+    date: "2026-04-21",
+    author: "Simple IT SRQ Team",
+    category: "Cybersecurity",
+    tags: ["ai", "smb"],
+    excerpt: "Hackers arent sneaking past your firewall—theyre getting in through your teams email inbox. Heres how to fix it without making everyone miserable.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying Your Employees Are Your Biggest Security Risk (And What To Do About It).",
+    content: `## The Uncomfortable Truth
+
+If a cybercriminal attacked your Sarasota business today, they wouldnt waste time breaking into your servers. Theyd send an email to your receptionist, your accountant, or your newest hire pretending to be from the bank, your landlord, or a client you trust.
+
+And statistically, it would work.
+
+More than 90% of successful cyberattacks start with an email. Not because your team is careless—theyre not. Its because hackers have gotten disturbingly good at impersonation.
+
+## How the Scam Actually Works
+
+Lets walk through what happens. An email lands in someones inbox at 2 p.m. on a Wednesday. It looks like its from your property management company, your accountant, or a regular client. Theres urgency: "Please confirm banking info for the wire transfer we discussed" or "Update your login credentials by end of day."
+
+Your employee isnt suspicious because the email *looks* professional. The senders name looks right. Sometimes the scammer even uses a slightly misspelled version of your company domain.
+
+They click a link. They enter credentials. They authorize a payment. By the time anyone notices, $5,000 to $50,000 is gone.
+
+## This Isnt a "Tech Problem"
+
+Heres what IT consultants get wrong: this isnt something you fix by buying better software. You fix it by helping your team recognize what to look for.
+
+Your people arent the weak link—theyre your defense line.
+
+## Three Things Your Team Should Know (And Check)
+
+**Look at the actual email address, not the display name.** Scammers fake the display name easily. The actual email address—the part after the @ symbol—is much harder to fake convincingly. If it says its from your bank but the email is from @bankingsupport-help.xyz, thats not your bank.
+
+**Unexpected urgency is a red flag.** "Reply immediately" and "confirm by end of day" create pressure that makes people skip their usual checks. Legitimate business rarely requires emergency email responses. Real emergencies involve phone calls.
+
+**When in doubt, verify separately.** If an email claims to be from your landlord asking for updated banking info, dont reply to the email. Pick up the phone and call the number you have on file. Text a coworker who works with that vendor. This takes 30 seconds and stops most scams cold.
+
+## What About Your Systems?
+
+Yes, you need technical defenses too. Heres the practical setup:
+
+**Email filtering** should catch the obvious stuff automatically. Most business email services (Microsoft 365, Google Workspace) include this. Make sure its actually turned on.
+
+**Multi-factor authentication** means even if someone *does* get a password, they cant log in without a second verification. This stops 99% of account takeovers. Your email, banking software, and accounting tools should all have it enabled.
+
+**Regular backups** wont prevent an attack, but they mean you can recover without paying ransoms. If youre not backing up automatically to an off-site location, youre one email click away from a business emergency.
+
+## The Training That Actually Sticks
+
+Heres the difference between training that works and training nobody remembers:
+
+**Avoid mandatory PowerPoints.** Your team will sit through a 45-minute presentation and forget 80% of it by Friday.
+
+**Do 5-minute conversations instead.** Share a real example (without naming the victim) in a team meeting. "We got an email pretending to be from a vendor asking for updated payment info—heres what made it obvious it was fake." Your people remember concrete examples.
+
+**Test them safely.** Some IT companies send fake phishing emails to see who clicks. It feels annoying, but it works. The people who click the test get a brief reminder instead of a lecture.
+
+**Make reporting easy.** If someone suspects an email is sketchy, they should feel comfortable reporting it—not worried theyll get in trouble for being cautious. Forward it to IT, delete it, and move on. Thats the right reaction.
+
+## What To Do This Week
+
+**Check your email filtering.** Log into your email systems security settings. Make sure spam and phishing filters are actually enabled. (This takes 15 minutes and catches the obvious stuff.)
+
+**Turn on multi-factor authentication** for email, banking, and accounting software. Yes, its mildly inconvenient. No, its not optional anymore.
+
+**Have one conversation with your team.** Share a recent scam youve heard about. Ask them to watch for the red flags: suspicious sender addresses, urgency, and requests to confirm sensitive information via email.
+
+**Document your policies.** Write down what employees should do if they suspect a phishing email. Post it somewhere they see it regularly—your team Slack, your intranet, or printed in the break room.
+
+## The Real Cost
+
+A successful phishing attack costs the average small business about $20,000 in direct losses plus the time spent cleaning up afterward. The recovery usually takes weeks.
+
+A one-hour security training costs maybe $500.
+
+Its worth doing.
+
+## Lets Make Sure Youre Protected
+
+If youre not sure whether your email filtering is set up correctly, or youre not confident your team has the tools they need to spot scams, thats what we solve for. Simple IT SRQ helps Sarasota, Bradenton, and Venice businesses lock down their email security and train teams without the lecture-hall approach.
+
+Ready to cut the risk? [Lets talk about your security setup](//#contact).`
+  },
 ];
 
 export default posts;
