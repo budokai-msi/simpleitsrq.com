@@ -5,6 +5,7 @@
 // an HttpOnly cookie; the DB stores only a SHA-256 hash.
 
 import { sql } from "./db.js";
+import { clientIp } from "./security.js";
 
 const SESSION_COOKIE = "sirq_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -28,7 +29,13 @@ async function sha256(input) {
 }
 
 function extractRequestMeta(request) {
-  const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || null;
+  // Use the same authoritative resolver as the rest of the API — prefers
+  // x-real-ip (set by the Vercel edge, not client-reachable). Reading
+  // x-forwarded-for directly was trivially spoofable and caused session
+  // tracking, hijack detection, and admin-IP immunity to disagree with
+  // rate-limiting and blocklists.
+  const rawIp = clientIp(request);
+  const ip = rawIp === "unknown" ? null : rawIp;
   const ua = request.headers.get("user-agent") || null;
   const country = request.headers.get("x-vercel-ip-country") || null;
   const city = request.headers.get("x-vercel-ip-city")
