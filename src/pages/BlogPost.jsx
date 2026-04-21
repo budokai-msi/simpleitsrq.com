@@ -12,6 +12,7 @@ import AdUnit from "../components/AdSense";
 import ToolsUsedFooter from "../components/ToolsUsedFooter";
 import StoreCrossSell from "../components/StoreCrossSell";
 import Affiliate from "../components/Affiliate";
+import RelatedPosts from "../components/RelatedPosts";
 import { trackAffiliateClick } from "../lib/trackClick";
 
 // Lazy-loaded MDX modules. Each post ships as its own chunk so adding a
@@ -176,32 +177,6 @@ function renderMarkdown(md, slug = null) {
   return out;
 }
 
-// Score each other post by tag-overlap count; break ties by same-category
-// match then recency. Returns the top 3. Compounds with every new post
-// because the relationship graph is derived from metadata, not hand-maintained.
-function relatedPosts(current, pool) {
-  const currentTags = new Set(current.tags || []);
-  return pool
-    .filter((p) => p.slug !== current.slug)
-    .map((p) => {
-      const pTags = p.tags || [];
-      const overlap = pTags.reduce((n, t) => n + (currentTags.has(t) ? 1 : 0), 0);
-      return {
-        post: p,
-        score: overlap,
-        sameCategory: p.category === current.category ? 1 : 0,
-      };
-    })
-    .filter((r) => r.score > 0 || r.sameCategory)
-    .sort((a, b) => (
-      b.score - a.score
-      || b.sameCategory - a.sameCategory
-      || (b.post.date || "").localeCompare(a.post.date || "")
-    ))
-    .slice(0, 3)
-    .map((r) => r.post);
-}
-
 function readingTime(text) {
   const words = (text || "").split(/\s+/).length;
   return Math.max(2, Math.round(words / 220));
@@ -289,7 +264,6 @@ export default function BlogPost() {
 
   if (!post) return <Navigate to="/blog" replace />;
 
-  const related = relatedPosts(post, postsMeta);
   const minutes = readingTime(rawBody || post.excerpt || "");
   const hasAffiliate = postHasAffiliateContent(rawBody);
 
@@ -345,31 +319,7 @@ export default function BlogPost() {
           )}
         </div>
       </article>
-      {related.length > 0 && (
-        <section className="section section-alt">
-          <div className="container">
-            <h2 className="title-2">Related posts</h2>
-            <div className="blog-grid">
-              {related.map((p) => (
-                <article key={p.slug} className="blog-card">
-                  <Link to={`/blog/${p.slug}`} className="blog-card-img" aria-label={p.title}>
-                    <BlogCover post={p} variant="card" />
-                  </Link>
-                  <div className="blog-card-body">
-                    <span className="blog-card-category">{p.category}</span>
-                    <h3 className="blog-card-title"><Link to={`/blog/${p.slug}`}>{p.title}</Link></h3>
-                    <p className="blog-card-excerpt">{p.excerpt}</p>
-                    <div className="blog-card-meta">
-                      <time dateTime={p.date}>{new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</time>
-                      <Link to={`/blog/${p.slug}`} className="blog-card-readmore">Read more <ArrowRight size={14} /></Link>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <RelatedPosts currentSlug={slug} />
     </main>
   );
 }

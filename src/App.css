@@ -1415,6 +1415,97 @@
   padding: 48px 0;
 }
 
+/* Client-side blog search — sits above the category filter row. Mirrors
+   the aesthetic of the filter pills (rounded, soft surface, subtle border)
+   so the two controls visually belong to the same "filter strip". */
+.blog-search {
+  margin-bottom: 16px;
+}
+.blog-search-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-3, #6b6b6b);
+  margin-bottom: 8px;
+}
+.blog-search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 520px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e1e1e1);
+  border-radius: 999px;
+  padding: 0 14px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+.blog-search-field:focus-within {
+  border-color: #0F6CBD;
+  box-shadow: 0 0 0 3px rgba(15, 108, 189, 0.15);
+}
+.blog-search-icon {
+  color: var(--text-3, #707070);
+  flex-shrink: 0;
+}
+.blog-search-input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-1, #1a1a1a);
+  min-width: 0;
+}
+.blog-search-input::placeholder { color: var(--text-3, #9a9a9a); }
+.blog-search-input::-webkit-search-cancel-button,
+.blog-search-input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+.blog-search-clear {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: transparent;
+  border: 0;
+  color: var(--text-3, #707070);
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.blog-search-clear:hover {
+  background: rgba(15, 108, 189, 0.1);
+  color: #0F6CBD;
+}
+[data-theme="dark"] .blog-search-field {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+[data-theme="dark"] .blog-search-input { color: var(--text-1); }
+[data-theme="dark"] .blog-search-label { color: var(--text-3); }
+[data-theme="dark"] .blog-search-field:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
+}
+
+/* Generic visually-hidden helper used by the live-region status for
+   screen-reader result-count announcements. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* Single blog post */
 .blog-post-main { background: #ffffff; }
 
