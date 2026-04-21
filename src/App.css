@@ -720,6 +720,70 @@
   max-width: 240px;
 }
 
+/* Home-hero revenue-path row. Three one-tap entries to the non-phone
+ * conversion paths: free tools for top-of-funnel, playbooks for the
+ * audience that isn't ready to book a call, Security Academy for the
+ * cyber-insurance-required subscription segment. Sits between the
+ * hero section and the LogosBar so it catches every visitor. */
+.hero-paths {
+  padding: 28px 0 8px;
+  background: var(--surface-1, #fff);
+  border-bottom: 1px solid var(--border);
+}
+.hero-paths-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.hero-path {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md, 10px);
+  background: var(--bg-elevated, var(--surface-1, #fff));
+  color: var(--text-1);
+  text-decoration: none;
+  transition: border-color 160ms var(--ease-out), transform 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+}
+.hero-path:hover {
+  border-color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 108, 189, 0.08);
+}
+.hero-path-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(15, 108, 189, 0.1);
+  color: var(--brand);
+  flex-shrink: 0;
+}
+.hero-path-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.hero-path-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 20px;
+}
+.hero-path-desc {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 16px;
+}
+@media (max-width: 860px) {
+  .hero-paths-row { grid-template-columns: 1fr; }
+}
+
 /* Blog → Store cross-sell card. Shown after article content but before
  * the Lead Capture / Newsletter stack. The highest-intent moment for a
  * reader is right after they finish the article — meeting them with a

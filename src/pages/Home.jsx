@@ -2,7 +2,7 @@
   Headphones, Server, ShieldCheck, Lock, Cloud, FileCheck,
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
   Phone, Mail, MapPin, Clock, Star, Check, ArrowRight, Wifi, Briefcase,
-  Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key
+  Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key, Wrench
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useRef } from "react";
@@ -45,6 +45,42 @@ function Hero() {
             <div className="hero-stat"><span className="val tabular">&lt;4h</span><span className="lbl">Recovery time</span></div>
             <div className="hero-stat"><span className="val tabular">99.99%</span><span className="lbl">Uptime</span></div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HeroPaths() {
+  // Three revenue / lead-magnet paths surfaced immediately below the hero.
+  // Free tier (Tools) captures top-of-funnel, mid-tier (Store playbooks)
+  // monetizes the audience that isn't ready to call yet, and the Academy
+  // pulls the cyber-insurance-required subscription crowd.
+  return (
+    <section className="hero-paths" aria-label="Other ways to start">
+      <div className="container">
+        <div className="hero-paths-row">
+          <Link to="/tools" className="hero-path">
+            <span className="hero-path-icon" aria-hidden="true"><Wrench size={22} /></span>
+            <span className="hero-path-copy">
+              <span className="hero-path-label">Free Tools</span>
+              <span className="hero-path-desc">Password breach check, more coming</span>
+            </span>
+          </Link>
+          <Link to="/store" className="hero-path">
+            <span className="hero-path-icon" aria-hidden="true"><FileCheck size={22} /></span>
+            <span className="hero-path-copy">
+              <span className="hero-path-label">Playbooks &amp; Templates</span>
+              <span className="hero-path-desc">$19–$299 · WISP, HIPAA, compliance</span>
+            </span>
+          </Link>
+          <Link to="/security-academy" className="hero-path">
+            <span className="hero-path-icon" aria-hidden="true"><GraduationCap size={22} /></span>
+            <span className="hero-path-copy">
+              <span className="hero-path-label">Security Academy</span>
+              <span className="hero-path-desc">$12/user/mo · insurance-required training</span>
+            </span>
+          </Link>
         </div>
       </div>
     </section>
@@ -608,6 +644,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <HeroPaths />
       <LogosBar />
       <Solutions />
       <Industries />
