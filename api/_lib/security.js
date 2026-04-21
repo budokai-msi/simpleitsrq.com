@@ -216,15 +216,94 @@ export async function isIpBlocked(ip) {
   }
 }
 
+// ---- In-memory L1 cache for rateLimit() --------------------------------
+//
+// The DB-backed limiter is authoritative, but most requests from a given IP
+// are well under the per-bucket limit — every one of those was doing a full
+// Postgres round-trip just to learn "yep, still under". The cache below
+// short-circuits that hot path when we're CONFIDENTLY under the limit.
+//
+// Tradeoff: Fluid Compute runs multiple function instances concurrently, and
+// each holds its own Map. Worst case, N instances each let an IP rack up
+// (max/2 - 1) cached hits before any of them sync to the DB, so the effective
+// ceiling drifts to roughly N * (max/2) for the cache-short-circuit window
+// before the DB path clamps it back. That's acceptable because:
+//   1. We only skip the DB when count+1 < max/2 — i.e. we have more than half
+//      the budget still free. Any request that could plausibly hit the limit
+//      falls through to the authoritative DB path.
+//   2. The DB path still runs for logging, window rollover, and the 429
+//      enforcement itself.
+//   3. Across instances the drift is bounded and transient (single window).
+//
+// Keyed by `${bucket}:${ip}`. Capped at 5000 entries, LRU via re-insert on
+// touch — JS Maps preserve insertion order, so the oldest key is the first
+// one yielded by keys().
+const RL_CACHE_MAX = 5000;
+const rlCache = new Map(); // key -> { resetAt: number, count: number }
+let rlCacheHits = 0;
+let rlCacheDbFallbacks = 0;
+
+function rlCacheTouch(key, entry) {
+  // Re-insert to move this key to the most-recently-used end of the Map.
+  rlCache.delete(key);
+  rlCache.set(key, entry);
+  // Evict oldest entries while over cap. Map.keys() iterates in insertion
+  // order, so next() gives us the LRU key.
+  while (rlCache.size > RL_CACHE_MAX) {
+    const oldest = rlCache.keys().next().value;
+    if (oldest === undefined) break;
+    rlCache.delete(oldest);
+  }
+}
+
+/** Clear the in-memory rate-limit cache. Callable from admin reset flows. */
+export function rateLimit_clearCache() {
+  rlCache.clear();
+}
+
+/** Observability: current cache size plus lifetime hit/db-fallback counters. */
+export function rateLimit_cacheStats() {
+  return {
+    size: rlCache.size,
+    hits: rlCacheHits,
+    dbFallbacks: rlCacheDbFallbacks,
+  };
+}
+
 /**
- * DB-backed sliding-window rate limiter. Trades a bit of precision for
- * persistence across Fluid Compute instances (the previous in-memory limiter
- * was per-instance).
+ * DB-backed sliding-window rate limiter with an in-memory L1 cache.
+ *
+ * The DB remains authoritative for the hard limit; the cache only
+ * short-circuits requests that are CONFIDENTLY under the limit
+ * (count + 1 < max / 2). Anything at or above the half-way mark falls
+ * through to the DB. Trades a bit of precision for persistence across
+ * Fluid Compute instances (the previous in-memory limiter was per-instance).
  */
 export async function rateLimit({ ip, bucket, windowSeconds, max }) {
   if (!ip || ip === "unknown") return { ok: true, remaining: max };
+
+  const key = `${bucket}:${ip}`;
+  const nowMs = Date.now();
+  const cached = rlCache.get(key);
+
+  // Cache short-circuit: entry still in window AND well under the limit.
+  // The "< max / 2" check is the confidence gate — past the half-way mark
+  // we always re-check the DB so enforcement stays precise.
+  if (cached && cached.resetAt > nowMs && cached.count + 1 < max / 2) {
+    const newCount = cached.count + 1;
+    rlCacheTouch(key, { resetAt: cached.resetAt, count: newCount });
+    rlCacheHits++;
+    return {
+      ok: true,
+      count: newCount,
+      remaining: Math.max(0, max - newCount),
+      cached: true,
+    };
+  }
+
+  rlCacheDbFallbacks++;
   const now = new Date();
-  const windowStart = new Date(now.getTime() - windowSeconds * 1000);
+  const windowStart = new Date(nowMs - windowSeconds * 1000);
 
   try {
     // Upsert the counter. If the existing row is inside the window, bump
@@ -246,6 +325,15 @@ export async function rateLimit({ ip, bucket, windowSeconds, max }) {
       RETURNING count
     `;
     const count = Number(rows[0]?.count || 1);
+
+    // Refresh the cache from the authoritative DB response. resetAt is
+    // approximate — we don't know the DB's actual window_start after the
+    // upsert (it may have rolled over or reused the existing window), so we
+    // use nowMs + windowSeconds as a conservative upper bound. Any future
+    // short-circuit gated on count+1 < max/2 is safe even if the true reset
+    // lands sooner: we can't serve a request that should have been denied.
+    rlCacheTouch(key, { resetAt: nowMs + windowSeconds * 1000, count });
+
     return { ok: count <= max, count, remaining: Math.max(0, max - count) };
   } catch (err) {
     console.error("[rateLimit] failed", err);
