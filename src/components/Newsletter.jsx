@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Mail, Check, Loader2 } from "lucide-react";
+import { csrfFetch } from "../lib/csrf";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ export default function Newsletter() {
       // a confirm link; the subscription only becomes active after the
       // user clicks. Reuses the contact-form serverless function so we
       // stay under the Hobby 12-function cap.
-      const res = await fetch("/api/contact", {
+      const res = await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

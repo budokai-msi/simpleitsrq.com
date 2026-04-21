@@ -4,6 +4,7 @@ import { Check, ShieldCheck, RefreshCw, ArrowRight, BookOpen, ArrowLeft, FileTex
 import { products } from "../data/products";
 import { useSEO, SITE_URL } from "../lib/seo";
 import Testimonials from "../components/Testimonials";
+import { csrfFetch } from "../lib/csrf";
 
 // Minimal markdown renderer — handles the subset we actually use in our
 // product preview .md files: ## h2, ### h3, bold **text**, italic *text*,
@@ -131,7 +132,7 @@ function BuyCta({ product }) {
     e.preventDefault();
     if (!email) return;
     try {
-      await fetch("/api/contact", {
+      await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

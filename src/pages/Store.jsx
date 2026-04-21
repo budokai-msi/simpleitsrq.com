@@ -7,6 +7,7 @@ import {
 import { products } from "../data/products";
 import { useSEO } from "../lib/seo";
 import Testimonials from "../components/Testimonials";
+import { csrfFetch } from "../lib/csrf";
 
 const FAQ = [
   {
@@ -72,7 +73,7 @@ function BuyCta({ product, compact = false }) {
     e.preventDefault();
     if (!email) return;
     try {
-      await fetch("/api/contact", {
+      await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -142,7 +143,7 @@ function SeriesCard({ product }) {
     e.preventDefault();
     if (!email) return;
     try {
-      await fetch("/api/contact", {
+      await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

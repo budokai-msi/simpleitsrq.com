@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
+import { csrfFetch } from "../lib/csrf";
 
 export default function LeadCaptureCTA({
   title = "Get a Free 15-Min IT Assessment",
@@ -18,7 +19,7 @@ export default function LeadCaptureCTA({
       return;
     }
     try {
-      await fetch(endpoint, {
+      await csrfFetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, source: "blog-cta" }),
