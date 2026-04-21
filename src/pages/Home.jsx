@@ -9,7 +9,7 @@ import { useState, useRef } from "react";
 import { useSEO } from "../lib/seo";
 import { useScrollReveal, useRevealChildren } from "../lib/useScrollReveal";
 import heroGrid from "../assets/hero-grid.svg";
-import { posts } from "../data/posts";
+import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
 import RecommendedTools from "../components/RecommendedTools";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
