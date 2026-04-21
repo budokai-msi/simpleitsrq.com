@@ -16,6 +16,10 @@ import { sql } from "./db.js";
 
 const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
+// Hard cap on every outbound call to an IdP. Without this, a hung token
+// endpoint would pin the serverless function until Vercel's global timeout.
+const IDP_FETCH_TIMEOUT_MS = 8000;
+
 /** @type {Record<OAuthProviderName, OAuthProviderConfig>} */
 export const PROVIDERS = {
   google: {
@@ -235,6 +239,7 @@ export async function exchangeCodeForToken(provider, code, request) {
       Accept: "application/json",
     },
     body: body.toString(),
+    signal: AbortSignal.timeout(IDP_FETCH_TIMEOUT_MS),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -273,6 +278,7 @@ export async function fetchUserProfile(provider, accessToken) {
       Accept: "application/json",
       "User-Agent": "simpleitsrq-web",
     },
+    signal: AbortSignal.timeout(IDP_FETCH_TIMEOUT_MS),
   });
   if (!res.ok) {
     throw new Error(`${provider} userinfo failed: ${res.status}`);
@@ -312,6 +318,7 @@ export async function fetchUserProfile(provider, accessToken) {
           Accept: "application/vnd.github+json",
           "User-Agent": "simpleitsrq-web",
         },
+        signal: AbortSignal.timeout(IDP_FETCH_TIMEOUT_MS),
       });
       if (er.ok) {
         const emails = await er.json();
