@@ -720,6 +720,82 @@
   max-width: 240px;
 }
 
+/* Blog → Store cross-sell card. Shown after article content but before
+ * the Lead Capture / Newsletter stack. The highest-intent moment for a
+ * reader is right after they finish the article — meeting them with a
+ * relevant $29–$149 playbook is a direct conversion path that costs us
+ * one render slot of page real estate. */
+.store-cross-sell {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  margin: 32px 0;
+  padding: 20px 24px;
+  background: var(--bg-elevated, var(--surface-1, #fff));
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--brand);
+  border-radius: var(--r-md, 10px);
+  box-shadow: var(--shadow1, 0 1px 3px rgba(0, 0, 0, 0.04));
+}
+.store-cross-sell-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  background: rgba(15, 108, 189, 0.08);
+  border-radius: var(--r-sm, 6px);
+  white-space: nowrap;
+}
+.store-cross-sell-title {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+  margin: 0 0 4px;
+  color: var(--text-1);
+}
+.store-cross-sell-tagline {
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0;
+  color: var(--text-2);
+}
+.store-cross-sell-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.store-cross-sell-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.store-cross-sell-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 8px 16px;
+}
+@media (max-width: 720px) {
+  .store-cross-sell {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 18px;
+  }
+  .store-cross-sell-cta {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
 /* Mobile-only sticky "Book a Call" bar. Mobile visitors lose the hero
  * CTA the moment they scroll, and the burger-menu is an extra tap away.
  * Giving them a permanent one-tap path to booking is the single highest-
