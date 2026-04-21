@@ -6,6 +6,7 @@ import { useSEO } from "../lib/seo";
 import LeadCaptureCTA from "../components/LeadCaptureCTA";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
+import { csrfFetch } from "../lib/csrf";
 
 const PRIORITIES = [
   { value: "low",      label: "Low - general question",                Icon: HelpCircle },
@@ -104,7 +105,7 @@ export default function Support() {
     setErrorMsg("");
 
     try {
-      const r = await fetch("/api/ticket", {
+      const r = await csrfFetch("/api/ticket", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, turnstileToken }),
