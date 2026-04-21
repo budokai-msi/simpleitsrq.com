@@ -754,50 +754,33 @@ function TicketDetailDialog({ styles, code, isAdmin, onClose, onChange }) {
   const [prioritySaving, setPrioritySaving] = useState(false);
   const threadRef = useRef(null);
 
-  // Flip loading on whenever the ticket code changes (new dialog open or
-  // switching between tickets). Uses the "previous value" pattern so the
-  // reset happens at render time without an effect round-trip.
-  const [prevCode, setPrevCode] = useState(code);
-  if (prevCode !== code) {
-    setPrevCode(code);
-    setLoading(true);
-    setData(null);
-    setError(null);
-  }
-
-  // Bumping reloadKey re-runs the fetch effect below. `load()` is the
-  // public refresh handle used by reply/status/priority actions and by the
-  // 10s poll + focus listeners; it just triggers the reload.
-  const [reloadKey, setReloadKey] = useState(0);
-  const load = useCallback(() => setReloadKey((k) => k + 1), []);
-
-  useEffect(() => {
-    if (!code) return undefined;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(
-          `/api/portal?action=ticket&code=${encodeURIComponent(code)}`,
-          { credentials: "same-origin" },
-        );
-        if (cancelled) return;
-        if (!res.ok) {
-          setError(res.status === 404 ? "Ticket not found." : "Couldn't load ticket.");
-          setLoading(false);
-          return;
-        }
-        const json = await res.json();
-        if (cancelled) return;
-        setData(json);
-        setError(null);
+  const load = useCallback(async () => {
+    if (!code) return;
+    try {
+      const res = await fetch(
+        `/api/portal?action=ticket&code=${encodeURIComponent(code)}`,
+        { credentials: "same-origin" },
+      );
+      if (!res.ok) {
+        setError(res.status === 404 ? "Ticket not found." : "Couldn't load ticket.");
         setLoading(false);
-      } catch {
-        if (!cancelled) {
-          setError("Couldn't load ticket.");
-          setLoading(false);
-        }
+        return;
       }
-    })();
+      const json = await res.json();
+      setData(json);
+      setError(null);
+    } catch {
+      setError("Couldn't load ticket.");
+    } finally {
+      setLoading(false);
+    }
+  }, [code]);
+
+  // Initial load + 10s polling + focus refetch while the dialog is mounted.
+  useEffect(() => {
+    if (!code) return;
+    setLoading(true);
+    load();
     const id = setInterval(load, 10000);
     const onFocus = () => {
       if (document.visibilityState === "visible") load();
@@ -805,12 +788,11 @@ function TicketDetailDialog({ styles, code, isAdmin, onClose, onChange }) {
     document.addEventListener("visibilitychange", onFocus);
     window.addEventListener("focus", load);
     return () => {
-      cancelled = true;
       clearInterval(id);
       document.removeEventListener("visibilitychange", onFocus);
       window.removeEventListener("focus", load);
     };
-  }, [code, reloadKey, load]);
+  }, [code, load]);
 
   // Auto-scroll the thread to the newest message whenever messages change.
   useEffect(() => {
@@ -1335,33 +1317,23 @@ function DraftsPanel({ styles }) {
   const [error, setError] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [status, setStatus] = useState(null);
-  const [reloadKey, setReloadKey] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/portal?action=drafts", { credentials: "same-origin" });
-        if (cancelled) return;
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (cancelled) return;
-        setDrafts(data.drafts || []);
-        setError(null);
-        setLoading(false);
-      } catch (err) {
-        if (cancelled) return;
-        setError(err.message || "Could not load drafts.");
-        setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [reloadKey]);
-
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true);
-    setReloadKey((k) => k + 1);
+    setError(null);
+    try {
+      const res = await fetch("/api/portal?action=drafts", { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setDrafts(data.drafts || []);
+    } catch (err) {
+      setError(err.message || "Could not load drafts.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const publish = useCallback(async (id) => {
     setBusyId(id);
@@ -1579,7 +1551,6 @@ function VisitorsPanel({ styles, onBlockIp }) {
   const [error, setError] = useState(null);
   const [blockBusyIp, setBlockBusyIp] = useState(null);
   const [visitorView, setVisitorView] = useState("overview");
-  const [reloadKey, setReloadKey] = useState(0);
 
   const handleBlock = useCallback(async (ip) => {
     if (!onBlockIp || blockBusyIp) return;
@@ -1588,31 +1559,21 @@ function VisitorsPanel({ styles, onBlockIp }) {
     finally { setBlockBusyIp(null); }
   }, [onBlockIp, blockBusyIp]);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/portal?action=visitors", { credentials: "same-origin" });
-        if (cancelled) return;
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        if (cancelled) return;
-        setData(json);
-        setError(null);
-        setLoading(false);
-      } catch (err) {
-        if (cancelled) return;
-        setError(err.message || "Could not load visitors.");
-        setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [reloadKey]);
-
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setLoading(true);
-    setReloadKey((k) => k + 1);
+    setError(null);
+    try {
+      const res = await fetch("/api/portal?action=visitors", { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setData(await res.json());
+    } catch (err) {
+      setError(err.message || "Could not load visitors.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   if (loading) {
     return <div style={{ padding: 24 }}><Spinner label="Loading visitors…" /></div>;
@@ -1964,25 +1925,16 @@ function TestimonialsAdmin() {
   const [editing, setEditing] = useState(null); // null | newForm | existing row
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
-  const [reloadKey, setReloadKey] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/portal?action=testimonials", { credentials: "same-origin" });
-        if (cancelled) return;
-        const data = await res.json();
-        if (cancelled) return;
-        setItems(Array.isArray(data?.testimonials) ? data.testimonials : []);
-      } catch {
-        if (!cancelled) setItems([]);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [reloadKey]);
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/portal?action=testimonials", { credentials: "same-origin" });
+      const data = await res.json();
+      setItems(Array.isArray(data?.testimonials) ? data.testimonials : []);
+    } catch { setItems([]); }
+  }, []);
 
-  const load = useCallback(() => setReloadKey((k) => k + 1), []);
+  useEffect(() => { load(); }, [load]);
 
   const save = async (form) => {
     setSaving(true); setMsg(null);
@@ -2220,29 +2172,16 @@ function OpsConsole() {
   const [status, setStatus] = useState(null);
   const [statusLoading, setStatusLoading] = useState(true);
 
-  const [statusReloadKey, setStatusReloadKey] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/portal?action=ops-status", { credentials: "same-origin" });
-        if (cancelled) return;
-        const json = await res.json();
-        if (cancelled) return;
-        setStatus(json);
-        setStatusLoading(false);
-      } catch {
-        if (!cancelled) setStatusLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [statusReloadKey]);
-
-  const loadStatus = useCallback(() => {
+  const loadStatus = useCallback(async () => {
     setStatusLoading(true);
-    setStatusReloadKey((k) => k + 1);
+    try {
+      const res = await fetch("/api/portal?action=ops-status", { credentials: "same-origin" });
+      setStatus(await res.json());
+    } catch { /* status is best-effort — failures leave the card in "unknown" */ }
+    finally { setStatusLoading(false); }
   }, []);
+
+  useEffect(() => { loadStatus(); }, [loadStatus]);
 
   const run = useCallback(async (action, method = "POST") => {
     setRunning(action);
@@ -2562,46 +2501,22 @@ function SecurityPanel({
   const [range, setRange] = useState("7d");
   const [showInvestigate, setShowInvestigate] = useState(false);
 
-  const [intelReloadKey, setIntelReloadKey] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/portal?action=threat-intel&range=${range}`, { credentials: "same-origin" });
-        if (cancelled) return;
-        if (res.ok) {
-          const json = await res.json();
-          if (cancelled) return;
-          setIntel(json);
-        }
-        setIntelLoading(false);
-      } catch {
-        if (!cancelled) setIntelLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [range, intelReloadKey]);
-
-  const loadIntel = useCallback(() => {
+  const loadIntel = useCallback(async () => {
     setIntelLoading(true);
-    setIntelReloadKey((k) => k + 1);
-  }, []);
-  useEffect(() => { if (subTab === "credentials") loadHpCreds?.(); }, [subTab, loadHpCreds]);
+    try {
+      const res = await fetch(`/api/portal?action=threat-intel&range=${range}`, { credentials: "same-origin" });
+      if (res.ok) setIntel(await res.json());
+    } catch { /* best effort */ }
+    finally { setIntelLoading(false); }
+  }, [range]);
 
-  // Ticks every minute so the "Xm ago" labels stay roughly accurate. Keeping
-  // Date.now() out of render lets the ago() function be a pure projection of
-  // (iso, now) — no impure reads during the render pass.
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60000);
-    return () => clearInterval(id);
-  }, []);
+  useEffect(() => { loadIntel(); }, [loadIntel]);
+  useEffect(() => { if (subTab === "credentials") loadHpCreds?.(); }, [subTab, loadHpCreds]);
 
   const fmt = (iso) => iso ? new Date(iso).toLocaleString() : "—";
   const ago = (iso) => {
     if (!iso) return "—";
-    const ms = now - new Date(iso).getTime();
+    const ms = Date.now() - new Date(iso).getTime();
     if (ms < 3600000) return `${Math.floor(ms / 60000)}m ago`;
     if (ms < 86400000) return `${Math.floor(ms / 3600000)}h ago`;
     return `${Math.floor(ms / 86400000)}d ago`;
@@ -2995,91 +2910,54 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
   const [activeTicket, setActiveTicket] = useState(null);
   const [showNewInvoice, setShowNewInvoice] = useState(false);
 
-  // Mirrored to a ref so the stable loadOpen/loadClosed callbacks (empty
-  // deps, reused by the 20s polling setInterval) can read the current
-  // search value at call time without invalidating their identity on
-  // every keystroke.
   const searchRef = useRef(search);
-  useEffect(() => { searchRef.current = search; }, [search]);
+  searchRef.current = search;
 
-  // Each list has its own reload counter. Effects watch the counter and
-  // own the actual fetch (including cancellation) so no synchronous
-  // setState happens inside the effect body. The public load* callbacks
-  // just bump the counter + flip the spinner on.
-  const [openReloadKey, setOpenReloadKey] = useState(0);
-  const [closedReloadKey, setClosedReloadKey] = useState(0);
-  const [invoicesReloadKey, setInvoicesReloadKey] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const q = searchRef.current.trim();
-        const url =
-          "/api/portal?action=tickets&status=open" +
-          (q ? `&q=${encodeURIComponent(q)}` : "");
-        const res = await fetch(url, { credentials: "same-origin" });
-        if (cancelled) return;
-        const data = await res.json();
-        if (cancelled) return;
-        setOpenTickets(data.tickets || []);
-        setLoadingOpen(false);
-      } catch {
-        if (!cancelled) { setOpenTickets([]); setLoadingOpen(false); }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [openReloadKey]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const q = searchRef.current.trim();
-        const url =
-          "/api/portal?action=tickets&status=closed" +
-          (q ? `&q=${encodeURIComponent(q)}` : "");
-        const res = await fetch(url, { credentials: "same-origin" });
-        if (cancelled) return;
-        const data = await res.json();
-        if (cancelled) return;
-        setClosedTickets(data.tickets || []);
-        setLoadingClosed(false);
-      } catch {
-        if (!cancelled) { setClosedTickets([]); setLoadingClosed(false); }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [closedReloadKey]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/portal?action=invoices", { credentials: "same-origin" });
-        if (cancelled) return;
-        const data = await res.json();
-        if (cancelled) return;
-        setInvoices(data.invoices || []);
-        setLoadingInvoices(false);
-      } catch {
-        if (!cancelled) { setInvoices([]); setLoadingInvoices(false); }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [invoicesReloadKey]);
-
-  const loadOpen = useCallback(() => {
+  const loadOpen = useCallback(async () => {
     setLoadingOpen(true);
-    setOpenReloadKey((k) => k + 1);
+    try {
+      const q = searchRef.current.trim();
+      const url =
+        "/api/portal?action=tickets&status=open" +
+        (q ? `&q=${encodeURIComponent(q)}` : "");
+      const res = await fetch(url, { credentials: "same-origin" });
+      const data = await res.json();
+      setOpenTickets(data.tickets || []);
+    } catch {
+      setOpenTickets([]);
+    } finally {
+      setLoadingOpen(false);
+    }
   }, []);
-  const loadClosed = useCallback(() => {
+
+  const loadClosed = useCallback(async () => {
     setLoadingClosed(true);
-    setClosedReloadKey((k) => k + 1);
+    try {
+      const q = searchRef.current.trim();
+      const url =
+        "/api/portal?action=tickets&status=closed" +
+        (q ? `&q=${encodeURIComponent(q)}` : "");
+      const res = await fetch(url, { credentials: "same-origin" });
+      const data = await res.json();
+      setClosedTickets(data.tickets || []);
+    } catch {
+      setClosedTickets([]);
+    } finally {
+      setLoadingClosed(false);
+    }
   }, []);
-  const loadInvoices = useCallback(() => {
+
+  const loadInvoices = useCallback(async () => {
     setLoadingInvoices(true);
-    setInvoicesReloadKey((k) => k + 1);
+    try {
+      const res = await fetch("/api/portal?action=invoices", { credentials: "same-origin" });
+      const data = await res.json();
+      setInvoices(data.invoices || []);
+    } catch {
+      setInvoices([]);
+    } finally {
+      setLoadingInvoices(false);
+    }
   }, []);
 
   const refreshAll = useCallback(() => {
@@ -3091,6 +2969,10 @@ function Dashboard({ styles, user, onLogout, refreshUser }) {
   // Only poll while on a tab that actually looks at tickets/invoices. Profile,
   // Drafts, and Visitors don't need a 20s refresh loop hammering the DB.
   const shouldPoll = tab === "overview" || tab === "open" || tab === "closed" || tab === "invoices";
+
+  useEffect(() => {
+    refreshAll();
+  }, [refreshAll]);
 
   useEffect(() => {
     if (!shouldPoll) return undefined;
