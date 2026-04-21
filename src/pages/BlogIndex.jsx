@@ -1,9 +1,10 @@
-﻿import { useMemo, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import posts from "../data/posts-meta.json";
 import { useSEO } from "../lib/seo";
 import BlogCover from "../components/BlogCover";
+import BlogSearch from "../components/BlogSearch";
 import AdUnit from "../components/AdSense";
 
 const PAGE_SIZE = 12;
@@ -11,16 +12,53 @@ const PAGE_SIZE = 12;
 const CATEGORIES = ["All", "Cybersecurity", "AI & Productivity", "Cloud", "Compliance", "Privacy", "Business Tech", "Industry News"];
 
 export default function BlogIndex() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
   const [active, setActive] = useState("All");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // `searchResults` is the post list after BlogSearch has applied its
+  // title/tag/description match. When the query is empty, BlogSearch
+  // returns the original sorted array untouched, so the rest of the
+  // pipeline behaves identically to before.
   const sorted = useMemo(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)), []);
-  const filtered = active === "All" ? sorted : sorted.filter((p) => p.category === active);
+  const [searchResults, setSearchResults] = useState(sorted);
+  const [committedQuery, setCommittedQuery] = useState(initialQuery);
+
+  // Category filter and search compose as an intersection: pick the
+  // category first, then keep the search's relevance ordering among
+  // those that remain. Because the search list is already deduped
+  // against `posts` we can filter it in place.
+  const filtered = useMemo(() => {
+    if (active === "All") return searchResults;
+    return searchResults.filter((p) => p.category === active);
+  }, [active, searchResults]);
+
   const visible = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
 
-  // Reset visible count when the user switches category so "Load more"
-  // starts fresh rather than leaking state from the previous filter.
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [active]);
+  // Reset pagination whenever category OR search query changes so
+  // "Load more" starts fresh.
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [active, committedQuery]);
+
+  // Keep ?q=... in sync with the committed search query. We use replace
+  // (not push) to avoid polluting the browser history on every debounced
+  // keystroke — the back button should escape the blog, not walk back
+  // through 20 query states.
+  const handleQueryChange = useCallback((q) => {
+    setCommittedQuery(q);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (q) next.set("q", q);
+        else next.delete("q");
+        return next;
+      },
+      { replace: true }
+    );
+  }, [setSearchParams]);
+
+  const handleFilter = useCallback((next) => { setSearchResults(next); }, []);
 
   useSEO({
     title: "Blog | Simple IT SRQ - Insights for Sarasota and Bradenton Businesses",
@@ -47,6 +85,12 @@ export default function BlogIndex() {
       </section>
       <section className="section section-alt">
         <div className="container">
+          <BlogSearch
+            posts={sorted}
+            initialQuery={initialQuery}
+            onFilter={handleFilter}
+            onQueryChange={handleQueryChange}
+          />
           <div className="blog-filters" role="tablist" aria-label="Categories">
             {CATEGORIES.map((cat) => (
               <button
@@ -86,7 +130,13 @@ export default function BlogIndex() {
                 : [card];
             })}
           </div>
-          {filtered.length === 0 && <p className="blog-empty">No posts in this category yet.</p>}
+          {filtered.length === 0 && (
+            <p className="blog-empty">
+              {committedQuery
+                ? `No posts match "${committedQuery}". Try different keywords.`
+                : "No posts in this category yet."}
+            </p>
+          )}
           {hasMore && (
             <div className="blog-load-more">
               <button
