@@ -52,4 +52,13 @@ export default defineConfig([
       parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
     },
   },
+  {
+    // Node-run tooling: Playwright config, e2e specs, build/db scripts.
+    files: ['playwright.config.js', 'e2e/**/*.{js,mjs}', 'scripts/**/*.{js,mjs}', 'vitest.config.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: { ...globals.node },
+      parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+    },
+  },
 ])
