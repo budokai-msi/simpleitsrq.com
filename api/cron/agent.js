@@ -526,7 +526,7 @@ async function sendReviewRequests() {
     || "https://www.google.com/search?q=Simple+IT+SRQ+Sarasota";
   const fromAddr = "Simple IT SRQ <hello@simpleitsrq.com>";
 
-  let candidates = [];
+  let candidates;
   try {
     candidates = await sql`
       SELECT id, ticket_code, email, name, subject, category, closed_at

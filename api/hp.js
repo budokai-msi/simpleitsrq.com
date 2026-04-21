@@ -44,7 +44,7 @@ export async function POST(request) {
   const rl = await rateLimit({ ip, bucket: "hp", windowSeconds: 60, max: 60 });
   if (!rl.ok) return noContent();
 
-  let body = {};
+  let body;
   try { body = await request.json(); } catch { return noContent(); }
 
   const type = String(body.type || "unknown").slice(0, 32);

@@ -66,6 +66,11 @@ export function requireEnv(name) {
  * Return the value of the named env var, or the provided fallback. Never
  * throws. Use for truly optional config where a sensible default exists.
  *
+ * NOTE: env values are ALWAYS strings when set. Passing a non-string fallback
+ * (e.g. a number) means the return type is a union, and the caller is
+ * responsible for coercing (`Number(optionalEnv('PORT', 3000))`). For typed
+ * fallbacks prefer `optionalEnvNumber` / `optionalEnvBool` below.
+ *
  * @template T
  * @param {string} name
  * @param {T} fallback
@@ -77,6 +82,36 @@ export function optionalEnv(name, fallback) {
     return fallback;
   }
   return value;
+}
+
+/**
+ * Like `optionalEnv` but coerces the env value to a finite number. Falls back
+ * to `fallback` when the env var is unset OR fails `Number.isFinite`. Always
+ * returns a `number`, never a `string | number` union.
+ *
+ * @param {string} name
+ * @param {number} fallback
+ * @returns {number}
+ */
+export function optionalEnvNumber(name, fallback) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === null || raw === "") return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+/**
+ * Like `optionalEnv` but coerces "true"/"1"/"yes"/"on" to true (case-insensitive),
+ * everything else truthy-set to false. Unset falls back.
+ *
+ * @param {string} name
+ * @param {boolean} fallback
+ * @returns {boolean}
+ */
+export function optionalEnvBool(name, fallback) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === null || raw === "") return fallback;
+  return /^(true|1|yes|on)$/i.test(raw.trim());
 }
 
 /**

@@ -181,7 +181,7 @@ export async function matchOsintFeeds(ips) {
 
 /**
  * Lightweight summary for the admin dashboard: row counts per feed, last
- * refresh time, and the 10 most-recent matches against actual visit data.
+ * refresh time, and the 20 most-recent matches against actual visit data.
  *
  * @returns {Promise<OsintStatus>}
  */

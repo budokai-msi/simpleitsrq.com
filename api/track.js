@@ -32,7 +32,7 @@ export async function POST(request) {
   const rl = await rateLimit({ ip, bucket: "track", windowSeconds: 60, max: 120 });
   if (!rl.ok) return noContent();
 
-  let body = {};
+  let body;
   try { body = await request.json(); } catch { body = {}; }
 
   // Affiliate-click tracking piggybacks on the same endpoint so we don't
