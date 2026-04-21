@@ -207,6 +207,20 @@ function ScrollToHash() {
   return null;
 }
 
+function MobileStickyCTA() {
+  const { pathname } = useLocation();
+  // Hide where the CTA would be redundant (already-booking page) or
+  // disruptive (signed-in portal area doesn't need a marketing CTA).
+  if (pathname === "/book" || pathname.startsWith("/portal")) return null;
+  return (
+    <div className="mobile-sticky-cta" role="complementary" aria-label="Quick action">
+      <Link to="/book" className="btn btn-primary mobile-sticky-cta-btn">
+        Book a Free Call
+      </Link>
+    </div>
+  );
+}
+
 function Layout({ children }) {
   return (
     <>
@@ -215,6 +229,7 @@ function Layout({ children }) {
       <VisitorTracker />
       {children}
       <Footer />
+      <MobileStickyCTA />
       <CookieConsent />
       <AutoAds />
       <Analytics />
