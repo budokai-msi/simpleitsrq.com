@@ -2091,8 +2091,10 @@ async function handleHealth() {
     const r = await sql`SELECT 1 AS ping`;
     checks.db = r.length > 0 ? "connected" : "no_response";
   } catch (err) {
+    // Public endpoint — don't leak schema/host/connection details from
+    // the driver error. Log server-side, return a generic status.
+    console.error("[portal/health] db ping failed", err);
     checks.db = "error";
-    checks.dbError = String(err.message || err).slice(0, 200);
   }
   try {
     const r = await sql`
@@ -2210,7 +2212,11 @@ const ALLOWED_ORIGINS = new Set([
 function csrfCheck(request, method) {
   if (method === "GET") return true;
   const origin = request.headers.get("origin");
-  if (!origin) return true; // non-browser clients (curl, cron)
+  // Browsers always set Origin on cross-origin non-GET fetches. Treat a
+  // missing Origin as a CSRF-shaped request and reject it — defense in
+  // depth alongside requireSession. Real server-to-server callers should
+  // use a scoped API token on a different surface, not /api/portal.
+  if (!origin) return false;
   return ALLOWED_ORIGINS.has(origin);
 }
 
