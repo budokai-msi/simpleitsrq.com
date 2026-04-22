@@ -55,7 +55,9 @@ function renderInline(text, key = 0) {
 }
 
 function renderTable(lines, key) {
-  const rows = lines.map((l) => l.split("|").slice(1, -1).map((c) => c.trim()));
+  const rows = lines.map((l) =>
+    String(l || "").split("|").slice(1, -1).map((c) => c.trim()),
+  );
   if (rows.length < 2) return null;
   const header = rows[0];
   const body = rows.slice(2); // skip separator row
@@ -74,7 +76,7 @@ function renderTable(lines, key) {
 }
 
 function renderMarkdown(md) {
-  if (!md) return [];
+  if (!md || typeof md !== "string") return [];
   const lines = md.split("\n");
   const out = [];
   let i = 0, key = 0;

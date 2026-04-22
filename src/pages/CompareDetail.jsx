@@ -133,7 +133,7 @@ export default function CompareDetail() {
         name: product.name,
         description: product.bestFor,
         url: link.href || `${SITE_URL}/compare/${comparison.slug}`,
-        brand: { "@type": "Brand", name: product.name.split(" ")[0] },
+        brand: { "@type": "Brand", name: String(product.name || "").split(" ")[0] || product.name },
         offers: {
           "@type": "Offer",
           priceCurrency: "USD",
