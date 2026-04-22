@@ -4394,6 +4394,7 @@
 }
 [data-theme="dark"] .audit-type-card__icon { background: rgba(76, 194, 255, 0.12); color: #4CC2FF; }
 
+<<<<<<< HEAD
 /* ============ Exit-intent modal ============ */
 .exit-intent-backdrop {
   position: fixed;
@@ -4663,3 +4664,19 @@
   .exit-intent-backdrop,
   .exit-intent-modal { animation: none; }
 }
+
+/* ===== /advertise media-kit page ===== */
+/* Most of the page uses inline styles + the existing form-shell / field /
+   eyebrow / display / lede / title-2 / section-head / btn / btn-primary
+   classes, so these rules only cover cases where inline styles can't reach
+   (pseudo-states, responsive breakpoints, theme-aware overrides). */
+.advertise-page .form-shell { padding: 1.75rem; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface); }
+.advertise-page details[open] > summary { margin-bottom: 6px; }
+.advertise-page summary::-webkit-details-marker { display: none; }
+.advertise-page summary::after { content: "+"; float: right; font-weight: 400; color: var(--text-2); }
+.advertise-page details[open] > summary::after { content: "\2212"; }
+@media (max-width: 640px) {
+  .advertise-page form > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+  .advertise-page .advertise-tiers { grid-template-columns: 1fr !important; }
+}
+[data-theme="dark"] .advertise-page .form-shell { background: var(--bg-elevated); }
