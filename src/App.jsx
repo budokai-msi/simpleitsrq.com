@@ -37,6 +37,8 @@ const CyberInsuranceQuote = lazy(() => import("./pages/CyberInsuranceQuote"));
 const Stack = lazy(() => import("./pages/Stack"));
 const ComplianceAuditReferral = lazy(() => import("./pages/ComplianceAuditReferral"));
 const Advertise = lazy(() => import("./pages/Advertise"));
+const CompareIndex = lazy(() => import("./pages/CompareIndex"));
+const CompareDetail = lazy(() => import("./pages/CompareDetail"));
 
 // Exit-intent capture modal — lazy-loaded and mounted OUTSIDE the route
 // <Suspense> fallback so route transitions aren't blocked on it. Renders
@@ -347,6 +349,8 @@ export default function App() {
               <Route path="/compliance-audit-referral" element={<ComplianceAuditReferral />} />
               <Route path="/advertise" element={<Advertise />} />
               <Route path="/sponsor" element={<Advertise />} />
+              <Route path="/compare" element={<CompareIndex />} />
+              <Route path="/compare/:slug" element={<CompareDetail />} />
               <Route path="/password-check" element={<PasswordCheck />} />
               <Route path="/portal" element={<ClientPortal />} />
               <Route path="/privacy" element={<PrivacyPage />} />
