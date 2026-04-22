@@ -12,10 +12,16 @@ import { trackAffiliateClick } from "../lib/trackClick";
 const TOKEN_RE = /\[\[(amazon(?:_search)?:[^\]]+)\]\]/g;
 
 function extractTools(content) {
-  if (!content) return [];
+  // Defensive typeof guard — `content` can be a lazy-imported MDX module
+  // (object) in some dynamic-import paths; .exec() against a non-string
+  // would throw during render.
+  if (!content || typeof content !== "string") return [];
   const seen = new Map();
+  // Create a fresh matcher per call so module-scope lastIndex from a prior
+  // render doesn't corrupt this one.
+  const re = new RegExp(TOKEN_RE.source, "g");
   let m;
-  while ((m = TOKEN_RE.exec(content)) !== null) {
+  while ((m = re.exec(content)) !== null) {
     const raw = m[1];
     // Key on the query half so duplicates (same tool mentioned twice) collapse.
     const key = raw.split("|")[0];

@@ -181,6 +181,10 @@ const TOKEN_RE = new RegExp(
 );
 
 export function postHasAffiliateContent(markdown) {
-  if (!markdown) return false;
+  if (!markdown || typeof markdown !== "string") return false;
+  // Reset lastIndex — the module-scope RegExp with /g flag otherwise
+  // carries state across calls, yielding stale "no match" verdicts on
+  // the second invocation with the same content.
+  TOKEN_RE.lastIndex = 0;
   return TOKEN_RE.test(markdown);
 }

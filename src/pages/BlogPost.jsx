@@ -163,7 +163,9 @@ function renderInline(text, key = 0, slug = null) {
 }
 
 function renderMarkdown(md, slug = null) {
-  const lines = md.split("\n");
+  // Same defensive coercion as readingTime — guards against the markdown
+  // path being called with a non-string (e.g. a module import result).
+  const lines = String(md || "").split("\n");
   const out = [];
   let i = 0;
   let key = 0;
@@ -201,7 +203,10 @@ function renderMarkdown(md, slug = null) {
 }
 
 function readingTime(text) {
-  const words = (text || "").split(/\s+/).length;
+  // Defensive String() wrap — `text` is sometimes a module / object when a
+  // dynamic MDX import's shape shifts between dev and prod; without the
+  // coercion, .split() would throw "is not a function" and kill render.
+  const words = String(text || "").split(/\s+/).length;
   return Math.max(2, Math.round(words / 220));
 }
 
