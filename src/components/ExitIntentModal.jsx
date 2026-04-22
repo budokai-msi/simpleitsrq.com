@@ -28,6 +28,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { X, Check, ShieldCheck, Percent, ArrowRight } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
+import { track } from "../lib/analytics";
 
 const STORAGE_KEY = "srq_exit_intent_shown";
 const GRACE_MS = 30_000; // 30s on-page before eligible
@@ -175,6 +176,11 @@ export default function ExitIntentModal() {
           source: picked.source,
         }),
       });
+      // Fire-and-forget GA4 lead event regardless of server response — if
+      // the beacon was dropped, the user still wanted it and we still want
+      // the conversion count. $400 value as rough average of the two
+      // choices (discount + cyber-insurance intro).
+      track.lead(picked.source, 400, { choice: picked.id });
       if (res && res.ok) {
         setStatus("sent");
       } else {

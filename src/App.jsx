@@ -10,6 +10,7 @@ import { AuthProvider } from "./lib/auth.jsx";
 import { useAuth } from "./lib/authContext.js";
 import CookieConsent from "./components/CookieConsent.jsx";
 import VisitorTracker from "./components/VisitorTracker.jsx";
+import { useAnalyticsPageviews, useAnalyticsConsent } from "./lib/analytics.js";
 import { AutoAds } from "./components/AdSense.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./App.css";
@@ -266,12 +267,23 @@ function MobileStickyCTA() {
   );
 }
 
+function AnalyticsMount() {
+  // GA4 Consent Mode v2 — syncs our consent banner choice to gtag on
+  // mount and on every banner change, then fires page_view on every
+  // react-router navigation. Component-with-hooks instead of inline
+  // hooks in Layout so the router context is definitely available.
+  useAnalyticsConsent();
+  useAnalyticsPageviews();
+  return null;
+}
+
 function Layout({ children }) {
   return (
     <>
       <Navbar />
       <ScrollToHash />
       <VisitorTracker />
+      <AnalyticsMount />
       {children}
       <Footer />
       <MobileStickyCTA />

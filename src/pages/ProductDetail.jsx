@@ -6,6 +6,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { useAsyncEffect } from "../lib/useAsyncEffect";
 import Testimonials from "../components/Testimonials";
 import { csrfFetch } from "../lib/csrf";
+import { track } from "../lib/analytics";
 
 // Minimal markdown renderer — handles the subset we actually use in our
 // product preview .md files: ## h2, ### h3, bold **text**, italic *text*,
@@ -151,7 +152,13 @@ function BuyCta({ product }) {
 
   if (live) {
     return (
-      <a href={product.buyLink} className="btn btn-primary btn-lg" target="_blank" rel="noopener noreferrer">
+      <a
+        href={product.buyLink}
+        className="btn btn-primary btn-lg"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => track.beginCheckout({ slug: product.slug, title: product.title, price: product.price })}
+      >
         Buy for ${product.price}{product.priceSuffix || ""} <ArrowRight size={16} />
       </a>
     );

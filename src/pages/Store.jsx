@@ -8,6 +8,7 @@ import { products } from "../data/products";
 import { useSEO } from "../lib/seo";
 import Testimonials from "../components/Testimonials";
 import { csrfFetch } from "../lib/csrf";
+import { track } from "../lib/analytics";
 
 const FAQ = [
   {
@@ -96,6 +97,7 @@ function BuyCta({ product, compact = false }) {
         className={`btn btn-primary ${compact ? "" : "btn-lg"}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => track.beginCheckout({ slug: product.slug, title: product.title, price: product.price })}
       >
         Buy the kit — ${product.price} <ArrowRight size={compact ? 14 : 16} />
       </a>
@@ -180,7 +182,13 @@ function SeriesCard({ product }) {
       )}
       <div className="series-card-cta">
         {live ? (
-          <a href={product.buyLink} className="btn btn-primary" target="_blank" rel="noopener noreferrer">
+          <a
+            href={product.buyLink}
+            className="btn btn-primary"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => track.beginCheckout({ slug: product.slug, title: product.title, price: product.price })}
+          >
             Buy — ${product.price} <ArrowRight size={14} />
           </a>
         ) : sent ? (
