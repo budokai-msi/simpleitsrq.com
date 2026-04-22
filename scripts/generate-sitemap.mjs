@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { loadAllPosts } from "./_posts-source.mjs";
 import { cityList } from "../src/data/cities.js";
 import { products } from "../src/data/products.js";
+import { COMPARISONS } from "../src/data/comparisons.js";
 
 const posts = loadAllPosts();
 
@@ -33,6 +34,7 @@ const staticUrls = [
   { loc: "/book", priority: "0.8", changefreq: "monthly" },
   { loc: "/service-area", priority: "0.85", changefreq: "monthly" },
   { loc: "/partners", priority: "0.8", changefreq: "monthly" },
+  { loc: "/compare", priority: "0.8", changefreq: "monthly" },
   { loc: "/advertise", priority: "0.7", changefreq: "monthly" },
   { loc: "/support", priority: "0.6", changefreq: "monthly" },
   { loc: "/privacy", priority: "0.3", changefreq: "yearly" },
@@ -59,7 +61,14 @@ const productUrls = products.map((p) => ({
   changefreq: "weekly",
 }));
 
-const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls];
+const compareUrls = COMPARISONS.map((c) => ({
+  loc: `/compare/${c.slug}`,
+  priority: "0.75",
+  changefreq: "monthly",
+  lastmod: c.date,
+}));
+
+const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls];
 
 const body = all
   .map((u) => {
