@@ -6,6 +6,11 @@ import {
 import { useSEO, SITE_URL } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
+import { track } from "../lib/analytics";
+
+// Expected revenue per sponsor tier — feeds GA4 generate_lead value so
+// conversion reports rank inquiries by potential rather than count.
+const TIER_VALUE = { newsletter: 150, blog: 300, stack: 500 };
 
 // Pricing tiers kept at module scope so Vite can tree-shake the
 // constant reference and the form <select> stays in sync with the
@@ -265,6 +270,7 @@ export default function Advertise() {
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "Send failed. Try again or email hello@simpleitsrq.com directly.");
       }
+      track.lead("sponsor-inquiry", TIER_VALUE[tier] ?? 150, { tier, month });
       setStatus("ok");
     } catch (err) {
       setStatus("error");

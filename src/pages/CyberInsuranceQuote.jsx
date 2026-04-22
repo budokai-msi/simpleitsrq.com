@@ -7,6 +7,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { trackAffiliateClick } from "../lib/trackClick";
+import { track } from "../lib/analytics";
 
 // Partner config at module scope — lets Vite tree-shake either branch based
 // on whether the env var is set at build time.
@@ -145,6 +146,9 @@ export default function CyberInsuranceQuote() {
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "Send failed. Try again or email hello@simpleitsrq.com directly.");
       }
+      // Fire a GA4 generate_lead with estimated referral value ($800 is the
+      // conservative midpoint of typical cyber-insurance broker payouts).
+      track.lead("cyber-insurance-quote", 800, { industry, employees, renewal });
       setStatus("ok");
     } catch (err) {
       setStatus("error");

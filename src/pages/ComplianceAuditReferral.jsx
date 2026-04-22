@@ -8,6 +8,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { trackAffiliateClick } from "../lib/trackClick";
+import { track } from "../lib/analytics";
 
 // Generic + per-type partner URLs read at module scope so Vite tree-shakes
 // whichever branch isn't configured at build time.
@@ -183,6 +184,12 @@ export default function ComplianceAuditReferral() {
       if (!res.ok || !data.ok) {
         throw new Error(data.error || "Send failed. Try again or email hello@simpleitsrq.com directly.");
       }
+      // $1000 midpoint of typical audit-firm referral payouts ($500-$2000).
+      track.lead(`compliance-audit-${audit.toLowerCase().replace(/\s+/g, "-")}`, 1000, {
+        audit_type: audit,
+        employees,
+        engagement,
+      });
       setStatus("ok");
     } catch (err) {
       setStatus("error");

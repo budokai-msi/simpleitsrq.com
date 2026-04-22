@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Mail, Check, Loader2 } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
+import { trackEvent } from "../lib/analytics";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
@@ -31,6 +32,7 @@ export default function Newsletter() {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || `http_${res.status}`);
       }
+      trackEvent("sign_up", { method: "newsletter", source: "newsletter" });
       setState("done");
     } catch (e2) {
       setErr(e2.message || "signup_failed");
