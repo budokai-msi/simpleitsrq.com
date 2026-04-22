@@ -1,5 +1,22 @@
 [
   {
+    "slug": "florida-small-business-tech-stack-2026",
+    "title": "The 2026 Florida Small-Business Tech Stack (What We Actually Install on Day One)",
+    "date": "2026-04-22",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "tech-stack",
+      "small-business",
+      "compliance",
+      "sarasota",
+      "bradenton"
+    ],
+    "excerpt": "Every time a new Sarasota client asks 'what should we be running?' the answer is the same eight-tool stack. Here it is — with the tiers that actually pass a 2026 cyber-insurance audit and the ones we rejected and why.",
+    "metaDescription": "The complete tool-by-tool tech stack we install for every new Sarasota, Bradenton, and Venice small-business client — with the specific tiers that pass a cyber-insurance renewal and the alternatives we rejected.",
+    "heroAlt": "A Florida small-business laptop desk with a YubiKey plugged in, a UPS under the desk, and a Microsoft 365 admin console on screen."
+  },
+  {
     "slug": "5-mfa-methods-2026-cyber-insurance-renewal",
     "title": "The 5 MFA Methods Your 2026 Cyber-Insurance Renewal Actually Accepts (And the 2 That'll Get You Denied)",
     "date": "2026-04-21",

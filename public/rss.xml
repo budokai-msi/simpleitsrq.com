@@ -6,7 +6,16 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Tue, 21 Apr 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 22 Apr 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>The 2026 Florida Small-Business Tech Stack (What We Actually Install on Day One)</title>
+      <link>https://simpleitsrq.com/blog/florida-small-business-tech-stack-2026</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/florida-small-business-tech-stack-2026</guid>
+      <pubDate>Wed, 22 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>Every time a new Sarasota client asks &apos;what should we be running?&apos; the answer is the same eight-tool stack. Here it is — with the tiers that actually pass a 2026 cyber-insurance audit and the ones we rejected and why.</description>
+    </item>
     <item>
       <title>The 5 MFA Methods Your 2026 Cyber-Insurance Renewal Actually Accepts (And the 2 That&apos;ll Get You Denied)</title>
       <link>https://simpleitsrq.com/blog/5-mfa-methods-2026-cyber-insurance-renewal</link>
