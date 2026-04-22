@@ -12,6 +12,7 @@ import AdUnit from "../components/AdSense";
 import ToolsUsedFooter from "../components/ToolsUsedFooter";
 import StoreCrossSell from "../components/StoreCrossSell";
 import Affiliate from "../components/Affiliate";
+import StackToolInline from "../components/StackToolInline";
 import RelatedPosts from "../components/RelatedPosts";
 import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
 import ComplianceAuditCTA from "../components/ComplianceAuditCTA";
@@ -47,7 +48,12 @@ function getMdxComponents(slug) {
   if (!componentsBySlug.has(slug)) {
     function BoundAffiliate(props) { return <Affiliate slug={slug} {...props} />; }
     BoundAffiliate.displayName = `Affiliate(${slug})`;
-    componentsBySlug.set(slug, { Affiliate: BoundAffiliate });
+    // <Tool id="..." /> for MDX authors — wraps StackToolInline and
+    // binds `slug` from the rendering post so affiliate-click tracking
+    // carries proper attribution.
+    function BoundTool(props) { return <StackToolInline slug={slug} {...props} />; }
+    BoundTool.displayName = `Tool(${slug})`;
+    componentsBySlug.set(slug, { Affiliate: BoundAffiliate, Tool: BoundTool });
   }
   return componentsBySlug.get(slug);
 }
@@ -134,7 +140,22 @@ function renderInline(text, key = 0, slug = null) {
       remaining = remaining.slice(nextIdx + full.length);
     } else {
       const [full, token] = affMatch;
-      parts.push(renderAffiliateToken(token, `${key}-a-${idx++}`, slug));
+      // `[[tool:<id>]]` is our stack-tool shortcode — dispatch to
+      // StackToolInline instead of the generic affiliate-token resolver.
+      // Everything else (`[[acronis]]`, `[[amazon:ASIN|label]]`, etc.)
+      // keeps going through the existing affiliate path.
+      if (token.startsWith("tool:")) {
+        const toolId = token.slice(5).trim();
+        parts.push(
+          <StackToolInline
+            key={`${key}-t-${idx++}`}
+            toolId={toolId}
+            slug={slug}
+          />,
+        );
+      } else {
+        parts.push(renderAffiliateToken(token, `${key}-a-${idx++}`, slug));
+      }
       remaining = remaining.slice(nextIdx + full.length);
     }
   }

@@ -4105,6 +4105,114 @@
   color: #4CC2FF;
 }
 
+/* ─── Inline stack-tool card (blog `[[tool:<id>]]` + MDX <Tool>) ───────
+   Rendered inline by src/components/StackToolInline.jsx. Default variant
+   is a two-line card; `.stack-tool-inline--compact` is a one-line pill.
+   Uses <span> rather than <div> because the parser can place this inside
+   a <p>, and nested <div> inside <p> is invalid and React drops it. */
+.stack-tool-inline {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  margin: 12px 0;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-left: 3px solid #0F6CBD;
+  border-radius: 8px;
+  background: var(--syn-surface, #ffffff);
+  max-width: 560px;
+  line-height: 1.45;
+}
+.stack-tool-inline__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.stack-tool-inline__row--ctas {
+  margin-top: 2px;
+}
+.stack-tool-inline__name {
+  font-weight: 700;
+  color: var(--syn-text, #0B0D10);
+  font-size: 0.98rem;
+}
+.stack-tool-inline__price {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(16, 124, 16, 0.08);
+  color: #107C10;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stack-tool-inline__aff {
+  font-size: 0.7rem;
+  padding: 1px 7px;
+  border-radius: 4px;
+  background: rgba(15, 108, 189, 0.08);
+  color: #0F6CBD;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.stack-tool-inline__tagline {
+  font-size: 0.9rem;
+  color: var(--syn-text-muted, #4b5563);
+}
+.stack-tool-inline__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0F6CBD;
+  text-decoration: none;
+}
+.stack-tool-inline__cta:hover { text-decoration: underline; }
+.stack-tool-inline__details {
+  font-size: 0.82rem;
+  color: var(--syn-text-muted, #6b7280);
+  text-decoration: none;
+}
+.stack-tool-inline__details:hover {
+  color: #0F6CBD;
+  text-decoration: underline;
+}
+
+/* Compact pill — single line, denser. */
+.stack-tool-inline--compact {
+  flex-direction: row;
+  align-items: center;
+  padding: 4px 10px;
+  margin: 0 2px;
+  border-left-width: 1px;
+  border-radius: 999px;
+  max-width: none;
+  line-height: 1.3;
+  gap: 8px;
+}
+.stack-tool-inline--compact .stack-tool-inline__name { font-size: 0.9rem; }
+.stack-tool-inline--compact .stack-tool-inline__tagline { display: none; }
+
+[data-theme="dark"] .stack-tool-inline {
+  background: var(--syn-surface-hi, #161a20);
+  border-color: var(--syn-border, #2a2f37);
+  border-left-color: #4CC2FF;
+}
+[data-theme="dark"] .stack-tool-inline__name { color: var(--text-1, #f3f4f6); }
+[data-theme="dark"] .stack-tool-inline__tagline { color: var(--syn-text-muted, #9ca3af); }
+[data-theme="dark"] .stack-tool-inline__price {
+  background: rgba(80, 200, 120, 0.12);
+  color: #50C878;
+}
+[data-theme="dark"] .stack-tool-inline__aff {
+  background: rgba(76, 194, 255, 0.12);
+  color: #4CC2FF;
+}
+[data-theme="dark"] .stack-tool-inline__cta { color: #4CC2FF; }
+[data-theme="dark"] .stack-tool-inline__details:hover { color: #4CC2FF; }
+
 /* ─── Compliance audit referral CTA (mirrors .cyber-ins-cta) ────────── */
 
 .audit-cta {
