@@ -1186,11 +1186,15 @@
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .contact-grid { grid-template-columns: 1fr; }
 }
-@media (max-width: 720px) {
+/* Nav collapses earlier now (960px) because there are 7 primary links
+ * plus the Book-a-Call CTA, which no longer fits cleanly on a 13" laptop. */
+@media (max-width: 960px) {
   .nav-links, .nav-actions { display: none; }
   .menu-btn { display: inline-flex; }
   .navbar:has(.mobile-menu) .mobile-menu { display: flex; }
   .mobile-menu { display: flex; }
+}
+@media (max-width: 720px) {
   .display { font-size: 38px; line-height: 46px; letter-spacing: -1px; }
   .title-1 { font-size: 30px; line-height: 38px; }
   .title-2 { font-size: 24px; line-height: 32px; }
@@ -1971,8 +1975,10 @@
 [data-theme="dark"] .form { background: var(--surface); }
 [data-theme="dark"] .form-success-overlay { background: var(--surface); }
 
-/* ----- Mobile menu, responsive ----- */
-@media (max-width: 720px) {
+/* ----- Mobile menu, responsive -----
+ * Matches the 960px breakpoint for the primary nav collapse so the
+ * hamburger trigger appears whenever the desktop nav is hidden. */
+@media (max-width: 960px) {
   .nav-mobile-actions { display: inline-flex; }
 }
 

@@ -137,12 +137,12 @@ function Navbar() {
       <div className="container nav-inner">
         <Logo />
         <nav className="nav-links" aria-label="Primary">
-          <Link to="/#solutions">Solutions</Link>
+          <Link to="/blog">Blog</Link>
+          <Link to="/tools">Recommended Tools</Link>
+          <Link to="/store">Templates &amp; Playbooks</Link>
+          <Link to="/stack">Our Vendor Stack</Link>
           <Link to="/#industries">Industries</Link>
           <Link to="/#compliance">Compliance</Link>
-          <Link to="/blog">Blog</Link>
-          <Link to="/tools">Tools</Link>
-          <Link to="/store">Store</Link>
           <Link to="/support">Support</Link>
         </nav>
         <div className="nav-actions">
@@ -159,12 +159,12 @@ function Navbar() {
       </div>
       {open && (
         <div className="mobile-menu" role="menu">
-          <Link to="/#solutions" onClick={() => setOpen(false)}>Solutions</Link>
+          <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
+          <Link to="/tools" onClick={() => setOpen(false)}>Recommended Tools</Link>
+          <Link to="/store" onClick={() => setOpen(false)}>Templates &amp; Playbooks</Link>
+          <Link to="/stack" onClick={() => setOpen(false)}>Our Vendor Stack</Link>
           <Link to="/#industries" onClick={() => setOpen(false)}>Industries</Link>
           <Link to="/#compliance" onClick={() => setOpen(false)}>Compliance</Link>
-          <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
-          <Link to="/tools" onClick={() => setOpen(false)}>Tools</Link>
-          <Link to="/store" onClick={() => setOpen(false)}>Store</Link>
           <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#contact" onClick={() => setOpen(false)}>Contact</Link>
           <Link to="/portal" onClick={() => setOpen(false)}>
