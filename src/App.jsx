@@ -36,6 +36,7 @@ const Partners = lazy(() => import("./pages/Partners"));
 const CyberInsuranceQuote = lazy(() => import("./pages/CyberInsuranceQuote"));
 const Stack = lazy(() => import("./pages/Stack"));
 const ComplianceAuditReferral = lazy(() => import("./pages/ComplianceAuditReferral"));
+const Advertise = lazy(() => import("./pages/Advertise"));
 
 function RouteFallback() {
   return (
@@ -308,6 +309,8 @@ export default function App() {
               <Route path="/stack" element={<Stack />} />
               <Route path="/tools-we-use" element={<Stack />} />
               <Route path="/compliance-audit-referral" element={<ComplianceAuditReferral />} />
+              <Route path="/advertise" element={<Advertise />} />
+              <Route path="/sponsor" element={<Advertise />} />
               <Route path="/password-check" element={<PasswordCheck />} />
               <Route path="/portal" element={<ClientPortal />} />
               <Route path="/privacy" element={<PrivacyPage />} />
