@@ -152,7 +152,6 @@ export function PrivacyPage() {
           <tr><td>Theme preference (dark / light)</td><td><code>theme</code> (localStorage)</td><td>Essential</td><td>12 months</td></tr>
           <tr><td>Anonymous visitor correlation</td><td><code>sirq_anon</code></td><td>Analytics (opt-in)</td><td>12 months</td></tr>
           <tr><td>Google Analytics 4</td><td><code>_ga</code>, <code>_ga_*</code></td><td>Analytics (opt-in)</td><td>Up to 24 months</td></tr>
-          <tr><td>AdSense ad personalization</td><td>Google-set</td><td>Marketing (opt-in)</td><td>Per Google retention</td></tr>
           <tr><td>Cloudflare Turnstile</td><td><code>cf_chl_*</code></td><td>Essential (bot protection)</td><td>Session</td></tr>
         </tbody>
       </table>
@@ -200,10 +199,9 @@ export function PrivacyPage() {
           <tr><td>Neon (Databricks)</td><td>Primary PostgreSQL database — tickets, sessions, security events, newsletter</td><td>US</td></tr>
           <tr><td>Resend, Inc.</td><td>Outbound transactional and newsletter email</td><td>US</td></tr>
           <tr><td>Cloudflare</td><td>Turnstile bot challenge</td><td>Global edge</td></tr>
-          <tr><td>Google LLC</td><td>Google Analytics 4 (if opted in), AdSense (if opted in), OAuth sign-in</td><td>US / Global</td></tr>
+          <tr><td>Google LLC</td><td>Google Analytics 4 (cookieless until you opt in via the consent banner) and OAuth sign-in</td><td>US / Global</td></tr>
           <tr><td>Stripe, Inc.</td><td>Payment processing for store products (handled entirely by Stripe — we never see your card number)</td><td>US / Global</td></tr>
           <tr><td>GitHub, Inc.</td><td>OAuth sign-in (optional)</td><td>US</td></tr>
-          <tr><td>Sentry (Functional Software, Inc.)</td><td>Client-side error telemetry (if opted in via marketing consent)</td><td>US / EU</td></tr>
           <tr><td>AbuseIPDB / IPinfo / Spamhaus / Emerging Threats</td><td>Threat intelligence feeds queried against incoming IPs</td><td>US / EU</td></tr>
         </tbody>
       </table>
@@ -638,9 +636,9 @@ export function AccessibilityPage() {
         </li>
         <li>
           Embedded third-party content (Cal.com booking embed, Cloudflare
-          Turnstile challenge, AdSense units, Vercel Live preview banner)
-          comes from external providers whose accessibility we don't control.
-          We turn off optional third-party components that don't meet AA.
+          Turnstile challenge, Vercel Live preview banner) comes from
+          external providers whose accessibility we don't control. We turn
+          off optional third-party components that don't meet AA.
         </li>
         <li>
           Blog-post MDX bodies are authored; if an author omits alt text on
