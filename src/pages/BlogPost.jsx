@@ -41,6 +41,24 @@ function getLazyMdxComponent(slug) {
   return lazyBySlug.get(slug);
 }
 
+// MDX overrides the default `a` renderer so internal paths (`/store/...`,
+// `/compare/...`, etc.) use react-router's <Link> for SPA navigation
+// instead of a full page reload. Without this, tapping a product link in
+// a blog post triggers a browser navigation that re-fetches index.html,
+// re-boots the app, and on flaky mobile networks shows up as "does
+// nothing" (navigation times out / Safari discards the nav mid-flight).
+// External and hash-only links go through a plain <a>.
+function MdxLink({ href = "", children, ...rest }) {
+  if (typeof href === "string" && href.startsWith("/")) {
+    // Strip target/rel for internal Links — react-router's <Link> handles
+    // the navigation, and those attrs would degrade the SPA transition.
+    // eslint-disable-next-line no-unused-vars
+    const { target, rel, ...linkProps } = rest;
+    return <Link to={href} {...linkProps}>{children}</Link>;
+  }
+  return <a href={href} {...rest}>{children}</a>;
+}
+
 // Stable binder so the `components` prop identity stays the same across
 // renders for a given slug — avoids re-rendering the whole MDX subtree.
 const componentsBySlug = new Map();
@@ -53,7 +71,7 @@ function getMdxComponents(slug) {
     // carries proper attribution.
     function BoundTool(props) { return <StackToolInline slug={slug} {...props} />; }
     BoundTool.displayName = `Tool(${slug})`;
-    componentsBySlug.set(slug, { Affiliate: BoundAffiliate, Tool: BoundTool });
+    componentsBySlug.set(slug, { a: MdxLink, Affiliate: BoundAffiliate, Tool: BoundTool });
   }
   return componentsBySlug.get(slug);
 }
