@@ -1,5 +1,24 @@
 [
   {
+    "slug": "florida-compliance-audit-referral-2026",
+    "title": "How to Pick a Florida Compliance Audit Firm in 2026 (SOC 2, HIPAA, PCI, FTC Safeguards)",
+    "date": "2026-04-22",
+    "category": "Compliance",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "compliance",
+      "audits",
+      "hipaa",
+      "soc-2",
+      "ftc-safeguards",
+      "bradenton",
+      "sarasota"
+    ],
+    "excerpt": "Most Florida small businesses we support go through a compliance audit every 12-24 months — SOC 2 for SaaS, HIPAA for medical/dental, PCI for anyone taking cards, FTC Safeguards for tax preparers and mortgage brokers. Here's how to pick the firm, what to ask in the first call, and how to keep the engagement short.",
+    "metaDescription": "A practical guide to choosing a compliance-audit firm for Florida small businesses: how SOC 2, HIPAA, PCI DSS, and FTC Safeguards engagements actually work, what they cost, and how to avoid the four mistakes that double your bill.",
+    "heroAlt": "An audit kickoff call on a Sarasota small-business laptop showing a SOC 2 scoping checklist and a HIPAA risk assessment PDF."
+  },
+  {
     "slug": "florida-small-business-tech-stack-2026",
     "title": "The 2026 Florida Small-Business Tech Stack (What We Actually Install on Day One)",
     "date": "2026-04-22",

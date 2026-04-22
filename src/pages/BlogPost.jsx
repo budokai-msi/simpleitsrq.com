@@ -14,6 +14,7 @@ import StoreCrossSell from "../components/StoreCrossSell";
 import Affiliate from "../components/Affiliate";
 import RelatedPosts from "../components/RelatedPosts";
 import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
+import ComplianceAuditCTA from "../components/ComplianceAuditCTA";
 import { trackAffiliateClick } from "../lib/trackClick";
 
 // Lazy-loaded MDX modules. Each post ships as its own chunk so adding a
@@ -320,27 +321,57 @@ export default function BlogPost() {
           )}
         </div>
       </article>
-      {postMatchesCyberInsurance(post, rawBody) && (
-        <div className="container" style={{ maxWidth: 780 }}>
-          <CyberInsuranceCTA slug={slug} />
-        </div>
-      )}
+      {renderReferralCta(post, rawBody, slug)}
       <RelatedPosts currentSlug={slug} />
     </main>
   );
 }
 
-// Decide whether a blog post should surface the cyber-insurance referral
-// CTA. Match any of: tag ∈ {cyber-insurance, insurance}, category ∈
-// {Cybersecurity, Compliance}, or body text mentions "cyber insurance".
-// Deliberately broad — these are exactly the readers most likely to be
-// weeks out from a renewal.
-function postMatchesCyberInsurance(post, body) {
-  if (!post) return false;
+// Pick at most ONE referral CTA per post so readers don't get a wall of
+// pitches. Precedence: an explicit audit-type tag wins; then specific
+// insurance/cyber-insurance content; then the "Compliance" category
+// (assumed audit); then a body-text mention of cyber-insurance; then the
+// broader "Cybersecurity" category (assumed insurance). Anything else
+// gets nothing.
+function renderReferralCta(post, body, slug) {
+  if (!post) return null;
+  const wrap = (el) => (
+    <div className="container" style={{ maxWidth: 780 }}>{el}</div>
+  );
+
   const tags = (post.tags || []).map((t) => String(t).toLowerCase());
-  if (tags.includes("cyber-insurance") || tags.includes("insurance")) return true;
   const cat = String(post.category || "").toLowerCase();
-  if (cat === "cybersecurity" || cat === "compliance") return true;
-  if (typeof body === "string" && /cyber[- ]insurance/i.test(body)) return true;
-  return false;
+  const hay = `${post.title || ""} ${post.metaDescription || ""} ${String(body || "")}`.toLowerCase();
+
+  // Specific audit-type tag or body match → audit CTA pre-filled to that type.
+  if (tags.includes("hipaa") || /\bhipaa\b/.test(hay)) {
+    return wrap(<ComplianceAuditCTA slug={slug} audit="HIPAA" />);
+  }
+  if (tags.includes("soc-2") || tags.includes("soc2") || /\bsoc\s*2\b/.test(hay)) {
+    return wrap(<ComplianceAuditCTA slug={slug} audit="SOC 2" />);
+  }
+  if (tags.includes("pci") || tags.includes("pci-dss") || /\bpci\s*dss\b/.test(hay)) {
+    return wrap(<ComplianceAuditCTA slug={slug} audit="PCI DSS" />);
+  }
+  if (tags.includes("ftc-safeguards") || /\bftc\s+safeguards\b/.test(hay)) {
+    return wrap(<ComplianceAuditCTA slug={slug} audit="FTC Safeguards" />);
+  }
+
+  // Insurance-specific content → cyber-insurance CTA.
+  if (tags.includes("cyber-insurance") || tags.includes("insurance") || /cyber[- ]insurance/i.test(hay)) {
+    return wrap(<CyberInsuranceCTA slug={slug} />);
+  }
+
+  // Compliance category without specific audit clue → generic audit CTA.
+  if (cat === "compliance") {
+    return wrap(<ComplianceAuditCTA slug={slug} />);
+  }
+
+  // Cybersecurity category without specific clue → cyber-insurance CTA
+  // (broadest SMB pain point in this category).
+  if (cat === "cybersecurity") {
+    return wrap(<CyberInsuranceCTA slug={slug} />);
+  }
+
+  return null;
 }
