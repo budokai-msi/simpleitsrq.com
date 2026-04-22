@@ -4005,3 +4005,102 @@
   color: #4CC2FF;
 }
 [data-theme="dark"] .cyber-ins-cta--inline .cyber-ins-cta__btn { background: #4CC2FF; color: #0B0D10; }
+
+/* ─── Tech-stack page ─────────────────────────────────────────────────── */
+
+.stack-tool {
+  padding: 20px 22px;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--syn-surface, #ffffff);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stack-tool__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.stack-tool__name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--syn-text, #0B0D10);
+  letter-spacing: -0.01em;
+}
+
+.stack-tool__price {
+  font-size: 0.85rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(16, 124, 16, 0.08);
+  color: #107C10;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.stack-tool__tagline {
+  font-size: 0.98rem;
+  color: var(--syn-text, #0B0D10);
+  margin: 0;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.stack-tool__tier,
+.stack-tool__good-for,
+.stack-tool__alts {
+  font-size: 0.88rem;
+  color: var(--syn-text-muted, #6b7280);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.stack-tool__tier strong,
+.stack-tool__good-for strong,
+.stack-tool__alts strong {
+  color: var(--syn-text, #0B0D10);
+}
+
+.stack-tool__why {
+  font-size: 0.92rem;
+  color: var(--syn-text-muted, #4b5563);
+  margin: 4px 0;
+  line-height: 1.55;
+}
+
+.stack-tool__cta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.stack-tool__aff-tag {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(15, 108, 189, 0.08);
+  color: #0F6CBD;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+[data-theme="dark"] .stack-tool {
+  background: var(--syn-surface-hi, #161a20);
+  border-color: var(--syn-border, #2a2f37);
+}
+[data-theme="dark"] .stack-tool__price {
+  background: rgba(80, 200, 120, 0.12);
+  color: #50C878;
+}
+[data-theme="dark"] .stack-tool__aff-tag {
+  background: rgba(76, 194, 255, 0.12);
+  color: #4CC2FF;
+}
