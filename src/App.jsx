@@ -37,6 +37,41 @@ const CyberInsuranceQuote = lazy(() => import("./pages/CyberInsuranceQuote"));
 const Stack = lazy(() => import("./pages/Stack"));
 const ComplianceAuditReferral = lazy(() => import("./pages/ComplianceAuditReferral"));
 
+// Exit-intent capture modal — lazy-loaded and mounted OUTSIDE the route
+// <Suspense> fallback so route transitions aren't blocked on it. Renders
+// null until the mouse crosses the top of the viewport after the 30s grace
+// period, so it costs nothing on first paint.
+const ExitIntentModal = lazy(() => import("./components/ExitIntentModal.jsx"));
+
+// Routes where an exit-intent pitch is redundant or inappropriate. The admin
+// portal is off-limits; the others already have their own prominent CTA and
+// layering a second one on top would feel spammy.
+function shouldShowExitIntent(pathname) {
+  if (!pathname) return false;
+  if (pathname.startsWith("/portal")) return false;
+  const skip = new Set([
+    "/book",
+    "/cyber-insurance-quote",
+    "/compliance-audit-referral",
+    "/support",
+  ]);
+  if (skip.has(pathname)) return false;
+  // /store index is fine; /store/:slug product detail pages have their own buy CTA.
+  if (/^\/store\/[^/]+/.test(pathname)) return false;
+  return true;
+}
+
+function ExitIntentMount() {
+  const { pathname } = useLocation();
+  if (!shouldShowExitIntent(pathname)) return null;
+  // No fallback — the modal is invisible until triggered anyway.
+  return (
+    <Suspense fallback={null}>
+      <ExitIntentModal />
+    </Suspense>
+  );
+}
+
 function RouteFallback() {
   return (
     <div style={{ minHeight: "60vh", display: "grid", placeItems: "center" }}>
@@ -237,6 +272,7 @@ function Layout({ children }) {
       {children}
       <Footer />
       <MobileStickyCTA />
+      <ExitIntentMount />
       <CookieConsent />
       <AutoAds />
       <Analytics />
