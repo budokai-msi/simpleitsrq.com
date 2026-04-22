@@ -44,6 +44,20 @@ own lazy-loaded JS bundle, so adding a post doesn't bloat the main app.
 
    The token format matches the `[[...]]` shortcode from the legacy
    posts.js — see `src/data/affiliates.js` for the full list of programs.
+
+   ## Stack-tool cards
+
+   To surface any tool defined in `src/data/stack.js` inline — with the
+   same affiliate-aware link the /stack page uses — write `<Tool>` in
+   MDX, or use the `[[tool:<id>]]` shortcode inside legacy markdown:
+
+   <Tool id="acronis-cyber-protect" />
+   <Tool id="1password-business" compact />
+
+   Legacy markdown equivalent: `[[tool:acronis-cyber-protect]]`. Unknown
+   ids degrade to plain text so typos don't break the page. Each card
+   links primarily to the vendor (affiliate when configured) and
+   secondarily to `/stack#<id>` for the full rationale.
    ```
 
 3. Valid categories (exact match, case-sensitive):
