@@ -229,6 +229,59 @@ export const cities = {
       },
     ],
   },
+  "bradenton-34207": {
+    slug: "bradenton-34207-it-support",
+    city: "Bayshore Gardens / West Bradenton (34207)",
+    cityFull: "Bayshore Gardens — West Bradenton, FL 34207",
+    h1: "IT Support for West Bradenton and Bayshore Gardens (ZIP 34207)",
+    // Geo + radius for LocalBusiness schema. 34207 centroid is roughly
+    // 27.455°N, 82.588°W; a 10-mile radius covers every ZIP listed in the
+    // FAQ below. This tells Google our explicit service zone rather than
+    // letting it guess from the city string alone.
+    postalCode: "34207",
+    lat: 27.455,
+    lng: -82.588,
+    radiusMiles: 10,
+    title: "Bradenton 34207 IT Support | Bayshore Gardens, West Bradenton | Simple IT SRQ",
+    metaDescription: "IT support, cybersecurity, and HIPAA help for businesses in West Bradenton, Bayshore Gardens, Samoset, Oneco, and every office inside a 10-mile radius of ZIP 34207. Local team, same-day response, flat monthly pricing.",
+    intro: "34207 is where Simple IT SRQ is based. We support businesses across West Bradenton, Bayshore Gardens, Samoset, and Oneco — plus everything within roughly a 10-mile drive of the 34207 core, which covers downtown Bradenton, Palmetto, Ellenton, Holmes Beach and Bradenton Beach on the barrier islands, Cortez, Longboat Key (north), and the northern edge of Sarasota. If you're in one of those ZIPs we can usually be at your office within an hour.",
+    servicesIntro: "The businesses we support inside this radius split across three buckets: medical and dental practices along Cortez Road and 14th Street West; construction, marine, and trades operations near the Port and along SR-64; and retail + hospitality in the barrier-island tourist corridor. What we install doesn't change; the emphasis does.",
+    localPatterns: [
+      { title: "Medical or dental practice, Cortez Road / 14th Street West", body: "EHR and imaging vendor uptime, HIPAA Risk Assessment + Safeguards paperwork, cyber-insurance evidence binder your carrier asks for at renewal, and two-step sign-in on every account so the one staff click that would otherwise cost you $40,000 in ransomware doesn't." },
+      { title: "Marine or waterfront business, Bayshore Gardens / Cortez / Palma Sola", body: "Dock and lift Wi-Fi that actually reaches the waterfront, ruggedized fleet tablets for the captains, invoicing that survives a summer power outage, and off-site backups stored far enough inland that a tropical storm hitting Anna Maria doesn't take both copies offline." },
+      { title: "Retail or hospitality, Anna Maria / Bradenton Beach / Holmes Beach", body: "Point-of-sale uptime through spring break and peak tourist weekends, guest Wi-Fi isolated from the register network, credit-card processing that passes PCI SAQ-A, and security cameras that actually get reviewed after an incident." },
+      { title: "Professional services, downtown Bradenton / Old Main Street", body: "Microsoft 365 Business Premium tuned for law, accounting, or consulting; encrypted client-document sharing; cyber-insurance questionnaire answers ready for renewal; and the written WISP your insurer now requires." },
+    ],
+    landmarks: ["Bayshore Gardens Park", "Cortez Road", "14th Street West medical corridor", "SR-64 construction corridor", "Manatee River Riverwalk", "Anna Maria Island Bridge", "Port Manatee"],
+    neighborhoods: "Bayshore Gardens, West Bradenton, Samoset, Oneco, Palma Sola, downtown Bradenton, Cortez, Palmetto, Ellenton, Holmes Beach, Bradenton Beach, Anna Maria, northern Longboat Key, Tallevast, and the SR-64 business corridor",
+    whyLocal: [
+      "Our office is inside 34207 — not a 'we also service Bradenton' satellite run from Tampa or Lakewood Ranch. Same-day onsite across the 10-mile radius is the default, not a premium.",
+      "We've restored three clients post-hurricane in the past five years, every one of them inside this radius. The playbooks are tested. The backups really get tested quarterly.",
+      "Every one of our Bradenton clients has a named tech who knows the office by name, the equipment by serial, and the two staff members who always call first.",
+    ],
+    faqs: [
+      {
+        q: "I'm in 34207 — how fast can you be here?",
+        a: "For anything urgent inside 34207, 34209, 34205, 34208, or 34203, we target under 60 minutes on-site during business hours. Anna Maria Island (34216 / 34217) adds about 20 minutes for the bridge. Palmetto / Ellenton (34221 / 34222) adds about 15. Routine, non-urgent visits are booked within one business day."
+      },
+      {
+        q: "What ZIP codes are inside your 10-mile Bradenton radius?",
+        a: "Inside 10 miles of 34207: 34203, 34205, 34206, 34207, 34208, 34209, 34210, 34215 (Cortez), 34216 (Anna Maria), 34217 (Holmes Beach / Bradenton Beach), 34221 (Palmetto), 34222 (Ellenton), 34228 (north Longboat Key), and the northern edge of 34236 (Sarasota downtown). Outside 10 miles we still cover you — we just schedule rather than scramble."
+      },
+      {
+        q: "Do you handle HIPAA for medical and dental practices on Cortez Road?",
+        a: "Yes — a big chunk of our 34207-radius clients are independent medical, dental, physical-therapy, and chiropractic practices. We run the written HIPAA Risk Assessment, put the Administrative / Physical / Technical Safeguards in place, issue the BAAs you need for every vendor, and hand you a binder the state surveyor or your cyber-insurance carrier opens first."
+      },
+      {
+        q: "Can you support my restaurant or boutique on Anna Maria Island during tourist season?",
+        a: "Yes. Point-of-sale uptime, PCI SAQ-A support, guest Wi-Fi that's isolated from the register network, and hurricane-season IT continuity are table stakes. We schedule our island visits during off-peak hours so we're not in the dining room during the rush."
+      },
+      {
+        q: "How much does managed IT cost for a 10-person office in 34207?",
+        a: "Flat rates start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and onsite support. Every 34207-area business gets a specific quote after a free 30-minute intake call so you're never surprised. Book a call and we'll run the numbers for your exact headcount and tools."
+      },
+    ],
+  },
 };
 
 export const cityList = Object.values(cities);

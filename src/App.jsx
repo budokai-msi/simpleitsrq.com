@@ -347,6 +347,7 @@ export default function App() {
               <Route path="/lakewood-ranch-it-support" element={<LocalLanding />} />
               <Route path="/nokomis-it-support" element={<LocalLanding />} />
               <Route path="/venice-it-support" element={<LocalLanding />} />
+              <Route path="/bradenton-34207-it-support" element={<LocalLanding />} />
               <Route path="/service-area" element={<ServiceArea />} />
               <Route path="/partners" element={<Partners />} />
               <Route path="/book" element={<Book />} />

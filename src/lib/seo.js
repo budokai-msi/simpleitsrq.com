@@ -68,11 +68,21 @@ export function organizationSchema() {
 }
 
 // LocalBusiness schema for a specific city. Telephone omitted intentionally
-// on per-city pages — Google treats a shared 407 number spread across
+// on per-city pages — Google treats a shared number spread across
 // multiple LocalBusiness entries as a weak signal; the Organization schema
 // on Home carries the canonical contact info instead.
-export function localBusinessSchema({ slug, city, description }) {
-  return {
+//
+// Optional geo + postalCode + geoRadius power the hyper-local landing
+// pages (e.g. /bradenton-34207-it-support) — Google uses GeoCircle +
+// serviceArea to understand "we cover businesses within N miles of
+// this ZIP," which matches the way the content frames it.
+export function localBusinessSchema({
+  slug, city, description,
+  postalCode,         // optional — "34207" etc.
+  latitude, longitude, // optional — decimal degrees
+  radiusMiles,         // optional — N in the "within N miles" framing
+}) {
+  const schema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${SITE_URL}/${slug}#business`,
@@ -85,12 +95,26 @@ export function localBusinessSchema({ slug, city, description }) {
       addressLocality: city,
       addressRegion: "FL",
       addressCountry: "US",
+      ...(postalCode ? { postalCode } : {}),
     },
     areaServed: city,
     priceRange: "$$",
     description,
     openingHours: "Mo-Fr 08:00-18:00",
   };
+
+  if (typeof latitude === "number" && typeof longitude === "number") {
+    schema.geo = { "@type": "GeoCoordinates", latitude, longitude };
+    if (typeof radiusMiles === "number") {
+      schema.serviceArea = {
+        "@type": "GeoCircle",
+        geoMidpoint: { "@type": "GeoCoordinates", latitude, longitude },
+        geoRadius: Math.round(radiusMiles * 1609.34), // meters
+      };
+    }
+  }
+
+  return schema;
 }
 
 export function faqSchema(faqs) {
