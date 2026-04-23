@@ -1186,13 +1186,20 @@
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .contact-grid { grid-template-columns: 1fr; }
 }
-/* Nav collapses earlier now (960px) because there are 7 primary links
- * plus the Book-a-Call CTA, which no longer fits cleanly on a 13" laptop. */
-@media (max-width: 960px) {
+/* Nav collapses at 1100px because the 7 primary links + the signed-in
+ * portal pill + Book-a-Call CTA wrap or overflow at 1024px laptop
+ * viewports. Tightening the link padding instead would still feel
+ * cramped — hamburger is the cleaner break. */
+@media (max-width: 1100px) {
   .nav-links, .nav-actions { display: none; }
   .menu-btn { display: inline-flex; }
   .navbar:has(.mobile-menu) .mobile-menu { display: flex; }
   .mobile-menu { display: flex; }
+}
+/* Tighten link gap above the breakpoint so 1280px+ doesn't feel airy. */
+@media (min-width: 1101px) {
+  .nav-links { gap: 4px; }
+  .nav-links a { padding: 8px 10px; }
 }
 @media (max-width: 720px) {
   .display { font-size: 38px; line-height: 46px; letter-spacing: -1px; }
@@ -1976,9 +1983,9 @@
 [data-theme="dark"] .form-success-overlay { background: var(--surface); }
 
 /* ----- Mobile menu, responsive -----
- * Matches the 960px breakpoint for the primary nav collapse so the
+ * Matches the 1100px breakpoint for the primary nav collapse so the
  * hamburger trigger appears whenever the desktop nav is hidden. */
-@media (max-width: 960px) {
+@media (max-width: 1100px) {
   .nav-mobile-actions { display: inline-flex; }
 }
 
