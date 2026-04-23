@@ -24,7 +24,12 @@ function buildLocalBusinessLd(city) {
   // and Google treats a placeholder (000-0000) phone as a bad-schema signal
   // that can downgrade the LocalBusiness rich result. If/when a tracked
   // phone number is set up, add it here.
-  return {
+  //
+  // Geo + serviceArea (optional per-city; see src/data/cities.js) let the
+  // hyper-local pages (e.g. /bradenton-34207-it-support) tell Google the
+  // explicit 10-mile-radius service zone. Without coords the schema stays
+  // in the "known city" shape Google has always accepted.
+  const schema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${SITE_URL}/${city.slug}#business`,
@@ -37,12 +42,26 @@ function buildLocalBusinessLd(city) {
       addressLocality: city.city,
       addressRegion: "FL",
       addressCountry: "US",
+      ...(city.postalCode ? { postalCode: city.postalCode } : {}),
     },
     areaServed: city.city,
     priceRange: "$$",
     description: city.metaDescription,
     openingHours: "Mo-Fr 08:00-18:00",
   };
+
+  if (typeof city.lat === "number" && typeof city.lng === "number") {
+    schema.geo = { "@type": "GeoCoordinates", latitude: city.lat, longitude: city.lng };
+    if (typeof city.radiusMiles === "number") {
+      schema.serviceArea = {
+        "@type": "GeoCircle",
+        geoMidpoint: { "@type": "GeoCoordinates", latitude: city.lat, longitude: city.lng },
+        geoRadius: Math.round(city.radiusMiles * 1609.34),
+      };
+    }
+  }
+
+  return schema;
 }
 
 function buildFaqLd(city) {

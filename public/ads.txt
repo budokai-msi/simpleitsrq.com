@@ -1,2 +1,14 @@
-# ads.txt placeholder for Simple IT SRQ
-# Populate with certified ad seller entries if/when an ad network is added.
+# ads.txt for simpleitsrq.com — IAB Tech Lab Ads.txt Spec v1.0.3
+# https://iabtechlab.com/ads-txt/
+#
+# Replace pub-XXXXXXXXXXXXXXXX with your Google AdSense publisher ID
+# from the AdSense dashboard (Account → Settings → Account information).
+# The publisher ID is the 16-digit number — ads.txt uses the pub-... form,
+# not the ca-pub-... form used in the client-side script.
+#
+# After replacing the ID, visit https://simpleitsrq.com/ads.txt to confirm
+# it resolves (Vercel serves everything under public/ at the root). AdSense
+# can take 24-48 hours to pick up the new entry. An unpopulated ads.txt
+# reduces ad revenue by ~15% on average — don't leave this as placeholder
+# any longer than needed.
+google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
