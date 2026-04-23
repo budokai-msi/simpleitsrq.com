@@ -60,11 +60,19 @@
     <meta name="geo.position" content="27.4989;-82.5748" />
     <meta name="ICBM" content="27.4989, -82.5748" />
 
-    <!-- Google AdSense site-verification meta. AdSense uses this tag to
-         confirm domain ownership during approval. The actual ad-serving
-         loader lives in src/components/AdSense.jsx and is consent-gated
-         (only loads after the visitor accepts marketing cookies). -->
+    <!-- Google AdSense — site verification (meta) + script loader.
+         Loading the script in <head> is what AdSense's site-review crawler
+         expects to see; loading it later via JS delays approval. The
+         script respects Consent Mode v2 (set by ga-init.js above-line in
+         the load order via /ga-init.js → window.dataLayer/gtag), so no
+         personalized ads or marketing cookies fire until the visitor
+         opts in via the cookie banner. The src/components/AdSense.jsx
+         AdUnit component still gates the rendered <ins> slots on
+         marketing consent. -->
     <meta name="google-adsense-account" content="ca-pub-7420716928607113" />
+    <script async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7420716928607113"
+            crossorigin="anonymous"></script>
 
 
     <script>
