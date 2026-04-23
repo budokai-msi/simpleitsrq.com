@@ -1,6 +1,11 @@
 import { useEffect, useRef } from "react";
 
-const CLIENT_ID = import.meta.env.VITE_ADSENSE_CLIENT || "";
+// Defaults to the production AdSense publisher ID so ads render even
+// without setting the env var (mirrors the ga-init.js hardcoded-
+// fallback pattern). Set VITE_ADSENSE_CLIENT in .env.local to point
+// staging/dev at a different account.
+const CLIENT_ID =
+  import.meta.env.VITE_ADSENSE_CLIENT || "ca-pub-7420716928607113";
 let scriptLoaded = false;
 
 function loadScript() {
