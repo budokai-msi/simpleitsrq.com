@@ -1186,18 +1186,25 @@
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .contact-grid { grid-template-columns: 1fr; }
 }
-/* Nav collapses at 1100px because the 7 primary links + the signed-in
- * portal pill + Book-a-Call CTA wrap or overflow at 1024px laptop
- * viewports. Tightening the link padding instead would still feel
- * cramped — hamburger is the cleaner break. */
-@media (max-width: 1100px) {
+/* Nav collapses at 1440px because the 7 primary links, the "Anon"/
+ * portal pill, and the Book-a-Call CTA together need ~1400px of
+ * horizontal room before container padding. Every common laptop
+ * viewport (13" MBA/MBP at 1440x900, 13" Windows at 1366x768,
+ * 1280x720) falls below that, so those get the hamburger; only
+ * desktops and 15"+ laptops see the full row.
+ *
+ * Reducing the label set was the obvious alternative, but the user
+ * explicitly asked for all seven primary links — so the trade-off is
+ * "hamburger earlier" instead of "drop labels." */
+@media (max-width: 1440px) {
   .nav-links, .nav-actions { display: none; }
   .menu-btn { display: inline-flex; }
   .navbar:has(.mobile-menu) .mobile-menu { display: flex; }
   .mobile-menu { display: flex; }
 }
-/* Tighten link gap above the breakpoint so 1280px+ doesn't feel airy. */
-@media (min-width: 1101px) {
+/* Above the breakpoint, tighten spacing so the 7 labels + pill + CTA
+ * don't feel airy on a 27" external monitor. */
+@media (min-width: 1441px) {
   .nav-links { gap: 4px; }
   .nav-links a { padding: 8px 10px; }
 }
@@ -1983,9 +1990,9 @@
 [data-theme="dark"] .form-success-overlay { background: var(--surface); }
 
 /* ----- Mobile menu, responsive -----
- * Matches the 1100px breakpoint for the primary nav collapse so the
+ * Matches the 1440px breakpoint for the primary nav collapse so the
  * hamburger trigger appears whenever the desktop nav is hidden. */
-@media (max-width: 1100px) {
+@media (max-width: 1440px) {
   .nav-mobile-actions { display: inline-flex; }
 }
 
