@@ -41,6 +41,7 @@ const Stack = lazy(() => import("./pages/Stack"));
 const ComplianceAuditReferral = lazy(() => import("./pages/ComplianceAuditReferral"));
 const Glossary = lazy(() => import("./pages/Glossary"));
 const GlossaryEntry = lazy(() => import("./pages/GlossaryEntry"));
+const ExposureScan = lazy(() => import("./pages/ExposureScan"));
 const Advertise = lazy(() => import("./pages/Advertise"));
 const CompareIndex = lazy(() => import("./pages/CompareIndex"));
 const CompareDetail = lazy(() => import("./pages/CompareDetail"));
@@ -164,6 +165,7 @@ function Navbar() {
         <div className="mobile-menu" role="menu">
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
           <Link to="/glossary" onClick={() => setOpen(false)}>Glossary</Link>
+          <Link to="/exposure-scan" onClick={() => setOpen(false)}>Free Exposure Scan</Link>
           <Link to="/tools" onClick={() => setOpen(false)}>Recommended Tools</Link>
           <Link to="/store" onClick={() => setOpen(false)}>Templates &amp; Playbooks</Link>
           <Link to="/stack" onClick={() => setOpen(false)}>Vendor Stack</Link>
@@ -411,6 +413,7 @@ export default function App() {
               <Route path="/compare/:slug" element={<CompareDetail />} />
               <Route path="/glossary" element={<Glossary />} />
               <Route path="/glossary/:slug" element={<GlossaryEntry />} />
+              <Route path="/exposure-scan" element={<ExposureScan />} />
               <Route path="/password-check" element={<PasswordCheck />} />
               <Route path="/portal" element={<ClientPortal />} />
               <Route path="/privacy" element={<PrivacyPage />} />

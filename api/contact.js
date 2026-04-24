@@ -26,6 +26,7 @@ import { clientIp, rateLimit } from "./_lib/security.js";
 import { sql } from "./_lib/db.js";
 import { validateEnv } from "./_lib/env.js";
 import { requireCsrf } from "./_lib/csrf.js";
+import { runExposureScan } from "./_lib/exposure.js";
 
 // Cold-start validation. Throws in production if any required secret is
 // missing; logs a warning in dev/preview so local iteration keeps working
@@ -116,6 +117,136 @@ function randomToken() {
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Public exposure-scan lead magnet.
+//
+// Visitor enters a domain + email, we run the passive DNS + CT scan
+// server-side, store their email as a newsletter lead (same pipeline as
+// the newsletter form), and return the report inline. This is a
+// top-of-funnel lead engine — the report itself is genuinely useful, so
+// a real-name email comes in naturally.
+//
+// We do NOT require double-opt-in here because the visitor just gave us
+// an email for a specific purpose (the scan). Mark the subscriber as
+// unconfirmed so our own cron doesn't spam them until they confirm via
+// some other path — we just want the lead stored.
+async function handleExposureScan(request, body, ip) {
+  const rawDomain = String(body.domain || "").trim().slice(0, 253);
+  const email = String(body.email || "").trim().toLowerCase().slice(0, 320);
+  const name  = String(body.name  || "").trim().slice(0, 120);
+  if (!rawDomain) return json(400, { ok: false, error: "domain_required" });
+  if (!email || !isEmail(email)) return json(400, { ok: false, error: "email_invalid" });
+
+  const report = await runExposureScan(rawDomain);
+  if (!report.ok) return json(400, report);
+
+  // Store as a lead — same table the newsletter uses, tagged so we can
+  // see where it came from. Don't auto-confirm; they can opt into the
+  // newsletter separately.
+  try {
+    const existing = await sql`
+      SELECT id FROM newsletter_subscribers WHERE lower(email) = ${email} LIMIT 1
+    `.catch(() => []);
+    if (existing[0]) {
+      await sql`
+        UPDATE newsletter_subscribers
+        SET source = ${"exposure-scan:" + report.domain}, ip = ${ip}
+        WHERE id = ${existing[0].id}
+      `;
+    } else {
+      await sql`
+        INSERT INTO newsletter_subscribers (email, confirm_token, unsubscribe_token, source, ip)
+        VALUES (${email}, ${randomToken()}, ${randomToken()}, ${"exposure-scan:" + report.domain}, ${ip})
+      `;
+    }
+  } catch (err) {
+    // Lead storage is best-effort — a DB hiccup shouldn't block the
+    // visitor's scan report from rendering.
+    console.warn("[exposure-scan] lead store failed", err);
+  }
+
+  // Fire the report as an email too, so the visitor has it in their
+  // inbox (gives them a reason to trust us with future outreach) and
+  // you get a copy in CONTACT_TO for lead review.
+  const apiKey = process.env.RESEND_API_KEY;
+  if (apiKey) {
+    try {
+      const resend = new Resend(apiKey);
+      const contactTo = process.env.CONTACT_TO_EMAIL || CONTACT_TO_DEFAULT;
+      const gradeColor = report.grade === "A" ? "#107C10"
+        : report.grade === "B" ? "#059669"
+        : report.grade === "C" ? "#D97706"
+        : report.grade === "D" ? "#DC2626" : "#7C2D12";
+      const findingsHtml = (report.findings || []).map((f) => `
+        <tr>
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;vertical-align:top;width:80px">
+            <span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;
+              background:${f.severity === "critical" ? "#DC2626" : f.severity === "high" ? "#D97706" : f.severity === "medium" ? "#F59E0B" : "#9CA3AF"};
+              color:#fff;text-transform:uppercase">${f.severity}</span>
+          </td>
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;vertical-align:top;font-size:13px">
+            <strong>${escapeHtmlSafe(f.title)}</strong>
+            <div style="color:#6b7280;margin-top:4px;line-height:1.5">${escapeHtmlSafe(f.detail)}</div>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="2" style="padding:16px;color:#107C10;font-size:14px">No findings — your domain is well-configured. Keep monitoring.</td></tr>`;
+
+      await resend.emails.send({
+        from: CONTACT_FROM,
+        to: [email],
+        bcc: [contactTo],
+        subject: `Your exposure scan for ${report.domain} — Grade ${report.grade}`,
+        html: `
+<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:640px;margin:0 auto;color:#1a1a1a">
+  <div style="padding:18px 22px;background:#0F6CBD;color:#fff;border-radius:10px 10px 0 0">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.9">Exposure Scan</div>
+    <div style="font-size:20px;font-weight:700;margin-top:2px">${escapeHtmlSafe(report.domain)}</div>
+  </div>
+  <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none">
+    <div style="display:flex;gap:18px;align-items:center;margin-bottom:14px">
+      <div style="font-size:48px;font-weight:700;color:${gradeColor};line-height:1">${report.grade}</div>
+      <p style="margin:0;font-size:14px;line-height:1.5;color:#1f2937">${escapeHtmlSafe(report.gradeNarrative)}</p>
+    </div>
+    <h3 style="font-size:15px;margin:18px 0 8px">Findings</h3>
+    <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+      ${findingsHtml}
+    </table>
+    ${report.subdomains?.length ? `
+      <h3 style="font-size:15px;margin:20px 0 6px">Subdomains discovered (${report.subdomains.length})</h3>
+      <p style="font-size:11px;color:#6b7280;margin:0 0 6px">From public Certificate Transparency logs — every scanner on the internet can see these.</p>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.6;color:#374151">${report.subdomains.map(escapeHtmlSafe).join("<br>")}</div>
+    ` : ""}
+  </div>
+  <div style="padding:16px 22px;background:#f7f7f8;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px">
+    <p style="margin:0 0 6px;font-size:13px"><strong>Want this fixed?</strong></p>
+    <p style="margin:0;font-size:13px;color:#4b5563;line-height:1.5">Reply to this email and we'll quote the fixes. Typical DNS-hardening engagement is a one-time flat fee, no retainer.</p>
+  </div>
+</div>`,
+        text: [
+          `Exposure scan for ${report.domain} — Grade ${report.grade}`,
+          ``,
+          report.gradeNarrative,
+          ``,
+          `Findings:`,
+          ...(report.findings || []).map((f) => `  [${f.severity.toUpperCase()}] ${f.title}\n    ${f.detail}`),
+          ``,
+          `Reply to this email for a quote on fixing these.`,
+        ].join("\n"),
+      });
+    } catch (err) {
+      console.warn("[exposure-scan] email send failed (non-blocking)", err);
+    }
+  }
+
+  return json(200, { ...report, leadStored: true });
+}
+
+// Minimal HTML escape for the email renderer — no dep needed.
+function escapeHtmlSafe(s = "") {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 // Double-opt-in newsletter subscribe. Creates or refreshes a row in
@@ -307,6 +438,19 @@ export async function POST(request) {
     const rl = await rateLimit({ ip, bucket: "contact", windowSeconds: RATE_WINDOW_S, max: RATE_MAX });
     if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
     return handleNewsletterSubscribe(request, body, ip);
+  }
+
+  // Short-circuit: public exposure-scan lead magnet. Runs a passive DNS +
+  // Cert-Transparency scan of a domain the visitor entered, stores the
+  // email as a newsletter lead, and returns the report. Rate-limited
+  // aggressively (bucket=scan) so someone can't scan 10k domains through
+  // our quota. Does NOT require Turnstile — the scan itself is bounded
+  // and cheap, and asking for a captcha before showing value kills the
+  // conversion rate.
+  if (body.kind === "exposure_scan") {
+    const rl = await rateLimit({ ip, bucket: "scan", windowSeconds: 3600, max: 12 });
+    if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
+    return handleExposureScan(request, body, ip);
   }
 
   // 3. Cloudflare Turnstile
