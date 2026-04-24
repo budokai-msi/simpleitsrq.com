@@ -7,6 +7,7 @@
 
 import { neon } from "@neondatabase/serverless";
 import { getHoneypotPage } from "./api/_lib/honeypot.js";
+import { identifyScanner } from "./api/_lib/scanner-fingerprints.js";
 
 const HOSTILE_COUNTRIES = new Set(["CN", "RU", "KP"]);
 
@@ -447,6 +448,39 @@ export default async function middleware(request) {
     request.waitUntil?.(p) ?? p.catch(() => {});
     const honeypotPage = url.searchParams.get("p") || "login";
     return new Response(getHoneypotPage(honeypotPage), { status: 200, headers: HONEYPOT_HEADERS() });
+  }
+
+  // Layer 2.5: CVE / exploit-payload detection. The scanner-fingerprints
+  // library recognizes active exploit attempts (Log4Shell JNDI, Spring4Shell
+  // class-loader probes, ProxyShell URIs, Citrix Bleed, F5 iControl, Apache
+  // path traversal, ThinkPHP RCE, Shellshock, PHP-CGI RCE, SQLi). Payloads
+  // commonly ride in the URL OR in request headers (User-Agent, Referer,
+  // X-Forwarded-For). We build a haystack from all of those and run the
+  // matcher once. A positive match is unambiguous intent — auto-block on
+  // first hit, same as scanner traps.
+  //
+  // This layer only runs on non-API routes (API has its own input
+  // validation) and skips the allowlist (checked above) so a legitimate
+  // admin can't accidentally trigger a self-block by testing a payload.
+  if (!url.pathname.startsWith("/api/")) {
+    const ua = request.headers.get("user-agent") || "";
+    const referer = request.headers.get("referer") || "";
+    const xff = request.headers.get("x-forwarded-for") || "";
+    // Pass the concatenated surface so the fingerprinter checks path + every
+    // header a payload could hide in. We only need the boolean match.
+    const id = identifyScanner({
+      userAgent: [ua, referer, xff].filter(Boolean).join(" "),
+      path: url.pathname + url.search,
+    });
+    if (id.cve) {
+      const sql = getSql();
+      const p = Promise.all([
+        sql ? autoBlockIp(sql, ip, `auto: exploit attempt ${id.cve} (${id.cveName})`) : Promise.resolve(),
+        logThreat(request, geo, "exploit_attempt"),
+      ]);
+      request.waitUntil?.(p) ?? p.catch(() => {});
+      return new Response(getHoneypotPage("login"), { status: 200, headers: HONEYPOT_HEADERS() });
+    }
   }
 
   // Layer 3: Hostile geo — CN/RU/KP get the honeypot on all page navigations.
