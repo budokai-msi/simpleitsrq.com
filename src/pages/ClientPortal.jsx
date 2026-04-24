@@ -2227,6 +2227,8 @@ function OpsConsole() {
   const [osintRefreshing, setOsintRefreshing] = useState(false);
   const [revenueData, setRevenueData] = useState(null);
   const [revenueLoading, setRevenueLoading] = useState(false);
+  const [adsenseData, setAdsenseData] = useState(null);
+  const [adsenseLoading, setAdsenseLoading] = useState(false);
 
   const loadStatus = useCallback(async () => {
     setStatusLoading(true);
@@ -2275,6 +2277,18 @@ function OpsConsole() {
     }
   }, []);
 
+  const loadAdsense = useCallback(async () => {
+    setAdsenseLoading(true);
+    try {
+      const res = await fetch("/api/portal?action=adsense-health&range=7d", { credentials: "same-origin" });
+      setAdsenseData(await res.json().catch(() => ({})));
+    } catch {
+      setAdsenseData({ noData: true });
+    } finally {
+      setAdsenseLoading(false);
+    }
+  }, []);
+
   // eslint-disable-next-line react-hooks/set-state-in-effect -- loadStatus is a stable useCallback
   useEffect(() => { loadStatus(); }, [loadStatus]);
   // Auto-load the three operational-status widgets on mount. Wrapped in an
@@ -2284,10 +2298,10 @@ function OpsConsole() {
     let alive = true;
     (async () => {
       if (!alive) return;
-      await Promise.all([loadAudit(), loadOsint(), loadRevenue()]);
+      await Promise.all([loadAudit(), loadOsint(), loadRevenue(), loadAdsense()]);
     })();
     return () => { alive = false; };
-  }, [loadAudit, loadOsint, loadRevenue]);
+  }, [loadAudit, loadOsint, loadRevenue, loadAdsense]);
 
   const run = useCallback(async (action, method = "POST") => {
     setRunning(action);
@@ -2562,6 +2576,54 @@ function OpsConsole() {
           ) : (
             <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
               {revenueLoading ? "Loading…" : (revenueData?.error || "Unable to load Stripe data.")}
+            </p>
+          )}
+        </div>
+
+        {/* Widget 4 — AdSense health (fill rate, blocked, timeout) */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+            <div>
+              <h4 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600 }}>AdSense health (7d)</h4>
+              <p style={{ margin: 0, fontSize: 11, color: tokens.colorNeutralForeground3 }}>
+                Beacon-fed fill rate from real visitors — answers "are ads serving?" without curl.
+              </p>
+            </div>
+            <Button appearance="subtle" size="small" onClick={loadAdsense} disabled={adsenseLoading}>
+              {adsenseLoading ? "Loading…" : "Refresh"}
+            </Button>
+          </div>
+          {adsenseData?.noData ? (
+            <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+              No beacons received yet. Visit /glossary in a fresh browser to seed the first measurement.
+            </p>
+          ) : adsenseData?.summary ? (
+            <>
+              <p style={{ marginTop: 10, fontSize: 12, color: tokens.colorNeutralForeground1, lineHeight: 1.5 }}>
+                {adsenseData.headline}
+              </p>
+              <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Filled</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#107C10" }}>{adsenseData.summary.fillPct}%</div>
+                </div>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Blocked</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#D97706" }}>{adsenseData.summary.blockedPct}%</div>
+                </div>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Timeout</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#DC2626" }}>{adsenseData.summary.timeoutPct}%</div>
+                </div>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Sessions</div>
+                  <div style={{ fontSize: 18, fontWeight: 700 }}>{adsenseData.summary.sessions}</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+              {adsenseLoading ? "Loading…" : "No data."}
             </p>
           )}
         </div>

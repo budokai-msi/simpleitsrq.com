@@ -67,9 +67,12 @@ export const STACK = [
           "Business Premium is the smallest tier that meets cyber-insurance Audit Controls §164.312(b) and HIPAA technical safeguards. Business Basic and Standard fail both. For offices under 10 people the tier math usually works out to $22/user/mo instead of $12 — but the insurance rate savings on a single policy pay for five years of the delta.",
         tier: "Business Premium (not Basic or Standard)",
         priceHint: "$22/user/mo",
+        cost: { type: "per_seat", usd: 22 },
         fallbackUrl: "https://www.microsoft.com/en-us/microsoft-365/business/microsoft-365-business-premium",
         alternatives: ["Google Workspace Business Plus"],
         goodFor: "Almost every Florida small office. Default choice.",
+        calculatorDefault: true,
+        calculatorMutex: "productivity",
       },
       {
         id: "google-workspace",
@@ -79,9 +82,11 @@ export const STACK = [
           "Business Plus is the smallest Google Workspace tier with Vault, eDiscovery, and advanced endpoint management — the three features a HIPAA audit or cyber-insurance renewal will ask about. Starter and Standard tiers won't pass.",
         tier: "Business Plus (not Starter or Standard)",
         priceHint: "$22/user/mo",
+        cost: { type: "per_seat", usd: 22 },
         fallbackUrl: "https://workspace.google.com/pricing.html",
         alternatives: ["Microsoft 365 Business Premium"],
         goodFor: "Offices already committed to Gmail + Google Drive.",
+        calculatorMutex: "productivity",
       },
     ],
   },
@@ -99,10 +104,12 @@ export const STACK = [
           "The single biggest rollout failure we see is staff abandoning the password manager because its UX is clumsy. 1Password's browser + mobile experience is the one where that doesn't happen. Business tier adds directory sync with M365/Google Workspace so onboarding/offboarding is one check-box.",
         tier: "Business (not Teams Starter)",
         priceHint: "$7.99/user/mo",
+        cost: { type: "per_seat", usd: 7.99 },
         affiliateKey: "onepassword",
         fallbackUrl: "https://1password.com/business",
         alternatives: ["Bitwarden Business (cheaper; less polish)", "Dashlane Business"],
         goodFor: "Any office 5+ people. Non-negotiable for HIPAA or cyber-insurance.",
+        calculatorDefault: true,
       },
     ],
   },
@@ -119,10 +126,12 @@ export const STACK = [
         whyThis:
           "For 5-50 person Florida offices, the friction of running Veeam + SentinelOne + a separate DR tool exceeds what Acronis does in one install. Hurricane season is the forcing function — we've restored client data from Acronis cloud backups three times post-storm while other tools were still syncing. Their 30-day retention default is where most small offices should start.",
         priceHint: "$80–$200/month per 10 devices",
+        cost: { type: "per_seat", usd: 14, note: "$140/mo per 10 devices, midpoint" },
         affiliateKey: "acronis",
         fallbackUrl: "https://www.acronis.com/en-us/business/cyber-protect/",
         alternatives: ["Datto (more MSP-oriented)", "Veeam (stronger for VMware)"],
         goodFor: "Any office with on-prem file servers, medical imaging, or accounting data.",
+        calculatorDefault: true,
       },
     ],
   },
@@ -140,10 +149,12 @@ export const STACK = [
           "Gusto's SOC 2 Type II coverage, BAA availability, and built-in I-9/W-4 e-signing are the specific boxes on a 2026 cyber-insurance form that say 'yes, we have a compliant payroll provider.' Their Florida-specific unemployment filing is automatic, which is the exact place where we've seen other payroll tools mis-file and cost offices money.",
         tier: "Plus (not Core) for multi-state or R&D tax credits",
         priceHint: "$40/mo base + $6/person",
+        cost: { type: "base_plus_seat", baseUsd: 40, seatUsd: 6 },
         affiliateKey: "gusto",
         fallbackUrl: "https://gusto.com/",
         alternatives: ["Rippling (more HR features, higher price)", "ADP RUN (traditional)"],
         goodFor: "Florida small offices 1-50 people.",
+        calculatorDefault: true,
       },
     ],
   },
@@ -160,10 +171,12 @@ export const STACK = [
         whyThis:
           "HoneyBook consolidates five tools (Typeform + DocuSign + QuickBooks + Calendly + Zapier) into one UI for businesses under $2M revenue. SOC 2 Type II, explicit data residency options, and native e-signing mean it passes the cyber-insurance vendor-risk questionnaire without a BAA addendum. Their Stripe integration also means fewer vendors handling payment data.",
         priceHint: "$39–$79/user/mo",
+        cost: { type: "per_seat", usd: 39, note: "Starter tier; Plus is $59" },
         affiliateKey: "honeybook",
         fallbackUrl: "https://www.honeybook.com/",
         alternatives: ["Dubsado (similar), 17hats (lighter), Clio (law firms)"],
         goodFor: "Photographers, designers, event planners, coaches, consultants. Not for law firms (use Clio).",
+        // calculatorDefault: false — service-business specific, off by default
       },
     ],
   },
@@ -180,10 +193,12 @@ export const STACK = [
         whyThis:
           "The 5C NFC is the single SKU that covers every laptop (USB-C), every phone (NFC tap), and every cloud admin console (WebAuthn). We issue two per employee — one for the desk and one for the person — so a lost key isn't a lockout event. The $55 per employee is roughly what a Florida office pays for one hour of downtime.",
         priceHint: "$55/key (buy 2 per person)",
+        cost: { type: "upfront_per_seat", usd: 55, multiplier: 2, amortizeMonths: 36, note: "$110/seat, 3-yr amortized" },
         affiliateKey: "amazon:B07HBD71HL|YubiKey 5C NFC",
         fallbackUrl: "https://www.yubico.com/product/yubikey-5c-nfc/",
         alternatives: ["Google Titan key", "YubiKey 5 NFC (USB-A) for older machines"],
         goodFor: "Every admin on every account. Non-negotiable for cyber-insurance Tier A posture.",
+        calculatorDefault: true,
       },
     ],
   },
@@ -200,10 +215,12 @@ export const STACK = [
         whyThis:
           "Consumer UPS units from big-box stores handle 5-8 minutes and then cut power without warning. Business-grade Line-Interactive units hold 15-30 minutes and signal the server to initiate a graceful shutdown. We standardize on CyberPower or APC for the exact product slot — both have next-business-day replacement programs that matter post-storm.",
         priceHint: "$180–$400/unit",
+        cost: { type: "upfront_flat_per_office", usd: 280, amortizeMonths: 36, note: "$280 midpoint, 3-yr amortized, 1 per office" },
         affiliateKey: "amazon_search:business grade UPS cyberpower apc 1500va|Business-grade UPS (CyberPower / APC, 1500VA+)",
         fallbackUrl: "https://www.amazon.com/s?k=business+grade+UPS+cyberpower+apc+1500va",
         alternatives: ["Eaton 9PX (pricier, fleet-manageable)"],
         goodFor: "Every Florida office. Count one per server rack + one per phone system.",
+        calculatorDefault: true,
       },
     ],
   },
@@ -220,8 +237,10 @@ export const STACK = [
         whyThis:
           "Every 2026 cyber-insurance policy requires annual security training. Running that in-house burns 4-6 hours/month of an office manager's time. Security Academy is our white-labeled program that handles enrollment, monthly modules, quarterly phishing simulations, and the annual compliance report your insurer asks for. $12/user/mo, 10-user minimum.",
         priceHint: "$12/user/mo",
+        cost: { type: "per_seat", usd: 12, minSeats: 10 },
         fallbackUrl: "/security-academy",
         goodFor: "Any Florida business whose cyber-insurance carrier requires annual training — which is all of them in 2026.",
+        calculatorDefault: true,
       },
       {
         id: "cyber-insurance-broker",
@@ -236,6 +255,42 @@ export const STACK = [
     ],
   },
 ];
+
+/**
+ * Compute the monthly cost of a single tool for an office of `seats` people.
+ * Returns 0 when the tool has no `cost` shape (e.g. free broker referral) or
+ * when the office is below a tool's seat minimum.
+ *
+ * Cost shapes:
+ *   - per_seat                  → seatUsd × seats
+ *   - base_plus_seat            → baseUsd + (seatUsd × seats)
+ *   - upfront_per_seat          → (usd × multiplier × seats) / amortizeMonths
+ *   - upfront_flat_per_office   → usd / amortizeMonths
+ *   - free                      → 0
+ */
+export function monthlyCostFor(tool, seats) {
+  const c = tool?.cost;
+  if (!c || c.type === "free") return 0;
+  const minSeats = c.minSeats || 0;
+  const effectiveSeats = Math.max(seats, minSeats);
+  switch (c.type) {
+    case "per_seat":
+      return (c.usd || 0) * effectiveSeats;
+    case "base_plus_seat":
+      return (c.baseUsd || 0) + (c.seatUsd || 0) * effectiveSeats;
+    case "upfront_per_seat": {
+      const total = (c.usd || 0) * (c.multiplier || 1) * effectiveSeats;
+      const months = c.amortizeMonths || 36;
+      return total / months;
+    }
+    case "upfront_flat_per_office": {
+      const months = c.amortizeMonths || 36;
+      return (c.usd || 0) / months;
+    }
+    default:
+      return 0;
+  }
+}
 
 /**
  * Resolve every tool's outbound link. Returns `{ href, isAffiliate }` —
