@@ -2991,13 +2991,13 @@ function SecurityPanel({
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
         {["overview", "enumeration", "campaigns", "credentials", "cred-intel", "geo", "countermeasures", "ops"].map((t) => (
           <button key={t} style={pillStyle(subTab === t)} onClick={() => setSubTab(t)}>
-            {t === "overview" ? "Threat Overview"
-              : t === "enumeration" ? "Enumeration"
-              : t === "campaigns" ? "Campaign Clusters"
-              : t === "credentials" ? "Captured Creds"
-              : t === "cred-intel" ? "Cred Intel"
-              : t === "geo" ? "Geo"
-              : t === "countermeasures" ? "Countermeasures"
+            {t === "overview" ? "Status"
+              : t === "enumeration" ? "Site mapping"
+              : t === "campaigns" ? "Coordinated attacks"
+              : t === "credentials" ? "Captured passwords"
+              : t === "cred-intel" ? "Login attempts"
+              : t === "geo" ? "By country"
+              : t === "countermeasures" ? "Automatic actions"
               : "Ops Console"}
           </button>
         ))}
@@ -3009,9 +3009,140 @@ function SecurityPanel({
 
       {intelLoading && !intel && <div style={{ padding: 24 }}><Spinner label="Loading threat intelligence…" /></div>}
 
-      {/* ════ OVERVIEW TAB ════ */}
+      {/* ════ OVERVIEW (STATUS) TAB ════ */}
       {subTab === "overview" && intel && (
         <>
+          {/* ── Big status header: what's happening right now ── */}
+          {(() => {
+            const n = intel.narrative || {};
+            const colors = {
+              calm:         { bg: "rgba(16, 124, 16, 0.08)",  border: "#107C10", label: "CALM",           labelColor: "#107C10" },
+              elevated:     { bg: "rgba(217, 119, 6, 0.08)",  border: "#D97706", label: "ELEVATED",       labelColor: "#D97706" },
+              under_attack: { bg: "rgba(220, 38, 38, 0.08)",  border: "#DC2626", label: "UNDER ATTACK",   labelColor: "#DC2626" },
+            };
+            const c = colors[n.statusLevel] || colors.calm;
+            return (
+              <div style={{
+                padding: "20px 24px",
+                borderRadius: 12,
+                background: c.bg,
+                border: `1px solid ${c.border}`,
+                borderLeft: `4px solid ${c.border}`,
+                marginBottom: 16,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+                    padding: "4px 10px", borderRadius: 999,
+                    background: c.border, color: "#fff",
+                  }}>{c.label}</span>
+                  {n.activeAttackers > 0 && (
+                    <span style={{ fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+                      {n.activeAttackers} active attacker{n.activeAttackers > 1 ? "s" : ""} · last hour
+                    </span>
+                  )}
+                </div>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 500, lineHeight: 1.5 }}>
+                  {n.statusHeadline || "No activity data yet."}
+                </p>
+              </div>
+            );
+          })()}
+
+          {/* ── Incidents worth your attention ── */}
+          {intel.narrative?.incidents?.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <h4 style={{ margin: "0 0 10px", fontSize: 14, fontWeight: 600, color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Worth your attention
+              </h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {intel.narrative.incidents.map((inc, i) => {
+                  const sev = {
+                    critical: { color: "#DC2626", label: "Critical" },
+                    warning:  { color: "#D97706", label: "Heads up" },
+                    info:     { color: "#0F6CBD", label: "FYI" },
+                  }[inc.severity] || { color: "#6b7280", label: "Info" };
+                  return (
+                    <div key={i} style={{
+                      padding: "16px 18px",
+                      borderRadius: 10,
+                      background: tokens.colorNeutralBackground1,
+                      border: `1px solid ${tokens.colorNeutralStroke2}`,
+                      borderLeft: `4px solid ${sev.color}`,
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                        <Badge appearance="filled" color={inc.severity === "critical" ? "danger" : inc.severity === "warning" ? "warning" : "brand"} style={{ fontSize: 10 }}>
+                          {sev.label}
+                        </Badge>
+                        <strong style={{ fontSize: 14 }}>{inc.title}</strong>
+                        {inc.ts && <span style={{ marginLeft: "auto", fontSize: 11, color: tokens.colorNeutralForeground3 }}>{ago(inc.ts)}</span>}
+                      </div>
+                      <p style={{ margin: "0 0 8px", fontSize: 13, color: tokens.colorNeutralForeground1, lineHeight: 1.5 }}>
+                        {inc.explanation}
+                      </p>
+                      <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: "4px 12px", fontSize: 12, color: tokens.colorNeutralForeground2, marginTop: 8 }}>
+                        <span style={{ color: "#107C10", fontWeight: 600 }}>We did:</span>
+                        <span>{inc.weDid}</span>
+                        <span style={{ color: tokens.colorBrandForeground1, fontWeight: 600 }}>You should:</span>
+                        <span>{inc.youShould}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── What we stopped for you (positive framing) ── */}
+          {intel.narrative?.stopped && (
+            <div style={{ marginBottom: 20 }}>
+              <h4 style={{ margin: "0 0 10px", fontSize: 14, fontWeight: 600, color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                What we handled this {range === "24h" ? "day" : range === "7d" ? "week" : "month"}
+              </h4>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 10,
+                padding: "16px 18px",
+                borderRadius: 10,
+                background: "rgba(16, 124, 16, 0.04)",
+                border: "1px solid rgba(16, 124, 16, 0.2)",
+              }}>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#107C10" }}>{intel.narrative.stopped.blocks}</div>
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground2 }}>malicious IPs blocked</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#107C10" }}>{intel.narrative.stopped.exploitAttempts}</div>
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground2 }}>exploit attempts stopped</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#107C10" }}>{intel.narrative.stopped.hostileGeoHits}</div>
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground2 }}>hostile-country probes</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#107C10" }}>{intel.narrative.stopped.credAttempts}</div>
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground2 }}>fake-login attempts</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Details section (collapsed by default) ── */}
+          <details style={{ marginTop: 24 }}>
+            <summary style={{
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+              color: tokens.colorNeutralForeground2,
+              padding: "10px 14px",
+              background: tokens.colorNeutralBackground2,
+              borderRadius: 8,
+              userSelect: "none",
+            }}>
+              Deep details (raw stats, hourly chart, top ASNs)
+            </summary>
+            <div style={{ padding: "16px 0" }}>
           <div className={styles.cardGrid}>
             <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
               <div className={styles.statLabel}>Threats ({range})</div>
@@ -3134,6 +3265,8 @@ function SecurityPanel({
               </div>
             </div>
           )}
+            </div>
+          </details>
         </>
       )}
 
@@ -3467,7 +3600,12 @@ function SecurityPanel({
                               : b.pattern === "brute-force" ? "danger"
                               : b.pattern === "spray" ? "warning"
                               : "subtle"
-                            } style={{ fontSize: 10, marginLeft: 6 }}>{b.pattern}</Badge>
+                            } style={{ fontSize: 10, marginLeft: 6 }}>{
+                              b.pattern === "stuffing" ? "Credential stuffing"
+                              : b.pattern === "brute-force" ? "Password guessing"
+                              : b.pattern === "spray" ? "Password spraying"
+                              : "Probing"
+                            }</Badge>
                           </p>
                           <div className={styles.listMeta}>
                             <span>{b.total} attempts</span><span>·</span>

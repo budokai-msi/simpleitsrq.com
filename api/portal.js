@@ -793,8 +793,103 @@ async function handleThreatIntel(session, url) {
   const totalThreats = threatClasses.reduce((s, t) => s + t.hits, 0);
   const blockedCount = await sql`SELECT COUNT(*)::int AS n FROM ip_blocklist`;
 
+  // ── Narrative summary (Huntress-style) ──────────────────────────────
+  // Turns raw numbers into a plain-English story the MSP owner can read
+  // in 10 seconds. Status level is the first thing they see; incidents
+  // are the second. Everything else is optional drill-down.
+  const activeAttackers = attackVelocity.length;
+  const exploitAttempts = (recentCritical || []).filter((e) =>
+    e.kind === "exploit_attempt" || String(e.detail?.cve || "").length > 0
+  ).length;
+  const scannerBlocks = (autoActions || []).filter((a) =>
+    String(a.reason || "").includes("scanner trap") || String(a.reason || "").includes("exploit attempt")
+  ).length;
+
+  let statusLevel = "calm";
+  let statusHeadline = "No notable activity in the last window.";
+  if (exploitAttempts > 0 || activeAttackers >= 5) {
+    statusLevel = "under_attack";
+    statusHeadline = exploitAttempts > 0
+      ? `${exploitAttempts} active exploit attempt${exploitAttempts > 1 ? "s" : ""} in progress — all blocked.`
+      : `${activeAttackers} attackers hitting hard right now — site still healthy.`;
+  } else if (activeAttackers >= 2 || campaigns.length >= 1) {
+    statusLevel = "elevated";
+    statusHeadline = campaigns.length >= 1
+      ? `Coordinated activity detected — ${campaigns.length} attacker${campaigns.length > 1 ? "s" : ""} rotating through multiple IPs.`
+      : `${activeAttackers} attackers active — automatic defenses engaged.`;
+  }
+
+  // Build the "incidents worth your attention" list — the 3-5 highest-
+  // severity events with plain-English explanations + recommendations.
+  const incidents = [];
+
+  if (exploitAttempts > 0) {
+    const first = (recentCritical || []).find((e) => e.kind === "exploit_attempt" || e.detail?.cve);
+    incidents.push({
+      severity: "critical",
+      title: `Exploit payload thrown at your site`,
+      explanation: "Someone tried to land a known CVE payload (like Log4Shell, Spring4Shell, or ProxyShell) in a request header or URL. These are automated attacks — the same IP has probably tried thousands of other sites today.",
+      weDid: "Instantly blocked the IP, served them a fake login page, and logged every byte of the payload for your records.",
+      youShould: "Nothing urgent — this is covered. Review the blocked IP list weekly to make sure we're not catching anyone legit.",
+      ts: first?.ts || null,
+    });
+  }
+
+  if (campaigns.length >= 1) {
+    const c = campaigns[0];
+    incidents.push({
+      severity: "warning",
+      title: `One attacker, multiple IPs`,
+      explanation: `We spotted a single device fingerprint rotating through ${c.ip_count} different IPs${c.countries?.length ? ` (${c.countries.slice(0, 3).join(", ")})` : ""}. That's someone using a proxy pool to look like many people — classic for credential stuffing or vulnerability sweeps.`,
+      weDid: `Logged every request and fingerprinted their browser/OS combo so we recognize them even if they switch networks again.`,
+      youShould: `Consider blocking the /24 range from the Geo tab — one range often covers the whole campaign.`,
+      ts: c.last_seen,
+    });
+  }
+
+  const credCount = credStats[0]?.total_captures || 0;
+  if (credCount >= 5) {
+    incidents.push({
+      severity: "warning",
+      title: `Automated login attempts against your admin panel`,
+      explanation: `${credCount} credential attempts from ${credStats[0]?.unique_ips || "multiple"} IPs hit the honeypot login page. Attackers don't know it's fake — they're burning through username/password pairs.`,
+      weDid: `Let them keep trying (tarpit'd the response so it's slow) and captured every username + password shape they submitted.`,
+      youShould: `Open the "Login attempts" tab to see what usernames they're trying — if "admin" or your real username is in the list, rotate that password.`,
+      ts: null,
+    });
+  }
+
+  const hostileGeoHits = (threatClasses.find((t) => t.threat_class === "hostile_geo") || {}).hits || 0;
+  if (hostileGeoHits >= 50) {
+    incidents.push({
+      severity: "info",
+      title: `High traffic from China / Russia / North Korea`,
+      explanation: `${hostileGeoHits} requests from hostile-geo countries in this window. These visitors see the honeypot, not your real site — they never know the difference.`,
+      weDid: `Every request from those countries is served the fake site. Your real content is protected.`,
+      youShould: `Nothing. This is normal — small-business sites attract routine sweeps from these regions.`,
+      ts: null,
+    });
+  }
+
+  // Positive framing — "what we saved you from" card.
+  const stopped = {
+    blocks: blockedCount[0]?.n || 0,
+    autoActions: (autoActions || []).length,
+    scannerBlocks,
+    exploitAttempts,
+    hostileGeoHits,
+    credAttempts: credCount,
+  };
+
   return json(200, {
     range,
+    narrative: {
+      statusLevel,
+      statusHeadline,
+      activeAttackers,
+      incidents,
+      stopped,
+    },
     summary: {
       totalThreats,
       blockedIps: blockedCount[0]?.n || 0,
@@ -2772,6 +2867,7 @@ async function dispatch(request, method) {
   if (action === "invoices"        && method === "GET")   return handleInvoices(session);
   if (action === "visitors"        && method === "GET")   return handleVisitors(session);
   if (action === "investigate-ip"   && method === "GET")   return handleInvestigateIp(session, url);
+  if (action === "investigate"      && method === "GET")   return handleInvestigateIp(session, url);
   if (action === "block-ip"         && method === "POST")  return handleBlockIp(session, request);
   if (action === "honeypot-creds"   && method === "GET")   return handleHoneypotCreds(session);
   if (action === "threat-intel"     && method === "GET")   return handleThreatIntel(session, url);
