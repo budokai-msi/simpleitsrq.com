@@ -1237,6 +1237,108 @@ async function handleGeoIntel(session, url) {
   });
 }
 
+// ---------- adsense health (admin only) ----------
+//
+// Aggregates the client-side AdSense beacons so we can answer "are
+// real visitors seeing ads?" in 10 seconds instead of logging into
+// Google AdSense. Fill rate and block rate are the two numbers the
+// owner actually cares about:
+//
+//   - High blocked% → most visitors run ad-blockers; expected, don't
+//     confuse with a broken deploy.
+//   - High timeout%  → AdSense approval is pending, or Google is
+//     rate-limiting us (brand-new site, low traffic, thin content).
+//   - High unfilled% → Google's accepting us but not selling — low
+//     inventory on our niche. Expect over time as pages mature.
+//   - High filled%   → Everything working; revenue is real.
+
+async function handleAdsenseHealth(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  // The adsense_events table is created on-demand by the first /api/track
+  // beacon, so a cold portal that's never seen traffic returns an empty
+  // summary gracefully instead of a "relation does not exist" 500.
+  let rows = [];
+  try {
+    rows = await sql`
+      SELECT
+        COUNT(*)::int                                 AS sessions,
+        COUNT(*) FILTER (WHERE script_loaded)::int    AS script_loaded_sessions,
+        SUM(slot_count)::int                          AS total_slots,
+        SUM(filled)::int                              AS total_filled,
+        SUM(unfilled)::int                            AS total_unfilled,
+        SUM(blocked)::int                             AS total_blocked,
+        SUM(timeout)::int                             AS total_timeout
+      FROM adsense_events
+      WHERE ts > now() - ${interval}::interval
+    `;
+  } catch {
+    return json(200, { range, noData: true, hint: "Table not yet created — no beacons received." });
+  }
+
+  const byPath = await sql`
+    SELECT path,
+           COUNT(*)::int AS sessions,
+           SUM(slot_count)::int AS slots,
+           SUM(filled)::int AS filled,
+           SUM(unfilled)::int AS unfilled,
+           SUM(blocked)::int AS blocked,
+           SUM(timeout)::int AS timeout
+    FROM adsense_events
+    WHERE ts > now() - ${interval}::interval
+    GROUP BY path
+    ORDER BY sessions DESC
+    LIMIT 15
+  `.catch(() => []);
+
+  const r = rows[0] || {};
+  const totalSlots = r.total_slots || 0;
+  const pct = (n) => totalSlots === 0 ? 0 : Math.round((n / totalSlots) * 1000) / 10;
+
+  // One-line narrative that tells the owner what to do.
+  let headline;
+  const fillPct = pct(r.total_filled || 0);
+  const blockPct = pct(r.total_blocked || 0);
+  const timeoutPct = pct(r.total_timeout || 0);
+  const scriptPct = r.sessions ? Math.round((r.script_loaded_sessions / r.sessions) * 100) : 0;
+
+  if (totalSlots === 0) {
+    headline = "No AdSense beacons received yet. Visit a page with ads (e.g. /glossary) in a fresh browser to seed the first measurement.";
+  } else if (fillPct >= 20) {
+    headline = `AdSense is healthy — ${fillPct}% of slot impressions served a real ad.`;
+  } else if (timeoutPct >= 40) {
+    headline = `Google isn't responding to most slots (${timeoutPct}% timeout). Your AdSense account is probably still in "Getting ready" — check adsense.google.com → Sites for the approval state.`;
+  } else if (blockPct >= 40) {
+    headline = `Ad blockers are the main problem — ${blockPct}% of sessions block the adsbygoogle script entirely. Real visitors on clean browsers will see ads; the "missing ads" complaint from your own browser is expected.`;
+  } else if (fillPct < 5) {
+    headline = `Low fill rate (${fillPct}%). Site is approved but Google isn't finding many advertisers for your pages. Normal for new sites; improves with traffic + pagecount.`;
+  } else {
+    headline = `AdSense is working — ${fillPct}% fill, ${blockPct}% blocked, ${timeoutPct}% timed out.`;
+  }
+
+  return json(200, {
+    range,
+    headline,
+    summary: {
+      sessions: r.sessions || 0,
+      scriptLoadedPct: scriptPct,
+      totalSlots,
+      fillPct,
+      unfilledPct: pct(r.total_unfilled || 0),
+      blockedPct: blockPct,
+      timeoutPct,
+    },
+    byPath: byPath.map((b) => ({
+      path: b.path, sessions: b.sessions, slots: b.slots,
+      filled: b.filled, unfilled: b.unfilled, blocked: b.blocked, timeout: b.timeout,
+    })),
+  });
+}
+
 // ---------- blog drafts (admin only) ----------
 // These handlers manage the `draft_posts` table populated by the daily
 // cron agent (api/cron/agent.js). They let the admin list pending drafts,
@@ -2874,6 +2976,7 @@ async function dispatch(request, method) {
   if (action === "enum-intel"       && method === "GET")   return handleEnumIntel(session, url);
   if (action === "cred-intel"       && method === "GET")   return handleCredIntel(session, url);
   if (action === "geo-intel"        && method === "GET")   return handleGeoIntel(session, url);
+  if (action === "adsense-health"   && method === "GET")   return handleAdsenseHealth(session, url);
   if (action === "audit-verify"     && method === "GET")   return handleAuditVerify(session);
   if (action === "run-audit-migration" && method === "POST") return handleRunAuditMigration(session);
   if (action === "reset-audit-chain"    && method === "POST") return handleResetAuditChain(session);

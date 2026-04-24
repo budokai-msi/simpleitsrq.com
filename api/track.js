@@ -39,6 +39,56 @@ export async function POST(request) {
   // spend a function slot on a dedicated route. One row per outbound
   // affiliate-link click; used by the Revenue Signals admin panel to
   // attribute CTR per blog post.
+  // AdSense health beacon — one per page load, summarizes whether the
+  // adsbygoogle script loaded and whether each slot filled. Unblocked
+  // from CSRF because the /api/track endpoint is already a public,
+  // rate-limited beacon for anonymous telemetry. Stored in its own
+  // lightweight table so we can answer "are real visitors seeing ads?"
+  // in the admin dashboard. Schema is idempotent — CREATE IF NOT EXISTS
+  // on first write, so no separate migration is needed.
+  if (body.kind === "adsense_health") {
+    try {
+      await sql`
+        CREATE TABLE IF NOT EXISTS adsense_events (
+          id BIGSERIAL PRIMARY KEY,
+          ts TIMESTAMPTZ NOT NULL DEFAULT now(),
+          path TEXT,
+          ip TEXT,
+          country TEXT,
+          load_id TEXT,
+          script_loaded BOOLEAN,
+          slot_count INT,
+          filled INT,
+          unfilled INT,
+          blocked INT,
+          timeout INT
+        )
+      `;
+      await sql`
+        CREATE INDEX IF NOT EXISTS idx_adsense_events_ts ON adsense_events (ts DESC)
+      `;
+      const geo = geoFromHeaders(request);
+      await sql`
+        INSERT INTO adsense_events (
+          path, ip, country, load_id,
+          script_loaded, slot_count, filled, unfilled, blocked, timeout
+        ) VALUES (
+          ${String(body.path || "/").slice(0, 500)},
+          ${ip}, ${geo.country}, ${String(body.loadId || "").slice(0, 16)},
+          ${!!body.scriptLoaded},
+          ${Number(body.slotCount) || 0},
+          ${Number(body.filled) || 0},
+          ${Number(body.unfilled) || 0},
+          ${Number(body.blocked) || 0},
+          ${Number(body.timeout) || 0}
+        )
+      `;
+    } catch (err) {
+      console.error("[track] adsense_health insert failed", err);
+    }
+    return noContent();
+  }
+
   if (body.kind === "affiliate_click" && body.destination) {
     const geo = geoFromHeaders(request);
     let userId = null;
