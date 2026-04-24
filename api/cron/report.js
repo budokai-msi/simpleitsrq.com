@@ -153,6 +153,37 @@ export async function GET(request) {
     LIMIT 50
   `;
 
+  // --- AdSense approval landed? ---
+  // We watch the adsense_events table for the FIRST row with filled > 0
+  // and email once when it arrives. Tracked via a one-row marker table
+  // (adsense_milestones) so we don't email every day forever.
+  let adsenseMilestone = null;
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS adsense_milestones (
+        id TEXT PRIMARY KEY,
+        first_filled_at TIMESTAMPTZ
+      )
+    `;
+    const seen = await sql`SELECT first_filled_at FROM adsense_milestones WHERE id = 'first_filled'`;
+    if (!seen[0]?.first_filled_at) {
+      const firstFill = await sql`
+        SELECT MIN(ts) AS ts FROM adsense_events WHERE filled > 0
+      `.catch(() => []);
+      const ts = firstFill[0]?.ts;
+      if (ts) {
+        await sql`
+          INSERT INTO adsense_milestones (id, first_filled_at)
+          VALUES ('first_filled', ${ts})
+          ON CONFLICT (id) DO NOTHING
+        `;
+        adsenseMilestone = { firstFilledAt: ts, justLanded: true };
+      }
+    }
+  } catch (err) {
+    console.error("[cron/report] adsense milestone check failed", err);
+  }
+
   // --- OPSEC digest (24h attack surface summary) ---
   // Reuses the scanner-fingerprint library to turn raw threat_actors
   // rows into named scanners + CVE attempts. Keeps the HTML email
@@ -331,7 +362,19 @@ export async function GET(request) {
   }
 
   const resend = new Resend(apiKey);
-  const subject = `[SimpleIT] Daily Report — ${report.summary.totalVisits} visits · ${opsec.exploitAttempts} exploit attempts blocked · ${opsec.autoBlocks} auto-blocks`;
+  const subject = adsenseMilestone?.justLanded
+    ? `🎉 [SimpleIT] AdSense approval LANDED — ads are now serving on simpleitsrq.com`
+    : `[SimpleIT] Daily Report — ${report.summary.totalVisits} visits · ${opsec.exploitAttempts} exploit attempts blocked · ${opsec.autoBlocks} auto-blocks`;
+
+  const adsenseBannerHtml = adsenseMilestone?.justLanded ? `
+    <div style="padding:16px 20px;background:#107C10;color:#fff;border-radius:10px 10px 0 0;margin-bottom:0">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.9;font-weight:700">🎉 Milestone</div>
+      <div style="font-size:18px;font-weight:700;margin-top:2px">AdSense approval landed — first ad served at ${new Date(adsenseMilestone.firstFilledAt).toUTCString()}</div>
+      <div style="font-size:13px;margin-top:6px;opacity:.95">
+        Ads are now monetizing real visitors. Watch the AdSense health card in the portal Ops Console (fillPct should rise) and the daily fill rate via /api/portal?action=adsense-health.
+      </div>
+    </div>
+  ` : "";
 
   // OPSEC digest section — plain-English summary of what the defenses did.
   // Only renders when there's actual signal; a quiet day gets a short line.
@@ -377,7 +420,8 @@ export async function GET(request) {
 
   const htmlBody = `
     <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:720px;margin:0 auto;color:#1a1a1a">
-      <div style="padding:16px 20px;background:#0F6CBD;color:#fff;border-radius:10px 10px 0 0">
+      ${adsenseBannerHtml}
+      <div style="padding:16px 20px;background:#0F6CBD;color:#fff;${adsenseMilestone?.justLanded ? "" : "border-radius:10px 10px 0 0"}">
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.85">Daily Intelligence Report</div>
         <div style="font-size:18px;font-weight:700;margin-top:2px">simpleitsrq.com — ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
       </div>
