@@ -5,7 +5,7 @@
   Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key, Wrench
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSEO } from "../lib/seo";
 import { useScrollReveal, useRevealChildren } from "../lib/useScrollReveal";
 import heroGrid from "../assets/hero-grid.svg";
@@ -85,6 +85,97 @@ function HeroPaths() {
         </div>
       </div>
     </section>
+  );
+}
+
+// Live "we're blocking attacks right now" strip. Pulls the same public
+// feed that powers /live-threats, renders as a single row of 3 numbers
+// on the homepage, and deep-links to the full wall. Every visitor on
+// the homepage sees real defense metrics — strongest trust signal we
+// have besides testimonials. Fails silently to a static fallback if
+// the API is down.
+function LiveDefenseStrip() {
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/contact?action=threats")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (!cancelled && data?.stats) setStats(data.stats); })
+      .catch(() => { /* silent — fallback renders */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Fallback numbers — marketing claims, not live data. Replaced on fetch.
+  const hits = stats?.hits48h;
+  const exploits = stats?.exploitAttempts48h;
+  const blocklist = stats?.blocklistTotal;
+
+  return (
+    <section className="live-defense-strip" aria-label="Live defense metrics">
+      <div className="container">
+        <Link to="/live-threats" className="live-defense-card" style={{
+          display: "grid",
+          gridTemplateColumns: "auto 1fr auto",
+          gap: "16px 20px",
+          alignItems: "center",
+          padding: "18px 22px",
+          borderRadius: 14,
+          background: "linear-gradient(180deg, rgba(15, 108, 189, 0.06) 0%, rgba(15, 108, 189, 0.02) 100%)",
+          border: "1px solid rgba(15, 108, 189, 0.18)",
+          textDecoration: "none",
+          color: "inherit",
+          transition: "transform 160ms ease, box-shadow 160ms ease",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{
+              display: "inline-block", width: 10, height: 10, borderRadius: 999,
+              background: "#DC2626", animation: "pulse-red 1.6s infinite",
+            }} />
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#DC2626" }}>
+              Live defense
+            </span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px 24px" }}>
+            <LiveStat value={hits} label="attacks blocked · last 48h" color="#DC2626" />
+            <LiveStat value={exploits} label="exploit payloads stopped" color="#D97706" />
+            <LiveStat value={blocklist} label="IPs on the blocklist" color="#0F6CBD" />
+          </div>
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#0F6CBD", whiteSpace: "nowrap" }}>
+            See the wall <ArrowRight size={14} />
+          </span>
+        </Link>
+      </div>
+      <style>{`
+        @keyframes pulse-red {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.65); }
+          50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+        }
+        .live-defense-card:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(15, 108, 189, 0.12);
+        }
+        @media (max-width: 720px) {
+          .live-defense-card {
+            grid-template-columns: 1fr !important;
+            text-align: center;
+          }
+          .live-defense-card > * { justify-self: center; }
+        }
+      `}</style>
+    </section>
+  );
+}
+
+function LiveStat({ value, label, color }) {
+  const display = value == null
+    ? <span style={{ color: "#9ca3af" }}>—</span>
+    : value.toLocaleString();
+  return (
+    <div>
+      <div style={{ fontSize: 20, fontWeight: 700, color, lineHeight: 1.1 }}>{display}</div>
+      <div style={{ fontSize: 11, color: "var(--syn-text-muted, #6b7280)", marginTop: 2 }}>{label}</div>
+    </div>
   );
 }
 
@@ -647,6 +738,7 @@ export default function Home() {
     <>
       <Hero />
       <HeroPaths />
+      <LiveDefenseStrip />
       <LogosBar />
       <Solutions />
       <Industries />
