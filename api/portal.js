@@ -26,7 +26,9 @@ import { csrfValid } from "./_lib/csrf.js";
 import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
-const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
+// See note in api/contact.js — default goes to Gmail while simpleitsrq.com
+// has no MX records. Override via CONTACT_TO_EMAIL once inbound mail is live.
+const CONTACT_TO_DEFAULT = "ivanovspccenter@gmail.com";
 
 const escapeHtml = (s = "") =>
   String(s)

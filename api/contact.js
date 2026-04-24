@@ -37,7 +37,11 @@ validateEnv({
 
 const CONTACT_FROM = "Simple IT SRQ Website <contact@simpleitsrq.com>";
 const NEWSLETTER_FROM = "Simple IT Brief <hello@simpleitsrq.com>";
-const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
+// NOTE: default routes to the Gmail mailbox, not hello@simpleitsrq.com, because
+// simpleitsrq.com currently has no MX records — Resend bounces "Recipient's
+// mail server not found". Override via CONTACT_TO_EMAIL once MX routing
+// (Cloudflare Email Routing, ImprovMX, Workspace) is live.
+const CONTACT_TO_DEFAULT = "ivanovspccenter@gmail.com";
 const SITE_URL = "https://simpleitsrq.com";
 const TURNSTILE_VERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";

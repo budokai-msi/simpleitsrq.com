@@ -12,7 +12,8 @@ import { refreshThreatFeeds } from "../_lib/osint.js";
 import { Resend } from "resend";
 import { timingSafeEqual } from "node:crypto";
 
-const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
+// Fallback goes to Gmail, not hello@simpleitsrq.com, until MX records land.
+const REPORT_TO = process.env.CONTACT_TO_EMAIL || "ivanovspccenter@gmail.com";
 const FROM = "Simple IT SRQ Analytics <analytics@simpleitsrq.com>";
 
 function verifyCron(request) {
