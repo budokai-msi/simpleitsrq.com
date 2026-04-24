@@ -197,6 +197,109 @@ In the meantime, the restart-and-reinstall approach works for most Sarasota offi
 
 If printing problems are eating up your teams time or you want to prevent this kind of disruption in the future, **[Simple IT SRQ can help](/#contact)**. We monitor updates before they hit your office and handle driver issues so your team never sees them. [Get in touch today](/#solutions).`
   },
+  {
+    slug: "florida-data-privacy-law-sarasota-business-owners",
+    title: "Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know",
+    metaDescription: "Florida data privacy law explained for small business owners in Sarasota. What changed and how to comply.",
+    date: "2026-04-24",
+    author: "Simple IT SRQ Team",
+    category: "Compliance",
+    tags: ["ai", "smb"],
+    excerpt: "Florida just passed new data privacy rules that affect how you handle customer information. Heres what changed and what you need to do about it.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know.",
+    content: `# Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know
+
+If you havent heard about Floridas new data privacy law yet, youre not alone—but you need to pay attention. The law takes effect soon, and it affects how you collect, store, and use customer information. Whether youre in healthcare, legal services, real estate, or any other field, this applies to you.
+
+Lets break down what actually changed and what you need to do about it.
+
+## What Is Floridas New Law?
+
+Florida passed the **Florida Information Protection Act of 2024** (often called FIPA). Its the states answer to privacy laws like Californias CCPA and Virginias VCDPA.
+
+Simply put: it gives Florida residents the right to know what personal data youre collecting about them, and it requires you to protect that data better than you might be doing now.
+
+## Who Does This Affect?
+
+This law applies to most businesses that:
+
+- Operate in Florida (even if youre based somewhere else)
+- Collect personal information from Florida residents
+- Process data from more than a certain number of people (the threshold is fairly low)
+
+If you run a law firm, medical practice, construction company, or real estate office in Sarasota or Bradenton, this is about you. If you collect customer data at all—names, emails, phone numbers, financial information, health records—you need to comply.
+
+## The Main Requirements
+
+**Give people access to their data.** If a customer asks what information you have about them, you have to tell them.
+
+**Let people delete their data.** Residents can request that you erase their personal information (with some exceptions for legal obligations).
+
+**Be transparent about what you collect.** Your privacy policy needs to clearly explain what data youre gathering and why.
+
+**Protect the data you have.** You need reasonable security measures—which means encryption, access controls, and regular security reviews. If youre still storing passwords in a spreadsheet or sending client files via unsecured email, thats a problem.
+
+**Report breaches quickly.** If someone breaches your data, you must notify affected individuals without unnecessary delay. Theres no time to hide the problem.
+
+## What This Means for Different Industries
+
+**Healthcare providers:** You already deal with HIPAA, so youre probably ahead of the game. But FIPA adds extra requirements on top of what youre already doing.
+
+**Legal firms:** Your clients confidential information is sensitive. FIPA means you need to document that youre protecting it and be ready to prove it.
+
+**Real estate and construction:** You collect names, addresses, financial details, and sometimes social security numbers. This law means you cant just store that casually.
+
+**Finance:** If you handle client money or financial data, this is critical. A data breach could be catastrophic for your reputation.
+
+## Common Mistakes Small Businesses Make
+
+**Thinking "it wont happen to us."** Small businesses get targeted too. Hackers know small companies often have weaker security than big corporations.
+
+**Storing data longer than necessary.** If you dont need old customer files, delete them. Less data = less risk.
+
+**Not having a clear privacy policy.** If you dont have one, or havent updated it in years, now is the time.
+
+**Using weak passwords or shared accounts.** If three people use the same login to access customer data, you have no way to track who did what.
+
+**No backup plan.** If your systems get compromised, can you recover? If you cant prove your data is safe, compliance becomes impossible.
+
+## What to Do About It
+
+**Step 1: Audit what data you have.** Spend a week documenting what customer information you actually collect and where its stored. Check email, filing cabinets, cloud accounts, CRM systems—everywhere.
+
+**Step 2: Update your privacy policy.** You probably have one buried somewhere. Pull it out and update it to reflect FIPA requirements. If you dont have one, create one. Your website should link to it clearly.
+
+**Step 3: Review your data security.** Do a basic security check:
+
+- Are passwords strong and unique?
+- Is sensitive data encrypted?
+- Do employees have access only to what they need?
+- Are old files deleted regularly?
+- Do you have backups?
+
+**Step 4: Create a data breach response plan.** If something happens, you need to know who to call, how to notify customers, and how to report it. Dont wait until you have a problem.
+
+**Step 5: Train your team.** Your employees are your biggest security risk. If someone emails a customers social security number by mistake, thats a breach. Make sure your team knows what data is sensitive and how to handle it.
+
+**Step 6: Document everything.** Keep records showing youre compliant. If someone later challenges you, documentation saves you.
+
+## This Isnt Just About Legal Compliance
+
+Heres the reality: customers trust you with their information. A data breach doesnt just create legal headaches—it damages your reputation and costs money.
+
+Better security practices protect your business. They reduce the risk of ransomware attacks, employee mistakes, and identity theft. Plus, when you can tell customers "we take data security seriously," they feel more confident working with you.
+
+## Dont Go It Alone
+
+If this feels overwhelming, thats normal. Privacy law is complex, and every business is different. The good news is that you dont have to figure this out yourself.
+
+**At Simple IT SRQ, we help Sarasota, Bradenton, and Venice businesses understand and implement compliance requirements.** We can audit your data, review your security, and build a compliance plan that actually works for your business.
+
+If youd like a free assessment of where you stand with Floridas new privacy law, [contact us](/index.html#contact) or [learn more about our compliance solutions](/index.html#solutions). Well walk you through it—no technical background required.
+
+The sooner you act, the sooner you can stop worrying about this and get back to running your business.`
+  },
 ];
 
 export default posts;
