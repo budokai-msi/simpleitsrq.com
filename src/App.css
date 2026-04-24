@@ -1085,34 +1085,57 @@
   }
 }
 
-/* Mobile-only sticky "Book a Call" bar. Mobile visitors lose the hero
- * CTA the moment they scroll, and the burger-menu is an extra tap away.
- * Giving them a permanent one-tap path to booking is the single highest-
- * impact mobile conversion lever for a services business. */
-.mobile-sticky-cta { display: none; }
+/* Mobile thumb-reach action bar. Four channels (Call/Text/Email/Book)
+ * because phone-shy visitors convert through SMS or email at very
+ * different rates than callers — splitting them out lets GA4 reveal
+ * which channel is actually driving leads on mobile. */
+.mobile-action-bar { display: none; }
 @media (max-width: 720px) {
-  .mobile-sticky-cta {
-    display: block;
+  .mobile-action-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
     background: var(--bg-elevated, var(--surface-1, #fff));
     border-top: 1px solid var(--border);
     box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.06);
     z-index: 40;
   }
-  .mobile-sticky-cta-btn {
+  .mobile-action-bar__btn {
     display: flex;
-    width: 100%;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    font-size: 15px;
+    gap: 3px;
+    min-height: 52px;
+    padding: 6px 4px;
+    border-radius: var(--r-sm);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-1);
+    text-decoration: none;
+    background: transparent;
+    transition: background 120ms var(--ease-out), transform 120ms var(--ease-out);
   }
-  /* Reserve space at page bottom so the sticky bar never covers content
-   * (footer, "Load more" button, cookie banner dismissal). */
-  body { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .mobile-action-bar__btn:active { transform: scale(0.96); background: var(--surface-2, rgba(0,0,0,0.04)); }
+  .mobile-action-bar__btn--primary {
+    background: var(--brand);
+    color: #fff;
+  }
+  .mobile-action-bar__btn--primary:active { background: var(--brand-hover, var(--brand)); }
+  /* Reserve space at page bottom so the action bar never covers content
+   * (footer, "Load more" button, cookie banner dismissal). Scoped with
+   * :has() so pages that suppress the bar (/book, /portal/*) don't leave
+   * a phantom gap at the bottom. */
+  body:has(.mobile-action-bar) {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
 }
+[data-theme="dark"] .mobile-action-bar__btn:active { background: rgba(255,255,255,0.06); }
 .footer h4 {
   font-size: 14px;
   font-weight: 600;
@@ -1814,8 +1837,60 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ----- Form: shell + new states ----- */
+/* Shared container + field styles for lead forms on Book, Advertise,
+ * CyberInsuranceQuote, ComplianceAuditReferral. These pages wrap their
+ * form in `.form-shell` and use `.field` / `.field-label` labels. The
+ * page-scoped `.advertise-page .form-shell` override still wins for
+ * Advertise's denser layout. */
 .form-shell {
   position: relative;
+  padding: 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow2);
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.form-shell input,
+.form-shell textarea,
+.form-shell select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--bg-elevated);
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 400;
+  font-family: inherit;
+  transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out), background-color 200ms var(--ease-out);
+}
+.form-shell input:focus,
+.form-shell textarea:focus,
+.form-shell select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: var(--shadow-glow);
+}
+.form-shell textarea { resize: vertical; min-height: 96px; }
+@media (max-width: 640px) {
+  /* Stack the 2-column rows so fields don't get crushed on phones. */
+  .form-shell form > div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  .form-shell { padding: 1.25rem; }
 }
 .form {
   transition: opacity 280ms var(--ease-out), filter 280ms var(--ease-out);

@@ -1,6 +1,6 @@
 ﻿import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
-import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin } from "lucide-react";
+import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from "./pages/Home";
@@ -10,7 +10,9 @@ import { AuthProvider } from "./lib/auth.jsx";
 import { useAuth } from "./lib/authContext.js";
 import CookieConsent from "./components/CookieConsent.jsx";
 import VisitorTracker from "./components/VisitorTracker.jsx";
-import { useAnalyticsPageviews, useAnalyticsConsent } from "./lib/analytics.js";
+import { useAnalyticsPageviews, useAnalyticsConsent, trackEvent } from "./lib/analytics.js";
+import { useClarity } from "./lib/clarity.js";
+import { useEngagementTracking } from "./lib/engagement.js";
 import { AutoAds } from "./components/AdSense.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./App.css";
@@ -260,12 +262,51 @@ function MobileStickyCTA() {
   // Hide where the CTA would be redundant (already-booking page) or
   // disruptive (signed-in portal area doesn't need a marketing CTA).
   if (pathname === "/book" || pathname.startsWith("/portal")) return null;
+
+  // Bottom action bar — four channels in thumb-reach instead of one
+  // single CTA. Each tap fires a GA4 event so the conversion report
+  // tells us which channel mobile visitors actually use. The mailto/
+  // tel: hrefs work on every mobile platform without an SDK.
+  const tap = (channel) => () => trackEvent("mobile_cta_tap", { channel, source_path: pathname });
+
   return (
-    <div className="mobile-sticky-cta" role="complementary" aria-label="Quick action">
-      <Link to="/book" className="btn btn-primary mobile-sticky-cta-btn">
-        Book a Free Call
+    <nav className="mobile-action-bar" role="navigation" aria-label="Quick contact">
+      <a
+        href="tel:+14072421456"
+        className="mobile-action-bar__btn"
+        onClick={tap("call")}
+        aria-label="Call (407) 242-1456"
+      >
+        <Phone size={18} aria-hidden="true" />
+        <span>Call</span>
+      </a>
+      <a
+        href="sms:+14072421456?body=Hi%20Simple%20IT%20SRQ%20%E2%80%94%20"
+        className="mobile-action-bar__btn"
+        onClick={tap("sms")}
+        aria-label="Text (407) 242-1456"
+      >
+        <MessageSquare size={18} aria-hidden="true" />
+        <span>Text</span>
+      </a>
+      <a
+        href="mailto:hello@simpleitsrq.com"
+        className="mobile-action-bar__btn"
+        onClick={tap("email")}
+        aria-label="Email hello@simpleitsrq.com"
+      >
+        <Mail size={18} aria-hidden="true" />
+        <span>Email</span>
+      </a>
+      <Link
+        to="/book"
+        className="mobile-action-bar__btn mobile-action-bar__btn--primary"
+        onClick={tap("book")}
+      >
+        <Calendar size={18} aria-hidden="true" />
+        <span>Book</span>
       </Link>
-    </div>
+    </nav>
   );
 }
 
@@ -276,6 +317,8 @@ function AnalyticsMount() {
   // hooks in Layout so the router context is definitely available.
   useAnalyticsConsent();
   useAnalyticsPageviews();
+  useClarity();
+  useEngagementTracking();
   return null;
 }
 
