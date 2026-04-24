@@ -2923,6 +2923,12 @@ function SecurityPanel({
 }) {
   const [intel, setIntel] = useState(null);
   const [intelLoading, setIntelLoading] = useState(true);
+  const [enumData, setEnumData] = useState(null);
+  const [enumLoading, setEnumLoading] = useState(false);
+  const [credIntel, setCredIntel] = useState(null);
+  const [credIntelLoading, setCredIntelLoading] = useState(false);
+  const [geoData, setGeoData] = useState(null);
+  const [geoLoading, setGeoLoading] = useState(false);
   const [subTab, setSubTab] = useState("overview");
   const [range, setRange] = useState("7d");
   const [showInvestigate, setShowInvestigate] = useState(false);
@@ -2936,9 +2942,39 @@ function SecurityPanel({
     finally { setIntelLoading(false); }
   }, [range]);
 
+  const loadEnum = useCallback(async () => {
+    setEnumLoading(true);
+    try {
+      const res = await fetch(`/api/portal?action=enum-intel&range=${range}`, { credentials: "same-origin" });
+      if (res.ok) setEnumData(await res.json());
+    } catch { /* best effort */ }
+    finally { setEnumLoading(false); }
+  }, [range]);
+
+  const loadCredIntel = useCallback(async () => {
+    setCredIntelLoading(true);
+    try {
+      const res = await fetch(`/api/portal?action=cred-intel&range=${range}`, { credentials: "same-origin" });
+      if (res.ok) setCredIntel(await res.json());
+    } catch { /* best effort */ }
+    finally { setCredIntelLoading(false); }
+  }, [range]);
+
+  const loadGeo = useCallback(async () => {
+    setGeoLoading(true);
+    try {
+      const res = await fetch(`/api/portal?action=geo-intel&range=${range}`, { credentials: "same-origin" });
+      if (res.ok) setGeoData(await res.json());
+    } catch { /* best effort */ }
+    finally { setGeoLoading(false); }
+  }, [range]);
+
   // eslint-disable-next-line react-hooks/set-state-in-effect -- loadIntel is a stable useCallback
   useEffect(() => { loadIntel(); }, [loadIntel]);
   useEffect(() => { if (subTab === "credentials") loadHpCreds?.(); }, [subTab, loadHpCreds]);
+  useEffect(() => { if (subTab === "enumeration") loadEnum(); }, [subTab, loadEnum]);
+  useEffect(() => { if (subTab === "cred-intel")  loadCredIntel(); }, [subTab, loadCredIntel]);
+  useEffect(() => { if (subTab === "geo")         loadGeo(); }, [subTab, loadGeo]);
 
   const pillStyle = (active) => ({
     padding: "6px 14px", borderRadius: 999, fontSize: 13, fontWeight: active ? 600 : 400, cursor: "pointer", border: "none",
@@ -2953,9 +2989,16 @@ function SecurityPanel({
     <div>
       {/* ── Sub-nav ── */}
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-        {["overview", "campaigns", "credentials", "countermeasures", "ops"].map((t) => (
+        {["overview", "enumeration", "campaigns", "credentials", "cred-intel", "geo", "countermeasures", "ops"].map((t) => (
           <button key={t} style={pillStyle(subTab === t)} onClick={() => setSubTab(t)}>
-            {t === "overview" ? "Threat Overview" : t === "campaigns" ? "Campaign Clusters" : t === "credentials" ? "Captured Creds" : t === "countermeasures" ? "Countermeasures" : "Ops Console"}
+            {t === "overview" ? "Threat Overview"
+              : t === "enumeration" ? "Enumeration"
+              : t === "campaigns" ? "Campaign Clusters"
+              : t === "credentials" ? "Captured Creds"
+              : t === "cred-intel" ? "Cred Intel"
+              : t === "geo" ? "Geo"
+              : t === "countermeasures" ? "Countermeasures"
+              : "Ops Console"}
           </button>
         ))}
         <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
@@ -3225,6 +3268,315 @@ function SecurityPanel({
               </div>
             ))}
           </div>
+        </>
+      )}
+
+      {/* ════ ENUMERATION TAB ════ */}
+      {subTab === "enumeration" && (
+        <>
+          {enumLoading && !enumData && <div style={{ padding: 24 }}><Spinner label="Analyzing enumeration patterns…" /></div>}
+          {enumData && (
+            <>
+              <div className={styles.cardGrid}>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+                  <div className={styles.statLabel}>Exploit attempts</div>
+                  <div className={styles.statValue} style={{ color: "#DC2626" }}>{enumData.summary.exploitAttempts}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+                  <div className={styles.statLabel}>Unique paths probed</div>
+                  <div className={styles.statValue}>{enumData.summary.distinctPaths}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #7C3AED" }}>
+                  <div className={styles.statLabel}>First-time attackers</div>
+                  <div className={styles.statValue} style={{ color: "#7C3AED" }}>{enumData.summary.freshIps}</div>
+                  <span style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>{enumData.summary.recurringIps} recurring</span>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #059669" }}>
+                  <div className={styles.statLabel}>Scanned hits</div>
+                  <div className={styles.statValue}>{enumData.summary.totalThreats}</div>
+                </div>
+              </div>
+
+              {enumData.exploitAttempts?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600, color: "#DC2626" }}>Active exploit attempts</h4>
+                  <div className={styles.list}>
+                    {enumData.exploitAttempts.map((e, i) => (
+                      <div key={i} className={styles.listRow} style={{ borderColor: "#DC2626", borderLeftWidth: 3 }}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>{e.cve}</p>
+                          <div className={styles.listMeta}>
+                            <span>{e.name}</span><span>·</span>
+                            <span><strong>{e.hits}</strong> hits from {e.uniqueIps} IPs</span>
+                            {e.lastSeen && <><span>·</span><span>last seen {ago(e.lastSeen)}</span></>}
+                          </div>
+                        </div>
+                        <Badge appearance="filled" color="danger">EXPLOIT</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enumData.tools?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Scanner / tool fingerprints</h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
+                    {enumData.tools.map((t) => (
+                      <div key={t.id} style={{ padding: "8px 12px", background: tokens.colorNeutralBackground2, borderRadius: 8, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontFamily: "monospace" }}>{t.id}</span>
+                        <Badge appearance="outline">{t.hits}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enumData.cms?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Targeted products / CMS</h4>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {enumData.cms.map((c) => (
+                      <div key={c.id} style={{ padding: "6px 14px", background: tokens.colorNeutralBackground2, borderRadius: 999, fontSize: 13 }}>
+                        <strong>{c.id}</strong>
+                        <span style={{ marginLeft: 8, color: tokens.colorNeutralForeground3 }}>{c.hits}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enumData.topEnumerators?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top enumerators (by path breadth)</h4>
+                  <div className={styles.list}>
+                    {enumData.topEnumerators.map((e, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>{e.ip}</p>
+                          <div className={styles.listMeta}>
+                            <span><strong>{e.uniquePaths}</strong> unique paths</span><span>·</span>
+                            <span>{e.hits} hits</span>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <Button size="small" appearance="subtle" icon={<Eye24Regular />} onClick={() => { investigate(e.ip); setShowInvestigate(true); }}>Investigate</Button>
+                          <Button size="small" appearance="subtle" icon={<Delete24Regular />} onClick={() => blockIp(e.ip, `enumerator: ${e.uniquePaths} unique paths / ${e.hits} hits`)} disabled={blockBusy}>Block</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enumData.topPaths?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top probed paths</h4>
+                  <div className={styles.list}>
+                    {enumData.topPaths.map((p, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>{p.path}</p>
+                        </div>
+                        <Badge appearance="outline">{p.hits} hits</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ════ CREDENTIAL INTEL TAB ════ */}
+      {subTab === "cred-intel" && (
+        <>
+          {credIntelLoading && !credIntel && <div style={{ padding: 24 }}><Spinner label="Analyzing credential attempts…" /></div>}
+          {credIntel && (
+            <>
+              <div className={styles.cardGrid}>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+                  <div className={styles.statLabel}>Attempts</div>
+                  <div className={styles.statValue} style={{ color: "#DC2626" }}>{credIntel.summary.totalAttempts}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+                  <div className={styles.statLabel}>Unique attackers</div>
+                  <div className={styles.statValue}>{credIntel.summary.uniqueIps}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #7C3AED" }}>
+                  <div className={styles.statLabel}>Distinct usernames</div>
+                  <div className={styles.statValue} style={{ color: "#7C3AED" }}>{credIntel.summary.uniqueUsernames}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #059669" }}>
+                  <div className={styles.statLabel}>Patterns</div>
+                  <div style={{ fontSize: 11, marginTop: 4, display: "flex", flexDirection: "column", gap: 2 }}>
+                    {Object.entries(credIntel.summary.patternCounts || {}).map(([k, v]) => (
+                      <span key={k}><strong>{v}</strong> {k}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {credIntel.topUsernames?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top usernames tried</h4>
+                  <div className={styles.list}>
+                    {credIntel.topUsernames.map((u, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>{u.username}</p>
+                        </div>
+                        <Badge appearance="outline" color={u.hits > 50 ? "danger" : u.hits > 10 ? "warning" : "subtle"}>{u.hits}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {credIntel.pwLengthHistogram?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Password length distribution</h4>
+                  <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 80, padding: "0 4px" }}>
+                    {credIntel.pwLengthHistogram.map((b) => {
+                      const max = Math.max(...credIntel.pwLengthHistogram.map((x) => x.hits), 1);
+                      const pct = (b.hits / max) * 100;
+                      return (
+                        <div key={b.length} title={`${b.length} chars — ${b.hits} attempts`}
+                             style={{ flex: 1, minWidth: 14, background: `rgba(124, 58, 237, ${0.3 + pct / 150})`, height: `${Math.max(4, pct)}%`, borderRadius: 2 }} />
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: tokens.colorNeutralForeground3, marginTop: 2, padding: "0 4px" }}>
+                    <span>0</span><span>8</span><span>16</span><span>24</span><span>32+</span>
+                  </div>
+                </div>
+              )}
+
+              {credIntel.ipBreakdown?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Per-IP attack pattern</h4>
+                  <div className={styles.list}>
+                    {credIntel.ipBreakdown.map((b, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>
+                            {b.ip}{" "}
+                            <Badge appearance="filled" color={
+                              b.pattern === "stuffing" ? "danger"
+                              : b.pattern === "brute-force" ? "danger"
+                              : b.pattern === "spray" ? "warning"
+                              : "subtle"
+                            } style={{ fontSize: 10, marginLeft: 6 }}>{b.pattern}</Badge>
+                          </p>
+                          <div className={styles.listMeta}>
+                            <span>{b.total} attempts</span><span>·</span>
+                            <span>{b.distinctUsers} users</span><span>·</span>
+                            <span>max {b.maxPerUser}/user</span><span>·</span>
+                            <span>{b.spanSeconds}s window</span>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <Button size="small" appearance="subtle" icon={<Eye24Regular />} onClick={() => { investigate(b.ip); setShowInvestigate(true); }}>Investigate</Button>
+                          <Button size="small" appearance="subtle" icon={<Delete24Regular />} onClick={() => blockIp(b.ip, `${b.pattern}: ${b.total} attempts on ${b.distinctUsers} users`)} disabled={blockBusy}>Block</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ════ GEO TAB ════ */}
+      {subTab === "geo" && (
+        <>
+          {geoLoading && !geoData && <div style={{ padding: 24 }}><Spinner label="Loading geographic intel…" /></div>}
+          {geoData && (
+            <>
+              {geoData.byCountry?.length > 0 && (
+                <div>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Attacks by country</h4>
+                  <div className={styles.list}>
+                    {geoData.byCountry.slice(0, 10).map((c, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle}>{c.country}</p>
+                          <div className={styles.listMeta}>
+                            <span>{c.ips} unique IPs</span>
+                          </div>
+                        </div>
+                        <Badge appearance="filled" color={c.hits > 500 ? "danger" : c.hits > 100 ? "warning" : "subtle"}>{c.hits}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {geoData.conversionByCountry?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Visit→threat conversion rate</h4>
+                  <p style={{ color: tokens.colorNeutralForeground3, fontSize: 12, margin: "0 0 8px" }}>
+                    What fraction of visits from each country turned hostile. Countries above 50% are candidates for geofencing.
+                  </p>
+                  <div className={styles.list}>
+                    {geoData.conversionByCountry.slice(0, 15).map((c, i) => (
+                      <div key={i} className={styles.listRow} style={{
+                        borderColor: c.pct >= 50 ? "#DC2626" : c.pct >= 20 ? "#D97706" : "transparent",
+                        borderLeftWidth: c.pct >= 20 ? 3 : 1,
+                      }}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle}>{c.country}</p>
+                          <div className={styles.listMeta}>
+                            <span>{c.threatIps} / {c.visitIps} IPs hostile</span>
+                          </div>
+                        </div>
+                        <Badge appearance="filled" color={c.pct >= 50 ? "danger" : c.pct >= 20 ? "warning" : "subtle"}>{c.pct ?? 0}%</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {geoData.byCidr?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top attacking /24 subnets</h4>
+                  <p style={{ color: tokens.colorNeutralForeground3, fontSize: 12, margin: "0 0 8px" }}>
+                    Multiple IPs in the same /24 = same actor / same datacenter. Block the whole range if you see more than 5 IPs in one /24.
+                  </p>
+                  <div className={styles.list}>
+                    {geoData.byCidr.map((c, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>{c.cidr}</p>
+                          <div className={styles.listMeta}>
+                            <span>{c.ips} IPs · {c.hits} hits</span>
+                            {c.countries?.length > 0 && <><span>·</span><span>{c.countries.join(", ")}</span></>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {geoData.byCity?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top attacking cities</h4>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {geoData.byCity.slice(0, 20).map((c, i) => (
+                      <div key={i} style={{ padding: "6px 12px", background: tokens.colorNeutralBackground2, borderRadius: 8, fontSize: 12 }}>
+                        <strong>{c.city}</strong>, {c.country}
+                        <span style={{ marginLeft: 6, color: tokens.colorNeutralForeground3 }}>{c.hits}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </>
       )}
 
