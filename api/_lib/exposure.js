@@ -64,15 +64,20 @@ export function normalizeDomain(raw) {
 }
 
 async function scanDkim(domain) {
-  // Try the selector list in parallel — whichever returns a valid v=DKIM1
-  // record wins. We stop reporting after the first 3 to keep the output
-  // scannable.
+  // Try the selector list in parallel — any record that contains a DKIM
+  // public-key tag (p=...) counts as present. We intentionally don't
+  // require `v=DKIM1` because the version tag is OPTIONAL per RFC 6376
+  // §3.6.1 and several major providers (Resend, some SendGrid configs,
+  // Mailgun legacy) publish the record without it. We also exclude
+  // revoked DKIM records, which keep the tag but set p= empty.
   const probes = await Promise.all(
     DKIM_SELECTORS.map(async (sel) => {
       const r = await doh(`${sel}._domainkey.${domain}`, DNS_TYPES.TXT, 3000);
       const txt = (r.Answer || []).map((a) => unquote(a.data)).join(" ");
-      if (/v=DKIM1/i.test(txt)) return { selector: sel, present: true };
-      return null;
+      // Must contain a public-key tag with at least some payload.
+      const pMatch = txt.match(/\bp=([A-Za-z0-9+/=]{40,})/);
+      if (!pMatch) return null;
+      return { selector: sel, present: true, hasVersionTag: /v=DKIM1/i.test(txt) };
     }),
   );
   return probes.filter(Boolean).slice(0, 3);
