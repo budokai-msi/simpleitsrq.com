@@ -64,6 +64,33 @@ first, push the new value to Vercel, redeploy, then revoke the old one.
       `VITE_AUDIT_PARTNER_*_URL` — public referral URLs. Only rotate
       if the partner program requires it.
 
+### Vercel CLI command sheet
+
+The dashboard works; the CLI is faster for batch rotation. From a
+terminal with `vercel login` already run and `vercel link` pointed at
+this project:
+
+```bash
+# Push a new value (Vercel will prompt to remove the existing one).
+echo "<new_value>" | vercel env add <NAME> production --sensitive
+
+# Confirm it landed:
+vercel env ls production | grep <NAME>
+
+# Redeploy after a batch:
+vercel --prod
+```
+
+The `--sensitive` flag is what Vercel's April 2026 advisory says will
+prevent recurrence — Sensitive-typed values are encrypted with
+customer-side keys the Vercel platform cannot decrypt.
+
+The Claude Code Vercel MCP server (`https://mcp.vercel.com`) does
+exist but its OAuth callback is restricted to specific localhost
+patterns, which fails inside remote Claude sessions. If the MCP works
+in your environment, prefer it; otherwise the CLI above is the
+fastest path.
+
 ### After rotation
 
 - [ ] Mark every secret env var as **Sensitive** in Vercel so the next
