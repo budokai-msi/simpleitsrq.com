@@ -37,6 +37,8 @@ const Partners = lazy(() => import("./pages/Partners"));
 const CyberInsuranceQuote = lazy(() => import("./pages/CyberInsuranceQuote"));
 const Stack = lazy(() => import("./pages/Stack"));
 const ComplianceAuditReferral = lazy(() => import("./pages/ComplianceAuditReferral"));
+const Glossary = lazy(() => import("./pages/Glossary"));
+const GlossaryEntry = lazy(() => import("./pages/GlossaryEntry"));
 const Advertise = lazy(() => import("./pages/Advertise"));
 const CompareIndex = lazy(() => import("./pages/CompareIndex"));
 const CompareDetail = lazy(() => import("./pages/CompareDetail"));
@@ -138,11 +140,10 @@ function Navbar() {
         <Logo />
         <nav className="nav-links" aria-label="Primary">
           <Link to="/blog">Blog</Link>
+          <Link to="/glossary">Glossary</Link>
           <Link to="/tools">Recommended Tools</Link>
           <Link to="/store">Templates &amp; Playbooks</Link>
-          <Link to="/stack">Our Vendor Stack</Link>
-          <Link to="/#industries">Industries</Link>
-          <Link to="/#compliance">Compliance</Link>
+          <Link to="/stack">Vendor Stack</Link>
           <Link to="/support">Support</Link>
         </nav>
         <div className="nav-actions">
@@ -160,12 +161,13 @@ function Navbar() {
       {open && (
         <div className="mobile-menu" role="menu">
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
+          <Link to="/glossary" onClick={() => setOpen(false)}>Glossary</Link>
           <Link to="/tools" onClick={() => setOpen(false)}>Recommended Tools</Link>
           <Link to="/store" onClick={() => setOpen(false)}>Templates &amp; Playbooks</Link>
-          <Link to="/stack" onClick={() => setOpen(false)}>Our Vendor Stack</Link>
+          <Link to="/stack" onClick={() => setOpen(false)}>Vendor Stack</Link>
+          <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#industries" onClick={() => setOpen(false)}>Industries</Link>
           <Link to="/#compliance" onClick={() => setOpen(false)}>Compliance</Link>
-          <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#contact" onClick={() => setOpen(false)}>Contact</Link>
           <Link to="/portal" onClick={() => setOpen(false)}>
             {user ? "My Portal" : "Sign In"}
@@ -364,6 +366,8 @@ export default function App() {
               <Route path="/sponsor" element={<Advertise />} />
               <Route path="/compare" element={<CompareIndex />} />
               <Route path="/compare/:slug" element={<CompareDetail />} />
+              <Route path="/glossary" element={<Glossary />} />
+              <Route path="/glossary/:slug" element={<GlossaryEntry />} />
               <Route path="/password-check" element={<PasswordCheck />} />
               <Route path="/portal" element={<ClientPortal />} />
               <Route path="/privacy" element={<PrivacyPage />} />
