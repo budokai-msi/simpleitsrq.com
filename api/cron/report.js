@@ -13,8 +13,7 @@ import { aggregateScanners } from "../_lib/scanner-fingerprints.js";
 import { Resend } from "resend";
 import { timingSafeEqual } from "node:crypto";
 
-// Fallback goes to Gmail, not hello@simpleitsrq.com, until MX records land.
-const REPORT_TO = process.env.CONTACT_TO_EMAIL || "ivanovspccenter@gmail.com";
+const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
 const FROM = "Simple IT SRQ Analytics <analytics@simpleitsrq.com>";
 
 function verifyCron(request) {

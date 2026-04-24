@@ -192,8 +192,7 @@ export async function auditVerify(limit = 5000) {
 
 async function fireRealtimeAlert(kind, ip, detail) {
   const apiKey = process.env.RESEND_API_KEY;
-  // Realtime security alerts route to Gmail while simpleitsrq.com has no MX.
-  const to = process.env.CONTACT_TO_EMAIL || "ivanovspccenter@gmail.com";
+  const to = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
   if (!apiKey) return;
   try {
     const { Resend } = await import("resend");

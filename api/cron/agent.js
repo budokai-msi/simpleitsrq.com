@@ -22,8 +22,7 @@ validateEnv({
 });
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
-// Fallback goes to Gmail, not hello@simpleitsrq.com, until MX records land.
-const REPORT_TO = process.env.CONTACT_TO_EMAIL || "ivanovspccenter@gmail.com";
+const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 const FROM = "Simple IT SRQ Agent <agent@simpleitsrq.com>";
 

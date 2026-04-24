@@ -23,8 +23,8 @@ import { getSession } from "./_lib/session.js";
 import { requireCsrf } from "./_lib/csrf.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
-// See api/contact.js — default lands in Gmail while simpleitsrq.com has no MX.
-const CONTACT_TO_DEFAULT = "ivanovspccenter@gmail.com";
+// See api/contact.js — hello@simpleitsrq.com forwards to Gmail via ImprovMX.
+const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
 const TURNSTILE_VERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
