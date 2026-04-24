@@ -65,3 +65,6 @@ SITE-INVENTORY.md
 *-ROADMAP.md
 *-SETUP.md
 *-TODO.md
+
+.vercel
+.env*.local

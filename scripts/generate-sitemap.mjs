@@ -8,6 +8,7 @@ import { loadAllPosts } from "./_posts-source.mjs";
 import { cityList } from "../src/data/cities.js";
 import { products } from "../src/data/products.js";
 import { COMPARISONS } from "../src/data/comparisons.js";
+import { GLOSSARY } from "../src/data/glossary.js";
 
 const posts = loadAllPosts();
 
@@ -35,6 +36,7 @@ const staticUrls = [
   { loc: "/service-area", priority: "0.85", changefreq: "monthly" },
   { loc: "/partners", priority: "0.8", changefreq: "monthly" },
   { loc: "/compare", priority: "0.8", changefreq: "monthly" },
+  { loc: "/glossary", priority: "0.85", changefreq: "monthly" },
   { loc: "/advertise", priority: "0.7", changefreq: "monthly" },
   { loc: "/support", priority: "0.6", changefreq: "monthly" },
   { loc: "/privacy", priority: "0.3", changefreq: "yearly" },
@@ -68,7 +70,13 @@ const compareUrls = COMPARISONS.map((c) => ({
   lastmod: c.date,
 }));
 
-const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls];
+const glossaryUrls = GLOSSARY.map((g) => ({
+  loc: `/glossary/${g.slug}`,
+  priority: "0.7",
+  changefreq: "monthly",
+}));
+
+const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls, ...glossaryUrls];
 
 const body = all
   .map((u) => {

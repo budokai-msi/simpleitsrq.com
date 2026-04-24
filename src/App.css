@@ -1186,25 +1186,17 @@
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .contact-grid { grid-template-columns: 1fr; }
 }
-/* Nav collapses at 1440px because the 7 primary links, the "Anon"/
- * portal pill, and the Book-a-Call CTA together need ~1400px of
- * horizontal room before container padding. Every common laptop
- * viewport (13" MBA/MBP at 1440x900, 13" Windows at 1366x768,
- * 1280x720) falls below that, so those get the hamburger; only
- * desktops and 15"+ laptops see the full row.
- *
- * Reducing the label set was the obvious alternative, but the user
- * explicitly asked for all seven primary links — so the trade-off is
- * "hamburger earlier" instead of "drop labels." */
-@media (max-width: 1440px) {
+/* Nav collapses at 1280px now that primary nav is leaner (6 items vs.
+ * the previous 7 — Industries/Compliance moved to footer + mobile-only,
+ * Glossary added, "Our Vendor Stack" → "Vendor Stack"). 1366×768
+ * laptops fit the desktop row; 1280×720 and below get the hamburger. */
+@media (max-width: 1280px) {
   .nav-links, .nav-actions { display: none; }
   .menu-btn { display: inline-flex; }
   .navbar:has(.mobile-menu) .mobile-menu { display: flex; }
   .mobile-menu { display: flex; }
 }
-/* Above the breakpoint, tighten spacing so the 7 labels + pill + CTA
- * don't feel airy on a 27" external monitor. */
-@media (min-width: 1441px) {
+@media (min-width: 1281px) {
   .nav-links { gap: 4px; }
   .nav-links a { padding: 8px 10px; }
 }
@@ -1990,9 +1982,9 @@
 [data-theme="dark"] .form-success-overlay { background: var(--surface); }
 
 /* ----- Mobile menu, responsive -----
- * Matches the 1440px breakpoint for the primary nav collapse so the
+ * Matches the 1280px breakpoint for the primary nav collapse so the
  * hamburger trigger appears whenever the desktop nav is hidden. */
-@media (max-width: 1440px) {
+@media (max-width: 1280px) {
   .nav-mobile-actions { display: inline-flex; }
 }
 
@@ -5087,3 +5079,70 @@
 [data-theme="dark"] .compare-index__card:hover { border-color: #4CC2FF; }
 [data-theme="dark"] .compare-index__card-cta,
 [data-theme="dark"] .compare-related-card__cta { color: #4CC2FF; }
+
+/* ============ Glossary index + entry ============ */
+
+.glossary-index .glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin: 32px 0;
+}
+
+.glossary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 22px;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--syn-surface, #ffffff);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.12s, box-shadow 0.12s;
+}
+
+.glossary-card:hover {
+  border-color: #0F6CBD;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 108, 189, 0.08);
+}
+
+.glossary-card__term {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--syn-text, #0B0D10);
+  letter-spacing: -0.01em;
+}
+
+.glossary-card__short {
+  font-size: 0.92rem;
+  color: var(--syn-text-muted, #4b5563);
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.glossary-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0F6CBD;
+  margin-top: 4px;
+}
+
+[data-theme="dark"] .glossary-card {
+  background: var(--syn-surface-hi, #161a20);
+  border-color: var(--syn-border, #2a2f37);
+}
+[data-theme="dark"] .glossary-card:hover {
+  border-color: #4CC2FF;
+  box-shadow: 0 6px 18px rgba(76, 194, 255, 0.12);
+}
+[data-theme="dark"] .glossary-card__cta { color: #4CC2FF; }
