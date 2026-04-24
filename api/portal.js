@@ -20,6 +20,7 @@ import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { clientIp, auditVerify, logSecurityEvent } from "./_lib/security.js";
 import { refreshThreatFeeds, matchOsintFeeds, osintStatus } from "./_lib/osint.js";
+import { aggregateScanners, identifyScanner } from "./_lib/scanner-fingerprints.js";
 import { json } from "./_lib/http.js";
 import { csrfValid } from "./_lib/csrf.js";
 import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
@@ -832,6 +833,309 @@ async function handleThreatIntel(session, url) {
     recentCritical: recentCritical.map((e) => ({
       kind: e.kind, severity: e.severity, ip: e.ip, path: e.path,
       detail: e.detail, ts: e.ts,
+    })),
+  });
+}
+
+// ---------- enumeration intel (admin only) ----------
+//
+// Turns the raw threat_actors table into "what tools are scanning us",
+// "which CMS/products are being probed", and "which CVEs are being
+// thrown at us". The scanner fingerprint library runs in-process over
+// the recent rows — no per-query CPU hit on the DB.
+
+async function handleEnumIntel(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  // Pull (ip, path, user_agent) for every threat in the window. We cap
+  // at 20k rows so a runaway scanner can't blow up the function — the
+  // aggregations below are all frequency-based, so sampling still
+  // produces a representative shape.
+  const rows = await sql`
+    SELECT ip, path, user_agent, ts
+    FROM threat_actors
+    WHERE ts > now() - ${interval}::interval
+    ORDER BY ts DESC
+    LIMIT 20000
+  `;
+
+  // Path frequency — what attackers are looking for, regardless of who.
+  const pathCounts = new Map();
+  for (const r of rows) {
+    const p = r.path || "/";
+    pathCounts.set(p, (pathCounts.get(p) || 0) + 1);
+  }
+  const topPaths = [...pathCounts.entries()]
+    .map(([path, hits]) => ({ path, hits }))
+    .sort((a, b) => b.hits - a.hits)
+    .slice(0, 25);
+
+  // Scanner / CMS / CVE aggregation (pure function over the rows).
+  const scannerAgg = aggregateScanners(
+    rows.map((r) => ({ userAgent: r.user_agent, path: r.path })),
+  );
+
+  // Per-IP path entropy — many unique paths = directory-busting or
+  // full-CMS fingerprint sweep; few unique paths with many hits = a
+  // targeted exploit attempt or credential brute-force.
+  const perIp = new Map();
+  for (const r of rows) {
+    const e = perIp.get(r.ip) || { hits: 0, paths: new Set() };
+    e.hits += 1;
+    e.paths.add(r.path || "/");
+    perIp.set(r.ip, e);
+  }
+  const topEnumerators = [...perIp.entries()]
+    .map(([ip, { hits, paths }]) => ({ ip, hits, uniquePaths: paths.size }))
+    .sort((a, b) => b.uniquePaths - a.uniquePaths || b.hits - a.hits)
+    .slice(0, 15);
+
+  // First-seen vs recurring — IPs that attacked us this window but
+  // have never been in visits or threat_actors before it.
+  const startISO = new Date(Date.now() - (
+    range === "24h" ? 86400e3 : range === "30d" ? 30 * 86400e3 : 7 * 86400e3
+  )).toISOString();
+  const ipsInWindow = [...new Set(rows.map((r) => r.ip))];
+  let freshIps = [];
+  if (ipsInWindow.length > 0) {
+    const prior = await sql`
+      SELECT DISTINCT ip FROM threat_actors
+      WHERE ip = ANY(${ipsInWindow}) AND ts < ${startISO}
+    `;
+    const seenBefore = new Set(prior.map((p) => p.ip));
+    freshIps = ipsInWindow.filter((ip) => !seenBefore.has(ip));
+  }
+
+  // Exploit attempts — rows matched to a CVE. Surface the top N so the
+  // dashboard can show "CVE-2021-44228 × 47 hits from 9 IPs".
+  const cveHits = new Map();
+  for (const r of rows) {
+    const id = identifyScanner({ userAgent: r.user_agent, path: r.path });
+    if (!id.cve) continue;
+    const e = cveHits.get(id.cve) || { cve: id.cve, name: id.cveName, hits: 0, ips: new Set(), lastSeen: null };
+    e.hits += 1;
+    e.ips.add(r.ip);
+    if (!e.lastSeen || r.ts > e.lastSeen) e.lastSeen = r.ts;
+    cveHits.set(id.cve, e);
+  }
+  const exploitAttempts = [...cveHits.values()]
+    .map((e) => ({ cve: e.cve, name: e.name, hits: e.hits, uniqueIps: e.ips.size, lastSeen: e.lastSeen }))
+    .sort((a, b) => b.hits - a.hits);
+
+  return json(200, {
+    range,
+    summary: {
+      totalThreats: rows.length,
+      uniqueIps: ipsInWindow.length,
+      freshIps: freshIps.length,
+      recurringIps: ipsInWindow.length - freshIps.length,
+      distinctPaths: pathCounts.size,
+      exploitAttempts: exploitAttempts.reduce((s, e) => s + e.hits, 0),
+    },
+    topPaths,
+    topEnumerators,
+    tools: scannerAgg.tools.slice(0, 15),
+    cms:   scannerAgg.cms.slice(0, 15),
+    cve:   scannerAgg.cve.slice(0, 15),
+    exploitAttempts,
+    freshIps: freshIps.slice(0, 20),
+  });
+}
+
+// ---------- credential-enumeration intel (admin only) ----------
+//
+// The honeypot logs every login attempt into security_events as
+// 'honeypot.credential'. This endpoint mines that table for:
+//   - Top usernames tried (is admin/root/test dominant? → classic)
+//   - Password length + first-char shape distribution
+//   - Per-IP pattern: spray (many usernames, few tries each) vs
+//     brute-force (one username, many tries) vs stuffing (diverse, bursty)
+
+async function handleCredIntel(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  const rows = await sql`
+    SELECT ip, detail, ts
+    FROM security_events
+    WHERE kind = 'honeypot.credential'
+      AND ts > now() - ${interval}::interval
+    ORDER BY ts ASC
+    LIMIT 10000
+  `;
+
+  const normEmail = (d) => {
+    const raw = String(d?.email || d?.d?.email || "").toLowerCase().trim();
+    return raw || "(empty)";
+  };
+  const pwShape = (d) => d?.passwordShape || d?.d?.passwordShape || null;
+
+  // Top usernames
+  const userCounts = new Map();
+  for (const r of rows) {
+    const u = normEmail(r.detail);
+    userCounts.set(u, (userCounts.get(u) || 0) + 1);
+  }
+  const topUsernames = [...userCounts.entries()]
+    .map(([username, hits]) => ({ username, hits }))
+    .sort((a, b) => b.hits - a.hits)
+    .slice(0, 20);
+
+  // Password length distribution (histogram, buckets of 1 char up to 32)
+  const lenBuckets = new Array(33).fill(0); // 0..32, 32 = "32+"
+  for (const r of rows) {
+    const sh = pwShape(r.detail);
+    const len = Number(sh?.length) || 0;
+    const idx = Math.min(32, Math.max(0, len));
+    lenBuckets[idx] += 1;
+  }
+  const pwLengthHistogram = lenBuckets
+    .map((hits, len) => ({ length: len, hits }))
+    .filter((b) => b.hits > 0);
+
+  // Per-IP pattern classification.
+  //   spray       → distinct usernames >= 3 AND max attempts per username <= 3
+  //   brute-force → distinct usernames <= 2 AND total >= 5
+  //   stuffing    → distinct usernames >= 5 AND total >= 10
+  //   probe       → otherwise
+  const perIp = new Map();
+  for (const r of rows) {
+    const u = normEmail(r.detail);
+    const e = perIp.get(r.ip) || { total: 0, users: new Map(), first: r.ts, last: r.ts };
+    e.total += 1;
+    e.users.set(u, (e.users.get(u) || 0) + 1);
+    if (r.ts < e.first) e.first = r.ts;
+    if (r.ts > e.last)  e.last  = r.ts;
+    perIp.set(r.ip, e);
+  }
+  const classify = (e) => {
+    const distinct = e.users.size;
+    const maxPerUser = [...e.users.values()].reduce((m, v) => Math.max(m, v), 0);
+    if (distinct >= 5 && e.total >= 10) return "stuffing";
+    if (distinct >= 3 && maxPerUser <= 3) return "spray";
+    if (distinct <= 2 && e.total >= 5) return "brute-force";
+    return "probe";
+  };
+  const ipBreakdown = [...perIp.entries()]
+    .map(([ip, e]) => ({
+      ip,
+      total: e.total,
+      distinctUsers: e.users.size,
+      maxPerUser: [...e.users.values()].reduce((m, v) => Math.max(m, v), 0),
+      pattern: classify(e),
+      firstSeen: e.first,
+      lastSeen: e.last,
+      spanSeconds: Math.max(1, Math.round((new Date(e.last) - new Date(e.first)) / 1000)),
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 30);
+
+  const patternCounts = ipBreakdown.reduce((acc, row) => {
+    acc[row.pattern] = (acc[row.pattern] || 0) + 1;
+    return acc;
+  }, {});
+
+  return json(200, {
+    range,
+    summary: {
+      totalAttempts: rows.length,
+      uniqueIps: perIp.size,
+      uniqueUsernames: userCounts.size,
+      patternCounts,
+    },
+    topUsernames,
+    pwLengthHistogram,
+    ipBreakdown,
+  });
+}
+
+// ---------- geo intel (admin only) ----------
+//
+// Country + city + /24 rollup. Uses inet arithmetic for the CIDR
+// bucketing so we count every attack in the same /24 as one entry.
+
+async function handleGeoIntel(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  const [byCountry, byCity, byCidr, conversionByCountry] = await Promise.all([
+    sql`
+      SELECT country, COUNT(*)::int AS hits, COUNT(DISTINCT ip)::int AS ips
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval AND country IS NOT NULL
+      GROUP BY country
+      ORDER BY hits DESC
+      LIMIT 25
+    `,
+    sql`
+      SELECT country, city, COUNT(*)::int AS hits, COUNT(DISTINCT ip)::int AS ips
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval AND city IS NOT NULL
+      GROUP BY country, city
+      ORDER BY hits DESC
+      LIMIT 25
+    `,
+    // /24 rollup — cast ip text to inet then mask to /24. Rows where
+    // the cast fails (e.g. malformed IP) are silently excluded by the
+    // WHERE inet check.
+    sql`
+      SELECT (host(set_masklen(ip::inet, 24)) || '/24') AS cidr,
+             COUNT(*)::int AS hits,
+             COUNT(DISTINCT ip)::int AS ips,
+             array_agg(DISTINCT country) FILTER (WHERE country IS NOT NULL) AS countries
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval
+        AND ip ~ '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$'
+      GROUP BY cidr
+      HAVING COUNT(DISTINCT ip) >= 2
+      ORDER BY hits DESC
+      LIMIT 20
+    `,
+    // Visit-to-threat conversion rate by country — what fraction of
+    // traffic from each country turned hostile. High rate = consider
+    // geofencing; low rate = normal user traffic mixed with noise.
+    sql`
+      WITH v AS (
+        SELECT country, COUNT(DISTINCT ip)::int AS visit_ips
+        FROM visits
+        WHERE ts > now() - ${interval}::interval AND country IS NOT NULL
+        GROUP BY country
+      ),
+      t AS (
+        SELECT country, COUNT(DISTINCT ip)::int AS threat_ips
+        FROM threat_actors
+        WHERE ts > now() - ${interval}::interval AND country IS NOT NULL
+        GROUP BY country
+      )
+      SELECT v.country,
+             v.visit_ips,
+             COALESCE(t.threat_ips, 0) AS threat_ips,
+             ROUND(100.0 * COALESCE(t.threat_ips, 0) / NULLIF(v.visit_ips, 0), 1)::float AS pct
+      FROM v
+      LEFT JOIN t ON t.country = v.country
+      WHERE v.visit_ips >= 3
+      ORDER BY pct DESC NULLS LAST, threat_ips DESC
+      LIMIT 20
+    `,
+  ]);
+
+  return json(200, {
+    range,
+    byCountry: byCountry.map((r) => ({ country: r.country, hits: r.hits, ips: r.ips })),
+    byCity:    byCity.map((r) => ({ country: r.country, city: r.city, hits: r.hits, ips: r.ips })),
+    byCidr:    byCidr.map((r) => ({ cidr: r.cidr, hits: r.hits, ips: r.ips, countries: r.countries || [] })),
+    conversionByCountry: conversionByCountry.map((r) => ({
+      country: r.country, visitIps: r.visit_ips, threatIps: r.threat_ips, pct: r.pct,
     })),
   });
 }
@@ -2469,6 +2773,9 @@ async function dispatch(request, method) {
   if (action === "block-ip"         && method === "POST")  return handleBlockIp(session, request);
   if (action === "honeypot-creds"   && method === "GET")   return handleHoneypotCreds(session);
   if (action === "threat-intel"     && method === "GET")   return handleThreatIntel(session, url);
+  if (action === "enum-intel"       && method === "GET")   return handleEnumIntel(session, url);
+  if (action === "cred-intel"       && method === "GET")   return handleCredIntel(session, url);
+  if (action === "geo-intel"        && method === "GET")   return handleGeoIntel(session, url);
   if (action === "audit-verify"     && method === "GET")   return handleAuditVerify(session);
   if (action === "run-audit-migration" && method === "POST") return handleRunAuditMigration(session);
   if (action === "reset-audit-chain"    && method === "POST") return handleResetAuditChain(session);
