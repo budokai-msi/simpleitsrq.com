@@ -27,6 +27,40 @@ import { sql } from "./_lib/db.js";
 import { validateEnv } from "./_lib/env.js";
 import { requireCsrf } from "./_lib/csrf.js";
 import { runExposureScan } from "./_lib/exposure.js";
+import { identifyScanner } from "./_lib/scanner-fingerprints.js";
+
+/** Collapse an IPv4 to its /24 for public display — preserves "who" at
+ *  network level without ever leaking the exact host. IPv6 gets its
+ *  first 4 hextets for similar anonymization. Non-IP strings return as
+ *  "unknown" so a malformed row can never leak. */
+function anonIp(ip) {
+  if (!ip || typeof ip !== "string") return "unknown";
+  const v4 = ip.match(/^(\d+\.\d+\.\d+)\.\d+$/);
+  if (v4) return `${v4[1]}.x`;
+  const v6 = ip.match(/^([0-9a-fA-F:]+:)[0-9a-fA-F:]+$/);
+  if (v6 && ip.includes(":")) {
+    const parts = ip.split(":").filter(Boolean);
+    if (parts.length >= 4) return `${parts.slice(0, 4).join(":")}:::`;
+  }
+  return "unknown";
+}
+
+/** Convert an arbitrary probed path into a short category label so the
+ *  public feed doesn't expose unusual internal routes someone might
+ *  misconstrue as real endpoints. */
+function summarizePath(path = "") {
+  const p = String(path || "").toLowerCase();
+  if (/\b(wp-login|wp-admin|xmlrpc|wp-config)\b/.test(p)) return "/wordpress-*";
+  if (/\.env|\.git|\.aws|\.svn|\.ssh/.test(p))             return "/*-leak-probe";
+  if (/\b(phpmyadmin|pma|adminer)\b/.test(p))              return "/phpmyadmin-*";
+  if (/\b(actuator|spring|druid)\b/.test(p))               return "/spring-*";
+  if (/\b(admin|administrator|dashboard)\b/.test(p))       return "/admin-*";
+  if (/\b(jenkins|tomcat|manager)\b/.test(p))              return "/app-server-*";
+  if (/\b(api\/v\d|debug|test|health)\b/.test(p))          return "/api-probe";
+  if (/\.(php|asp|jsp)(\?|$)/.test(p))                     return "/script-probe";
+  if (/\$\{jndi:|class\.module|union\s+select/i.test(p))   return "/cve-payload";
+  return p.length > 30 ? p.slice(0, 30) + "…" : p || "/";
+}
 
 // Cold-start validation. Throws in production if any required secret is
 // missing; logs a warning in dev/preview so local iteration keeps working
@@ -338,6 +372,70 @@ export async function GET(request) {
   const confirm = url.searchParams.get("confirm");
   const unsubscribe = url.searchParams.get("unsubscribe");
   const testimonials = url.searchParams.get("testimonials");
+  const action = url.searchParams.get("action");
+
+  // Public Threat Wall feed — last 48h of auto-blocked attacks, anonymized
+  // to /24 so we can't accidentally doxx a misclassified legit visitor.
+  // Safe to expose: only rows already marked as threats (scanner,
+  // exploit_attempt, hostile_geo, osint_match), never raw visits. No user
+  // agent strings leak — we only show the fingerprinted tool name.
+  if (action === "threats") {
+    try {
+      const rows = await sql`
+        SELECT ip, country, city, path, user_agent, threat_class, ts
+        FROM threat_actors
+        WHERE ts > now() - interval '48 hours'
+          AND threat_class IN ('scanner', 'exploit_attempt', 'hostile_geo', 'osint_match')
+        ORDER BY ts DESC
+        LIMIT 100
+      `.catch(() => []);
+      const [stats] = await sql`
+        SELECT
+          COUNT(*)::int                                AS hits_48h,
+          COUNT(DISTINCT ip)::int                      AS uniq_ips_48h,
+          COUNT(*) FILTER (WHERE threat_class = 'exploit_attempt')::int AS exploits_48h
+        FROM threat_actors
+        WHERE ts > now() - interval '48 hours'
+      `.catch(() => [{}]);
+      const [blocklist] = await sql`SELECT COUNT(*)::int AS n FROM ip_blocklist`.catch(() => [{}]);
+
+      const items = rows.map((r) => {
+        const id = identifyScanner({ userAgent: r.user_agent, path: r.path });
+        return {
+          ip: anonIp(r.ip),
+          country: r.country || null,
+          city: r.city || null,
+          threatClass: r.threat_class,
+          tool: id.tool || null,
+          cms: id.cms || null,
+          cve: id.cve || null,
+          cveName: id.cveName || null,
+          // Truncate the path so we don't leak unusual honeypot tokens.
+          pathSummary: summarizePath(r.path),
+          ts: r.ts,
+        };
+      });
+
+      return new Response(JSON.stringify({
+        items,
+        stats: {
+          hits48h: stats?.hits_48h || 0,
+          uniqueIps48h: stats?.uniq_ips_48h || 0,
+          exploitAttempts48h: stats?.exploits_48h || 0,
+          blocklistTotal: blocklist?.n || 0,
+        },
+        generatedAt: new Date().toISOString(),
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+        },
+      });
+    } catch {
+      return json(200, { items: [], stats: {} });
+    }
+  }
 
   if (testimonials) {
     const productSlug = url.searchParams.get("product") || null;
