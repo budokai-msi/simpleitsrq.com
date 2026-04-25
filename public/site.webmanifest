@@ -1,0 +1,32 @@
+{
+  "name": "Simple IT SRQ — Managed IT & Cybersecurity",
+  "short_name": "Simple IT SRQ",
+  "description": "Local IT support, cybersecurity, and cloud services for Sarasota, Bradenton, and Venice small businesses.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "minimal-ui",
+  "background_color": "#0B0D10",
+  "theme_color": "#0F6CBD",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/favicon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png",        "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png",        "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Free Exposure Scan",
+      "short_name": "Scan",
+      "description": "Run a free passive DNS / email-auth audit on your domain.",
+      "url": "/exposure-scan",
+      "icons": [{ "src": "/favicon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Book a Consult",
+      "short_name": "Book",
+      "description": "Schedule a free 30-minute IT consultation.",
+      "url": "/book",
+      "icons": [{ "src": "/favicon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
