@@ -67,7 +67,7 @@ export default function SecurityAcademy() {
               <a href="/products/security-academy-preview.md" className="btn btn-secondary btn-lg">Read the full spec</a>
             </div>
             <ul className="trust-row" aria-label="Trust indicators">
-              <li><Check size={14} /> Required by every 2026 cyber-insurance policy</li>
+              <li><Check size={14} /> Required by most 2026 cyber-insurance carriers</li>
               <li><Check size={14} /> HIPAA §164.308(a)(5) aligned</li>
               <li><Check size={14} /> Florida FIPA §501.171 ready</li>
             </ul>

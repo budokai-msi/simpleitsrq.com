@@ -35,17 +35,15 @@ function Hero() {
             <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Check-Up</a>
             <a href="#solutions" className="btn btn-secondary btn-lg">See What We Do</a>
           </div>
+          {/* Trust row — only verifiable claims. HIPAA paperwork is real
+              (we ship it as part of every onboarding). "Local team" and
+              "Sarasota-based" are facts. The Google-reviews line was
+              removed until we have public reviews to link. */}
           <ul className="trust-row" aria-label="Why clients trust us">
-            <li><Star size={14} strokeWidth={2.25} fill="#F7630C" stroke="#F7630C" /> 5-star Google reviews</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included</li>
-            <li><Clock size={14} strokeWidth={2.25} /> Local team · same-day response</li>
+            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included on every onboarding</li>
+            <li><Clock size={14} strokeWidth={2.25} /> Sarasota-based · same-day reply during business hours</li>
+            <li><MapPin size={14} strokeWidth={2.25} /> On-site for clients within 25 mi of 34207</li>
           </ul>
-          {/* Stat ticker */}
-          <div className="hero-stats">
-            <div className="hero-stat"><span className="val tabular">0</span><span className="lbl">Security breaches</span></div>
-            <div className="hero-stat"><span className="val tabular">&lt;4h</span><span className="lbl">Recovery time</span></div>
-            <div className="hero-stat"><span className="val tabular">99.99%</span><span className="lbl">Uptime</span></div>
-          </div>
         </div>
       </div>
     </section>
@@ -207,7 +205,7 @@ const SOLUTIONS = [
   {
     Icon: Headphones,
     title: "Everyday IT Support",
-    desc: "One flat monthly price covers unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and critical problems get a live tech in under 15 minutes."
+    desc: "One flat monthly price covers unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and we triage critical issues first."
   },
   {
     Icon: Lock,
@@ -461,11 +459,15 @@ function BlogPreview() {
 function StatsBar() {
   const ref = useRef(null);
   useRevealChildren(ref);
+  // Honest stats only. "Same-day reply" is a service standard, not an
+  // SLA. "24/7 monitoring" is true (we run automated agent checks every
+  // 15 min). "100% Florida-based" is geographic fact. Removed the
+  // unsourced "99.99% uptime" and "<15 min response" puffery.
   const stats = [
-    { v: "99.99%", l: "Uptime promise" },
-    { v: "<15 min", l: "Response time" },
-    { v: "24/7", l: "Monitoring" },
-    { v: "100%", l: "Local team" },
+    { v: "Same day", l: "Reply during business hours" },
+    { v: "24/7", l: "Automated monitoring" },
+    { v: "100%", l: "Florida-based team" },
+    { v: "Flat", l: "Monthly pricing — no surprises" },
   ];
   return (
     <section className="stats-bar" aria-label="Key statistics">
