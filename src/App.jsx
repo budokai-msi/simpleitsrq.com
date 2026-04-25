@@ -143,15 +143,16 @@ function Navbar() {
       <div className="container nav-inner">
         <Logo />
         <nav className="nav-links" aria-label="Primary">
-          <Link to="/blog">Blog</Link>
-          <Link to="/glossary">Glossary</Link>
-          {/* Free Scan replaces Support in primary nav — Support is still in
-              footer + mobile menu + the Book CTA. /exposure-scan is the
-              top-of-funnel lead magnet so it gets the headline slot. */}
-          <Link to="/exposure-scan">Free Scan</Link>
-          <Link to="/store">Templates &amp; Playbooks</Link>
+          {/* IT Services takes the headline slot — we're a managed-IT
+              company first, security/scans are how we earn trust, not
+              the headline product. The /service-area hub sits next to
+              it because LOCAL is the second-most-important identity. */}
+          <Link to="/#solutions">IT Services</Link>
+          <Link to="/service-area">Service Area</Link>
+          <Link to="/store">Templates</Link>
           <Link to="/stack">Vendor Stack</Link>
-          <Link to="/tools">Recommended Tools</Link>
+          <Link to="/blog">Blog</Link>
+          <Link to="/exposure-scan">Free Scan</Link>
         </nav>
         <div className="nav-actions">
           <ThemeToggle />
