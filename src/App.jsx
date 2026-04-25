@@ -243,7 +243,22 @@ function Footer() {
           <span>
             <Link to="/privacy">Privacy</Link> &middot;{" "}
             <Link to="/terms">Terms</Link> &middot;{" "}
-            <Link to="/accessibility">Accessibility</Link>
+            <Link to="/accessibility">Accessibility</Link> &middot;{" "}
+            {/* Reopens the cookie-consent banner so visitors can change
+                their analytics/marketing choice without clearing
+                localStorage. Required by GDPR + CCPA "withdraw consent"
+                language in our Privacy Policy §3 / §7. */}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("sirq:reopen-consent"))}
+              style={{
+                background: "none", border: "none", padding: 0,
+                color: "inherit", cursor: "pointer",
+                font: "inherit", textDecoration: "underline",
+              }}
+            >
+              Cookie preferences
+            </button>
           </span>
         </div>
       </div>

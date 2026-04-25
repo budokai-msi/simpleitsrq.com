@@ -1084,6 +1084,8 @@ function ProfilePanel({ styles, user, onSaved }) {
   const [phone, setPhone] = useState(user.phone || "");
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function save(e) {
     e.preventDefault();
@@ -1103,6 +1105,62 @@ function ProfilePanel({ styles, user, onSaved }) {
       setStatus({ type: "error", msg: err.message || "Could not save." });
     } finally {
       setSaving(false);
+    }
+  }
+
+  // GDPR Article 15 / CCPA §1798.110 — full data export. Server returns
+  // a JSON dump with Content-Disposition: attachment so the browser
+  // downloads it directly. We don't post the data into the DOM; large
+  // exports could exceed comfortable browser limits.
+  async function exportData() {
+    setExporting(true);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/portal?action=export-data", { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `simpleitsrq-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      setStatus({ type: "success", msg: "Data export downloaded." });
+    } catch (err) {
+      setStatus({ type: "error", msg: err.message || "Export failed." });
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  // GDPR Article 17 / CCPA §1798.105 — anonymize the account. Server
+  // NULLs PII fields, kills sessions, and unsubscribes the newsletter
+  // row. Tickets/invoices stay (legal holds) but lose the email
+  // attachment. Two confirms: typed string + native confirm dialog.
+  async function deleteAccount() {
+    const typed = window.prompt(
+      `This permanently anonymizes your account, signs you out everywhere, and unsubscribes you from all email.\n\nTickets and invoices remain on file (legal/tax retention) but lose your name + email.\n\nType DELETE to confirm:`,
+    );
+    if (typed !== "DELETE") {
+      if (typed !== null) {
+        setStatus({ type: "error", msg: "Account not deleted — confirmation text didn't match." });
+      }
+      return;
+    }
+    setDeleting(true);
+    try {
+      const res = await csrfFetch("/api/portal?action=delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      // Hard-redirect to home — the server already cleared the session
+      // cookie, so any subsequent client-side navigation would 401.
+      window.location.href = `/?account-deleted=${encodeURIComponent(data.confirmationToken || "ok")}`;
+    } catch (err) {
+      setStatus({ type: "error", msg: err.message || "Delete failed — email hello@simpleitsrq.com if this persists." });
+      setDeleting(false);
     }
   }
 
@@ -1129,6 +1187,31 @@ function ProfilePanel({ styles, user, onSaved }) {
         <Button type="submit" appearance="primary" disabled={saving}>
           {saving ? "Saving…" : "Save changes"}
         </Button>
+      </div>
+
+      {/* Privacy controls — GDPR / CCPA self-service. Visually
+          separated from profile editing so it's never hit by
+          accident. */}
+      <div style={{
+        marginTop: 32,
+        paddingTop: 20,
+        borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+      }}>
+        <h3 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600, color: tokens.colorNeutralForeground2 }}>
+          Privacy controls
+        </h3>
+        <p style={{ margin: "0 0 12px", fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+          Self-service rights under GDPR Article 15 + 17 and CCPA §1798.105 / 110.
+          Same outcome as emailing us with a privacy request.
+        </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Button type="button" appearance="secondary" onClick={exportData} disabled={exporting}>
+            {exporting ? "Preparing…" : "Download my data (JSON)"}
+          </Button>
+          <Button type="button" appearance="subtle" onClick={deleteAccount} disabled={deleting} style={{ color: "#DC2626" }}>
+            {deleting ? "Deleting…" : "Delete my account"}
+          </Button>
+        </div>
       </div>
     </form>
   );
