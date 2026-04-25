@@ -37,7 +37,7 @@ export default function LeadCaptureCTA({
         <h3 id="lead-cta-title" className="lead-cta-title">{title}</h3>
         <p className="lead-cta-sub">{subtitle}</p>
         <ul className="lead-cta-checks">
-          <li><Check size={14} color="#107C10" /> Local engineer, same-day response</li>
+          <li><Check size={14} color="#107C10" /> Local Sarasota/Bradenton engineer</li>
           <li><Check size={14} color="#107C10" /> No contract required</li>
           <li><Check size={14} color="#107C10" /> Written findings + recommendations</li>
         </ul>

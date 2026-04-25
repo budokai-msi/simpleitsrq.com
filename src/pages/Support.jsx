@@ -59,7 +59,7 @@ export default function Support() {
   useSEO({
     title: "Submit a Support Ticket | Simple IT SRQ",
     description:
-      "Existing Simple IT SRQ clients can file a support ticket online. Priority-based triage, same-day response during business hours, emergency line for critical incidents.",
+      "Existing Simple IT SRQ clients can file a support ticket online. Priority-based triage during business hours and an emergency line for critical incidents.",
     canonical: "https://simpleitsrq.com/support",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
@@ -143,7 +143,7 @@ export default function Support() {
             <span className="eyebrow">Support</span>
             <h1 id="support-title" className="title-1">File a support ticket</h1>
             <p className="section-sub">
-              Existing clients can file a ticket here. For critical incidents during business hours, call <a href="tel:+14072421456">(407) 242-1456</a>. We triage by priority and respond same-day.
+              Existing clients can file a ticket here. For critical incidents during business hours, call <a href="tel:+14072421456">(407) 242-1456</a>. We triage by priority during business hours.
             </p>
           </div>
 

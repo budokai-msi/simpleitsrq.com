@@ -197,7 +197,7 @@ function Footer() {
       <div className="container footer-grid">
         <div>
           <Logo />
-          <p className="footer-desc">Local IT support, cybersecurity, and cloud services for Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
+          <p className="footer-desc">Local IT support, helpdesk, computer repair, security cameras, and enterprise IT — for businesses and homes across Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
           <a className="footer-email" href="mailto:hello@simpleitsrq.com">
             <AtSign size={16} /> hello@simpleitsrq.com
           </a>
@@ -205,7 +205,10 @@ function Footer() {
         <div>
           <h4>What We Do</h4>
           <ul>
-            <li><Link to="/#solutions">Everyday IT support</Link></li>
+            <li><Link to="/#solutions">Helpdesk and IT support</Link></li>
+            <li><Link to="/#solutions">Computer repair</Link></li>
+            <li><Link to="/#solutions">Security cameras</Link></li>
+            <li><Link to="/#solutions">Enterprise domains and migrations</Link></li>
             <li><Link to="/#solutions">Cybersecurity</Link></li>
             <li><Link to="/#solutions">Microsoft 365 and cloud</Link></li>
             <li><Link to="/#solutions">Backups and recovery</Link></li>
@@ -241,7 +244,7 @@ function Footer() {
             <li><Link to="/venice-it-support"><MapPin size={12} /> Venice</Link></li>
             <li><Link to="/service-area" className="footer-cities-all">View all markets →</Link></li>
           </ul>
-          <p className="footer-area-note">Serving Southwest Florida — Sarasota and Manatee counties. Same-day reply during business hours; on-site by scheduled appointment.</p>
+          <p className="footer-area-note">Serving Southwest Florida — Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
         </div>
       </div>
       <div className="footer-bottom">

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, Navigate } from "react-router-dom";
 import {
-  Check, MapPin, Star, Clock, ShieldCheck, ArrowRight,
+  Check, MapPin, Star, ShieldCheck, ArrowRight,
   Headphones, Lock, Cloud, Server, FileCheck, Phone, Wifi, Briefcase,
+  Wrench, Camera, Network, RefreshCw,
 } from "lucide-react";
 import { cities } from "../data/cities";
 import { industries, matchIndustryPattern } from "../data/industries";
@@ -10,13 +11,17 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import RecommendedTools from "../components/RecommendedTools";
 
 const SERVICES = [
-  { Icon: Headphones, title: "Everyday IT Support", desc: "One flat monthly price covers unlimited help desk, monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
+  { Icon: Headphones, title: "Helpdesk and Everyday IT Support", desc: "Unlimited help desk, monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
+  { Icon: Wrench, title: "Computer Repair (Business and Residential)", desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade you've been putting off. We work on home machines too." },
+  { Icon: Camera, title: "Security Camera Installation", desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording." },
+  { Icon: Network, title: "Enterprise Domain Environments", desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one." },
+  { Icon: RefreshCw, title: "Migrations and Upgrades", desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, file-share moves, Windows 11 rollouts, and hardware refreshes." },
   { Icon: Lock, title: "Cybersecurity and Virus Protection", desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring — plus the written proof your cyber-insurance carrier asks for at renewal." },
   { Icon: Cloud, title: "Microsoft 365, Email, and Cloud Apps", desc: "We set up your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone." },
   { Icon: Server, title: "Backups and Disaster Recovery", desc: "Automatic backups of every computer and server, with a second copy stored off-site. We test the backups every quarter so a restore actually works when you need it." },
-  { Icon: FileCheck, title: "HIPAA and Cyber-Insurance Paperwork", desc: "Written security reviews, the protections auditors and insurers expect, and a binder of documents you can hand them the same day." },
   { Icon: Phone, title: "Business Phone Systems", desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email." },
   { Icon: Wifi, title: "Networking, Wi-Fi, and Cabling", desc: "Business-grade firewalls, Wi-Fi that reaches every corner, guest-separated networks, and clean cable runs with every jack labeled." },
+  { Icon: FileCheck, title: "HIPAA and Cyber-Insurance Paperwork", desc: "Written security reviews, the protections auditors and insurers expect, and a binder of documents you can hand them on audit day." },
   { Icon: Briefcase, title: "IT Planning and Budgeting", desc: "Quarterly check-ins with a senior tech, a simple 12-month plan, and an IT budget you can explain to anyone in plain English." },
 ];
 
@@ -88,12 +93,16 @@ function buildServiceLd(city) {
 
   const services = [
     { name: `Managed IT Support in ${city.city}`,                  type: "Managed IT services" },
+    { name: `Computer Repair in ${city.city}`,                     type: "Computer repair" },
+    { name: `Security Camera Installation in ${city.city}`,        type: "Security camera installation" },
+    { name: `Enterprise Domain + Active Directory in ${city.city}`, type: "Active Directory administration" },
+    { name: `Migrations and Upgrades in ${city.city}`,             type: "IT migration" },
     { name: `Cybersecurity for ${city.city} small businesses`,     type: "Cybersecurity" },
     { name: `Microsoft 365 + Cloud setup in ${city.city}`,         type: "Cloud computing" },
     { name: `Backup + Disaster Recovery in ${city.city}`,          type: "Backup and disaster recovery" },
-    { name: `HIPAA + Cyber-Insurance Paperwork in ${city.city}`,   type: "Compliance documentation" },
     { name: `Business Phone Systems in ${city.city}`,              type: "VoIP" },
     { name: `Networking, Wi-Fi, and Cabling in ${city.city}`,      type: "Network setup" },
+    { name: `HIPAA + Cyber-Insurance Paperwork in ${city.city}`,   type: "Compliance documentation" },
     { name: `IT Planning + Budgeting in ${city.city}`,             type: "vCIO" },
   ];
 
@@ -205,7 +214,7 @@ export default function LocalLanding() {
             <ul className="trust-row" aria-label="Trust indicators">
               <li><Star size={14} fill="#F7630C" stroke="#F7630C" /> 5.0 Google rating</li>
               <li><ShieldCheck size={14} /> HIPAA documented</li>
-              <li><Clock size={14} /> Same-day response in {city.city}</li>
+              <li><MapPin size={14} /> Local team in {city.city}</li>
             </ul>
           </div>
         </div>
@@ -217,7 +226,7 @@ export default function LocalLanding() {
             <span className="eyebrow">Neighborhoods we serve</span>
             <h2 className="title-1">Local IT support across {city.city}</h2>
             <p className="section-sub">
-              We support businesses across {city.neighborhoods}. Our engineers live in Sarasota and Bradenton, which means same-day on-site response and none of the drive-down-from-Tampa excuses.
+              We support businesses and residential clients across {city.neighborhoods}. Our engineers live in Sarasota and Bradenton — local, no drive-downs from Tampa.
             </p>
           </div>
         </div>
@@ -349,7 +358,7 @@ export default function LocalLanding() {
               <h2 className="title-2">Get a free 15-minute IT assessment for your {city.city} business</h2>
               <p>Tell us a little about your team and we'll schedule a no-pressure call with a local engineer. No sales pitch — just a clear read on your risk, your Microsoft 365, and what good would look like.</p>
               <ul className="feature-list">
-                <li><Check size={16} color="#0F6CBD" /> Local engineer, same-day callback</li>
+                <li><Check size={16} color="#0F6CBD" /> Local Sarasota/Bradenton engineer</li>
                 <li><Check size={16} color="#0F6CBD" /> No long-term contract required</li>
                 <li><Check size={16} color="#0F6CBD" /> Works with your current team or replaces it</li>
               </ul>
