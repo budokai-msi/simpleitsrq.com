@@ -1,4 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#0F6CBD"/>
-  <text x="16" y="22.5" text-anchor="middle" font-family="-apple-system, Segoe UI, system-ui, sans-serif" font-weight="700" font-size="19" fill="#FFFFFF">S</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Simple IT SRQ">
+  <defs>
+    <!-- Brand-blue vertical gradient gives depth at every render size. -->
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#2B88D8"/>
+      <stop offset="100%" stop-color="#0A4E8F"/>
+    </linearGradient>
+    <!-- Subtle inner highlight for the top edge — dimensional without heavy shadow. -->
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded-square brand background -->
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+  <rect width="32" height="32" rx="7" fill="url(#shine)"/>
+
+  <!-- Bold "S" wordmark, slightly tighter letter-spacing for a custom feel. -->
+  <text x="16" y="23" text-anchor="middle"
+        font-family="-apple-system, Segoe UI, system-ui, Roboto, sans-serif"
+        font-weight="800" font-size="20" fill="#FFFFFF" letter-spacing="-0.8">S</text>
+
+  <!-- Active-defense status dot — green pulse in the corner. Reads as
+       "live / monitored" in browser tabs and on mobile home screens. -->
+  <circle cx="25" cy="7" r="3" fill="#10B981" stroke="#0A4E8F" stroke-width="1"/>
 </svg>
