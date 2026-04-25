@@ -5,10 +5,11 @@ import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { loadAllPosts } from "./_posts-source.mjs";
-import { cityList } from "../src/data/cities.js";
+import { cityList, cities } from "../src/data/cities.js";
 import { products } from "../src/data/products.js";
 import { COMPARISONS } from "../src/data/comparisons.js";
 import { GLOSSARY } from "../src/data/glossary.js";
+import { industryCityPairs } from "../src/data/industries.js";
 
 const posts = loadAllPosts();
 
@@ -78,7 +79,16 @@ const glossaryUrls = GLOSSARY.map((g) => ({
   changefreq: "monthly",
 }));
 
-const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls, ...glossaryUrls];
+// Industry × city long-tail pages — 18+ URLs covering medical/law/financial-
+// advisor/marine/construction/vacation-rental verticals across the cities
+// where each one has a matching pattern in cities.localPatterns.
+const industryUrls = [...industryCityPairs(cities)].map((p) => ({
+  loc: p.url,
+  priority: "0.85",
+  changefreq: "monthly",
+}));
+
+const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls, ...glossaryUrls, ...industryUrls];
 
 const body = all
   .map((u) => {

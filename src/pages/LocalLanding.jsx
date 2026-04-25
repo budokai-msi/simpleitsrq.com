@@ -5,6 +5,7 @@ import {
   Headphones, Lock, Cloud, Server, FileCheck, Phone, Wifi, Briefcase,
 } from "lucide-react";
 import { cities } from "../data/cities";
+import { industries, matchIndustryPattern } from "../data/industries";
 import { useSEO, SITE_URL } from "../lib/seo";
 import RecommendedTools from "../components/RecommendedTools";
 
@@ -259,6 +260,43 @@ export default function LocalLanding() {
                 </article>
               ))}
             </div>
+
+            {/* Industry deep-links — for each pattern that matches a vertical
+                we ship a dedicated landing page for, surface that page so
+                visitors can drill into industry-specific FAQs and so Google
+                sees the parent → child entity link. */}
+            {(() => {
+              const cityKey = Object.keys(cities).find((k) => cities[k].slug === city.slug);
+              const verticals = Object.values(industries).filter(
+                (i) => i.cities.includes(cityKey) && matchIndustryPattern(i, city),
+              );
+              if (verticals.length === 0) return null;
+              return (
+                <div style={{ marginTop: 24, padding: "16px 18px", borderRadius: 10, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
+                  <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--syn-text-muted, #6b7280)" }}>
+                    Industry-specific pages for {city.city}
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {verticals.map((v) => (
+                      <Link
+                        key={v.slug}
+                        to={`/${v.slug}-${cityKey}`}
+                        style={{
+                          padding: "6px 12px", borderRadius: 999,
+                          background: "var(--syn-surface-2, #fff)",
+                          border: "1px solid var(--syn-border, #e5e7eb)",
+                          fontSize: 13, fontWeight: 500, color: "var(--text-1)",
+                          textDecoration: "none",
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                        }}
+                      >
+                        {v.displayName} → IT in {city.city}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </section>
       )}
