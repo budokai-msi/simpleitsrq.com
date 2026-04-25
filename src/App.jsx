@@ -22,6 +22,7 @@ import "./App.css";
 const BlogIndex = lazy(() => import("./pages/BlogIndex"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const LocalLanding = lazy(() => import("./pages/LocalLanding"));
+const IndustryLanding = lazy(() => import("./pages/IndustryLanding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Book = lazy(() => import("./pages/Book"));
 const Support = lazy(() => import("./pages/Support"));
@@ -401,6 +402,19 @@ export default function App() {
               <Route path="/nokomis-it-support" element={<LocalLanding />} />
               <Route path="/venice-it-support" element={<LocalLanding />} />
               <Route path="/bradenton-34207-it-support" element={<LocalLanding />} />
+              {/* Industry-vertical landing pages — one route handles every
+                  (industry, city) combo. The component derives both from
+                  the URL slug and 404s out to /service-area if invalid.
+                  Patterns matched: /medical-it-sarasota,
+                  /law-firm-it-venice, /financial-advisor-it-lakewood-ranch,
+                  /marine-it-bradenton, /construction-it-bradenton,
+                  /vacation-rental-it-nokomis, etc. */}
+              <Route path="/medical-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/law-firm-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/financial-advisor-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/marine-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/construction-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/vacation-rental-it-:cityKey" element={<IndustryLanding />} />
               <Route path="/service-area" element={<ServiceArea />} />
               <Route path="/partners" element={<Partners />} />
               <Route path="/book" element={<Book />} />
