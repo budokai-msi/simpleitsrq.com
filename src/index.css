@@ -117,6 +117,7 @@
  * render time, so a single declaration here cascades through both
  * light + dark themes. */
 :root {
+  /* --syn-* aliases (legacy Synapse design system) */
   --syn-bg:           var(--bg);
   --syn-surface:      var(--surface);
   --syn-surface-2:    var(--surface-2);
@@ -128,6 +129,16 @@
   --syn-text-3:       var(--text-3);
   --syn-brand:        var(--brand);
   --syn-brand-hover:  var(--brand-hover);
+
+  /* Bare aliases (older naming convention from before the design
+   * system rename). Same theme-tracking issue: every reference fell
+   * through to a hardcoded fallback, breaking dark mode anywhere
+   * the alias was used. Most visible offender: .local-pattern-card p
+   * which uses var(--text, #1a1a1a) — invisible in dark mode. */
+  --text:             var(--text-1);
+  --muted:            var(--text-2);
+  --accent:           var(--brand);
+  --surface-alt:      var(--surface-2);
 }
 
 :root {
