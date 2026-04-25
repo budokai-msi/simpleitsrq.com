@@ -103,6 +103,33 @@
   color-scheme: dark;
 }
 
+/* ─── Theme alias bridge ───────────────────────────────────────────────
+ * App.css and a chunk of inline component styles reference --syn-*
+ * variables (a holdover from the original Synapse design system).
+ * These were never defined, so every reference fell through to its
+ * hardcoded fallback — meaning text/backgrounds were locked to LIGHT
+ * mode values regardless of theme. In dark mode that put near-black
+ * text on near-black backgrounds → invisible.
+ *
+ * Bridging by aliasing them to the real --bg/--surface/--text-* tokens
+ * lets all 88 existing references suddenly track theme correctly,
+ * without touching any of them individually. CSS variables resolve at
+ * render time, so a single declaration here cascades through both
+ * light + dark themes. */
+:root {
+  --syn-bg:           var(--bg);
+  --syn-surface:      var(--surface);
+  --syn-surface-2:    var(--surface-2);
+  --syn-surface-hi:   var(--surface-2);
+  --syn-border:       var(--border);
+  --syn-border-strong: var(--border-strong);
+  --syn-text:         var(--text-1);
+  --syn-text-muted:   var(--text-2);
+  --syn-text-3:       var(--text-3);
+  --syn-brand:        var(--brand);
+  --syn-brand-hover:  var(--brand-hover);
+}
+
 :root {
   /* Radius */
   --r-sm: 6px;
