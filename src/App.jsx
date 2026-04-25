@@ -23,6 +23,7 @@ const BlogIndex = lazy(() => import("./pages/BlogIndex"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const LocalLanding = lazy(() => import("./pages/LocalLanding"));
 const IndustryLanding = lazy(() => import("./pages/IndustryLanding"));
+const IndustriesHub = lazy(() => import("./pages/IndustriesHub"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Book = lazy(() => import("./pages/Book"));
 const Support = lazy(() => import("./pages/Support"));
@@ -171,6 +172,7 @@ function Navbar() {
         <div className="mobile-menu" role="menu">
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
           <Link to="/glossary" onClick={() => setOpen(false)}>Glossary</Link>
+          <Link to="/industries" onClick={() => setOpen(false)}>Industries we serve</Link>
           <Link to="/exposure-scan" onClick={() => setOpen(false)}>Free Exposure Scan</Link>
           <Link to="/live-threats" onClick={() => setOpen(false)}>Live Threat Wall</Link>
           <Link to="/tools" onClick={() => setOpen(false)}>Recommended Tools</Link>
@@ -409,6 +411,7 @@ export default function App() {
                   /law-firm-it-venice, /financial-advisor-it-lakewood-ranch,
                   /marine-it-bradenton, /construction-it-bradenton,
                   /vacation-rental-it-nokomis, etc. */}
+              <Route path="/industries" element={<IndustriesHub />} />
               <Route path="/medical-it-:cityKey" element={<IndustryLanding />} />
               <Route path="/law-firm-it-:cityKey" element={<IndustryLanding />} />
               <Route path="/financial-advisor-it-:cityKey" element={<IndustryLanding />} />
