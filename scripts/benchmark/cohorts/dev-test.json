@@ -1,0 +1,14 @@
+{
+  "cohort": "dev-test",
+  "label": "Dev test — safe domains for validating the pipeline",
+  "publishedQuarter": null,
+  "intent": "internal-only",
+  "notes": "These domains are used for development + CI testing of the batch scanner. Replace with a real cohort (see dental-sarasota.json template) before generating any published report. Test domains are deliberately well-known sites we don't have any business relationship with.",
+  "domains": [
+    "simpleitsrq.com",
+    "vercel.com",
+    "cloudflare.com",
+    "stripe.com",
+    "netlify.com"
+  ]
+}

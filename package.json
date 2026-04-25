@@ -17,6 +17,8 @@
     "test:e2e": "playwright test",
     "ci:install": "npm ci",
     "generate:images": "node scripts/generate-images.mjs",
+    "benchmark:scan": "node scripts/benchmark/run-batch-scan.mjs",
+    "benchmark:report": "node scripts/benchmark/generate-report.mjs",
     "db:push": "node --env-file=.env.local scripts/db/push.mjs"
   },
   "dependencies": {

@@ -68,3 +68,4 @@ SITE-INVENTORY.md
 
 .vercel
 .env*.local
+data/benchmark-results/
