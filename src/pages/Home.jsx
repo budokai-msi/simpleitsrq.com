@@ -86,41 +86,39 @@ function HeroPaths() {
   );
 }
 
-// Live "we're blocking attacks right now" strip. Pulls the same public
-// feed that powers /live-threats, renders as a single row of 3 numbers
-// on the homepage, and deep-links to the full wall. Every visitor on
-// the homepage sees real defense metrics — strongest trust signal we
-// have besides testimonials. Fails silently to a static fallback if
-// the API is down.
+// Static defense trust card — earlier version pulled live attack
+// counts from a public endpoint, but live OPSEC numbers shouldn't be
+// part of our public attack surface (a sophisticated attacker can
+// fingerprint our defenses by watching the counters move). Now reads
+// only the boolean `protectionActive` from /api/contact?action=protection-status
+// and shows abstract trust copy. Real numbers stay inside the admin
+// portal.
 function LiveDefenseStrip() {
-  const [stats, setStats] = useState(null);
+  const [active, setActive] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/contact?action=threats")
+    fetch("/api/contact?action=protection-status")
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (!cancelled && data?.stats) setStats(data.stats); })
-      .catch(() => { /* silent — fallback renders */ });
+      .then((data) => { if (!cancelled && data) setActive(!!data.protectionActive); })
+      .catch(() => { /* defaults to active=true */ });
     return () => { cancelled = true; };
   }, []);
 
-  // Fallback numbers — marketing claims, not live data. Replaced on fetch.
-  const hits = stats?.hits48h;
-  const exploits = stats?.exploitAttempts48h;
-  const blocklist = stats?.blocklistTotal;
+  if (!active) return null;
 
   return (
-    <section className="live-defense-strip" aria-label="Live defense metrics">
+    <section className="live-defense-strip" aria-label="Defense status">
       <div className="container">
-        <Link to="/live-threats" className="live-defense-card" style={{
+        <Link to="/exposure-scan" className="live-defense-card" style={{
           display: "grid",
           gridTemplateColumns: "auto 1fr auto",
           gap: "16px 20px",
           alignItems: "center",
           padding: "18px 22px",
           borderRadius: 14,
-          background: "linear-gradient(180deg, rgba(15, 108, 189, 0.06) 0%, rgba(15, 108, 189, 0.02) 100%)",
-          border: "1px solid rgba(15, 108, 189, 0.18)",
+          background: "linear-gradient(180deg, rgba(16, 124, 16, 0.05) 0%, rgba(16, 124, 16, 0.02) 100%)",
+          border: "1px solid rgba(16, 124, 16, 0.18)",
           textDecoration: "none",
           color: "inherit",
           transition: "transform 160ms ease, box-shadow 160ms ease",
@@ -128,30 +126,33 @@ function LiveDefenseStrip() {
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{
               display: "inline-block", width: 10, height: 10, borderRadius: 999,
-              background: "#DC2626", animation: "pulse-red 1.6s infinite",
+              background: "#107C10", animation: "pulse-green 2s infinite",
             }} />
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#DC2626" }}>
-              Live defense
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#107C10" }}>
+              Active defense
             </span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px 24px" }}>
-            <LiveStat value={hits} label="attacks blocked · last 48h" color="#DC2626" />
-            <LiveStat value={exploits} label="exploit payloads stopped" color="#D97706" />
-            <LiveStat value={blocklist} label="IPs on the blocklist" color="#0F6CBD" />
+          <div>
+            <p style={{ margin: 0, fontWeight: 600, fontSize: 15, color: "var(--text-1)" }}>
+              Same defense layer protecting this site is what we deploy on client sites
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--syn-text-muted, #6b7280)" }}>
+              Automated CVE auto-block · OSINT threat-feed enrichment · honeypot trapping · rate-limit defense
+            </p>
           </div>
-          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#0F6CBD", whiteSpace: "nowrap" }}>
-            See the wall <ArrowRight size={14} />
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#107C10", whiteSpace: "nowrap" }}>
+            Run a free scan <ArrowRight size={14} />
           </span>
         </Link>
       </div>
       <style>{`
-        @keyframes pulse-red {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.65); }
-          50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
+        @keyframes pulse-green {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(16, 124, 16, 0.55); }
+          50% { box-shadow: 0 0 0 6px rgba(16, 124, 16, 0); }
         }
         .live-defense-card:hover {
           transform: translateY(-1px);
-          box-shadow: 0 4px 16px rgba(15, 108, 189, 0.12);
+          box-shadow: 0 4px 16px rgba(16, 124, 16, 0.1);
         }
         @media (max-width: 720px) {
           .live-defense-card {
@@ -162,18 +163,6 @@ function LiveDefenseStrip() {
         }
       `}</style>
     </section>
-  );
-}
-
-function LiveStat({ value, label, color }) {
-  const display = value == null
-    ? <span style={{ color: "#9ca3af" }}>—</span>
-    : value.toLocaleString();
-  return (
-    <div>
-      <div style={{ fontSize: 20, fontWeight: 700, color, lineHeight: 1.1 }}>{display}</div>
-      <div style={{ fontSize: 11, color: "var(--syn-text-muted, #6b7280)", marginTop: 2 }}>{label}</div>
-    </div>
   );
 }
 

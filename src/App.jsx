@@ -174,7 +174,6 @@ function Navbar() {
           <Link to="/glossary" onClick={() => setOpen(false)}>Glossary</Link>
           <Link to="/industries" onClick={() => setOpen(false)}>Industries we serve</Link>
           <Link to="/exposure-scan" onClick={() => setOpen(false)}>Free Exposure Scan</Link>
-          <Link to="/live-threats" onClick={() => setOpen(false)}>Live Threat Wall</Link>
           <Link to="/tools" onClick={() => setOpen(false)}>Recommended Tools</Link>
           <Link to="/store" onClick={() => setOpen(false)}>Templates &amp; Playbooks</Link>
           <Link to="/stack" onClick={() => setOpen(false)}>Vendor Stack</Link>

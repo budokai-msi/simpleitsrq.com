@@ -2229,6 +2229,29 @@ function OpsConsole() {
   const [revenueLoading, setRevenueLoading] = useState(false);
   const [adsenseData, setAdsenseData] = useState(null);
   const [adsenseLoading, setAdsenseLoading] = useState(false);
+  // null = not yet probed | true = your network blocks AdSense |
+  // false = your network reaches AdSense fine. Used to surface a
+  // "your DNS is blocking ads — real visitors are unaffected" banner
+  // so the admin doesn't waste time debugging a non-bug.
+  const [adsBlocked, setAdsBlocked] = useState(null);
+
+  // Detect whether THIS browser's network can reach AdSense's creative
+  // delivery endpoint. We do a no-cors fetch; on a clean network it
+  // resolves; on DNSFilter / pi-hole / Brave-shields it throws or returns
+  // an opaque error before any data arrives. Either way the boolean tells
+  // us whether the admin's "ads aren't showing" complaint is about THEIR
+  // machine vs. site config.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4000);
+    fetch("https://googleads.g.doubleclick.net/favicon.ico", {
+      mode: "no-cors", cache: "no-store", signal: ctrl.signal,
+    })
+      .then(() => { setAdsBlocked(false); })
+      .catch(() => { setAdsBlocked(true); })
+      .finally(() => clearTimeout(t));
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, []);
 
   const loadStatus = useCallback(async () => {
     setStatusLoading(true);
@@ -2428,6 +2451,32 @@ function OpsConsole() {
           <pre style={pre}>{JSON.stringify(output["full-setup"], null, 2)}</pre>
         )}
       </div>
+
+      {/* DNS-block diagnostic banner — only renders when this browser
+          itself can't reach AdSense (DNSFilter, pi-hole, Brave shields,
+          uBlock, etc.). Stops the admin from chasing a phantom bug
+          when ads "aren't showing" because of their own setup. */}
+      {adsBlocked === true && (
+        <div style={{
+          padding: "12px 16px",
+          marginBottom: 14,
+          borderRadius: 8,
+          background: "rgba(217, 119, 6, 0.08)",
+          border: "1px solid rgba(217, 119, 6, 0.3)",
+          borderLeft: "3px solid #D97706",
+          fontSize: 13,
+          color: tokens.colorNeutralForeground1,
+          lineHeight: 1.5,
+        }}>
+          <strong style={{ color: "#D97706" }}>Your network is blocking AdSense.</strong>{" "}
+          Your browser can't reach googleads.g.doubleclick.net (probably DNSFilter,
+          pi-hole, Brave shields, or an extension). <strong>Real visitors on
+          unfiltered networks see ads normally</strong> — check the AdSense
+          health card below for live fill-rate. To stop seeing this banner,
+          allow-list <code>googleads.g.doubleclick.net</code> and{" "}
+          <code>pagead2.googlesyndication.com</code> in your DNS filter.
+        </div>
+      )}
 
       {/* ── Operational status widgets ── */}
       <div style={sectionHeader}>Operational status — auto-loaded on open</div>
