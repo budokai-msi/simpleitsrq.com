@@ -215,11 +215,18 @@ function Footer() {
           <h4>Resources</h4>
           <ul>
             <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/glossary">Glossary</Link></li>
+            <li><Link to="/exposure-scan">Free Exposure Scan</Link></li>
             <li><Link to="/tools">Recommended Tools</Link></li>
-            <li><Link to="/store">Templates & Playbooks</Link></li>
-            <li><Link to="/partners">Our Vendor Stack</Link></li>
-            <li><Link to="/#industries">Industries</Link></li>
-            <li><Link to="/#compliance">Compliance</Link></li>
+            <li><Link to="/store">Templates &amp; Playbooks</Link></li>
+            {/* Vendor Stack is /stack (the page with the cost calculator).
+                /partners is the partner-program page — different surface,
+                kept as a separate link below to avoid the previous semantic
+                404 where visitors clicked "Our Vendor Stack" expecting the
+                tools and landed on the partners page instead. */}
+            <li><Link to="/stack">Our Vendor Stack</Link></li>
+            <li><Link to="/industries">Industries we serve</Link></li>
+            <li><Link to="/partners">Partner Program</Link></li>
             <li><Link to="/book">Book a Call</Link></li>
             <li><Link to="/support">Support</Link></li>
           </ul>
@@ -234,7 +241,7 @@ function Footer() {
             <li><Link to="/venice-it-support"><MapPin size={12} /> Venice</Link></li>
             <li><Link to="/service-area" className="footer-cities-all">View all markets →</Link></li>
           </ul>
-          <p className="footer-area-note">Serving Southwest Florida. On-site response within 2 hours for Sarasota + Bradenton.</p>
+          <p className="footer-area-note">Serving Southwest Florida — Sarasota and Manatee counties. Same-day reply during business hours; on-site by scheduled appointment.</p>
         </div>
       </div>
       <div className="footer-bottom">
