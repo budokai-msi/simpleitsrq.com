@@ -12,9 +12,15 @@
 // Essential cookies (the session cookie) are always on because the site
 // cannot function without them; that's the CCPA carve-out.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { readConsent, writeConsent } from "../lib/consent.js";
+
+// Custom event the footer "Manage cookie preferences" link dispatches
+// to force the banner back into view, regardless of whether the user
+// has already consented or rejected. Lets visitors change their mind
+// without clearing localStorage manually.
+export const REOPEN_CONSENT_EVENT = "sirq:reopen-consent";
 
 export default function CookieConsent() {
   // Initialize lazily so we read localStorage exactly once at mount without
@@ -23,6 +29,15 @@ export default function CookieConsent() {
     if (typeof window === "undefined") return false;
     return readConsent() == null;
   });
+
+  // Listen for the reopen event so the footer link works even after
+  // the visitor has already accepted or rejected.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onReopen = () => setVisible(true);
+    window.addEventListener(REOPEN_CONSENT_EVENT, onReopen);
+    return () => window.removeEventListener(REOPEN_CONSENT_EVENT, onReopen);
+  }, []);
 
   if (!visible) return null;
 
