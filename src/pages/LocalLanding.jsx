@@ -9,7 +9,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import RecommendedTools from "../components/RecommendedTools";
 
 const SERVICES = [
-  { Icon: Headphones, title: "Everyday IT Support", desc: "One flat monthly price covers unlimited help desk, monitoring, and software updates. A local tech answers the phone in under 15 minutes when something's critical." },
+  { Icon: Headphones, title: "Everyday IT Support", desc: "One flat monthly price covers unlimited help desk, monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
   { Icon: Lock, title: "Cybersecurity and Virus Protection", desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring — plus the written proof your cyber-insurance carrier asks for at renewal." },
   { Icon: Cloud, title: "Microsoft 365, Email, and Cloud Apps", desc: "We set up your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone." },
   { Icon: Server, title: "Backups and Disaster Recovery", desc: "Automatic backups of every computer and server, with a second copy stored off-site. We test the backups every quarter so a restore actually works when you need it." },
@@ -64,6 +64,52 @@ function buildLocalBusinessLd(city) {
   return schema;
 }
 
+// Emit one Service node per offering so Google associates each named
+// IT service with the city's geo + service area. Significantly stronger
+// signal than the flat LocalBusiness node alone — when someone searches
+// "managed IT services Bradenton" Google can match the Service node's
+// areaServed instead of inferring from page copy.
+function buildServiceLd(city) {
+  const serviceArea = (typeof city.lat === "number" && typeof city.lng === "number" && typeof city.radiusMiles === "number")
+    ? {
+        "@type": "GeoCircle",
+        geoMidpoint: { "@type": "GeoCoordinates", latitude: city.lat, longitude: city.lng },
+        geoRadius: Math.round(city.radiusMiles * 1609.34),
+      }
+    : { "@type": "AdministrativeArea", name: city.city };
+
+  const provider = {
+    "@type": "LocalBusiness",
+    "@id": `${SITE_URL}/${city.slug}#business`,
+    name: "Simple IT SRQ",
+    url: `${SITE_URL}/${city.slug}`,
+  };
+
+  const services = [
+    { name: `Managed IT Support in ${city.city}`,                  type: "Managed IT services" },
+    { name: `Cybersecurity for ${city.city} small businesses`,     type: "Cybersecurity" },
+    { name: `Microsoft 365 + Cloud setup in ${city.city}`,         type: "Cloud computing" },
+    { name: `Backup + Disaster Recovery in ${city.city}`,          type: "Backup and disaster recovery" },
+    { name: `HIPAA + Cyber-Insurance Paperwork in ${city.city}`,   type: "Compliance documentation" },
+    { name: `Business Phone Systems in ${city.city}`,              type: "VoIP" },
+    { name: `Networking, Wi-Fi, and Cabling in ${city.city}`,      type: "Network setup" },
+    { name: `IT Planning + Budgeting in ${city.city}`,             type: "vCIO" },
+  ];
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": services.map((s, i) => ({
+      "@type": "Service",
+      "@id": `${SITE_URL}/${city.slug}#service-${i + 1}`,
+      name: s.name,
+      serviceType: s.type,
+      provider,
+      areaServed: serviceArea,
+      url: `${SITE_URL}/${city.slug}`,
+    })),
+  };
+}
+
 function buildFaqLd(city) {
   return {
     "@context": "https://schema.org",
@@ -104,8 +150,12 @@ export default function LocalLanding() {
           description: city.metaDescription,
           canonical: `${SITE_URL}/${city.slug}`,
           image: `${SITE_URL}/og-image.png`,
+          // 3-deep breadcrumb: Home → Service Area → This city. Richer
+          // BreadcrumbList signal than 2 levels and gives Google a clean
+          // entity-relationship between the city pages and the hub.
           breadcrumbs: [
             { name: "Home", url: `${SITE_URL}/` },
+            { name: "Service Area", url: `${SITE_URL}/service-area` },
             { name: city.city, url: `${SITE_URL}/${city.slug}` },
           ],
         }
@@ -115,9 +165,11 @@ export default function LocalLanding() {
   useEffect(() => {
     if (!city) return;
     injectSchema("jsonld-local-business", buildLocalBusinessLd(city));
+    injectSchema("jsonld-services", buildServiceLd(city));
     injectSchema("jsonld-faq", buildFaqLd(city));
     return () => {
       removeSchema("jsonld-local-business");
+      removeSchema("jsonld-services");
       removeSchema("jsonld-faq");
     };
   }, [city]);
