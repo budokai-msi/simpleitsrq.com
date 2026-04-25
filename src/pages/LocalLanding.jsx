@@ -150,7 +150,11 @@ export default function LocalLanding() {
           title: city.title,
           description: city.metaDescription,
           canonical: `${SITE_URL}/${city.slug}`,
-          image: `${SITE_URL}/og-image.png`,
+          // Per-city Open Graph card (rendered by
+          // scripts/generate-city-og-images.mjs at prebuild time).
+          // Lifts social-share CTR vs. the generic site-wide image
+          // because the city name shows in the link preview.
+          image: `${SITE_URL}/og-city-${city.slug}.png`,
           // 3-deep breadcrumb: Home → Service Area → This city. Richer
           // BreadcrumbList signal than 2 levels and gives Google a clean
           // entity-relationship between the city pages and the hub.
