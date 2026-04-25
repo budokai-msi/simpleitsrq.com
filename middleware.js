@@ -57,7 +57,7 @@ function isScannerPath(pathname) {
 }
 
 // Skip static assets — only intercept page navigations and API calls.
-const SKIP_EXTENSIONS = /\.(js|css|ico|png|jpg|jpeg|svg|woff2?|ttf|eot|map|xml|txt|json|webp|avif)$/i;
+const SKIP_EXTENSIONS = /\.(js|css|ico|png|jpg|jpeg|svg|woff2?|ttf|eot|map|xml|txt|json|webp|avif|webmanifest)$/i;
 
 // ---------------------------------------------------------------------------
 // Per-request CSP nonce — lets us drop `'unsafe-inline'` from `style-src`.
