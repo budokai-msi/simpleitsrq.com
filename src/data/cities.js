@@ -16,7 +16,7 @@ export const cities = {
     radiusMiles: 12,
     h1: "IT Support in Sarasota, FL",
     title: "Sarasota IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
-    metaDescription: "Local IT support for Sarasota businesses. Flat monthly pricing, same-day response, HIPAA paperwork, and a real team that picks up the phone. Free IT check-up.",
+    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Sarasota businesses and residential clients. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone. Free IT check-up.",
     intro: "From the galleries on Main Street to the medical offices off Fruitville Road, Sarasota businesses depend on computers and internet that just work. Simple IT SRQ is the local IT team for dental groups, law firms, real-estate brokerages, boutique retailers, and professional-services firms from Lido Key to the UTC corridor. We watch your computers, email, and network around the clock — and when you need someone in person, we show up.",
     servicesIntro: "Most Sarasota offices we support fall into one of three patterns: a medical or dental practice in the Fruitville corridor, a law or financial firm downtown, or a boutique retailer on St. Armands or Main Street. The services below apply to all three — the emphasis just shifts with the business.",
     localPatterns: [
@@ -27,14 +27,14 @@ export const cities = {
     landmarks: ["Main Street Sarasota", "St. Armands Circle", "Lido Key", "Fruitville Road medical corridor", "Downtown Sarasota"],
     neighborhoods: "downtown Sarasota, St. Armands, Lido Key, Siesta Key, Osprey, the Rosemary District, and the Fruitville medical corridor",
     whyLocal: [
-      "Same-day, on-site help anywhere from Lido Key to Osprey — nobody stuck driving down from Tampa.",
+      "On-site help anywhere from Lido Key to Osprey — local techs, not a Tampa hand-off.",
       "A named tech who actually knows your office, your staff, and the security questions your insurance company keeps asking.",
       "HIPAA reviews and paperwork made for the dozens of independent medical and dental practices that make Sarasota one of Florida's busiest healthcare markets.",
     ],
     faqs: [
       {
-        q: "How quickly can you get on-site in Sarasota?",
-        a: "For downtown Sarasota, Lido Key, and the Fruitville corridor we aim for same-day on-site help for anything urgent, and next business day for things that can wait. Most problems get solved remotely in under 15 minutes."
+        q: "How do you handle on-site visits in Sarasota?",
+        a: "We schedule on-site visits across downtown Sarasota, Lido Key, and the Fruitville corridor as quickly as our calendar allows. Most issues we can start working on remotely first, and we'll be straight with you about when a tech can actually be there — no fake response-time promises."
       },
       {
         q: "Do you support medical practices and handle HIPAA paperwork?",
@@ -65,7 +65,7 @@ export const cities = {
     radiusMiles: 12,
     h1: "IT Support in Bradenton, FL",
     title: "Bradenton IT Support | Local Tech Team | Simple IT SRQ",
-    metaDescription: "Local IT support, cybersecurity, and cloud services for Bradenton, FL businesses. Flat monthly pricing, HIPAA paperwork, same-day help. Free IT check-up.",
+    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Bradenton, FL businesses and residential clients. Flat monthly pricing, HIPAA paperwork, and a real Manatee County team. Free IT check-up.",
     intro: "Bradenton is our home. From the Riverwalk and downtown Old Main Street to the business parks off SR-64 and the medical offices on Manatee Avenue, Simple IT SRQ supports the local businesses that keep Manatee County running. We're the IT team for construction firms, marine businesses, independent medical practices, manufacturers, and professional-services companies across Bradenton, Palmetto, and Ellenton.",
     servicesIntro: "Bradenton clients split roughly into three buckets: medical and dental practices on Manatee Avenue, construction and marine businesses near SR-64 and the Port, and professional-services firms across Palmetto and Ellenton. The services below apply everywhere — the priorities just shift with the trade.",
     localPatterns: [
@@ -76,9 +76,9 @@ export const cities = {
     landmarks: ["Bradenton Riverwalk", "Old Main Street", "Manatee Avenue medical corridor", "SR-64 business parks", "Downtown Bradenton"],
     neighborhoods: "downtown Bradenton, the Riverwalk and Old Main Street, West Bradenton, Palma Sola, Bayshore Gardens, and the Manatee Avenue medical corridor",
     whyLocal: [
-      "We live and work in Manatee County. Our techs are in Bradenton the same day — not driving down I-75 from a Tampa office.",
+      "We live and work in Manatee County. Our techs are based right here — not driving down I-75 from a Tampa office.",
       "Hurricane-season plans built for the Gulf Coast: off-site backups, networks that keep running on a generator, and a tested plan for getting you back online.",
-      "A named tech on your account, 15-minute response on urgent problems, and flat monthly pricing that doesn't balloon when something breaks.",
+      "A named tech on your account, a real person at the other end of the phone, and flat monthly pricing that doesn't balloon when something breaks.",
     ],
     faqs: [
       {
@@ -114,7 +114,7 @@ export const cities = {
     radiusMiles: 8,
     h1: "IT Support in Lakewood Ranch, FL",
     title: "Lakewood Ranch IT Support | Local IT Help | Simple IT SRQ",
-    metaDescription: "Local IT support for Lakewood Ranch professional services, medical, and finance offices. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone.",
+    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Lakewood Ranch professional offices and residential clients. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone.",
     intro: "Lakewood Ranch is one of the fastest-growing planned communities in the country, and the professional offices clustered around Main Street, Lakewood Ranch Medical Center, and the UTC mall need IT that keeps up. Simple IT SRQ supports the law firms, financial advisors, medical practices, and real-estate brokerages building their businesses across Lakewood Ranch — from Waterside Place to the shops at University Town Center.",
     servicesIntro: "Lakewood Ranch is a professional-services town: law, finance, medical, insurance, real estate. Most of our LWR clients are 15-to-50-person offices chasing a cyber-insurance renewal or building out a new suite at Center Point or Waterside Place. The services below show up on every engagement — the order on the list just rearranges.",
     localPatterns: [
@@ -132,7 +132,7 @@ export const cities = {
     faqs: [
       {
         q: "Do you support businesses around UTC and Lakewood Ranch Main Street?",
-        a: "Yes — a big share of our clients are right there. Same-business-day on-site help, and most problems solved remotely in under 15 minutes."
+        a: "Yes — a big share of our clients are right there. We work directly with offices around UTC and Main Street, and remote help is the norm with on-site visits scheduled into the same week when possible."
       },
       {
         q: "We're a financial advisory firm. Can you help with the security rules we're held to?",
@@ -163,8 +163,8 @@ export const cities = {
     radiusMiles: 8,
     h1: "IT Support in Nokomis, FL",
     title: "Nokomis IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
-    metaDescription: "Local IT support for Nokomis and Casey Key businesses. Same-day help, flat monthly pricing, HIPAA paperwork, and a real team based in Sarasota County. Free IT check-up.",
-    intro: "Nokomis sits at the quiet south end of Sarasota County where Casey Key meets the mainland — and the small businesses here deserve IT support that actually shows up. Simple IT SRQ supports the vacation rental companies, marine services, medical offices, real-estate firms, and professional-service practices along US-41 and Albee Road. We're 15 minutes away, not two hours from Tampa.",
+    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Nokomis and Casey Key businesses and residential clients. Flat monthly pricing, HIPAA paperwork, and a real team based in Sarasota County. Free IT check-up.",
+    intro: "Nokomis sits at the quiet south end of Sarasota County where Casey Key meets the mainland — and the small businesses here deserve IT support that actually shows up. Simple IT SRQ supports the vacation rental companies, marine services, medical offices, real-estate firms, and professional-service practices along US-41 and Albee Road — plus residential clients across Casey Key. We're across Sarasota County, not two hours from Tampa.",
     servicesIntro: "Nokomis clients are mostly 5-to-30-person offices along US-41 and Casey Key. The mix leans vacation rental, marine services, and independent medical — each with its own seasonal rhythm. We size everything for the November-through-April surge, not the sleepy summer.",
     localPatterns: [
       { title: "Vacation rental management, Casey Key", body: "Smart-lock integrations that stay synced with the booking calendar, guest Wi-Fi per property separated from the owner network, booking-system uptime during Jan-Mar peak, and an off-island data backup nobody in the Casey Key rental world is actually doing." },
@@ -174,14 +174,14 @@ export const cities = {
     landmarks: ["Nokomis Beach", "Casey Key", "US-41 corridor", "Albee Road", "North Jetty Park"],
     neighborhoods: "Nokomis, Casey Key, Laurel, south Osprey, and the US-41 business corridor between Venice and Sarasota",
     whyLocal: [
-      "Same-day on-site response from Sarasota County — we don't drive down from Tampa or Orlando like the big shops do.",
-      "Built for 5- to 30-person offices: vacation rental managers, marine service companies, medical practices, and professional firms that need reliable IT without enterprise pricing.",
+      "Local Sarasota County team — we don't drive down from Tampa or Orlando like the big shops do.",
+      "Built for 5- to 30-person offices and residential clients: vacation rental managers, marine service companies, medical practices, professional firms, and the homes and condos in between.",
       "Hurricane-season backup and recovery plans made for the barrier-island reality: off-site backups, generator-safe networks, and a tested plan that doesn't assume you'll have power.",
     ],
     faqs: [
       {
-        q: "How quickly can you get to Nokomis?",
-        a: "We're based in Bradenton and Sarasota. Nokomis is about 25 minutes from our Sarasota team — same-day for anything urgent, next business day for scheduled work. Most issues get resolved remotely in under 15 minutes."
+        q: "Do you cover Nokomis from your Sarasota office?",
+        a: "Yes — Nokomis is right inside our regular service area. We're based in Sarasota and Bradenton, so we cover Nokomis, Casey Key, and Laurel as part of our normal route. Most issues we start on remotely first, and we'll be straight with you about when a tech can be on-site."
       },
       {
         q: "Do you support vacation rental management companies?",
@@ -212,7 +212,7 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Venice, FL",
     title: "Venice IT Support | Local IT Help and HIPAA Compliance | Simple IT SRQ",
-    metaDescription: "Local IT support for Venice, FL businesses. Same-day help for medical, legal, and professional offices along Venice Avenue, Jacaranda, and the airport corridor. Flat monthly pricing and HIPAA-ready compliance work.",
+    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Venice, FL — businesses and residential. Helpdesk for medical, legal, and professional offices along Venice Avenue, Jacaranda, and the airport corridor. Flat monthly pricing and HIPAA-ready compliance work.",
     intro: "Venice has a business mix you don't find anywhere else on the Gulf Coast: a healthcare cluster around the hospital, a historic downtown full of long-running professional practices, and a wave of newer offices around the Jacaranda and airport corridors. Those offices also deal with something the rest of the region doesn't — a real snowbird season that doubles network load from November to April. Simple IT SRQ handles IT for the Venice medical groups, law firms, accounting practices, dental offices, and real-estate brokerages that need a local team who understands both the seasonal surge and the year-round compliance grind.",
     servicesIntro: "Venice is really two towns at once — a downtown of long-running professional practices, and a healthcare cluster around ShoreView Hospital. Both roughly double in network load November through April. We build for that seasonal reality, not the summer average.",
     localPatterns: [
@@ -225,12 +225,12 @@ export const cities = {
     whyLocal: [
       "Seasonal-load planning: we size firewalls, Wi-Fi, and bandwidth for the Nov–Apr snowbird surge so your network doesn't crawl when every exam room, reception desk, and guest laptop is in use at once.",
       "Healthcare and HIPAA depth — Venice has one of the highest concentrations of medical practices per capita in the state. We do written HIPAA risk assessments, BAAs, and audit-ready documentation, not just antivirus.",
-      "Onsite the same day. Venice is 30 minutes from our Sarasota team — not two hours from the Tampa mega-MSPs who bill four hours of drive time before they walk in.",
+      "We're a Sarasota County team — Venice is part of our regular service area, not a contracted-out drive from a Tampa MSP.",
     ],
     faqs: [
       {
-        q: "How fast can you get onsite in Venice?",
-        a: "30 minutes from Sarasota for anything urgent, same-day for scheduled work. Most issues get resolved remotely in under 15 minutes — often before the tech would have finished the drive. We also hold pre-scheduled weekly slots for Venice medical and legal clients who want predictable onsite coverage."
+        q: "Do you cover Venice from your Sarasota office?",
+        a: "Yes — Venice is part of our regular service area, not a special trip. We're based in Sarasota and Bradenton, and Venice is part of our normal weekly run. Most issues we start on remotely first; on-site visits get scheduled as quickly as our calendar allows. Several Venice medical and legal clients have pre-scheduled weekly slots for predictable on-site coverage."
       },
       {
         q: "Do you specialize in medical practice IT around the hospital?",
@@ -250,7 +250,7 @@ export const cities = {
       },
       {
         q: "Do you also cover Englewood and North Port?",
-        a: "We cover Englewood from our Venice service area — same flat pricing, same response time. North Port is on the edge of our range; we do support a handful of North Port offices, but we'll be upfront during the intake call about drive time for anything that absolutely requires same-day onsite."
+        a: "We cover Englewood from our Venice service area — same flat pricing. North Port is on the edge of our range; we do support a handful of North Port offices, but we'll be upfront during the intake call about scheduling for any onsite work."
       },
     ],
   },
@@ -268,8 +268,8 @@ export const cities = {
     lng: -82.588,
     radiusMiles: 10,
     title: "Bradenton 34207 IT Support | Bayshore Gardens, West Bradenton | Simple IT SRQ",
-    metaDescription: "IT support, cybersecurity, and HIPAA help for businesses in West Bradenton, Bayshore Gardens, Samoset, Oneco, and every office inside a 10-mile radius of ZIP 34207. Local team, same-day response, flat monthly pricing.",
-    intro: "34207 is where Simple IT SRQ is based. We support businesses across West Bradenton, Bayshore Gardens, Samoset, and Oneco — plus everything within roughly a 10-mile drive of the 34207 core, which covers downtown Bradenton, Palmetto, Ellenton, Holmes Beach and Bradenton Beach on the barrier islands, Cortez, Longboat Key (north), and the northern edge of Sarasota. If you're in one of those ZIPs we can usually be at your office within an hour.",
+    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for businesses and residential clients in West Bradenton, Bayshore Gardens, Samoset, Oneco, and every address inside a 10-mile radius of ZIP 34207. Local Manatee County team, flat monthly pricing for businesses, no-contract repair for residential.",
+    intro: "34207 is where Simple IT SRQ is based. We support businesses and residential clients across West Bradenton, Bayshore Gardens, Samoset, and Oneco — plus everything within roughly a 10-mile drive of the 34207 core, which covers downtown Bradenton, Palmetto, Ellenton, Holmes Beach and Bradenton Beach on the barrier islands, Cortez, Longboat Key (north), and the northern edge of Sarasota.",
     servicesIntro: "The businesses we support inside this radius split across three buckets: medical and dental practices along Cortez Road and 14th Street West; construction, marine, and trades operations near the Port and along SR-64; and retail + hospitality in the barrier-island tourist corridor. What we install doesn't change; the emphasis does.",
     localPatterns: [
       { title: "Medical or dental practice, Cortez Road / 14th Street West", body: "EHR and imaging vendor uptime, HIPAA Risk Assessment + Safeguards paperwork, cyber-insurance evidence binder your carrier asks for at renewal, and two-step sign-in on every account so the one staff click that would otherwise cost you $40,000 in ransomware doesn't." },
@@ -280,14 +280,14 @@ export const cities = {
     landmarks: ["Bayshore Gardens Park", "Cortez Road", "14th Street West medical corridor", "SR-64 construction corridor", "Manatee River Riverwalk", "Anna Maria Island Bridge", "Port Manatee"],
     neighborhoods: "Bayshore Gardens, West Bradenton, Samoset, Oneco, Palma Sola, downtown Bradenton, Cortez, Palmetto, Ellenton, Holmes Beach, Bradenton Beach, Anna Maria, northern Longboat Key, Tallevast, and the SR-64 business corridor",
     whyLocal: [
-      "Our office is inside 34207 — not a 'we also service Bradenton' satellite run from Tampa or Lakewood Ranch. Same-day onsite across the 10-mile radius is the default, not a premium.",
+      "Our office is inside 34207 — not a 'we also service Bradenton' satellite run from Tampa or Lakewood Ranch. Onsite work across the 10-mile radius is what we do every day, not an extra-fee premium.",
       "We've restored three clients post-hurricane in the past five years, every one of them inside this radius. The playbooks are tested. The backups really get tested quarterly.",
       "Every one of our Bradenton clients has a named tech who knows the office by name, the equipment by serial, and the two staff members who always call first.",
     ],
     faqs: [
       {
-        q: "I'm in 34207 — how fast can you be here?",
-        a: "For anything urgent inside 34207, 34209, 34205, 34208, or 34203, we target under 60 minutes on-site during business hours. Anna Maria Island (34216 / 34217) adds about 20 minutes for the bridge. Palmetto / Ellenton (34221 / 34222) adds about 15. Routine, non-urgent visits are booked within one business day."
+        q: "I'm in 34207 — do you cover my address?",
+        a: "Yes — we're inside 34207, so the inner ZIPs (34209, 34205, 34208, 34203) are part of our daily run. Anna Maria Island (34216 / 34217) and Palmetto / Ellenton (34221 / 34222) are also in our regular service area. We schedule on-site visits as quickly as our calendar allows and we'll be straight with you about timing — no fake response-window promises."
       },
       {
         q: "What ZIP codes are inside your 10-mile Bradenton radius?",

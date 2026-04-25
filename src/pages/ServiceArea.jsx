@@ -1,17 +1,16 @@
 import { Link } from "react-router-dom";
-import { MapPin, Clock, Phone, ArrowRight } from "lucide-react";
+import { MapPin, Phone, ArrowRight } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 
 // Coverage cards. Coords are relative (0-100) inside the SVG viewBox so
 // nudging the map art later doesn't require recomputing pin positions.
-// Response + distance pulled from the individual /city-it-support pages.
+// Drive-time + SLA fields were retired — we don't promise response
+// windows or trip times publicly anymore.
 const COVERAGE = [
   {
     slug: "bradenton-it-support",
     name: "Bradenton",
     tag: "Our home base",
-    response: "Same-day onsite · 15 min remote",
-    distance: "HQ",
     x: 46,
     y: 18,
   },
@@ -19,8 +18,6 @@ const COVERAGE = [
     slug: "lakewood-ranch-it-support",
     name: "Lakewood Ranch",
     tag: "UTC, Main Street, Center Point",
-    response: "Same business day onsite",
-    distance: "~20 min from HQ",
     x: 82,
     y: 26,
   },
@@ -28,8 +25,6 @@ const COVERAGE = [
     slug: "sarasota-it-support",
     name: "Sarasota",
     tag: "Downtown, St. Armands, Fruitville",
-    response: "Same-day onsite · 15 min remote",
-    distance: "~25 min from HQ",
     x: 40,
     y: 48,
   },
@@ -37,8 +32,6 @@ const COVERAGE = [
     slug: "nokomis-it-support",
     name: "Nokomis",
     tag: "Casey Key, US-41, Laurel",
-    response: "Same-day for urgent",
-    distance: "~40 min from HQ",
     x: 52,
     y: 72,
   },
@@ -46,8 +39,6 @@ const COVERAGE = [
     slug: "venice-it-support",
     name: "Venice",
     tag: "Venice Ave, Jacaranda, Airport",
-    response: "Same-day onsite · 30 min drive",
-    distance: "~45 min from HQ",
     x: 48,
     y: 86,
   },
@@ -125,7 +116,7 @@ function CoverageMap() {
 export default function ServiceArea() {
   useSEO({
     title: "Service Area | IT Support for Sarasota, Bradenton, Venice, Lakewood Ranch, and Nokomis",
-    description: "Simple IT SRQ covers all of Sarasota County and Manatee County — Bradenton, Sarasota, Lakewood Ranch, Venice, and Nokomis. Same-day onsite response, 15-minute remote, flat monthly pricing.",
+    description: "Simple IT SRQ covers all of Sarasota County and Manatee County — Bradenton, Sarasota, Lakewood Ranch, Venice, and Nokomis. Local IT support, computer repair, security cameras, and enterprise IT for businesses and homes. Flat monthly pricing for businesses.",
     canonical: `${SITE_URL}/service-area`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [
@@ -139,16 +130,14 @@ export default function ServiceArea() {
       <section className="section service-area-hero">
         <div className="container">
           <span className="eyebrow">Where We Work</span>
-          <h1 className="display">Serving Southwest Florida's professional offices.</h1>
+          <h1 className="display">Serving Southwest Florida — businesses and homes.</h1>
           <p className="lede">
             From Bradenton through Lakewood Ranch, down to Sarasota and
-            south to Venice and Nokomis — local techs in every market.
-            Same-day onsite response is table stakes, not a premium
-            upgrade.
+            south to Venice and Nokomis. Local techs across the region —
+            for offices, retail, residential, and snowbird condos alike.
           </p>
           <div className="service-area-meta">
             <span><MapPin size={14} /> 5 covered markets</span>
-            <span><Clock size={14} /> 15-minute remote response</span>
             <span><Phone size={14} /> <a href="tel:+14072421456">(407) 242-1456</a></span>
           </div>
         </div>
@@ -174,10 +163,8 @@ export default function ServiceArea() {
                 <div className="service-area-card-head">
                   <MapPin size={18} />
                   <h3 className="service-area-card-name">{c.name}</h3>
-                  <span className="service-area-card-distance">{c.distance}</span>
                 </div>
                 <p className="service-area-card-tag">{c.tag}</p>
-                <p className="service-area-card-response"><Clock size={12} /> {c.response}</p>
                 <span className="service-area-card-cta">
                   IT support in {c.name} <ArrowRight size={14} />
                 </span>

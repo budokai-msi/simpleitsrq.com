@@ -2,7 +2,8 @@
   Headphones, Server, ShieldCheck, Lock, Cloud, FileCheck,
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
   Phone, Mail, MapPin, Clock, Star, Check, ArrowRight, Wifi, Briefcase,
-  Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key, Wrench
+  Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key, Wrench,
+  Camera, Network, RefreshCw, Users
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -25,24 +26,21 @@ function Hero() {
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
           <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display">IT support that just works — for Sarasota and Bradenton businesses.</h1>
+          <h1 id="hero-title" className="display">Local IT support for Sarasota and Bradenton — businesses and homes.</h1>
           <p className="lede">
-            We keep your computers running, your data safe, and your team productive.
-            A local crew that picks up the phone, flat monthly pricing, and all the
-            paperwork your insurance company and auditors ask for.
+            Helpdesk, computer repair, security cameras, and enterprise IT — under one
+            roof. We keep your computers running, your data safe, and your team
+            productive. A local crew that picks up the phone, flat monthly pricing,
+            and all the paperwork your insurance company and auditors ask for.
           </p>
           <div className="hero-ctas">
             <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Check-Up</a>
             <a href="#solutions" className="btn btn-secondary btn-lg">See What We Do</a>
           </div>
-          {/* Trust row — only verifiable claims. HIPAA paperwork is real
-              (we ship it as part of every onboarding). "Local team" and
-              "Sarasota-based" are facts. The Google-reviews line was
-              removed until we have public reviews to link. */}
           <ul className="trust-row" aria-label="Why clients trust us">
+            <li><MapPin size={14} strokeWidth={2.25} /> Local Sarasota and Bradenton team</li>
+            <li><HomeIcon size={14} strokeWidth={2.25} /> Businesses and residential — both</li>
             <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included on every onboarding</li>
-            <li><Clock size={14} strokeWidth={2.25} /> Sarasota-based · same-day reply during business hours</li>
-            <li><MapPin size={14} strokeWidth={2.25} /> On-site for clients within 25 mi of 34207</li>
           </ul>
         </div>
       </div>
@@ -193,38 +191,58 @@ function LogosBar() {
 const SOLUTIONS = [
   {
     Icon: Headphones,
-    title: "Everyday IT Support",
-    desc: "One flat monthly price covers unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and we triage critical issues first."
+    title: "Helpdesk and Everyday IT Support",
+    desc: "Unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and we triage critical issues first."
+  },
+  {
+    Icon: Wrench,
+    title: "Computer Repair (Business and Residential)",
+    desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade that's been sitting on the desk for a year. We work on home machines too — no contract, no minimum, just an honest diagnosis and a quote."
+  },
+  {
+    Icon: Camera,
+    title: "Security Camera Installation",
+    desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording. We pick the gear, run the cable, mount it, and show you how to use it."
+  },
+  {
+    Icon: Network,
+    title: "Enterprise Domain Environments",
+    desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one. New domain build-outs and rescues of the one you inherited."
+  },
+  {
+    Icon: RefreshCw,
+    title: "Migrations and Upgrades",
+    desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, file-share moves, Windows 11 rollouts, and hardware refreshes. We plan the cutover, do the work over a weekend, and stay on-site the morning after."
   },
   {
     Icon: Lock,
     title: "Cybersecurity and Virus Protection",
-    desc: "Modern antivirus, email scam filtering, safer web browsing, and 24/7 monitoring that catches attacks while you sleep. We turn on two-step sign-in for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
+    desc: "Modern antivirus, email scam filtering, safer web browsing, and 24/7 monitoring. We turn on two-step sign-in for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
   },
   {
     Icon: Cloud,
     title: "Microsoft 365, Email and Cloud Apps",
-    desc: "We set up (or clean up) your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone. Moving from another provider? We handle the switch over a weekend so nobody loses a message."
+    desc: "We set up (or clean up) your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone."
   },
   {
     Icon: Server,
     title: "Backups and Disaster Recovery",
-    desc: "Automatic backups of every computer and server, with a second copy stored off-site so a fire, a hurricane, or a ransomware attack can't wipe you out. We test the backups every quarter and keep a simple plan for getting you back up and running in hours, not days."
-  },
-  {
-    Icon: FileCheck,
-    title: "HIPAA and Cyber-Insurance Paperwork",
-    desc: "Made for medical and dental practices, law firms, and any business renewing their cyber-insurance policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor or an insurance agent the same day."
+    desc: "Automatic backups of every computer and server, with a second copy stored off-site so a fire, a hurricane, or a ransomware attack can't wipe you out. We test the backups every quarter."
   },
   {
     Icon: Phone,
     title: "Business Phone Systems",
-    desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email. We move your existing numbers, set up after-hours routing, and train your front desk so switching over is quiet."
+    desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email. We move your existing numbers and set up after-hours routing."
   },
   {
     Icon: Wifi,
     title: "Networking, Wi-Fi, and Cabling",
-    desc: "Business-grade firewalls and Wi-Fi that actually reach every corner of your office. We run new network cables, label every jack, and guest-separate the Wi-Fi so your customers and staff are never on the same network."
+    desc: "Business-grade firewalls and Wi-Fi that actually reach every corner of your office or home. We run new network cables, label every jack, and guest-separate the Wi-Fi."
+  },
+  {
+    Icon: FileCheck,
+    title: "HIPAA and Cyber-Insurance Paperwork",
+    desc: "Made for medical and dental practices, law firms, and any business renewing their cyber-insurance policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor."
   },
   {
     Icon: Briefcase,
@@ -241,8 +259,8 @@ function Solutions() {
       <div className="container" ref={ref}>
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">What We Do</span>
-          <h2 id="solutions-title" className="title-1">Everything your business needs from an IT company</h2>
-          <p className="section-sub">One local team for your computers, phones, email, Wi-Fi, backups, and security — so you don't have to call five different vendors when something breaks.</p>
+          <h2 id="solutions-title" className="title-1">Everything you'd hire a local IT shop for — under one roof</h2>
+          <p className="section-sub">Helpdesk, computer repair, security cameras, networking, enterprise domains, migrations and upgrades. For Sarasota and Bradenton businesses and homes — so you don't have to call five different people when something breaks.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
@@ -269,6 +287,7 @@ const INDUSTRIES = [
   { Icon: Landmark, name: "Finance", badges: ["GLBA", "PCI-DSS"] },
   { Icon: HardHat, name: "Construction", badges: ["OSHA", "CMMC"] },
   { Icon: HomeIcon, name: "Real Estate", badges: ["NAR", "SOC 2"] },
+  { Icon: Users, name: "Residential", badges: ["Home offices", "Snowbird condos"] },
 ];
 
 function Industries() {
@@ -279,8 +298,8 @@ function Industries() {
       <div className="container" ref={ref}>
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Who We Work With</span>
-          <h2 id="industries-title" className="title-1">Businesses we know how to support</h2>
-          <p className="section-sub">We specialize in the industries that have to deal with the most paperwork — medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton.</p>
+          <h2 id="industries-title" className="title-1">Who we know how to support</h2>
+          <p className="section-sub">Medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton — plus residential clients, home offices, and snowbird condos that need a local tech who'll just show up.</p>
         </div>
         <div className="industries-grid">
           {INDUSTRIES.map(({ Icon, name, badges }, i) => (
@@ -448,14 +467,13 @@ function BlogPreview() {
 function StatsBar() {
   const ref = useRef(null);
   useRevealChildren(ref);
-  // Honest stats only. "Same-day reply" is a service standard, not an
-  // SLA. "24/7 monitoring" is true (we run automated agent checks every
-  // 15 min). "100% Florida-based" is geographic fact. Removed the
-  // unsourced "99.99% uptime" and "<15 min response" puffery.
+  // Honest stats only. "100% Florida-based" is geographic fact. "24/7
+  // monitoring" is true (we run automated agent checks every 15 min).
+  // No SLA puffery — response-time claims have been retired.
   const stats = [
-    { v: "Same day", l: "Reply during business hours" },
+    { v: "Local", l: "Sarasota and Bradenton based" },
+    { v: "B2B + Home", l: "Businesses and residential" },
     { v: "24/7", l: "Automated monitoring" },
-    { v: "100%", l: "Florida-based team" },
     { v: "Flat", l: "Monthly pricing — no surprises" },
   ];
   return (
@@ -579,7 +597,7 @@ function Contact() {
         <div className="section-head">
           <span className="eyebrow">Contact</span>
           <h2 id="contact-title" className="title-1">Tell us what's going on</h2>
-          <p className="section-sub">Drop us a note and a real person will get back to you within one business hour.</p>
+          <p className="section-sub">Drop us a note and a real person will get back to you during business hours.</p>
         </div>
         <div className="contact-grid">
           <div className="form-shell">
@@ -678,7 +696,7 @@ function Contact() {
               </button>
 
               <p className="form-note">
-                We'll reply within one business hour. No spam, ever.
+                We'll reply during business hours. No spam, ever.
               </p>
 
               {status === "error" && (
@@ -696,7 +714,7 @@ function Contact() {
                     <CheckCircle2 size={56} />
                   </div>
                   <h3>Message sent</h3>
-                  <p>Thanks for reaching out — a real human at Simple IT SRQ will reply within one business hour.</p>
+                  <p>Thanks for reaching out — a real human at Simple IT SRQ will reply during business hours.</p>
                   <button type="button" className="btn btn-secondary" onClick={reset}>
                     Send another
                   </button>
@@ -718,8 +736,8 @@ function Contact() {
 
 export default function Home() {
   useSEO({
-    title: "Simple IT SRQ | IT Support for Sarasota and Bradenton Businesses",
-    description: "Local IT support, cybersecurity, and cloud services for small businesses in Sarasota, Bradenton, and Venice. Flat monthly pricing, same-day response, HIPAA and cyber-insurance paperwork included. Email hello@simpleitsrq.com.",
+    title: "Simple IT SRQ | Local IT Support, Computer Repair, and Security Cameras — Sarasota and Bradenton",
+    description: "Local IT support, helpdesk, computer repair, security cameras, and enterprise IT (Active Directory, migrations, upgrades) for businesses and homes in Sarasota, Bradenton, and Venice. Flat monthly pricing for businesses, no-contract repair for residential. Email hello@simpleitsrq.com.",
     canonical: "https://simpleitsrq.com/",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [{ name: "Home", url: "https://simpleitsrq.com/" }],
