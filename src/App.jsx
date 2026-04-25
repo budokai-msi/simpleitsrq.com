@@ -145,10 +145,13 @@ function Navbar() {
         <nav className="nav-links" aria-label="Primary">
           <Link to="/blog">Blog</Link>
           <Link to="/glossary">Glossary</Link>
-          <Link to="/tools">Recommended Tools</Link>
+          {/* Free Scan replaces Support in primary nav — Support is still in
+              footer + mobile menu + the Book CTA. /exposure-scan is the
+              top-of-funnel lead magnet so it gets the headline slot. */}
+          <Link to="/exposure-scan">Free Scan</Link>
           <Link to="/store">Templates &amp; Playbooks</Link>
           <Link to="/stack">Vendor Stack</Link>
-          <Link to="/support">Support</Link>
+          <Link to="/tools">Recommended Tools</Link>
         </nav>
         <div className="nav-actions">
           <ThemeToggle />

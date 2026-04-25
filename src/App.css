@@ -1,4 +1,12 @@
 ﻿/* ============ Layout ============ */
+/* Reserve viewport height on every <main> so route transitions don't
+ * collapse the page between Suspense unmount + new chunk render. The
+ * exact height (calc(100vh - navbar - footer-area)) keeps footer from
+ * jumping into view during the brief blank frame on slow networks. */
+main, #main {
+  display: block;
+  min-height: calc(100vh - 240px);
+}
 .container {
   width: 100%;
   max-width: 1200px;

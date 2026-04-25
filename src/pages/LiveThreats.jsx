@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
-  Shield, ShieldAlert, Activity, Zap, Globe2, ArrowRight, Search, Clock, Skull,
+  Shield, ShieldAlert, Activity, Zap, Globe2, ArrowRight, Search, Clock, Skull, Loader2,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import AdUnit from "../components/AdSense";
@@ -25,6 +25,9 @@ function ago(iso) {
 export default function LiveThreats() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Ref so the unmount cleanup can abort an in-flight fetch instead of
+  // letting it land on a stale component (and React-warn on setState).
+  const abortRef = useRef(null);
 
   useSEO({
     title: "Live Threat Wall — Real-time attacks blocked by Simple IT SRQ",
@@ -39,10 +42,18 @@ export default function LiveThreats() {
   });
 
   const load = useCallback(async () => {
+    // Abort any in-flight request before starting the next poll — keeps
+    // a slow earlier response from clobbering a fresher one.
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     try {
-      const res = await fetch("/api/contact?action=threats");
+      const res = await fetch("/api/contact?action=threats", { signal: ctrl.signal });
       if (res.ok) setData(await res.json());
-    } catch { /* best effort */ }
+    } catch (err) {
+      if (err?.name === "AbortError") return; // expected on unmount/refresh
+      // best effort — silent on other errors
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -51,7 +62,11 @@ export default function LiveThreats() {
     const id = setInterval(load, 15_000);
     const onFocus = () => { if (document.visibilityState === "visible") load(); };
     document.addEventListener("visibilitychange", onFocus);
-    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onFocus); };
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onFocus);
+      abortRef.current?.abort();
+    };
   }, [load]);
 
   const items = data?.items || [];
@@ -82,9 +97,10 @@ export default function LiveThreats() {
               Attacks we blocked for simpleitsrq.com — live
             </h1>
             <p className="lede">
-              Every row below is a real attack our auto-defense caught in the
-              last 48 hours. We built the same engine into the Security panel of
-              every client portal we run. Updates every 15 seconds.
+              Every row below is a real attack our middleware caught in the last
+              48 hours. The same engine powers the Security panel inside our own
+              admin portal — and it's the same defense layer we'd deploy on a
+              client site. Updates every 15 seconds.
             </p>
           </div>
 
@@ -128,8 +144,12 @@ export default function LiveThreats() {
           </h2>
 
           {loading && items.length === 0 && (
-            <div style={{ padding: 40, textAlign: "center", color: "var(--syn-text-muted, #6b7280)" }}>
-              Loading live feed…
+            <div style={{
+              padding: 40, textAlign: "center", color: "var(--syn-text-muted, #6b7280)",
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+            }}>
+              <Loader2 size={22} className="spin" aria-hidden="true" />
+              <span>Loading live feed…</span>
             </div>
           )}
 

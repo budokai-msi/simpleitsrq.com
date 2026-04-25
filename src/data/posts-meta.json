@@ -1,5 +1,22 @@
 [
   {
+    "slug": "free-exposure-scan-launched-2026",
+    "title": "We Just Launched a Free Exposure Scan — Here's What Your Domain Looks Like to an Attacker",
+    "date": "2026-04-24",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "dns",
+      "email-security",
+      "smb",
+      "sarasota",
+      "bradenton"
+    ],
+    "excerpt": "Yesterday we shipped /exposure-scan — a free, no-signup-required passive scan that grades your domain's DNS hygiene the same way a ransomware operator would size you up before deciding whether to bother. Here's what it checks and why every Florida business owner should run it once.",
+    "metaDescription": "Simple IT SRQ now offers a free passive-OSINT scan for any Florida small business. Plain-English grade on your DNS, SPF, DMARC, DKIM, and exposed subdomains in 10 seconds. No signup.",
+    "heroAlt": "A computer screen showing an A-through-F report card grading a small business domain on email authentication, DNS records, and exposed subdomains."
+  },
+  {
     "slug": "windows-11-printer-fix-sarasota",
     "title": "Windows 11 Update Just Broke Your Printers (Heres the Fix)",
     "date": "2026-04-24",
