@@ -29,7 +29,7 @@ export default function IndustriesHub() {
     description:
       "Industry-specific IT support for Florida small businesses: medical & dental practices, law firms, financial advisors, marine services, construction firms, and vacation rental management. HIPAA, GLBA, Florida-Bar-aligned. Pick your vertical and city.",
     canonical: `${SITE_URL}/industries`,
-    image: `${SITE_URL}/og-image.png`,
+    image: `${SITE_URL}/og-industries.png`,
     breadcrumbs: [
       { name: "Home",         url: `${SITE_URL}/` },
       { name: "Service Area", url: `${SITE_URL}/service-area` },
