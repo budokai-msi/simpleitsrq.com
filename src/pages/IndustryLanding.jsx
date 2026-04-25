@@ -155,7 +155,10 @@ export default function IndustryLanding() {
           title,
           description,
           canonical: `${SITE_URL}${url}`,
-          image: `${SITE_URL}/og-image.png`,
+          // Per-(industry, city) Open Graph card rendered by
+          // scripts/generate-industry-og-images.mjs at prebuild time.
+          // Card filename mirrors the URL slug pattern.
+          image: `${SITE_URL}/og-industry-${resolved.industry.slug}-${resolved.cityKey}.png`,
           // 4-deep crumb: Home → Service Area → City → Industry vertical.
           // Tells Google the entity-relationship between the city hub and
           // the vertical page so they don't compete for the same query.
