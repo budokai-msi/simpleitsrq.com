@@ -202,7 +202,9 @@ export default function ProductDetail() {
   const [previewLoading, setPreviewLoading] = useState(false);
 
   // Schema.org Product markup — ships rich-result eligibility to Google.
-  // Using offers with price + priceCurrency is the minimum for product-snippet.
+  // Using offers with price + priceCurrency is the minimum for product-snippet;
+  // the per-product OG card doubles as the schema image so the rich snippet
+  // gets a real preview rather than the generic site logo.
   const productJsonLd = useMemo(() => {
     if (!product) return null;
     const offer = product.buyLink
@@ -225,6 +227,7 @@ export default function ProductDetail() {
       name: product.title,
       description: product.description,
       url: `${SITE_URL}/store/${product.slug}`,
+      image: `${SITE_URL}/og-product-${product.slug}.png`,
       brand: { "@type": "Brand", name: "Simple IT SRQ" },
       offers: offer,
     };
@@ -234,7 +237,7 @@ export default function ProductDetail() {
     title: `${product.title} | Simple IT SRQ Store`,
     description: product.description.slice(0, 160),
     canonical: `${SITE_URL}/store/${product.slug}`,
-    image: `${SITE_URL}/og-image.png`,
+    image: `${SITE_URL}/og-product-${product.slug}.png`,
     breadcrumbs: [
       { name: "Home", url: `${SITE_URL}/` },
       { name: "Store", url: `${SITE_URL}/store` },
