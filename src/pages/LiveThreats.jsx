@@ -25,20 +25,21 @@ function ago(iso) {
 export default function LiveThreats() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
   // Ref so the unmount cleanup can abort an in-flight fetch instead of
   // letting it land on a stale component (and React-warn on setState).
   const abortRef = useRef(null);
 
   useSEO({
-    title: "Live Threat Wall — Real-time attacks blocked by Simple IT SRQ",
-    description:
-      "See live attacks being blocked right now. Scanner probes, CVE exploit attempts, credential stuffing — every hit from the last 48 hours that our auto-defense caught. Updates every 15 seconds.",
+    // Admin-only — short, generic title + noindex via robots meta keeps
+    // search engines from indexing the page (Suspense fallback they see
+    // would just be empty anyway). The earlier descriptive title that
+    // claimed live-attack visibility was a public-OPSEC leak; we no
+    // longer want crawlers cataloging this URL.
+    title: "Live Threats (admin) | Simple IT SRQ",
+    description: "Admin-only: real-time threat-block telemetry for simpleitsrq.com.",
     canonical: `${SITE_URL}/live-threats`,
-    image: `${SITE_URL}/og-image.png`,
-    breadcrumbs: [
-      { name: "Home", url: `${SITE_URL}/` },
-      { name: "Live Threats", url: `${SITE_URL}/live-threats` },
-    ],
+    robots: "noindex, nofollow",
   });
 
   const load = useCallback(async () => {
@@ -49,6 +50,7 @@ export default function LiveThreats() {
     abortRef.current = ctrl;
     try {
       const res = await fetch("/api/contact?action=threats", { signal: ctrl.signal });
+      if (res.status === 403) { setForbidden(true); return; }
       if (res.ok) setData(await res.json());
     } catch (err) {
       if (err?.name === "AbortError") return; // expected on unmount/refresh
@@ -80,6 +82,29 @@ export default function LiveThreats() {
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
   }, [items]);
+
+  // Non-admin visitors get redirected to the public lead magnet rather
+  // than a confusing "you can't see this" wall. The page exists for
+  // admin diagnostics, not as a public surface.
+  if (forbidden) {
+    return (
+      <main id="main">
+        <section className="section">
+          <div className="container" style={{ maxWidth: 720, textAlign: "center" }}>
+            <h1 className="title-1">This is an admin tool</h1>
+            <p className="lede" style={{ marginBottom: 24 }}>
+              The live threat wall is only visible inside the admin portal.
+              If you're a visitor, you might be looking for our free
+              passive scan that grades your domain's exposure in 10 seconds.
+            </p>
+            <Link to="/exposure-scan" className="btn btn-primary btn-lg" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Search size={16} /> Run a free exposure scan
+            </Link>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main id="main">

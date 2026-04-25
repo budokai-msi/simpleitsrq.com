@@ -40,7 +40,8 @@ const staticUrls = [
   { loc: "/glossary", priority: "0.85", changefreq: "monthly" },
   { loc: "/industries", priority: "0.85", changefreq: "monthly" },
   { loc: "/exposure-scan", priority: "0.9", changefreq: "monthly" },
-  { loc: "/live-threats",  priority: "0.85", changefreq: "hourly"  },
+  // /live-threats deliberately omitted — admin-only page; the route
+  // emits noindex + non-admin visitors get redirected to /exposure-scan.
   { loc: "/advertise", priority: "0.7", changefreq: "monthly" },
   { loc: "/support", priority: "0.6", changefreq: "monthly" },
   { loc: "/privacy", priority: "0.3", changefreq: "yearly" },

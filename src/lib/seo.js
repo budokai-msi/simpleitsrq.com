@@ -171,6 +171,10 @@ export function useSEO({
   title, description, canonical, image,
   post, breadcrumbs, products,
   organization, localBusiness, faqs,
+  // Per-page robots override. Defaults to "index, follow" (set in
+  // index.html). Pass "noindex, nofollow" for admin-only pages so
+  // search engines don't catalog the URL even though it's public-route.
+  robots,
 }) {
   useEffect(() => {
     if (title) document.title = title;
@@ -186,6 +190,13 @@ export function useSEO({
     if (canonical) {
       setCanonical(canonical);
       setMetaTag("og:url", canonical, "property");
+    }
+    if (robots) {
+      setMetaTag("robots", robots);
+    } else {
+      // Restore the page-default — prevents an admin page's "noindex"
+      // from sticking on a subsequent SPA navigation to a public page.
+      setMetaTag("robots", "index, follow");
     }
     if (image) {
       setMetaTag("og:image", image, "property");

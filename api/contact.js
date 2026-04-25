@@ -26,8 +26,26 @@ import { clientIp, rateLimit } from "./_lib/security.js";
 import { sql } from "./_lib/db.js";
 import { validateEnv } from "./_lib/env.js";
 import { requireCsrf } from "./_lib/csrf.js";
+import { getSession } from "./_lib/session.js";
 import { runExposureScan } from "./_lib/exposure.js";
 import { identifyScanner } from "./_lib/scanner-fingerprints.js";
+
+// Inline admin check — gates OPSEC-sensitive surfaces (the threats feed)
+// without pulling the larger portal.js admin helper. Mirrors the email +
+// users.is_admin pattern used in api/portal.js#resolveAdmin.
+async function isAdminRequest(request) {
+  try {
+    const session = await getSession(request);
+    if (!session?.user?.email) return false;
+    const adminEmail = process.env.ADMIN_EMAIL || "";
+    if (!adminEmail) return false;
+    if (session.user.email.toLowerCase() !== adminEmail.toLowerCase()) return false;
+    const rows = await sql`SELECT is_admin FROM users WHERE id = ${session.user.id} LIMIT 1`;
+    return rows.length > 0 && rows[0].is_admin === true;
+  } catch {
+    return false;
+  }
+}
 
 /** Collapse an IPv4 to its /24 for public display — preserves "who" at
  *  network level without ever leaking the exact host. IPv6 gets its
@@ -386,12 +404,16 @@ export async function GET(request) {
   const testimonials = url.searchParams.get("testimonials");
   const action = url.searchParams.get("action");
 
-  // Public Threat Wall feed — last 48h of auto-blocked attacks, anonymized
-  // to /24 so we can't accidentally doxx a misclassified legit visitor.
-  // Safe to expose: only rows already marked as threats (scanner,
-  // exploit_attempt, hostile_geo, osint_match), never raw visits. No user
-  // agent strings leak — we only show the fingerprinted tool name.
+  // Threat Wall feed — admin-only. Returns 403 to anonymous callers so
+  // the per-attack timeline isn't part of our public attack surface.
+  // The /live-threats page checks this and redirects non-admins. The
+  // homepage live-defense strip used to read this endpoint too — it
+  // now uses ?action=protection-status (anonymous, summary-only) so
+  // visitors get a trust signal without seeing per-attack rows.
   if (action === "threats") {
+    if (!(await isAdminRequest(request))) {
+      return json(403, { ok: false, error: "admin_only" });
+    }
     try {
       const rows = await sql`
         SELECT ip, country, city, path, user_agent, threat_class, ts
@@ -441,12 +463,31 @@ export async function GET(request) {
         status: 200,
         headers: {
           "Content-Type": "application/json",
-          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120",
+          // Admin-only data — never cache at edge.
+          "Cache-Control": "private, no-store",
         },
       });
     } catch {
       return json(200, { items: [], stats: {} });
     }
+  }
+
+  // Public protection-status — only ever returns abstract trust copy.
+  // No live counts, no per-attack rows. Used by the homepage strip so
+  // visitors see "this site is actively protected" without the actual
+  // numbers becoming public OPSEC intelligence.
+  if (action === "protection-status") {
+    return new Response(JSON.stringify({
+      ok: true,
+      protectionActive: true,
+      headline: "Active 24/7 — automated CVE auto-block, OSINT threat-feed enrichment, honeypot trapping, and rate-limit defense.",
+    }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
   }
 
   if (testimonials) {
