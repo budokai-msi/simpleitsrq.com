@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-posts-meta.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-rss.mjs && node scripts/generate-og-images.mjs",
+    "prebuild": "node scripts/generate-posts-meta.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-rss.mjs && node scripts/generate-og-images.mjs && node scripts/generate-city-og-images.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
