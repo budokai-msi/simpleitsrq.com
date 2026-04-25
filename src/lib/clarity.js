@@ -7,27 +7,33 @@
 // "form submitted" is mostly UX friction, and you can't fix it without
 // seeing it.
 //
-// Privacy posture:
-//   • Script never loads until the visitor grants analytics consent
-//     (same gate as GA4). This is stricter than Clarity's own consent
-//     banner — we hard-block the network call rather than relying on
-//     Clarity to anonymize.
-//   • Clarity's masking defaults are aggressive: input values, password
-//     fields, and elements with [data-clarity-mask] are redacted before
-//     being sent. We additionally call clarity('consent') so Clarity
-//     treats the session as fully consented (no extra prompt).
-//   • If consent is later withdrawn, we call clarity('stop') so the
-//     remaining session is not uploaded.
+// Privacy posture (matches Microsoft's Consent Mode v2 contract):
+//   • Clarity Consent Mode is enabled in the project Settings → Setup
+//     panel so cookies are NOT set until consentv2 is called.
+//   • Script never loads until the visitor grants analytics consent —
+//     stricter than Microsoft's own "load + cookieless mode" default.
+//     Hard-blocks the network call for non-consenters instead of
+//     trusting Clarity to anonymize.
+//   • Once script loads, we call clarity('consentv2', { ad_Storage,
+//     analytics_Storage }) with our two-bucket consent state mapped:
+//        analytics → analytics_Storage
+//        marketing → ad_Storage
+//     This is the modern API per
+//     https://learn.microsoft.com/clarity/setup-and-installation/clarity-consent-api-v2
+//   • If consent is later withdrawn, we call clarity('consent', false)
+//     which deletes the Clarity cookies and stops session capture per
+//     the Microsoft "Erase cookies" snippet.
 //
 // VITE_CLARITY_PROJECT_ID is the 10-char project key from
 // clarity.microsoft.com → Settings → Setup. Empty / unset = no-op.
 
 import { useEffect } from "react";
-import { CONSENT_EVENT, hasAnalyticsConsent } from "./consent.js";
+import { CONSENT_EVENT, hasAnalyticsConsent, readConsent } from "./consent.js";
 
 const CLARITY_ID = import.meta.env.VITE_CLARITY_PROJECT_ID || "";
 
 let injected = false;
+let lastConsentSignal = null; // tracks the last { a, ad } we sent — so we don't re-emit unchanged
 
 function clarityCall(...args) {
   try {
@@ -37,6 +43,29 @@ function clarityCall(...args) {
   } catch {
     // Swallow — analytics must never break render.
   }
+}
+
+// Map our two-bucket consent state (analytics + marketing) into the
+// Clarity Consent v2 shape. Microsoft uses TitleCase ad_Storage /
+// analytics_Storage with "granted" / "denied" string values.
+function consentSignalFromState() {
+  const c = readConsent();
+  const analytics = !!(c && c.categories && c.categories.analytics);
+  const marketing = !!(c && c.categories && c.categories.marketing);
+  return {
+    ad_Storage:        marketing ? "granted" : "denied",
+    analytics_Storage: analytics ? "granted" : "denied",
+  };
+}
+
+function syncClarityConsent() {
+  const signal = consentSignalFromState();
+  const fingerprint = `${signal.ad_Storage}|${signal.analytics_Storage}`;
+  if (fingerprint === lastConsentSignal) return;
+  lastConsentSignal = fingerprint;
+  // consentv2 is the modern API; degrades gracefully in older Clarity
+  // builds (they fall back to the v1 shape internally).
+  clarityCall("consentv2", signal);
 }
 
 function injectClarity() {
@@ -56,13 +85,14 @@ function injectClarity() {
     y.parentNode.insertBefore(t, y);
   })(window, document, "clarity", "script", CLARITY_ID);
 
-  // Tell Clarity the visitor has consented — suppresses Clarity's own
-  // banner and unlocks full session capture (vs. cookieless mode).
-  clarityCall("consent");
+  // Send the initial consentv2 signal as soon as the loader queue
+  // exists. Clarity buffers calls until the real script attaches.
+  syncClarityConsent();
 }
 
 /** React hook — load Clarity once analytics consent is granted, and
- *  stop it if consent is later withdrawn. Mount once at the app root. */
+ *  push the modern consentv2 signal on every consent state change.
+ *  Mount once at the app root. */
 export function useClarity() {
   useEffect(() => {
     if (!CLARITY_ID) return; // No project ID = feature disabled.
@@ -70,9 +100,16 @@ export function useClarity() {
     const apply = () => {
       if (hasAnalyticsConsent()) {
         injectClarity();
+        // If injection already ran in a previous tick, still push the
+        // updated signal in case the visitor toggled marketing on/off.
+        syncClarityConsent();
       } else if (injected) {
-        // Visitor revoked consent mid-session — stop the recorder.
-        clarityCall("stop");
+        // Visitor revoked consent mid-session — push denied flags and
+        // erase Clarity's cookies per the docs' Erase Cookies snippet.
+        // syncClarityConsent() pushes denied first; then false clears
+        // any persisted IDs.
+        syncClarityConsent();
+        clarityCall("consent", false);
       }
     };
 
