@@ -135,17 +135,27 @@ function BuyCta({ product }) {
   const joinWaitlist = async (e) => {
     e.preventDefault();
     if (!email) return;
+    const source = `product-detail-waitlist-${product.slug}`;
     try {
-      await csrfFetch("/api/contact", {
+      const r = await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
           name: "(product waitlist)",
           message: `Waitlist signup for: ${product.title} ($${product.price}${product.priceSuffix || ""})`,
-          source: `product-detail-waitlist-${product.slug}`,
+          source,
         }),
-      }).catch(() => {});
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.ok) {
+        track.lead(source, typeof product.price === "number" ? product.price : undefined, {
+          product_slug: product.slug,
+          product_title: product.title,
+        });
+      }
+      // UX intentionally shows success regardless — waitlist is low-stakes
+      // and we'd rather not surface an error inline on a buy button.
       setSent(true);
     } catch { setSent(true); }
   };

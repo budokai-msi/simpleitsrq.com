@@ -15,6 +15,7 @@ import RecommendedTools from "../components/RecommendedTools";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { csrfFetch } from "../lib/csrf";
+import { track } from "../lib/analytics";
 
 function Hero() {
   return (
@@ -470,6 +471,9 @@ function Contact() {
 
       if (r.ok && data.ok) {
         successHaptic();
+        // Estimated lead value for an inbound IT consultation request —
+        // conservative; tune in GA4 if attribution shows a different number.
+        track.lead("home-contact", 250, { has_phone: !!form.phone, has_company: !!form.company });
         setStatus("success");
         return;
       }
