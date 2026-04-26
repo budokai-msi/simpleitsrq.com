@@ -35,6 +35,7 @@ const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ defa
 const Tools = lazy(() => import("./pages/Tools"));
 const Store = lazy(() => import("./pages/Store"));
 const Services = lazy(() => import("./pages/Services"));
+const WispStarter = lazy(() => import("./pages/WispStarter"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
@@ -453,6 +454,7 @@ export default function App() {
               <Route path="/tools" element={<Tools />} />
               <Route path="/store" element={<Store />} />
               <Route path="/services" element={<Services />} />
+              <Route path="/wisp-starter" element={<WispStarter />} />
               <Route path="/store/:slug" element={<ProductDetail />} />
               <Route path="/security-academy" element={<SecurityAcademy />} />
               <Route path="/cyber-insurance-quote" element={<CyberInsuranceQuote />} />
