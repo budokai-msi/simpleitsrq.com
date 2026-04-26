@@ -11,7 +11,7 @@
 // typo doesn't break the page. The primary outbound link carries the
 // affiliate tag (when configured); a secondary "details →" link goes to
 // /stack#<id> for the full rationale.
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ExternalLink } from "lucide-react";
 import { STACK, resolveStackLink } from "../data/stack";
 import { trackAffiliateClick } from "../lib/trackClick";

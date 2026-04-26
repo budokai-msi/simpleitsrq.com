@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ArrowLeft, Search, BookOpen, Shield, MapPin, Calendar, FileText, Calculator } from "lucide-react";
 import { useSEO } from "../lib/seo";
 

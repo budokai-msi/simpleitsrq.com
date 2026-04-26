@@ -236,6 +236,58 @@ svg { stroke-width: 1.75; }
 }
 
 /* ============================================================
+   View Transitions — native page-swap morphing
+   Triggered by react-router 7 <Link viewTransition> via
+   src/lib/Link.jsx. Outgoing page slides + fades up; incoming
+   page slides + fades in from below. Apple-style spring curve
+   gives the swap an iOS-feeling decel. Browsers that don't
+   support startViewTransition() get a plain instant swap.
+   ============================================================ */
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 280ms;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    animation-fill-mode: both;
+  }
+  ::view-transition-old(root) {
+    animation-name: vt-page-out;
+  }
+  ::view-transition-new(root) {
+    animation-name: vt-page-in;
+  }
+  @keyframes vt-page-out {
+    to   { opacity: 0; transform: translateY(-6px); }
+  }
+  @keyframes vt-page-in {
+    from { opacity: 0; transform: translateY(10px); }
+  }
+
+  /* Persistent shell elements — sit still while content morphs
+     around them. Each name must be UNIQUE per page or the whole
+     transition aborts. */
+  .navbar .brand        { view-transition-name: nav-brand; }
+  .navbar .nav-actions  { view-transition-name: nav-actions; }
+  .footer .brand        { view-transition-name: footer-brand; }
+  .mobile-action-bar    { view-transition-name: mobile-bar; }
+
+  /* Pinned shell elements get their own subtle morph instead
+     of inheriting the page-level fade-out. */
+  ::view-transition-old(nav-brand),
+  ::view-transition-new(nav-brand),
+  ::view-transition-old(nav-actions),
+  ::view-transition-new(nav-actions),
+  ::view-transition-old(footer-brand),
+  ::view-transition-new(footer-brand),
+  ::view-transition-old(mobile-bar),
+  ::view-transition-new(mobile-bar) {
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+}
+
+/* ============================================================
    Scroll-reveal animation system
    Pair with useScrollReveal() hook. Elements start invisible
    and animate in when they enter the viewport.

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ArrowLeft, ArrowRight, BookOpen, ShieldCheck, Lightbulb, Tag } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { findGlossaryEntry, GLOSSARY } from "../data/glossary";

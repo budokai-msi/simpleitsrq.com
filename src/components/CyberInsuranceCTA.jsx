@@ -1,5 +1,5 @@
 import { ShieldCheck, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { trackAffiliateClick } from "../lib/trackClick";
 
 // Partner link is read at module scope so Vite can tree-shake the affiliate

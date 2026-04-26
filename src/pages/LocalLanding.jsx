@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
+import { Link } from "../lib/Link";
 import {
   Check, MapPin, Star, ShieldCheck, ArrowRight,
   Headphones, Lock, Cloud, Server, FileCheck, Phone, Wifi, Briefcase,

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ArrowRight, FileText } from "lucide-react";
 import { products } from "../data/products";
 

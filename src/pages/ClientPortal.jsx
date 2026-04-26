@@ -10,7 +10,8 @@
 // Fluent UI is kept inside the lazy portal chunk — this page is the only
 // consumer of FluentProvider, so the runtime never ships with the homepage.
 
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   FluentProvider,

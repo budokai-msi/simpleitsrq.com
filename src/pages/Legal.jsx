@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ArrowLeft } from "lucide-react";
 import { useSEO } from "../lib/seo";
 

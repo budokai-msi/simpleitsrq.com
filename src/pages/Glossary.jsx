@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { glossaryAlphabetical } from "../data/glossary";
