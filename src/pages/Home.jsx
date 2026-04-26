@@ -6,9 +6,8 @@
   Camera, Network, RefreshCw, Users
 } from "lucide-react";
 import { Link } from "../lib/Link";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSEO } from "../lib/seo";
-import { useScrollReveal, useRevealChildren } from "../lib/useScrollReveal";
 import heroGrid from "../assets/hero-grid.svg";
 import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
@@ -252,11 +251,9 @@ const SOLUTIONS = [
 ];
 
 function Solutions() {
-  const ref = useRef(null);
-  useRevealChildren(ref);
   return (
     <section className="section" id="solutions" aria-labelledby="solutions-title">
-      <div className="container" ref={ref}>
+      <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">What We Do</span>
           <h2 id="solutions-title" className="title-1">Everything you'd hire a local IT shop for — under one roof</h2>
@@ -291,11 +288,9 @@ const INDUSTRIES = [
 ];
 
 function Industries() {
-  const ref = useRef(null);
-  useRevealChildren(ref);
   return (
     <section className="section section-alt" id="industries" aria-labelledby="industries-title">
-      <div className="container" ref={ref}>
+      <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Who We Work With</span>
           <h2 id="industries-title" className="title-1">Who we know how to support</h2>
@@ -318,7 +313,6 @@ function Industries() {
 }
 
 function Compliance() {
-  const ref = useScrollReveal();
   const features = [
     "HIPAA paperwork and risk reviews",
     "Cyber-insurance renewal help",
@@ -328,7 +322,7 @@ function Compliance() {
   ];
   return (
     <section className="section" id="compliance" aria-labelledby="compliance-title">
-      <div className="container compliance-grid reveal-up" ref={ref}>
+      <div className="container compliance-grid reveal-up">
         <div>
           <span className="eyebrow">Paperwork and Disaster Planning</span>
           <h2 id="compliance-title" className="title-1">We handle the paperwork most IT guys hate</h2>
@@ -427,12 +421,10 @@ function FreeTools() {
 }
 
 function BlogPreview() {
-  const ref = useRef(null);
-  useRevealChildren(ref);
   const recent = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
   return (
     <section className="section section-alt" id="blog" aria-labelledby="blog-title">
-      <div className="container" ref={ref}>
+      <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">From the Blog</span>
           <h2 id="blog-title" className="title-1">Tips for local business owners</h2>
@@ -465,8 +457,6 @@ function BlogPreview() {
 }
 
 function StatsBar() {
-  const ref = useRef(null);
-  useRevealChildren(ref);
   // Honest stats only. "100% Florida-based" is geographic fact. "24/7
   // monitoring" is true (we run automated agent checks every 15 min).
   // No SLA puffery — response-time claims have been retired.
@@ -478,7 +468,7 @@ function StatsBar() {
   ];
   return (
     <section className="stats-bar" aria-label="Key statistics">
-      <div className="container stats-grid" ref={ref}>
+      <div className="container stats-grid">
         {stats.map((s, i) => (
           <div key={s.l} className="stat reveal-up" data-reveal data-reveal-delay={i + 1}>
             <span className="stat-v">{s.v}</span>
@@ -491,11 +481,10 @@ function StatsBar() {
 }
 
 function CtaBanner() {
-  const ref = useScrollReveal();
   return (
     <section className="section">
       <div className="container">
-        <div className="cta-banner reveal-scale" ref={ref}>
+        <div className="cta-banner reveal-scale">
           <h2 className="title-2">Tired of fighting with your IT?</h2>
           <p>Book a free 30-minute call with a local tech. No sales pitch, no jargon — just a straight answer on what's wrong and what it'd take to fix.</p>
           <div className="cta-actions">
