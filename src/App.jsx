@@ -36,6 +36,7 @@ const Tools = lazy(() => import("./pages/Tools"));
 const Store = lazy(() => import("./pages/Store"));
 const Services = lazy(() => import("./pages/Services"));
 const WispStarter = lazy(() => import("./pages/WispStarter"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
@@ -154,6 +155,7 @@ function Navbar() {
               it because LOCAL is the second-most-important identity. */}
           <Link to="/#solutions">IT Services</Link>
           <Link to="/services">Buy a Service</Link>
+          <Link to="/pricing">Pricing</Link>
           <Link to="/service-area">Service Area</Link>
           <Link to="/store">Templates</Link>
           <Link to="/stack">Vendor Stack</Link>
@@ -176,6 +178,7 @@ function Navbar() {
         <div className="mobile-menu" role="menu">
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
           <Link to="/services" onClick={() => setOpen(false)}>Buy a Service</Link>
+          <Link to="/pricing" onClick={() => setOpen(false)}>Pricing</Link>
           <Link to="/glossary" onClick={() => setOpen(false)}>Glossary</Link>
           <Link to="/industries" onClick={() => setOpen(false)}>Industries we serve</Link>
           <Link to="/exposure-scan" onClick={() => setOpen(false)}>Free Exposure Scan</Link>
@@ -455,6 +458,7 @@ export default function App() {
               <Route path="/store" element={<Store />} />
               <Route path="/services" element={<Services />} />
               <Route path="/wisp-starter" element={<WispStarter />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="/store/:slug" element={<ProductDetail />} />
               <Route path="/security-academy" element={<SecurityAcademy />} />
               <Route path="/cyber-insurance-quote" element={<CyberInsuranceQuote />} />
