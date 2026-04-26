@@ -5554,3 +5554,236 @@ select:focus-visible {
   .services-tabs { width: 100%; }
   .services-tab { flex: 1; }
 }
+
+/* ============================================================
+   Newsletter signup component (cross-cutting, used on / and
+   /wisp-starter and elsewhere).
+   ============================================================ */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px; padding: 0;
+  margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.newsletter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 32px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--brand-subtle) 80%, transparent),
+    var(--surface));
+  border: 1px solid color-mix(in srgb, var(--brand) 16%, transparent);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow4);
+}
+.newsletter-card { /* default */ }
+.newsletter-inline {
+  grid-template-columns: 1fr;
+  text-align: left;
+  padding: 24px;
+}
+.newsletter-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+.newsletter h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--text-1);
+}
+.newsletter p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--text-2);
+}
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.newsletter-label {
+  position: relative;
+  display: block;
+}
+.newsletter-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  pointer-events: none;
+}
+.newsletter-form input[type="email"] {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  font-size: 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-elevated);
+  color: var(--text-1);
+}
+.newsletter-form input[type="email"]:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+  border-color: var(--brand);
+}
+.newsletter-submit { width: 100%; justify-content: center; }
+.newsletter-fineprint {
+  margin-top: 4px !important;
+  font-size: 11px !important;
+  color: var(--text-3) !important;
+  line-height: 16px !important;
+}
+.newsletter-err {
+  display: flex; align-items: center; gap: 4px;
+  margin: 4px 0 0; font-size: 12px; color: var(--error);
+}
+
+.newsletter-success {
+  grid-template-columns: 1fr;
+  text-align: center;
+  padding: 36px 24px;
+}
+.newsletter-success-inner { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.newsletter-success-mark { color: var(--success); }
+.newsletter-success h3 { margin: 0; }
+.newsletter-success-cta { margin-top: 8px !important; font-size: 13px !important; }
+
+@media (max-width: 720px) {
+  .newsletter { grid-template-columns: 1fr; padding: 24px; }
+}
+
+/* ============================================================
+   /wisp-starter — Free WISP template page
+   Functions as both lead-magnet delivery surface AND a long-tail
+   SEO target for "Florida WISP template free".
+   ============================================================ */
+
+.wisp-main { padding-top: 0; }
+.wisp-hero { padding-top: clamp(48px, 6vw, 96px); padding-bottom: 32px; }
+.wisp-hero .display { max-width: 800px; }
+.wisp-hero .lede { max-width: 720px; }
+.wisp-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 16px; }
+.wisp-trust-row {
+  display: flex; flex-wrap: wrap; gap: 8px 24px;
+  list-style: none; padding: 0; margin: 0;
+  font-size: 13px; color: var(--text-2);
+}
+.wisp-trust-row li { display: flex; align-items: center; gap: 6px; }
+.wisp-trust-row svg { color: var(--success); }
+
+.wisp-newsletter-wrap { padding-top: 16px; padding-bottom: 16px; }
+
+.wisp-doc {
+  background: var(--surface);
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+.wisp-doc .container { max-width: 760px; }
+.wisp-doc h2.title-1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.wisp-doc-meta {
+  text-align: center;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--text-2);
+  margin: 0 auto 32px;
+  padding: 16px 24px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  max-width: 480px;
+}
+.wisp-section { margin: 32px 0; }
+.wisp-section h3.title-2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.wisp-section p {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-1);
+  margin: 0 0 12px;
+}
+.wisp-bullets { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.wisp-bullets li { display: flex; gap: 10px; font-size: 14px; line-height: 21px; color: var(--text-1); }
+.wisp-bullets svg { flex-shrink: 0; margin-top: 4px; color: var(--success); }
+.wisp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 12px 0;
+}
+.wisp-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text-1);
+}
+.wisp-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  vertical-align: top;
+}
+.wisp-signature { margin-top: 48px; padding-top: 24px; border-top: 2px solid var(--border-strong); }
+
+.wisp-upgrade { padding: 48px 0; }
+.wisp-upgrade-card {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow4);
+}
+.wisp-upgrade-card h2 { margin: 8px 0 12px; }
+.wisp-upgrade-card p { font-size: 14px; line-height: 22px; color: var(--text-2); margin: 0 0 16px; }
+.wisp-upgrade-bullets { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.wisp-upgrade-bullets li { display: flex; gap: 8px; font-size: 13px; color: var(--text-1); }
+.wisp-upgrade-bullets svg { flex-shrink: 0; margin-top: 3px; color: var(--success); }
+.wisp-upgrade-actions { display: flex; flex-direction: column; gap: 10px; }
+
+@media (max-width: 760px) {
+  .wisp-upgrade-card { grid-template-columns: 1fr; padding: 24px; }
+}
+
+/* Print styles — when the user hits Cmd+P / Ctrl+P, the page renders
+   as a plain WISP document. Hides nav, hero, upgrade card, newsletter,
+   and any other marketing chrome. */
+@media print {
+  body { background: white; color: black; }
+  .navbar, .footer, .mobile-action-bar, .wisp-hero, .wisp-newsletter-wrap,
+  .wisp-upgrade, .wisp-print-note, .live-defense-strip, .cookie-consent-banner,
+  .nav-actions, .nav-mobile-actions { display: none !important; }
+  .wisp-doc { padding: 0 !important; background: white !important; }
+  .wisp-doc .container { max-width: 100% !important; padding: 0 !important; }
+  .wisp-section h3.title-2 { color: black !important; }
+  .wisp-bullets svg, .wisp-trust-row svg { display: none !important; }
+}
