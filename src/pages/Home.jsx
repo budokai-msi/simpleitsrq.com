@@ -261,13 +261,13 @@ function Solutions() {
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
-            <a key={title} href="#contact" className="solution-card card-hover card-tilt gradient-border reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
+            <a key={title} href="#contact" className="solution-card reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
               <div className="solution-card-head">
-                <span className="solution-card-icon gradient-icon"><Icon size={18} /></span>
+                <span className="solution-card-icon"><Icon size={18} /></span>
                 <h3 className="solution-card-title">{title}</h3>
               </div>
               <p className="solution-card-desc">{desc}</p>
-              <span className="solution-card-link shimmer-line">
+              <span className="solution-card-link">
                 Learn more <ArrowRight size={14} />
               </span>
             </a>

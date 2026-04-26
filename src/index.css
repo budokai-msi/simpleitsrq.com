@@ -357,40 +357,6 @@ svg { stroke-width: 1.75; }
   box-shadow: var(--shadow4);
 }
 
-/* ============================================================
-   Subtle shimmer — decorative glow pulse on hero elements
-   ============================================================ */
-@keyframes shimmer {
-  0%, 100% { opacity: 0.5; }
-  50%      { opacity: 1; }
-}
-.shimmer {
-  animation: shimmer 3s var(--ease-in-out) infinite;
-}
-
-/* ============================================================
-   Float — gentle y-axis bob for decorative SVGs/icons
-   ============================================================ */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
-}
-.float {
-  animation: float 4s var(--ease-in-out) infinite;
-}
-
-/* ============================================================
-   Pulse ring — subtle brand-colored pulse behind CTAs
-   ============================================================ */
-@keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 var(--brand-glow); }
-  70%  { box-shadow: 0 0 0 10px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
-}
-.pulse-ring {
-  animation: pulse-ring 2.5s var(--ease-out) infinite;
-}
-
 /* Selection */
 ::selection {
   background: var(--brand);
