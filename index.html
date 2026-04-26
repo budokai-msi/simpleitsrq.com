@@ -124,6 +124,38 @@
     }
     </script>
 
+    <!-- Speculation Rules — Chrome 121+ / Edge 121+ prerender hints.
+         When a visitor's pointer lands on (mousedown / touchstart) any
+         eligible same-origin link, the browser prerenders that route
+         in a hidden frame so the actual click feels instant (~0ms).
+         Other browsers (Firefox, Safari) ignore this script entirely;
+         it's a pure progressive enhancement.
+
+         Eagerness "moderate" = trigger on pointerdown, ~190ms before
+         the typical click. Burns at most ~2 concurrent prerenders per
+         Chrome's budget so it doesn't tank the device.
+
+         Excluded: /portal/* (auth + side-effects), /api/* (would bill
+         a serverless function on hover), and explicit external/_blank
+         links. Hash anchors and external schemes (mailto:, tel:) don't
+         match `/*` so they're skipped automatically. -->
+    <script type="speculationrules">
+    {
+      "prerender": [{
+        "where": {
+          "and": [
+            { "href_matches": "/*" },
+            { "not": { "href_matches": "/portal*" } },
+            { "not": { "href_matches": "/api/*" } },
+            { "not": { "selector_matches": "[rel~=external]" } },
+            { "not": { "selector_matches": "[target=_blank]" } }
+          ]
+        },
+        "eagerness": "moderate"
+      }]
+    }
+    </script>
+
     <!-- Google Analytics 4 — loaded from external file to satisfy strict CSP -->
     <script src="/ga-init.js"></script>
   </head>
