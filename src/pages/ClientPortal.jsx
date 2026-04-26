@@ -12,7 +12,8 @@
 
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../lib/Link";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { createDOMRenderer, RendererProvider } from "@griffel/react";
 import {
   FluentProvider,
   Title2,
@@ -4439,6 +4440,23 @@ function ClientPortalContent() {
   );
 }
 
+// Griffel renderer — created lazily here (instead of in main.jsx) so the
+// homepage entry chunk doesn't ship @griffel/react. Reads the per-request
+// CSP nonce from the meta tag so every runtime-emitted Fluent <style>
+// tag carries nonce="<value>" and is accepted by the strict CSP. Memoized
+// per-component-instance — Fluent recommends one renderer per provider.
+function useGriffelRenderer() {
+  return useMemo(() => {
+    const nonceMeta = document.querySelector('meta[name="csp-nonce"]');
+    const rawNonce = nonceMeta?.getAttribute("content") || "";
+    const cspNonce = rawNonce && rawNonce !== "__CSP_NONCE__" ? rawNonce : null;
+    return createDOMRenderer(
+      document,
+      cspNonce ? { styleElementAttributes: { nonce: cspNonce } } : {},
+    );
+  }, []);
+}
+
 export default function ClientPortal() {
   useSEO({
     title: "Client Portal | Simple IT SRQ",
@@ -4452,12 +4470,15 @@ export default function ClientPortal() {
     ],
   });
   const { theme } = useTheme();
+  const griffelRenderer = useGriffelRenderer();
   return (
-    <FluentProvider
-      className="fluent-root"
-      theme={theme === "dark" ? brandedDarkTheme : brandedLightTheme}
-    >
-      <ClientPortalContent />
-    </FluentProvider>
+    <RendererProvider renderer={griffelRenderer} targetDocument={document}>
+      <FluentProvider
+        className="fluent-root"
+        theme={theme === "dark" ? brandedDarkTheme : brandedLightTheme}
+      >
+        <ClientPortalContent />
+      </FluentProvider>
+    </RendererProvider>
   );
 }
