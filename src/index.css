@@ -288,55 +288,53 @@ svg { stroke-width: 1.75; }
 }
 
 /* ============================================================
-   Scroll-reveal animation system
-   Pair with useScrollReveal() hook. Elements start invisible
-   and animate in when they enter the viewport.
+   Scroll-driven reveals — CSS-native, GPU-driven
+   Uses animation-timeline: view() (Chrome 115+, Edge 115+,
+   Firefox 138+). Browsers without support get items rendered
+   in their default visible state — graceful no-animation
+   fallback, no JS hook required, no IntersectionObserver,
+   nothing to schedule on the main thread. The animation runs
+   on the compositor while the user scrolls, locked to the
+   element's progress through the viewport, so it never stutters
+   even under heavy JS load.
    ============================================================ */
 
-/* Base: hidden state */
-.reveal-up,
-.reveal-down,
-.reveal-left,
-.reveal-right,
-.reveal-fade,
-.reveal-scale {
-  opacity: 0;
-  will-change: opacity, transform;
-  transition:
-    opacity 600ms var(--ease-out),
-    transform 600ms var(--ease-out);
-}
-.reveal-up    { transform: translateY(28px); }
-.reveal-down  { transform: translateY(-28px); }
-.reveal-left  { transform: translateX(28px); }
-.reveal-right { transform: translateX(-28px); }
-.reveal-scale { transform: scale(0.96); }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-up,
+    .reveal-down,
+    .reveal-left,
+    .reveal-right,
+    .reveal-fade,
+    .reveal-scale {
+      opacity: 0;
+      animation: linear both;
+      animation-timeline: view();
+      animation-range: entry 12% entry 60%;
+    }
+    .reveal-up    { animation-name: scroll-reveal-up;    transform: translateY(28px); }
+    .reveal-down  { animation-name: scroll-reveal-down;  transform: translateY(-28px); }
+    .reveal-left  { animation-name: scroll-reveal-left;  transform: translateX(28px); }
+    .reveal-right { animation-name: scroll-reveal-right; transform: translateX(-28px); }
+    .reveal-fade  { animation-name: scroll-reveal-fade; }
+    .reveal-scale { animation-name: scroll-reveal-scale; transform: scale(0.96); }
 
-/* Revealed state */
-.reveal-up.revealed,
-.reveal-down.revealed,
-.reveal-left.revealed,
-.reveal-right.revealed,
-.reveal-fade.revealed,
-.reveal-scale.revealed {
-  opacity: 1;
-  transform: none;
-}
+    @keyframes scroll-reveal-up    { to { opacity: 1; transform: translateY(0); } }
+    @keyframes scroll-reveal-down  { to { opacity: 1; transform: translateY(0); } }
+    @keyframes scroll-reveal-left  { to { opacity: 1; transform: translateX(0); } }
+    @keyframes scroll-reveal-right { to { opacity: 1; transform: translateX(0); } }
+    @keyframes scroll-reveal-fade  { to { opacity: 1; } }
+    @keyframes scroll-reveal-scale { to { opacity: 1; transform: scale(1); } }
 
-/* Stagger children: add data-reveal-delay="1" through "5" */
-[data-reveal-delay="1"] { transition-delay: 80ms; }
-[data-reveal-delay="2"] { transition-delay: 160ms; }
-[data-reveal-delay="3"] { transition-delay: 240ms; }
-[data-reveal-delay="4"] { transition-delay: 320ms; }
-[data-reveal-delay="5"] { transition-delay: 400ms; }
-
-/* Respect prefers-reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  .reveal-up, .reveal-down, .reveal-left, .reveal-right,
-  .reveal-fade, .reveal-scale {
-    opacity: 1;
-    transform: none;
-    transition: none;
+    /* Stagger via animation-range shifts — scroll-driven animations
+       don't honor animation-delay the way time-driven ones do, so
+       we shift each child's entry window further into the viewport
+       by 6% per delay step to reproduce the staggered cascade. */
+    [data-reveal-delay="1"] { animation-range: entry 18% entry 64%; }
+    [data-reveal-delay="2"] { animation-range: entry 24% entry 68%; }
+    [data-reveal-delay="3"] { animation-range: entry 30% entry 72%; }
+    [data-reveal-delay="4"] { animation-range: entry 36% entry 76%; }
+    [data-reveal-delay="5"] { animation-range: entry 42% entry 80%; }
   }
 }
 
