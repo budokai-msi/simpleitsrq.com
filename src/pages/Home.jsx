@@ -5,7 +5,7 @@
   Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key, Wrench,
   Camera, Network, RefreshCw, Users
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { useState, useRef, useEffect } from "react";
 import { useSEO } from "../lib/seo";
 import { useScrollReveal, useRevealChildren } from "../lib/useScrollReveal";

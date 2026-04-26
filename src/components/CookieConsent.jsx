@@ -13,7 +13,7 @@
 // cannot function without them; that's the CCPA carve-out.
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { readConsent, writeConsent } from "../lib/consent.js";
 
 // Custom event the footer "Manage cookie preferences" link dispatches

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Link, useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
+import { Link } from "../lib/Link";
 import {
   Check, MapPin, ShieldCheck, ArrowRight, Headphones, Lock, Cloud, Server,
   FileCheck, Phone, Wifi, Briefcase, Wrench, Camera, Network, RefreshCw,

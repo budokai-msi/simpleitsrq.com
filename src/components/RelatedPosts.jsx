@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ArrowRight } from "lucide-react";
 import postsMeta from "../data/posts-meta.json";
 import BlogCover from "./BlogCover";

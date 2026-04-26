@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ExternalLink, ArrowRight, Info, Calculator, Users, DollarSign } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { STACK, resolveStackLink, stackHasAffiliates, monthlyCostFor } from "../data/stack";

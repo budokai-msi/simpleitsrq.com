@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import {
   Briefcase, ArrowRight, MapPin, Stethoscope, Scale, TrendingUp, Anchor,
   HardHat, KeyRound,

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import {
   Shield, ShieldAlert, Activity, Zap, Globe2, ArrowRight, Search, Clock, Skull, Loader2,
 } from "lucide-react";

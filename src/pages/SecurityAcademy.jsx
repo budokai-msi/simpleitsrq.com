@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { Check, ShieldCheck, GraduationCap, Mail, FileCheck, Users, Calendar, ArrowRight } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 

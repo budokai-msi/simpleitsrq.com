@@ -1,5 +1,6 @@
 import { createElement, useMemo, useState, useEffect, lazy, Suspense } from "react";
-import { Link, useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ArrowRight, Calendar, User, Tag, ArrowLeft, Lock, Server, Cloud, FileCheck, Shield, Briefcase, Star } from "lucide-react";
 import postsMeta from "../data/posts-meta.json";
 import { resolveAffiliate, postHasAffiliateContent } from "../data/affiliates";

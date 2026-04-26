@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { TOOL_CATEGORIES } from "../data/toolCatalog";
 import { useSEO } from "../lib/seo";
 import { ExternalLink, ShieldCheck, Zap, HardDrive, Wifi, Monitor, FileCheck, Server } from "lucide-react";
