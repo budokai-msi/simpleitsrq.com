@@ -48,3 +48,8 @@ export function hasAnalyticsConsent() {
   const c = readConsent();
   return !!(c && c.categories && c.categories.analytics);
 }
+
+export function hasMarketingConsent() {
+  const c = readConsent();
+  return !!(c && c.categories && c.categories.marketing);
+}
