@@ -38,6 +38,7 @@ const Store = lazy(() => import("./pages/Store"));
 const Services = lazy(() => import("./pages/Services"));
 const WispStarter = lazy(() => import("./pages/WispStarter"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
@@ -461,6 +462,7 @@ export default function App() {
               <Route path="/services" element={<Services />} />
               <Route path="/wisp-starter" element={<WispStarter />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/admin/affiliates" element={<AdminAffiliates />} />
               <Route path="/store/:slug" element={<ProductDetail />} />
               <Route path="/security-academy" element={<SecurityAcademy />} />
               <Route path="/cyber-insurance-quote" element={<CyberInsuranceQuote />} />

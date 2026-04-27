@@ -6007,6 +6007,174 @@ select:focus-visible {
 }
 
 /* ============================================================
+   /admin/affiliates — admin-only affiliate performance dashboard
+   Fluent-free; uses the existing design tokens.
+   ============================================================ */
+
+.admin-affiliates { padding: 32px 0 64px; }
+.admin-aff-head { margin-bottom: 24px; }
+.admin-aff-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 12px;
+}
+.admin-aff-back:hover { color: var(--brand); }
+.admin-aff-sub {
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-2);
+  margin: 8px 0 16px;
+}
+.admin-aff-controls { display: inline-flex; gap: 4px; padding: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); }
+.admin-aff-range {
+  border: 0;
+  background: transparent;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 200ms var(--ease-out);
+}
+.admin-aff-range:hover { color: var(--text-1); }
+.admin-aff-range.is-active {
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow2);
+}
+
+.admin-aff-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+.admin-aff-stat {
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-aff-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.admin-aff-stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+
+.admin-aff-section { margin: 32px 0; }
+.admin-aff-section h2.title-2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.admin-aff-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.admin-aff-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  background: color-mix(in srgb, var(--warning) 8%, var(--surface));
+  border: 1px dashed color-mix(in srgb, var(--warning) 40%, var(--border));
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  font-size: 14px;
+}
+.admin-aff-empty svg { color: var(--warning); flex-shrink: 0; }
+
+.admin-aff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.admin-aff-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+}
+.admin-aff-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-1);
+  vertical-align: middle;
+}
+.admin-aff-table tr:last-child td { border-bottom: 0; }
+.admin-aff-table tr:hover td { background: var(--surface-2); }
+.admin-aff-slug {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-2);
+}
+.admin-aff-label {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mini bar chart for daily volume */
+.admin-aff-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 96px;
+  padding: 16px;
+}
+.admin-aff-bar {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+.admin-aff-bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 70%, transparent) 100%);
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+  transition: opacity 160ms var(--ease-out);
+}
+.admin-aff-bar:hover .admin-aff-bar-fill { opacity: 0.8; }
+.admin-aff-bars-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px 12px;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* ============================================================
    Google Reviews block
    ============================================================ */
 
