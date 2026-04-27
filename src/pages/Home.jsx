@@ -14,6 +14,7 @@ import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
 import RecommendedTools from "../components/RecommendedTools";
 import NewsletterSignup from "../components/NewsletterSignup";
+import GoogleReviews from "../components/GoogleReviews";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { csrfFetch } from "../lib/csrf";
@@ -794,6 +795,7 @@ export default function Home() {
       <Industries />
       <Compliance />
       <Testimonial />
+      <GoogleReviews />
       <BlogPreview />
       <section className="section section-alt">
         <div className="container">

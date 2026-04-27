@@ -6006,6 +6006,84 @@ select:focus-visible {
   .pricing-quote-required { padding: 24px; }
 }
 
+/* ============================================================
+   Google Reviews block
+   ============================================================ */
+
+.reviews-section {
+  padding: clamp(40px, 5vw, 72px) 0;
+  background: var(--bg);
+}
+.reviews-head {
+  text-align: center;
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.reviews-head h2.title-1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 24px;
+}
+.reviews-stars { display: inline-flex; gap: 2px; align-items: center; }
+.reviews-rating-num { font-size: 22px; font-weight: 700; color: var(--text-1); }
+.reviews-rating-suffix { font-size: 14px; font-weight: 500; color: var(--text-2); }
+.reviews-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.reviews-profile-link:hover { color: var(--brand); }
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.review-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow2);
+}
+.review-card-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+.review-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.review-meta strong { font-size: 14px; color: var(--text-1); }
+.review-time { font-size: 12px; color: var(--text-3); }
+.review-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* Print styles — when the user hits Cmd+P / Ctrl+P, the page renders
    as a plain WISP document. Hides nav, hero, upgrade card, newsletter,
    and any other marketing chrome. */
