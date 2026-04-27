@@ -8,7 +8,6 @@
 import { Link } from "../lib/Link";
 import { useState, useEffect } from "react";
 import { useSEO } from "../lib/seo";
-import { useExperiment, recordConversion } from "../lib/ab";
 import heroGrid from "../assets/hero-grid.svg";
 import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
@@ -19,64 +18,9 @@ import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/h
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { csrfFetch } from "../lib/csrf";
 
-// Hero copy variants — assigned via useExperiment("home-hero", [...]).
-// Conversions tracked when the primary CTA is clicked. After ~30 days
-// of traffic, look at GA4 events filtered to experiment_id="home-hero"
-// and compare CTR per variant. Then ship the winner as the only copy.
-const HERO_VARIANTS = {
-  control: {
-    eyebrow: "IT Support · Sarasota · Bradenton · Venice",
-    h1: "Local IT support for Sarasota and Bradenton — businesses and homes.",
-    lede:
-      "Helpdesk, computer repair, security cameras, and enterprise IT — under one roof. We keep your computers running, your data safe, and your team productive. A local crew that picks up the phone, flat monthly pricing, and all the paperwork your insurance company and auditors ask for.",
-    primaryLabel: "Get a Free IT Check-Up",
-    primaryHref: "#contact",
-    secondaryLabel: "See What We Do",
-    secondaryHref: "#solutions",
-  },
-  "buy-led": {
-    eyebrow: "Buy a Service · No Phone Tag · Flat Fee",
-    h1: "Pay online. Drop off the machine. Pick it up working.",
-    lede:
-      "Most IT shops want a quote-and-call dance before they take your money. We don't. Computer Tune-Up $99. SSD Upgrade $249. Network Audit $399. Camera install reservation $500 deposit. Same Sarasota / Bradenton local team — just with a Buy Now button.",
-    primaryLabel: "Buy a Service",
-    primaryHref: "/services",
-    secondaryLabel: "See public pricing",
-    secondaryHref: "/pricing",
-  },
-  "wisp-led": {
-    eyebrow: "Free Florida WISP Template · Plus the Monthly Brief",
-    h1: "Cyber-insurance renewal asking for a WISP? Take ours, free.",
-    lede:
-      "A free Florida-flavored Written Information Security Program template — 12 sections, fillable, ready for your 2026 renewal. Subscribe to the monthly Florida small-business IT brief and grab it today. Then if you need help, we're a real Sarasota / Bradenton MSP, not a national franchise.",
-    primaryLabel: "Get the WISP template",
-    primaryHref: "/wisp-starter",
-    secondaryLabel: "See what we do",
-    secondaryHref: "#solutions",
-  },
-};
-
 function Hero() {
-  const variant = useExperiment("home-hero", ["control", "buy-led", "wisp-led"]);
-  const v = HERO_VARIANTS[variant] || HERO_VARIANTS.control;
-
-  const onPrimary = () => recordConversion("home-hero", "primary-cta");
-  const onSecondary = () => recordConversion("home-hero", "secondary-cta");
-
-  // Internal links (start with /) use SmoothLink for view-transition;
-  // hash anchors (#contact) use plain <a> so the in-page jump still
-  // works under react-router's hash handling.
-  const Primary = v.primaryHref.startsWith("/") ? Link : "a";
-  const primaryProps = v.primaryHref.startsWith("/")
-    ? { to: v.primaryHref, onClick: onPrimary }
-    : { href: v.primaryHref, onClick: onPrimary };
-  const Secondary = v.secondaryHref.startsWith("/") ? Link : "a";
-  const secondaryProps = v.secondaryHref.startsWith("/")
-    ? { to: v.secondaryHref, onClick: onSecondary }
-    : { href: v.secondaryHref, onClick: onSecondary };
-
   return (
-    <section className="hero hero-clean" aria-labelledby="hero-title" data-experiment-variant={variant}>
+    <section className="hero hero-clean" aria-labelledby="hero-title">
       <div className="hero-bg" aria-hidden="true">
         <img
           src={heroGrid}
@@ -88,12 +32,17 @@ function Hero() {
       </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">{v.eyebrow}</span>
-          <h1 id="hero-title" className="display">{v.h1}</h1>
-          <p className="lede">{v.lede}</p>
+          <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
+          <h1 id="hero-title" className="display">Local IT support for Sarasota and Bradenton — businesses and homes.</h1>
+          <p className="lede">
+            Helpdesk, computer repair, security cameras, and enterprise IT — under one
+            roof. We keep your computers running, your data safe, and your team
+            productive. A local crew that picks up the phone, flat monthly pricing,
+            and all the paperwork your insurance company and auditors ask for.
+          </p>
           <div className="hero-ctas">
-            <Primary className="btn btn-primary btn-lg" {...primaryProps}>{v.primaryLabel}</Primary>
-            <Secondary className="btn btn-secondary btn-lg" {...secondaryProps}>{v.secondaryLabel}</Secondary>
+            <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Check-Up</a>
+            <a href="#solutions" className="btn btn-secondary btn-lg">See What We Do</a>
           </div>
           <ul className="trust-row" aria-label="Why clients trust us">
             <li><MapPin size={14} strokeWidth={2.25} /> Local Sarasota and Bradenton team</li>
