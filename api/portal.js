@@ -2066,6 +2066,69 @@ async function handleResetAuditChain(session) {
 // the admin panel reflects the live account state (no local cache). When
 // STRIPE_SECRET_KEY is unset, returns a `stripe_not_configured` shape so
 // the widget can show a "Stripe not configured" pill instead of 500-ing.
+// Per-network + per-day affiliate click counts for the last N days.
+// Drives the /admin/affiliates dashboard. Admin-gated. Pure SELECT —
+// no Stripe call, no upstream API, just the affiliate_clicks table.
+async function handleAffiliateStats(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const days = Math.min(Math.max(parseInt(url.searchParams.get("days") || "30", 10) || 30, 7), 365);
+  const since = `${days} days`;
+
+  const [byNetwork, byDay, topPosts, recent] = await Promise.all([
+    sql`
+      SELECT
+        COALESCE(network, 'unknown') AS network,
+        COUNT(*)::int AS clicks,
+        COUNT(DISTINCT anon_id)::int AS unique_visitors,
+        MAX(ts) AS last_click
+      FROM affiliate_clicks
+      WHERE ts > now() - ${since}::interval
+      GROUP BY network
+      ORDER BY clicks DESC
+    `.catch(() => []),
+    sql`
+      SELECT
+        date_trunc('day', ts)::date AS day,
+        COUNT(*)::int AS clicks
+      FROM affiliate_clicks
+      WHERE ts > now() - ${since}::interval
+      GROUP BY 1
+      ORDER BY 1 ASC
+    `.catch(() => []),
+    sql`
+      SELECT
+        COALESCE(NULLIF(slug, ''), referrer_path, '(unknown)') AS slug,
+        COUNT(*)::int AS clicks,
+        COUNT(DISTINCT network)::int AS networks
+      FROM affiliate_clicks
+      WHERE ts > now() - ${since}::interval
+      GROUP BY 1
+      ORDER BY clicks DESC
+      LIMIT 15
+    `.catch(() => []),
+    sql`
+      SELECT ts, network, label, slug, country
+      FROM affiliate_clicks
+      ORDER BY ts DESC
+      LIMIT 25
+    `.catch(() => []),
+  ]);
+
+  const totalClicks = byNetwork.reduce((sum, r) => sum + (r.clicks || 0), 0);
+
+  return json(200, {
+    ok: true,
+    days,
+    totalClicks,
+    byNetwork,
+    byDay,
+    topPosts,
+    recent,
+  });
+}
+
 async function handleRevenueSummary(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
@@ -3153,6 +3216,7 @@ async function dispatch(request, method) {
   if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
   if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
   if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);
+  if (action === "affiliate-stats"      && method === "GET")  return handleAffiliateStats(session, url);
   if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);
   if (action === "testimonial-save"     && method === "POST") return handleTestimonialSave(session, request);
   if (action === "testimonial-delete"   && method === "POST") return handleTestimonialDelete(session, request);
