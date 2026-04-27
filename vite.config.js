@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import mdx from '@mdx-js/rollup'
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
+import remarkCityAutolink from './scripts/remark-city-autolink.mjs'
 
 export default defineConfig({
   plugins: [
@@ -17,6 +18,12 @@ export default defineConfig({
         remarkPlugins: [
           remarkFrontmatter,
           [remarkMdxFrontmatter, { name: 'frontmatter' }],
+          // Auto-link the first occurrence of each city name in every
+          // post body to its city landing page. Compile-time so links
+          // ship as real <a> tags in the rendered HTML — no JS required
+          // for crawlers. Posts can opt out via `noCityAutolink: true`
+          // in frontmatter.
+          remarkCityAutolink,
         ],
         // No providerImportSource — MDX files receive `components`
         // directly as a prop from BlogPost when rendered.

@@ -103,6 +103,44 @@
   color-scheme: dark;
 }
 
+/* ─── Theme alias bridge ───────────────────────────────────────────────
+ * App.css and a chunk of inline component styles reference --syn-*
+ * variables (a holdover from the original Synapse design system).
+ * These were never defined, so every reference fell through to its
+ * hardcoded fallback — meaning text/backgrounds were locked to LIGHT
+ * mode values regardless of theme. In dark mode that put near-black
+ * text on near-black backgrounds → invisible.
+ *
+ * Bridging by aliasing them to the real --bg/--surface/--text-* tokens
+ * lets all 88 existing references suddenly track theme correctly,
+ * without touching any of them individually. CSS variables resolve at
+ * render time, so a single declaration here cascades through both
+ * light + dark themes. */
+:root {
+  /* --syn-* aliases (legacy Synapse design system) */
+  --syn-bg:           var(--bg);
+  --syn-surface:      var(--surface);
+  --syn-surface-2:    var(--surface-2);
+  --syn-surface-hi:   var(--surface-2);
+  --syn-border:       var(--border);
+  --syn-border-strong: var(--border-strong);
+  --syn-text:         var(--text-1);
+  --syn-text-muted:   var(--text-2);
+  --syn-text-3:       var(--text-3);
+  --syn-brand:        var(--brand);
+  --syn-brand-hover:  var(--brand-hover);
+
+  /* Bare aliases (older naming convention from before the design
+   * system rename). Same theme-tracking issue: every reference fell
+   * through to a hardcoded fallback, breaking dark mode anywhere
+   * the alias was used. Most visible offender: .local-pattern-card p
+   * which uses var(--text, #1a1a1a) — invisible in dark mode. */
+  --text:             var(--text-1);
+  --muted:            var(--text-2);
+  --accent:           var(--brand);
+  --surface-alt:      var(--surface-2);
+}
+
 :root {
   /* Radius */
   --r-sm: 6px;
@@ -198,55 +236,105 @@ svg { stroke-width: 1.75; }
 }
 
 /* ============================================================
-   Scroll-reveal animation system
-   Pair with useScrollReveal() hook. Elements start invisible
-   and animate in when they enter the viewport.
+   View Transitions — native page-swap morphing
+   Triggered by react-router 7 <Link viewTransition> via
+   src/lib/Link.jsx. Outgoing page slides + fades up; incoming
+   page slides + fades in from below. Apple-style spring curve
+   gives the swap an iOS-feeling decel. Browsers that don't
+   support startViewTransition() get a plain instant swap.
    ============================================================ */
 
-/* Base: hidden state */
-.reveal-up,
-.reveal-down,
-.reveal-left,
-.reveal-right,
-.reveal-fade,
-.reveal-scale {
-  opacity: 0;
-  will-change: opacity, transform;
-  transition:
-    opacity 600ms var(--ease-out),
-    transform 600ms var(--ease-out);
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 280ms;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    animation-fill-mode: both;
+  }
+  ::view-transition-old(root) {
+    animation-name: vt-page-out;
+  }
+  ::view-transition-new(root) {
+    animation-name: vt-page-in;
+  }
+  @keyframes vt-page-out {
+    to   { opacity: 0; transform: translateY(-6px); }
+  }
+  @keyframes vt-page-in {
+    from { opacity: 0; transform: translateY(10px); }
+  }
+
+  /* Persistent shell elements — sit still while content morphs
+     around them. Each name must be UNIQUE per page or the whole
+     transition aborts. */
+  .navbar .brand        { view-transition-name: nav-brand; }
+  .navbar .nav-actions  { view-transition-name: nav-actions; }
+  .footer .brand        { view-transition-name: footer-brand; }
+  .mobile-action-bar    { view-transition-name: mobile-bar; }
+
+  /* Pinned shell elements get their own subtle morph instead
+     of inheriting the page-level fade-out. */
+  ::view-transition-old(nav-brand),
+  ::view-transition-new(nav-brand),
+  ::view-transition-old(nav-actions),
+  ::view-transition-new(nav-actions),
+  ::view-transition-old(footer-brand),
+  ::view-transition-new(footer-brand),
+  ::view-transition-old(mobile-bar),
+  ::view-transition-new(mobile-bar) {
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+  }
 }
-.reveal-up    { transform: translateY(28px); }
-.reveal-down  { transform: translateY(-28px); }
-.reveal-left  { transform: translateX(28px); }
-.reveal-right { transform: translateX(-28px); }
-.reveal-scale { transform: scale(0.96); }
 
-/* Revealed state */
-.reveal-up.revealed,
-.reveal-down.revealed,
-.reveal-left.revealed,
-.reveal-right.revealed,
-.reveal-fade.revealed,
-.reveal-scale.revealed {
-  opacity: 1;
-  transform: none;
-}
+/* ============================================================
+   Scroll-driven reveals — CSS-native, GPU-driven
+   Uses animation-timeline: view() (Chrome 115+, Edge 115+,
+   Firefox 138+). Browsers without support get items rendered
+   in their default visible state — graceful no-animation
+   fallback, no JS hook required, no IntersectionObserver,
+   nothing to schedule on the main thread. The animation runs
+   on the compositor while the user scrolls, locked to the
+   element's progress through the viewport, so it never stutters
+   even under heavy JS load.
+   ============================================================ */
 
-/* Stagger children: add data-reveal-delay="1" through "5" */
-[data-reveal-delay="1"] { transition-delay: 80ms; }
-[data-reveal-delay="2"] { transition-delay: 160ms; }
-[data-reveal-delay="3"] { transition-delay: 240ms; }
-[data-reveal-delay="4"] { transition-delay: 320ms; }
-[data-reveal-delay="5"] { transition-delay: 400ms; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-up,
+    .reveal-down,
+    .reveal-left,
+    .reveal-right,
+    .reveal-fade,
+    .reveal-scale {
+      opacity: 0;
+      animation: linear both;
+      animation-timeline: view();
+      animation-range: entry 12% entry 60%;
+    }
+    .reveal-up    { animation-name: scroll-reveal-up;    transform: translateY(28px); }
+    .reveal-down  { animation-name: scroll-reveal-down;  transform: translateY(-28px); }
+    .reveal-left  { animation-name: scroll-reveal-left;  transform: translateX(28px); }
+    .reveal-right { animation-name: scroll-reveal-right; transform: translateX(-28px); }
+    .reveal-fade  { animation-name: scroll-reveal-fade; }
+    .reveal-scale { animation-name: scroll-reveal-scale; transform: scale(0.96); }
 
-/* Respect prefers-reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  .reveal-up, .reveal-down, .reveal-left, .reveal-right,
-  .reveal-fade, .reveal-scale {
-    opacity: 1;
-    transform: none;
-    transition: none;
+    @keyframes scroll-reveal-up    { to { opacity: 1; transform: translateY(0); } }
+    @keyframes scroll-reveal-down  { to { opacity: 1; transform: translateY(0); } }
+    @keyframes scroll-reveal-left  { to { opacity: 1; transform: translateX(0); } }
+    @keyframes scroll-reveal-right { to { opacity: 1; transform: translateX(0); } }
+    @keyframes scroll-reveal-fade  { to { opacity: 1; } }
+    @keyframes scroll-reveal-scale { to { opacity: 1; transform: scale(1); } }
+
+    /* Stagger via animation-range shifts — scroll-driven animations
+       don't honor animation-delay the way time-driven ones do, so
+       we shift each child's entry window further into the viewport
+       by 6% per delay step to reproduce the staggered cascade. */
+    [data-reveal-delay="1"] { animation-range: entry 18% entry 64%; }
+    [data-reveal-delay="2"] { animation-range: entry 24% entry 68%; }
+    [data-reveal-delay="3"] { animation-range: entry 30% entry 72%; }
+    [data-reveal-delay="4"] { animation-range: entry 36% entry 76%; }
+    [data-reveal-delay="5"] { animation-range: entry 42% entry 80%; }
   }
 }
 
@@ -270,38 +358,80 @@ svg { stroke-width: 1.75; }
 }
 
 /* ============================================================
-   Subtle shimmer — decorative glow pulse on hero elements
+   content-visibility — skip layout/paint for off-screen sections.
+   The browser doesn't render or measure children of an element
+   marked content-visibility: auto until it scrolls near the
+   viewport. Pairs with contain-intrinsic-size to reserve space
+   so scrollbar position doesn't jump as content paints in.
+   Real win on long pages (WISP starter, blog posts, pricing
+   tables) — INP and LCP both drop. Chrome / Edge / Safari 18+
+   support it; Firefox renders normally with no penalty.
    ============================================================ */
-@keyframes shimmer {
-  0%, 100% { opacity: 0.5; }
-  50%      { opacity: 1; }
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 1200px;
 }
-.shimmer {
-  animation: shimmer 3s var(--ease-in-out) infinite;
+
+/* Apply to long-form sections automatically. The first section on
+   every page stays render-eager (so above-the-fold work isn't
+   skipped); .section:nth-of-type(n+3) catches everything below the
+   second viewport. */
+@media (min-width: 720px) {
+  main .section:nth-of-type(n+3) {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 800px;
+  }
 }
 
 /* ============================================================
-   Float — gentle y-axis bob for decorative SVGs/icons
+   :has() — modern parent-selector wins.
+   When any input inside a form has been interacted with AND fails
+   constraint validation, soften the form's border to a danger
+   tint. No JS, no aria mutation, no re-render — just CSS reacting
+   to :user-invalid bubbling up via :has().
+   Chrome 121+ adds :user-invalid; Safari/Firefox shipped earlier.
+   The double-selector below first matches forms containing an
+   input that has been edited and is now invalid.
    ============================================================ */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-6px); }
+.form:has(:user-invalid),
+.lead-cta-form:has(:user-invalid),
+.newsletter-form:has(:user-invalid) {
+  --form-invalid-glow: 0 0 0 3px color-mix(in srgb, var(--error) 18%, transparent);
 }
-.float {
-  animation: float 4s var(--ease-in-out) infinite;
+.form:has(:user-invalid) input:user-invalid,
+.form:has(:user-invalid) textarea:user-invalid,
+.lead-cta-form:has(:user-invalid) input:user-invalid,
+.newsletter-form:has(:user-invalid) input:user-invalid {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 1px var(--error);
 }
 
-/* ============================================================
-   Pulse ring — subtle brand-colored pulse behind CTAs
-   ============================================================ */
-@keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 var(--brand-glow); }
-  70%  { box-shadow: 0 0 0 10px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
+/* Body class while a native <dialog> is open — locks scroll without
+   needing a JS state hook. */
+body:has(dialog[open][data-blocking-modal]) {
+  overflow: hidden;
 }
-.pulse-ring {
-  animation: pulse-ring 2.5s var(--ease-out) infinite;
+
+/* Share button — small affordance under blog post titles.
+   Sits inside .blog-post-meta beside the date / author / read-time. */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out);
 }
+.share-btn:hover { background: var(--surface); color: var(--text-1); border-color: var(--border-strong); }
+.share-btn[data-state="copied"] { color: var(--success); border-color: color-mix(in srgb, var(--success) 40%, var(--border)); }
 
 /* Selection */
 ::selection {

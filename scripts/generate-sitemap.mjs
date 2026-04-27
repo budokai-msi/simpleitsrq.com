@@ -5,9 +5,11 @@ import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { loadAllPosts } from "./_posts-source.mjs";
-import { cityList } from "../src/data/cities.js";
+import { cityList, cities } from "../src/data/cities.js";
 import { products } from "../src/data/products.js";
 import { COMPARISONS } from "../src/data/comparisons.js";
+import { GLOSSARY } from "../src/data/glossary.js";
+import { industryCityPairs } from "../src/data/industries.js";
 
 const posts = loadAllPosts();
 
@@ -26,6 +28,9 @@ const staticUrls = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
   { loc: "/blog", priority: "0.9", changefreq: "daily" },
   { loc: "/store", priority: "0.9", changefreq: "weekly" },
+  { loc: "/services", priority: "0.95", changefreq: "weekly" },
+  { loc: "/wisp-starter", priority: "0.9", changefreq: "monthly" },
+  { loc: "/pricing", priority: "0.95", changefreq: "monthly" },
   { loc: "/security-academy", priority: "0.9", changefreq: "monthly" },
   { loc: "/cyber-insurance-quote", priority: "0.9", changefreq: "monthly" },
   { loc: "/stack", priority: "0.9", changefreq: "monthly" },
@@ -35,6 +40,11 @@ const staticUrls = [
   { loc: "/service-area", priority: "0.85", changefreq: "monthly" },
   { loc: "/partners", priority: "0.8", changefreq: "monthly" },
   { loc: "/compare", priority: "0.8", changefreq: "monthly" },
+  { loc: "/glossary", priority: "0.85", changefreq: "monthly" },
+  { loc: "/industries", priority: "0.85", changefreq: "monthly" },
+  { loc: "/exposure-scan", priority: "0.9", changefreq: "monthly" },
+  // /live-threats deliberately omitted — admin-only page; the route
+  // emits noindex + non-admin visitors get redirected to /exposure-scan.
   { loc: "/advertise", priority: "0.7", changefreq: "monthly" },
   { loc: "/support", priority: "0.6", changefreq: "monthly" },
   { loc: "/privacy", priority: "0.3", changefreq: "yearly" },
@@ -68,7 +78,22 @@ const compareUrls = COMPARISONS.map((c) => ({
   lastmod: c.date,
 }));
 
-const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls];
+const glossaryUrls = GLOSSARY.map((g) => ({
+  loc: `/glossary/${g.slug}`,
+  priority: "0.7",
+  changefreq: "monthly",
+}));
+
+// Industry × city long-tail pages — 18+ URLs covering medical/law/financial-
+// advisor/marine/construction/vacation-rental verticals across the cities
+// where each one has a matching pattern in cities.localPatterns.
+const industryUrls = [...industryCityPairs(cities)].map((p) => ({
+  loc: p.url,
+  priority: "0.85",
+  changefreq: "monthly",
+}));
+
+const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls, ...glossaryUrls, ...industryUrls];
 
 const body = all
   .map((u) => {

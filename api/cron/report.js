@@ -9,6 +9,7 @@
 
 import { sql } from "../_lib/db.js";
 import { refreshThreatFeeds } from "../_lib/osint.js";
+import { aggregateScanners } from "../_lib/scanner-fingerprints.js";
 import { Resend } from "resend";
 import { timingSafeEqual } from "node:crypto";
 
@@ -16,8 +17,12 @@ const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
 const FROM = "Simple IT SRQ Analytics <analytics@simpleitsrq.com>";
 
 function verifyCron(request) {
+  // Vercel sets x-vercel-cron: 1 on genuine cron invocations — this header
+  // cannot be spoofed from outside the Vercel edge. Accept either that or a
+  // valid CRON_SECRET bearer (for manual triggers). Fail closed if neither.
+  if (request.headers.get("x-vercel-cron") === "1") return true;
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
+  if (!secret) return false;
   const auth = request.headers.get("authorization") || "";
   const expected = `Bearer ${secret}`;
   if (auth.length !== expected.length) return false;
@@ -152,6 +157,81 @@ export async function GET(request) {
     LIMIT 50
   `;
 
+  // --- AdSense approval landed? ---
+  // We watch the adsense_events table for the FIRST row with filled > 0
+  // and email once when it arrives. Tracked via a one-row marker table
+  // (adsense_milestones) so we don't email every day forever.
+  let adsenseMilestone = null;
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS adsense_milestones (
+        id TEXT PRIMARY KEY,
+        first_filled_at TIMESTAMPTZ
+      )
+    `;
+    const seen = await sql`SELECT first_filled_at FROM adsense_milestones WHERE id = 'first_filled'`;
+    if (!seen[0]?.first_filled_at) {
+      const firstFill = await sql`
+        SELECT MIN(ts) AS ts FROM adsense_events WHERE filled > 0
+      `.catch(() => []);
+      const ts = firstFill[0]?.ts;
+      if (ts) {
+        await sql`
+          INSERT INTO adsense_milestones (id, first_filled_at)
+          VALUES ('first_filled', ${ts})
+          ON CONFLICT (id) DO NOTHING
+        `;
+        adsenseMilestone = { firstFilledAt: ts, justLanded: true };
+      }
+    }
+  } catch (err) {
+    console.error("[cron/report] adsense milestone check failed", err);
+  }
+
+  // --- OPSEC digest (24h attack surface summary) ---
+  // Reuses the scanner-fingerprint library to turn raw threat_actors
+  // rows into named scanners + CVE attempts. Keeps the HTML email
+  // short — top 5 of everything — so it's scannable on mobile.
+  const threatWindow = await sql`
+    SELECT ip, path, user_agent, threat_class, country
+    FROM threat_actors
+    WHERE ts > ${since.toISOString()}
+    LIMIT 10000
+  `;
+  const scannerAgg = aggregateScanners(
+    threatWindow.map((r) => ({ userAgent: r.user_agent, path: r.path })),
+  );
+  const autoBlocksWindow = await sql`
+    SELECT reason, ts FROM auto_actions
+    WHERE action = 'ip_blocked' AND ts > ${since.toISOString()}
+    ORDER BY ts DESC
+    LIMIT 50
+  `;
+  const blocklistTotal = await sql`SELECT COUNT(*)::int AS n FROM ip_blocklist`;
+  const topAttackersByAsn = await sql`
+    SELECT ii.org, ii.is_datacenter,
+           COUNT(DISTINCT ta.ip)::int AS ip_count,
+           COUNT(*)::int AS hits
+    FROM threat_actors ta
+    JOIN ip_intel ii ON ii.ip = ta.ip
+    WHERE ta.ts > ${since.toISOString()} AND ii.org IS NOT NULL
+    GROUP BY ii.org, ii.is_datacenter
+    ORDER BY hits DESC
+    LIMIT 5
+  `;
+  const opsec = {
+    totalThreats: threatWindow.length,
+    exploitAttempts: scannerAgg.cve.reduce((s, c) => s + c.hits, 0),
+    topCVEs: scannerAgg.cve.slice(0, 5),
+    topTools: scannerAgg.tools.slice(0, 5),
+    topCms: scannerAgg.cms.slice(0, 5),
+    autoBlocks: autoBlocksWindow.length,
+    totalBlocklist: blocklistTotal[0]?.n || 0,
+    topAttackerAsns: topAttackersByAsn.map((r) => ({
+      org: r.org, ipCount: r.ip_count, hits: r.hits, isDatacenter: r.is_datacenter,
+    })),
+  };
+
   // --- DNS integrity check ---
   const DNS_CHECKS = [
     { domain: "simpleitsrq.com", type: "CNAME", expected: "cname.vercel-dns.com" },
@@ -271,6 +351,7 @@ export async function GET(request) {
       ts: s.ts,
     })),
     dnsIntegrity: dnsResults,
+    opsec,
   };
 
   const jsonStr = JSON.stringify(report, null, 2);
@@ -285,11 +366,66 @@ export async function GET(request) {
   }
 
   const resend = new Resend(apiKey);
-  const subject = `[SimpleIT] Daily Report — ${report.summary.totalVisits} visits, ${report.summary.uniqueDevices} devices, ${report.summary.securityEvents} security events`;
+  const subject = adsenseMilestone?.justLanded
+    ? `🎉 [SimpleIT] AdSense approval LANDED — ads are now serving on simpleitsrq.com`
+    : `[SimpleIT] Daily Report — ${report.summary.totalVisits} visits · ${opsec.exploitAttempts} exploit attempts blocked · ${opsec.autoBlocks} auto-blocks`;
+
+  const adsenseBannerHtml = adsenseMilestone?.justLanded ? `
+    <div style="padding:16px 20px;background:#107C10;color:#fff;border-radius:10px 10px 0 0;margin-bottom:0">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.9;font-weight:700">🎉 Milestone</div>
+      <div style="font-size:18px;font-weight:700;margin-top:2px">AdSense approval landed — first ad served at ${new Date(adsenseMilestone.firstFilledAt).toUTCString()}</div>
+      <div style="font-size:13px;margin-top:6px;opacity:.95">
+        Ads are now monetizing real visitors. Watch the AdSense health card in the portal Ops Console (fillPct should rise) and the daily fill rate via /api/portal?action=adsense-health.
+      </div>
+    </div>
+  ` : "";
+
+  // OPSEC digest section — plain-English summary of what the defenses did.
+  // Only renders when there's actual signal; a quiet day gets a short line.
+  const opsecHtml = opsec.totalThreats === 0 ? `
+    <div style="padding:16px 20px;background:#f0fdf4;border:1px solid #bbf7d0;border-top:none">
+      <p style="margin:0;font-size:13px;color:#166534">
+        <strong>OPSEC: calm.</strong> No threat activity in the last 24 hours.
+      </p>
+    </div>
+  ` : `
+    <div style="padding:18px 22px;background:#fff;border:1px solid #e5e7eb;border-top:none">
+      <h3 style="margin:0 0 6px;font-size:15px;color:#1a1a1a">Security operations — last 24h</h3>
+      <p style="margin:0 0 14px;font-size:13px;color:#6b7280;line-height:1.5">
+        What the defenses handled without you needing to touch anything.
+      </p>
+      <table cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:13px;width:100%">
+        <tr><td style="color:#6b7280;width:55%">Threats logged</td><td><strong>${opsec.totalThreats}</strong></td></tr>
+        <tr><td style="color:#6b7280">Exploit payloads stopped</td><td><strong style="color:${opsec.exploitAttempts > 0 ? '#DC2626' : 'inherit'}">${opsec.exploitAttempts}</strong></td></tr>
+        <tr><td style="color:#6b7280">IPs auto-blocked today</td><td><strong>${opsec.autoBlocks}</strong></td></tr>
+        <tr><td style="color:#6b7280">Total blocklist size</td><td><strong>${opsec.totalBlocklist}</strong></td></tr>
+      </table>
+      ${opsec.topCVEs.length > 0 ? `
+        <h4 style="margin:14px 0 6px;font-size:13px;color:#DC2626">Top CVE payloads thrown at us</h4>
+        <ul style="margin:0;padding-left:18px;font-size:12px;line-height:1.7;color:#374151">
+          ${opsec.topCVEs.map((c) => `<li><strong>${c.id}</strong> — ${c.hits} hits</li>`).join("")}
+        </ul>
+      ` : ""}
+      ${opsec.topTools.length > 0 ? `
+        <h4 style="margin:14px 0 6px;font-size:13px">Tools fingerprinted</h4>
+        <ul style="margin:0;padding-left:18px;font-size:12px;line-height:1.7;color:#374151">
+          ${opsec.topTools.filter((t) => t.id !== "unknown").slice(0, 5).map((t) => `<li><strong>${t.id}</strong> — ${t.hits} requests</li>`).join("")}
+        </ul>
+      ` : ""}
+      ${opsec.topAttackerAsns.length > 0 ? `
+        <h4 style="margin:14px 0 6px;font-size:13px">Top attacking organizations</h4>
+        <ul style="margin:0;padding-left:18px;font-size:12px;line-height:1.7;color:#374151">
+          ${opsec.topAttackerAsns.map((a) => `<li>${a.org} ${a.isDatacenter ? "<em style='color:#D97706'>(datacenter)</em>" : ""} — ${a.ipCount} IPs / ${a.hits} hits</li>`).join("")}
+        </ul>
+      ` : ""}
+      <p style="margin:14px 0 0;font-size:12px;color:#6b7280">Open the <a href="https://simpleitsrq.com/portal" style="color:#0F6CBD">portal → Security</a> for the full picture and per-IP investigation.</p>
+    </div>
+  `;
 
   const htmlBody = `
     <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:720px;margin:0 auto;color:#1a1a1a">
-      <div style="padding:16px 20px;background:#0F6CBD;color:#fff;border-radius:10px 10px 0 0">
+      ${adsenseBannerHtml}
+      <div style="padding:16px 20px;background:#0F6CBD;color:#fff;${adsenseMilestone?.justLanded ? "" : "border-radius:10px 10px 0 0"}">
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.85">Daily Intelligence Report</div>
         <div style="font-size:18px;font-weight:700;margin-top:2px">simpleitsrq.com — ${new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
       </div>
@@ -307,6 +443,7 @@ export async function GET(request) {
           <tr><td style="color:#6b7280">DNS integrity</td><td><strong style="color:${report.summary.dnsHealthy ? '#107C10' : '#DC2626'}">${report.summary.dnsHealthy ? 'HEALTHY' : 'ALERT — MISMATCH'}</strong></td></tr>
         </table>
       </div>
+      ${opsecHtml}
       <div style="padding:16px 20px;background:#f7f7f8;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px">
         <p style="margin:0;font-size:12px;color:#6b7280">Full JSON report attached. Generated ${report.generated}.</p>
       </div>

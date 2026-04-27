@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { Check, ShieldCheck, RefreshCw, ArrowRight, BookOpen, ArrowLeft, FileText, Calendar } from "lucide-react";
 import { products } from "../data/products";
 import { useSEO, SITE_URL } from "../lib/seo";

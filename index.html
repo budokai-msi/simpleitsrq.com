@@ -2,9 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Favicons — SVG first (modern browsers, scales perfectly), then
+         PNG sizes for legacy + mobile platforms. All rendered from
+         public/favicon.svg via scripts/generate-favicons.mjs. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
+    <link rel="icon" type="image/png" sizes="32x32"   href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16"   href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0F6CBD" />
     <!-- Per-request CSP nonce. Middleware substitutes __CSP_NONCE__ with a
@@ -115,6 +121,38 @@
       "serviceType": ["Managed IT Services", "Cybersecurity", "Cloud Migration", "HIPAA Compliance", "Disaster Recovery", "vCIO Services"],
       "description": "Enterprise-grade managed IT services for businesses in Sarasota, Bradenton, and Venice.",
       "openingHours": "Mo-Fr 08:00-18:00"
+    }
+    </script>
+
+    <!-- Speculation Rules — Chrome 121+ / Edge 121+ prerender hints.
+         When a visitor's pointer lands on (mousedown / touchstart) any
+         eligible same-origin link, the browser prerenders that route
+         in a hidden frame so the actual click feels instant (~0ms).
+         Other browsers (Firefox, Safari) ignore this script entirely;
+         it's a pure progressive enhancement.
+
+         Eagerness "moderate" = trigger on pointerdown, ~190ms before
+         the typical click. Burns at most ~2 concurrent prerenders per
+         Chrome's budget so it doesn't tank the device.
+
+         Excluded: /portal/* (auth + side-effects), /api/* (would bill
+         a serverless function on hover), and explicit external/_blank
+         links. Hash anchors and external schemes (mailto:, tel:) don't
+         match `/*` so they're skipped automatically. -->
+    <script type="speculationrules">
+    {
+      "prerender": [{
+        "where": {
+          "and": [
+            { "href_matches": "/*" },
+            { "not": { "href_matches": "/portal*" } },
+            { "not": { "href_matches": "/api/*" } },
+            { "not": { "selector_matches": "[rel~=external]" } },
+            { "not": { "selector_matches": "[target=_blank]" } }
+          ]
+        },
+        "eagerness": "moderate"
+      }]
     }
     </script>
 

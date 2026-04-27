@@ -7,6 +7,7 @@
 
 import { neon } from "@neondatabase/serverless";
 import { getHoneypotPage } from "./api/_lib/honeypot.js";
+import { identifyScanner } from "./api/_lib/scanner-fingerprints.js";
 
 const HOSTILE_COUNTRIES = new Set(["CN", "RU", "KP"]);
 
@@ -56,7 +57,7 @@ function isScannerPath(pathname) {
 }
 
 // Skip static assets — only intercept page navigations and API calls.
-const SKIP_EXTENSIONS = /\.(js|css|ico|png|jpg|jpeg|svg|woff2?|ttf|eot|map|xml|txt|json|webp|avif)$/i;
+const SKIP_EXTENSIONS = /\.(js|css|ico|png|jpg|jpeg|svg|woff2?|ttf|eot|map|xml|txt|json|webp|avif|webmanifest)$/i;
 
 // ---------------------------------------------------------------------------
 // Per-request CSP nonce — lets us drop `'unsafe-inline'` from `style-src`.
@@ -96,18 +97,30 @@ function buildCsp(nonce) {
   const nonceSrc = nonce ? `'nonce-${nonce}'` : "";
   return [
     "default-src 'self'",
-    "script-src 'self' 'sha256-s73Ww6tYLJKgSSJJXa6U6kUJkLc849Yhy8mrH2QxT8I=' https://va.vercel-scripts.com https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://embed.cal.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googleadservices.com https://tpc.googlesyndication.com",
+    // googleads.g.doubleclick.net is where AdSense fetches the actual ad
+    // creative scripts after the loader at pagead2.googlesyndication.com
+    // bootstraps. Without it in script-src, Chrome blocks the creative
+    // load and (confusingly) sometimes surfaces it as a DNS / "host not
+    // found" error in DevTools rather than a CSP violation.
+    // 'inline-speculation-rules' explicitly opts inline <script type="speculationrules">
+    // blocks (Chrome 121+) into the script-src allowlist without weakening
+    // the broader hash-pinning. Required so the prerender hint block in
+    // index.html can ship without falling back to dynamic JS injection.
+    "script-src 'self' 'inline-speculation-rules' 'sha256-s73Ww6tYLJKgSSJJXa6U6kUJkLc849Yhy8mrH2QxT8I=' https://va.vercel-scripts.com https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://embed.cal.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googleadservices.com https://tpc.googlesyndication.com https://googleads.g.doubleclick.net https://embed.tawk.to https://*.tawk.to",
     `style-src 'self' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com`,
     `style-src-elem 'self' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com https://fonts.googleapis.com`,
     "style-src-attr 'unsafe-inline'",
     "font-src 'self' data: https://vercel.live https://assets.vercel.com https://fonts.gstatic.com",
-    "img-src 'self' data: https://vercel.live https://vercel.com https://cal.com https://app.cal.com https://www.google-analytics.com https://www.googletagmanager.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com https://tpc.googlesyndication.com",
-    "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com https://api.vercel.com https://challenges.cloudflare.com https://vercel.live wss://ws-us3.pusher.com https://app.cal.com https://cal.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://api.pwnedpasswords.com",
-    "frame-src 'self' https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://cal.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com",
+    "img-src 'self' data: https://vercel.live https://vercel.com https://cal.com https://app.cal.com https://www.google-analytics.com https://www.googletagmanager.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com https://tpc.googlesyndication.com https://*.tawk.to https://*.googleusercontent.com",
+    "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com https://api.vercel.com https://challenges.cloudflare.com https://vercel.live wss://ws-us3.pusher.com https://app.cal.com https://cal.com https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://api.pwnedpasswords.com https://*.tawk.to wss://*.tawk.to",
+    "frame-src 'self' https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://cal.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://*.tawk.to",
     "frame-ancestors 'self'",
     "base-uri 'self'",
     "form-action 'self' https://accounts.google.com https://github.com",
     "object-src 'none'",
+    // We don't ship any service workers; lock down worker-src so a future
+    // CSP-bypass attempt can't smuggle one in via blob:/data:/cross-origin.
+    "worker-src 'none'",
     "upgrade-insecure-requests",
   ].join("; ");
 }
@@ -447,6 +460,39 @@ export default async function middleware(request) {
     request.waitUntil?.(p) ?? p.catch(() => {});
     const honeypotPage = url.searchParams.get("p") || "login";
     return new Response(getHoneypotPage(honeypotPage), { status: 200, headers: HONEYPOT_HEADERS() });
+  }
+
+  // Layer 2.5: CVE / exploit-payload detection. The scanner-fingerprints
+  // library recognizes active exploit attempts (Log4Shell JNDI, Spring4Shell
+  // class-loader probes, ProxyShell URIs, Citrix Bleed, F5 iControl, Apache
+  // path traversal, ThinkPHP RCE, Shellshock, PHP-CGI RCE, SQLi). Payloads
+  // commonly ride in the URL OR in request headers (User-Agent, Referer,
+  // X-Forwarded-For). We build a haystack from all of those and run the
+  // matcher once. A positive match is unambiguous intent — auto-block on
+  // first hit, same as scanner traps.
+  //
+  // This layer only runs on non-API routes (API has its own input
+  // validation) and skips the allowlist (checked above) so a legitimate
+  // admin can't accidentally trigger a self-block by testing a payload.
+  if (!url.pathname.startsWith("/api/")) {
+    const ua = request.headers.get("user-agent") || "";
+    const referer = request.headers.get("referer") || "";
+    const xff = request.headers.get("x-forwarded-for") || "";
+    // Pass the concatenated surface so the fingerprinter checks path + every
+    // header a payload could hide in. We only need the boolean match.
+    const id = identifyScanner({
+      userAgent: [ua, referer, xff].filter(Boolean).join(" "),
+      path: url.pathname + url.search,
+    });
+    if (id.cve) {
+      const sql = getSql();
+      const p = Promise.all([
+        sql ? autoBlockIp(sql, ip, `auto: exploit attempt ${id.cve} (${id.cveName})`) : Promise.resolve(),
+        logThreat(request, geo, "exploit_attempt"),
+      ]);
+      request.waitUntil?.(p) ?? p.catch(() => {});
+      return new Response(getHoneypotPage("login"), { status: 200, headers: HONEYPOT_HEADERS() });
+    }
   }
 
   // Layer 3: Hostile geo — CN/RU/KP get the honeypot on all page navigations.

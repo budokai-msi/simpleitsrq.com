@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/generate-posts-meta.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-rss.mjs && node scripts/generate-og-images.mjs",
+    "prebuild": "node scripts/generate-posts-meta.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-rss.mjs && node scripts/generate-og-images.mjs && node scripts/generate-city-og-images.mjs && node scripts/generate-industry-og-images.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -17,6 +17,8 @@
     "test:e2e": "playwright test",
     "ci:install": "npm ci",
     "generate:images": "node scripts/generate-images.mjs",
+    "benchmark:scan": "node scripts/benchmark/run-batch-scan.mjs",
+    "benchmark:report": "node scripts/benchmark/generate-report.mjs",
     "db:push": "node --env-file=.env.local scripts/db/push.mjs"
   },
   "dependencies": {
@@ -33,7 +35,8 @@
     "react-dom": "19.2.5",
     "react-router-dom": "7.14.1",
     "resend": "6.12.2",
-    "stripe": "22.0.2"
+    "stripe": "22.0.2",
+    "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.11.2",

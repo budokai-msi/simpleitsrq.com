@@ -1,4 +1,12 @@
 ﻿/* ============ Layout ============ */
+/* Reserve viewport height on every <main> so route transitions don't
+ * collapse the page between Suspense unmount + new chunk render. The
+ * exact height (calc(100vh - navbar - footer-area)) keeps footer from
+ * jumping into view during the brief blank frame on slow networks. */
+main, #main {
+  display: block;
+  min-height: calc(100vh - 240px);
+}
 .container {
   width: 100%;
   max-width: 1200px;
@@ -1085,34 +1093,57 @@
   }
 }
 
-/* Mobile-only sticky "Book a Call" bar. Mobile visitors lose the hero
- * CTA the moment they scroll, and the burger-menu is an extra tap away.
- * Giving them a permanent one-tap path to booking is the single highest-
- * impact mobile conversion lever for a services business. */
-.mobile-sticky-cta { display: none; }
+/* Mobile thumb-reach action bar. Four channels (Call/Text/Email/Book)
+ * because phone-shy visitors convert through SMS or email at very
+ * different rates than callers — splitting them out lets GA4 reveal
+ * which channel is actually driving leads on mobile. */
+.mobile-action-bar { display: none; }
 @media (max-width: 720px) {
-  .mobile-sticky-cta {
-    display: block;
+  .mobile-action-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
     background: var(--bg-elevated, var(--surface-1, #fff));
     border-top: 1px solid var(--border);
     box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.06);
     z-index: 40;
   }
-  .mobile-sticky-cta-btn {
+  .mobile-action-bar__btn {
     display: flex;
-    width: 100%;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    font-size: 15px;
+    gap: 3px;
+    min-height: 52px;
+    padding: 6px 4px;
+    border-radius: var(--r-sm);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-1);
+    text-decoration: none;
+    background: transparent;
+    transition: background 120ms var(--ease-out), transform 120ms var(--ease-out);
   }
-  /* Reserve space at page bottom so the sticky bar never covers content
-   * (footer, "Load more" button, cookie banner dismissal). */
-  body { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .mobile-action-bar__btn:active { transform: scale(0.96); background: var(--surface-2, rgba(0,0,0,0.04)); }
+  .mobile-action-bar__btn--primary {
+    background: var(--brand);
+    color: #fff;
+  }
+  .mobile-action-bar__btn--primary:active { background: var(--brand-hover, var(--brand)); }
+  /* Reserve space at page bottom so the action bar never covers content
+   * (footer, "Load more" button, cookie banner dismissal). Scoped with
+   * :has() so pages that suppress the bar (/book, /portal/*) don't leave
+   * a phantom gap at the bottom. */
+  body:has(.mobile-action-bar) {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
 }
+[data-theme="dark"] .mobile-action-bar__btn:active { background: rgba(255,255,255,0.06); }
 .footer h4 {
   font-size: 14px;
   font-weight: 600;
@@ -1186,25 +1217,17 @@
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .contact-grid { grid-template-columns: 1fr; }
 }
-/* Nav collapses at 1440px because the 7 primary links, the "Anon"/
- * portal pill, and the Book-a-Call CTA together need ~1400px of
- * horizontal room before container padding. Every common laptop
- * viewport (13" MBA/MBP at 1440x900, 13" Windows at 1366x768,
- * 1280x720) falls below that, so those get the hamburger; only
- * desktops and 15"+ laptops see the full row.
- *
- * Reducing the label set was the obvious alternative, but the user
- * explicitly asked for all seven primary links — so the trade-off is
- * "hamburger earlier" instead of "drop labels." */
-@media (max-width: 1440px) {
+/* Nav collapses at 1280px now that primary nav is leaner (6 items vs.
+ * the previous 7 — Industries/Compliance moved to footer + mobile-only,
+ * Glossary added, "Our Vendor Stack" → "Vendor Stack"). 1366×768
+ * laptops fit the desktop row; 1280×720 and below get the hamburger. */
+@media (max-width: 1280px) {
   .nav-links, .nav-actions { display: none; }
   .menu-btn { display: inline-flex; }
   .navbar:has(.mobile-menu) .mobile-menu { display: flex; }
   .mobile-menu { display: flex; }
 }
-/* Above the breakpoint, tighten spacing so the 7 labels + pill + CTA
- * don't feel airy on a 27" external monitor. */
-@media (min-width: 1441px) {
+@media (min-width: 1281px) {
   .nav-links { gap: 4px; }
   .nav-links a { padding: 8px 10px; }
 }
@@ -1822,8 +1845,60 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ----- Form: shell + new states ----- */
+/* Shared container + field styles for lead forms on Book, Advertise,
+ * CyberInsuranceQuote, ComplianceAuditReferral. These pages wrap their
+ * form in `.form-shell` and use `.field` / `.field-label` labels. The
+ * page-scoped `.advertise-page .form-shell` override still wins for
+ * Advertise's denser layout. */
 .form-shell {
   position: relative;
+  padding: 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow2);
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.form-shell input,
+.form-shell textarea,
+.form-shell select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  background: var(--bg-elevated);
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 400;
+  font-family: inherit;
+  transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out), background-color 200ms var(--ease-out);
+}
+.form-shell input:focus,
+.form-shell textarea:focus,
+.form-shell select:focus {
+  outline: none;
+  border-color: var(--brand);
+  box-shadow: var(--shadow-glow);
+}
+.form-shell textarea { resize: vertical; min-height: 96px; }
+@media (max-width: 640px) {
+  /* Stack the 2-column rows so fields don't get crushed on phones. */
+  .form-shell form > div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  .form-shell { padding: 1.25rem; }
 }
 .form {
   transition: opacity 280ms var(--ease-out), filter 280ms var(--ease-out);
@@ -1990,9 +2065,9 @@
 [data-theme="dark"] .form-success-overlay { background: var(--surface); }
 
 /* ----- Mobile menu, responsive -----
- * Matches the 1440px breakpoint for the primary nav collapse so the
+ * Matches the 1280px breakpoint for the primary nav collapse so the
  * hamburger trigger appears whenever the desktop nav is hidden. */
-@media (max-width: 1440px) {
+@media (max-width: 1280px) {
   .nav-mobile-actions { display: inline-flex; }
 }
 
@@ -2256,13 +2331,20 @@
 .solution-card-icon {
   width: 36px;
   height: 36px;
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--brand-subtle);
   color: var(--brand);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 14%, transparent);
+  transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1),
+              background-color 280ms var(--ease-out);
+}
+.solution-card:hover .solution-card-icon {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--brand-subtle) 70%, var(--surface));
 }
 .solution-card-title {
   margin: 0;
@@ -2703,58 +2785,6 @@
 /* ============================================================
    VISUAL ENHANCEMENTS — Subtle, performant
    ============================================================ */
-
-/* ── Gradient border on hover (single color, no neon) ── */
-.gradient-border {
-  position: relative;
-  border: 1px solid var(--border);
-  transition: border-color 200ms ease, box-shadow 200ms ease;
-}
-.gradient-border:hover {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px var(--brand-glow);
-}
-
-/* ── Card lift on hover ── */
-.card-tilt {
-  transition: transform 200ms ease, box-shadow 200ms ease;
-}
-.card-tilt:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow8);
-}
-
-/* ── Icon badge with subtle brand background ── */
-.gradient-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--brand-subtle);
-  color: var(--brand);
-}
-
-/* ── Shimmer line accent ── */
-.shimmer-line {
-  position: relative;
-  overflow: hidden;
-}
-.shimmer-line::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand) 12%, transparent), transparent);
-  animation: shimmer-sweep 4s ease-in-out infinite;
-}
-@keyframes shimmer-sweep {
-  0%   { left: -100%; }
-  100% { left: 200%; }
-}
 
 /* ── Solution card link arrow slide-in ── */
 .solution-card-link svg {
@@ -4414,37 +4444,49 @@
 }
 [data-theme="dark"] .audit-type-card__icon { background: rgba(76, 194, 255, 0.12); color: #4CC2FF; }
 
-/* ============ Exit-intent modal ============ */
-.exit-intent-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
+/* ============ Exit-intent modal — native <dialog> ============ */
+/* The <dialog> itself is the "modal card" element and lives in the
+   browser's top-layer when shown via showModal(). The dim/blur
+   backdrop is the ::backdrop pseudo-element — no separate wrapper
+   div needed. .exit-intent-modal-inner holds the scrollable content
+   so we can keep border-radius / overflow:hidden on the dialog
+   itself. */
+.exit-intent-modal {
+  width: min(540px, calc(100vw - 32px));
+  max-width: 540px;
+  margin: auto;          /* centered by default in the top-layer */
+  padding: 0;             /* inner div handles padding */
+  background: var(--surface, #ffffff);
+  color: var(--text-1, #1a1a1a);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+  box-shadow: var(--shadow16);
+  overflow: hidden;
+  position: relative;
+  /* When closed, hide it — `display:none` would cancel the
+     showModal/close transitions. Instead use 0 opacity + no pointer
+     events; the [open] state below restores full presence. */
+}
+.exit-intent-modal:not([open]) { display: none; }
+
+.exit-intent-modal[open] {
+  animation: exit-intent-pop 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.exit-intent-modal::backdrop {
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  display: grid;
-  place-items: center;
-  padding: 16px;
   animation: exit-intent-fade-in 180ms ease-out;
 }
-[data-theme="dark"] .exit-intent-backdrop {
+[data-theme="dark"] .exit-intent-modal::backdrop {
   background: rgba(0, 0, 0, 0.65);
+}
+.exit-intent-modal-inner {
+  display: contents; /* leave layout to the existing inner-card rules */
 }
 @keyframes exit-intent-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
-}
-.exit-intent-modal {
-  position: relative;
-  width: 100%;
-  max-width: 540px;
-  background: var(--surface, #ffffff);
-  color: var(--text-1, #1a1a1a);
-  border: 1px solid var(--stroke-2, #e5e7eb);
-  border-radius: 16px;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
-  animation: exit-intent-pop 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  overflow: hidden;
 }
 [data-theme="dark"] .exit-intent-modal {
   background: #0f1418;
@@ -5087,3 +5129,1151 @@
 [data-theme="dark"] .compare-index__card:hover { border-color: #4CC2FF; }
 [data-theme="dark"] .compare-index__card-cta,
 [data-theme="dark"] .compare-related-card__cta { color: #4CC2FF; }
+
+/* ============ Glossary index + entry ============ */
+
+.glossary-index .glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin: 32px 0;
+}
+
+.glossary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 22px;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--syn-surface, #ffffff);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.12s, box-shadow 0.12s;
+}
+
+.glossary-card:hover {
+  border-color: #0F6CBD;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 108, 189, 0.08);
+}
+
+.glossary-card__term {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--syn-text, #0B0D10);
+  letter-spacing: -0.01em;
+}
+
+.glossary-card__short {
+  font-size: 0.92rem;
+  color: var(--syn-text-muted, #4b5563);
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.glossary-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0F6CBD;
+  margin-top: 4px;
+}
+
+[data-theme="dark"] .glossary-card {
+  background: var(--syn-surface-hi, #161a20);
+  border-color: var(--syn-border, #2a2f37);
+}
+[data-theme="dark"] .glossary-card:hover {
+  border-color: #4CC2FF;
+  box-shadow: 0 6px 18px rgba(76, 194, 255, 0.12);
+}
+[data-theme="dark"] .glossary-card__cta { color: #4CC2FF; }
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  GLOBAL POLISH LAYER — applied last so it wins where unscoped.    ║
+   ║  Goals: accessible focus rings, smoother hover/press feedback,    ║
+   ║  fluid type at the largest sizes, branded text selection,         ║
+   ║  reduce-motion respect throughout. No layout changes —            ║
+   ║  visual-only.                                                     ║
+   ╚══════════════════════════════════════════════════════════════════╝ */
+
+/* Smooth scroll for in-page anchor links (#contact, #solutions, etc.).
+ * Respects user prefers-reduced-motion via the @media block below. */
+html { scroll-behavior: smooth; }
+
+/* Branded text selection — replaces the OS default blue/orange so
+ * highlighted text feels on-brand without being aggressive. */
+::selection {
+  background: var(--brand-glow);
+  color: var(--text-1);
+}
+
+/* Universal focus-visible ring. Browsers no longer show a focus ring
+ * on click (only keyboard) — but our existing focus styles were
+ * inconsistent across button/input/anchor. This unifies them on a
+ * brand-glow halo that's visible on any background. */
+:where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Generic card-hover lift — applies to common card patterns site-wide.
+ * Subtle: 1-2px translate + slightly lifted shadow. Combined with the
+ * existing per-card border-color shifts it gives a unified "interactive"
+ * feel without overdoing it. */
+.glossary-card,
+.blog-card,
+.product-card,
+.stack-tool,
+.local-pattern-card,
+.solution-card,
+.compare-card {
+  transition:
+    transform 180ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    box-shadow 180ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)),
+    border-color 180ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  will-change: transform;
+}
+.glossary-card:hover,
+.blog-card:hover,
+.product-card:hover,
+.stack-tool:hover,
+.local-pattern-card:hover,
+.solution-card:hover,
+.compare-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Smoother default link transitions everywhere — color + opacity ease
+ * instead of jumping. Skips inside cards (where a parent transition
+ * already runs) and skips the navbar/footer (which have their own
+ * intentional flat states). */
+.blog-post-content a,
+.section-sub a,
+.lede a,
+p a:not(.btn):not(.live-defense-card) {
+  transition: color 160ms var(--ease-out, ease), opacity 160ms ease;
+}
+
+/* Button press feedback — a tiny scale on :active gives the tactile
+ * confirmation mobile users expect from native UI. Only applies when
+ * the button doesn't already define its own active transform (the
+ * primary CTA already does translateY(0)). */
+.btn:active:not(.btn-primary):not(.btn-secondary) {
+  transform: scale(0.98);
+}
+
+/* Form-input polish — softer focus glow that matches button hover.
+ * Replaces the box-shadow for elements that already have a glow but
+ * leaves anything custom alone. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-glow);
+  outline: none;
+}
+
+/* Fluid display + title sizing — collapses gracefully on mobile so the
+ * 68px hero doesn't crush a 360px screen. clamp() keeps the desktop
+ * size unchanged at the top end. Only top-level .display + .title-1
+ * because .title-2 / .title-3 already scale fine. */
+.display {
+  font-size: clamp(36px, 8vw, 68px);
+  line-height: clamp(44px, 9vw, 76px);
+  letter-spacing: clamp(-1px, -0.2vw, -1.5px);
+}
+.title-1 {
+  font-size: clamp(28px, 5vw, 40px);
+  line-height: clamp(36px, 6vw, 52px);
+}
+
+/* Higher tap-target floor for icon-only buttons (per WCAG 2.5.5
+ * minimum 44x44 CSS pixels). Mostly affects the mobile action bar +
+ * theme toggle. Only applies when the element has no text — text
+ * buttons get their min-height from padding already. */
+@media (pointer: coarse) {
+  button:not(:has(*:not(svg))),
+  a.btn:not(:has(*:not(svg))) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Section reveal — anything tagged data-reveal fades up the first
+ * time it intersects the viewport. The class added by the existing
+ * useRevealChildren hook (src/lib/useScrollReveal.js) is `.revealed`
+ * — getting this wrong leaves elements stuck at opacity:0 forever,
+ * which is exactly what happened on the first iteration of this
+ * polish layer. Don't rename without updating both. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 480ms var(--ease-out, ease),
+    transform 480ms var(--ease-out, ease);
+}
+[data-reveal].revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Visited-state nudge for Glossary + Blog index lists so visitors
+ * remember what they've already read. Tiny opacity shift, not a
+ * heavy color change — a "soft greying" without hiding content. */
+.glossary-card:visited h2,
+.glossary-card:visited h3,
+.blog-card:visited h3 {
+  opacity: 0.78;
+}
+
+/* Reduce-motion override — wins because it's specificity-equal but
+ * declared last. Disables every transform/transition added above. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .glossary-card, .blog-card, .product-card, .stack-tool,
+  .local-pattern-card, .solution-card, .compare-card,
+  .btn, .btn-primary, .btn-secondary,
+  [data-reveal] {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  [data-reveal] { opacity: 1; }
+}
+
+/* ============================================================
+   /services — productized fixed-fee service catalog
+   Self-service Stripe Payment Link buy-now flow with a waitlist
+   email-capture fallback for services that aren't wired yet.
+   ============================================================ */
+
+.services-main { padding-top: 0; }
+.services-hero {
+  padding-top: clamp(48px, 6vw, 96px);
+  padding-bottom: clamp(24px, 3vw, 48px);
+}
+.services-hero .display { max-width: 760px; }
+.services-hero .lede   { max-width: 720px; }
+.services-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.services-trust-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tab filter row */
+.services-tabs-wrap { padding-top: 8px; padding-bottom: 8px; }
+.services-tabs {
+  display: inline-flex;
+  padding: 4px;
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  gap: 2px;
+}
+.services-tab {
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out);
+}
+.services-tab:hover { color: var(--text-1); }
+.services-tab.is-active {
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow2);
+}
+
+/* Catalog grid */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+/* Card */
+.svc-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow2);
+  transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  scroll-margin-top: 96px; /* anchor offset for #slug deep-links */
+}
+.svc-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow8);
+}
+.svc-card-head { margin-bottom: 16px; }
+.svc-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+.svc-audience {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.svc-audience-residential { background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success); }
+.svc-audience-business    { background: var(--brand-subtle); color: var(--brand); }
+.svc-audience-both        { background: var(--surface-3); color: var(--text-2); }
+.svc-duration { color: var(--text-3); font-size: 12px; }
+.svc-card-title { margin: 0 0 6px; font-size: 18px; font-weight: 600; line-height: 24px; color: var(--text-1); }
+.svc-card-tagline { margin: 0; font-size: 14px; line-height: 20px; color: var(--text-2); }
+
+/* Price block */
+.svc-price-block {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+.svc-price {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.svc-price-from { font-size: 14px; font-weight: 500; color: var(--text-3); margin-right: 4px; }
+.svc-price-suffix { font-size: 14px; font-weight: 500; color: var(--text-2); margin-left: 2px; }
+.svc-price-note { margin: 4px 0 0; font-size: 12px; color: var(--text-2); line-height: 18px; }
+
+/* Includes / not-included */
+.svc-includes { margin-bottom: 12px; }
+.svc-includes h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.svc-includes ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.svc-includes li { display: flex; gap: 8px; font-size: 13px; line-height: 19px; color: var(--text-1); }
+.svc-includes li > svg { flex-shrink: 0; margin-top: 3px; }
+
+.svc-not-included {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+.svc-not-included summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  list-style: none;
+}
+.svc-not-included summary::-webkit-details-marker { display: none; }
+.svc-not-included summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  transition: transform 200ms var(--ease-out);
+}
+.svc-not-included[open] summary::before { transform: rotate(90deg); }
+.svc-not-included ul { list-style: none; padding: 8px 0 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.svc-not-included li { display: flex; gap: 8px; font-size: 12px; line-height: 18px; color: var(--text-2); }
+.svc-not-included li > svg { flex-shrink: 0; margin-top: 3px; }
+
+.svc-booking-note {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--brand-subtle) 50%, transparent);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--text-2);
+  display: flex;
+  gap: 8px;
+}
+.svc-booking-note svg { flex-shrink: 0; margin-top: 2px; color: var(--brand); }
+
+/* CTA */
+.svc-cta { margin-top: auto; padding-top: 8px; }
+.svc-buy-btn { width: 100%; justify-content: center; }
+
+/* Waitlist email capture */
+.svc-waitlist { display: flex; flex-direction: column; gap: 6px; }
+.svc-waitlist-label { font-size: 12px; font-weight: 600; color: var(--text-2); }
+.svc-waitlist-row {
+  display: flex;
+  gap: 8px;
+}
+.svc-waitlist-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-elevated);
+  color: var(--text-1);
+  font-size: 14px;
+}
+.svc-waitlist-row input:focus { outline: 2px solid var(--brand); outline-offset: 1px; border-color: var(--brand); }
+.svc-waitlist-row button { white-space: nowrap; }
+.svc-waitlist-err { margin: 4px 0 0; font-size: 12px; color: var(--error); display: flex; align-items: center; gap: 4px; }
+.svc-waitlist-sent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--success) 25%, transparent);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--text-1);
+}
+
+.services-outro { padding-top: 32px; padding-bottom: 64px; }
+
+@media (max-width: 720px) {
+  .services-grid { grid-template-columns: 1fr; }
+  .services-tabs { width: 100%; }
+  .services-tab { flex: 1; }
+}
+
+/* ============================================================
+   Newsletter signup component (cross-cutting, used on / and
+   /wisp-starter and elsewhere).
+   ============================================================ */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px; padding: 0;
+  margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.newsletter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 32px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--brand-subtle) 80%, transparent),
+    var(--surface));
+  border: 1px solid color-mix(in srgb, var(--brand) 16%, transparent);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow4);
+}
+.newsletter-card { /* default */ }
+.newsletter-inline {
+  grid-template-columns: 1fr;
+  text-align: left;
+  padding: 24px;
+}
+.newsletter-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+.newsletter h3 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--text-1);
+}
+.newsletter p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--text-2);
+}
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.newsletter-label {
+  position: relative;
+  display: block;
+}
+.newsletter-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  pointer-events: none;
+}
+.newsletter-form input[type="email"] {
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  font-size: 15px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-elevated);
+  color: var(--text-1);
+}
+.newsletter-form input[type="email"]:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+  border-color: var(--brand);
+}
+.newsletter-submit { width: 100%; justify-content: center; }
+.newsletter-fineprint {
+  margin-top: 4px !important;
+  font-size: 11px !important;
+  color: var(--text-3) !important;
+  line-height: 16px !important;
+}
+.newsletter-err {
+  display: flex; align-items: center; gap: 4px;
+  margin: 4px 0 0; font-size: 12px; color: var(--error);
+}
+
+.newsletter-success {
+  grid-template-columns: 1fr;
+  text-align: center;
+  padding: 36px 24px;
+}
+.newsletter-success-inner { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.newsletter-success-mark { color: var(--success); }
+.newsletter-success h3 { margin: 0; }
+.newsletter-success-cta { margin-top: 8px !important; font-size: 13px !important; }
+
+@media (max-width: 720px) {
+  .newsletter { grid-template-columns: 1fr; padding: 24px; }
+}
+
+/* ============================================================
+   /wisp-starter — Free WISP template page
+   Functions as both lead-magnet delivery surface AND a long-tail
+   SEO target for "Florida WISP template free".
+   ============================================================ */
+
+.wisp-main { padding-top: 0; }
+.wisp-hero { padding-top: clamp(48px, 6vw, 96px); padding-bottom: 32px; }
+.wisp-hero .display { max-width: 800px; }
+.wisp-hero .lede { max-width: 720px; }
+.wisp-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 16px; }
+.wisp-trust-row {
+  display: flex; flex-wrap: wrap; gap: 8px 24px;
+  list-style: none; padding: 0; margin: 0;
+  font-size: 13px; color: var(--text-2);
+}
+.wisp-trust-row li { display: flex; align-items: center; gap: 6px; }
+.wisp-trust-row svg { color: var(--success); }
+
+.wisp-newsletter-wrap { padding-top: 16px; padding-bottom: 16px; }
+
+.wisp-doc {
+  background: var(--surface);
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+.wisp-doc .container { max-width: 760px; }
+.wisp-doc h2.title-1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.wisp-doc-meta {
+  text-align: center;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--text-2);
+  margin: 0 auto 32px;
+  padding: 16px 24px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  max-width: 480px;
+}
+.wisp-section { margin: 32px 0; }
+.wisp-section h3.title-2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.wisp-section p {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-1);
+  margin: 0 0 12px;
+}
+.wisp-bullets { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.wisp-bullets li { display: flex; gap: 10px; font-size: 14px; line-height: 21px; color: var(--text-1); }
+.wisp-bullets svg { flex-shrink: 0; margin-top: 4px; color: var(--success); }
+.wisp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 12px 0;
+}
+.wisp-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text-1);
+}
+.wisp-table td {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  vertical-align: top;
+}
+.wisp-signature { margin-top: 48px; padding-top: 24px; border-top: 2px solid var(--border-strong); }
+
+.wisp-upgrade { padding: 48px 0; }
+.wisp-upgrade-card {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow4);
+}
+.wisp-upgrade-card h2 { margin: 8px 0 12px; }
+.wisp-upgrade-card p { font-size: 14px; line-height: 22px; color: var(--text-2); margin: 0 0 16px; }
+.wisp-upgrade-bullets { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.wisp-upgrade-bullets li { display: flex; gap: 8px; font-size: 13px; color: var(--text-1); }
+.wisp-upgrade-bullets svg { flex-shrink: 0; margin-top: 3px; color: var(--success); }
+.wisp-upgrade-actions { display: flex; flex-direction: column; gap: 10px; }
+
+@media (max-width: 760px) {
+  .wisp-upgrade-card { grid-template-columns: 1fr; padding: 24px; }
+}
+
+/* ============================================================
+   /pricing — public pricing page
+   ============================================================ */
+
+.pricing-main { padding-top: 0; }
+.pricing-hero {
+  padding-top: clamp(48px, 6vw, 96px);
+  padding-bottom: 32px;
+}
+.pricing-hero .display { max-width: 820px; }
+.pricing-hero .lede { max-width: 720px; }
+.pricing-hero-meta {
+  display: flex; flex-wrap: wrap; gap: 8px 24px;
+  margin-top: 16px; font-size: 13px; color: var(--text-2);
+}
+.pricing-hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* Tier cards */
+.pricing-tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  align-items: stretch;
+}
+.pricing-tiers-2col {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 480px));
+  justify-content: center;
+}
+.pricing-tier {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow2);
+  transition: border-color 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+.pricing-tier:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow8);
+}
+.pricing-tier.is-flagship {
+  border-color: var(--brand);
+  box-shadow: var(--shadow8), 0 0 0 4px var(--brand-glow);
+}
+.pricing-tier-badge {
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  background: var(--brand);
+  color: var(--text-on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 999px;
+}
+.pricing-tier-audience {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.pricing-tier-name {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+.pricing-tier-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0 0 4px;
+}
+.pricing-tier-price-amount {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.pricing-tier-price-suffix {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.pricing-tier-minimum {
+  font-size: 12px;
+  color: var(--text-3);
+  margin: 0 0 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.pricing-tier-includes {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.pricing-tier-includes li {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text-1);
+}
+.pricing-tier-includes li > svg { flex-shrink: 0; margin-top: 3px; }
+.pricing-tier-cta { margin-top: auto; justify-content: center; }
+
+/* Tables */
+.pricing-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 720px;
+}
+.pricing-table th {
+  text-align: left;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+.pricing-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.pricing-table tr:last-child td { border-bottom: 0; }
+.pricing-table tr:hover td { background: var(--surface-2); }
+
+.pricing-svc-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.pricing-svc-name a { color: var(--text-1); }
+.pricing-svc-name a:hover { color: var(--brand); }
+.pricing-svc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--brand-subtle);
+  color: var(--brand);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.pricing-svc-tagline {
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 19px;
+}
+.pricing-svc-price {
+  font-weight: 700;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text-1);
+}
+.pricing-svc-from {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+  margin-right: 2px;
+}
+.pricing-svc-cta { white-space: nowrap; }
+.pricing-svc-cta .link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--brand);
+  font-weight: 600;
+  font-size: 13px;
+}
+.pricing-svc-cta .link-arrow:hover { color: var(--brand-hover); }
+
+/* Quote-required block */
+.pricing-quote-required {
+  padding: 32px;
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  max-width: 760px;
+  margin: 0 auto;
+}
+.pricing-quote-required h2 { margin: 8px 0 12px; }
+.pricing-quote-required p { font-size: 14px; line-height: 22px; color: var(--text-2); margin: 0 0 20px; }
+.pricing-quote-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pricing-quote-list li {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--text-1);
+}
+.pricing-quote-list li > svg { flex-shrink: 0; margin-top: 4px; }
+
+@media (max-width: 720px) {
+  .pricing-tiers { grid-template-columns: 1fr; }
+  .pricing-quote-required { padding: 24px; }
+}
+
+/* ============================================================
+   /admin/affiliates — admin-only affiliate performance dashboard
+   Fluent-free; uses the existing design tokens.
+   ============================================================ */
+
+.admin-affiliates { padding: 32px 0 64px; }
+.admin-aff-head { margin-bottom: 24px; }
+.admin-aff-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 12px;
+}
+.admin-aff-back:hover { color: var(--brand); }
+.admin-aff-sub {
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-2);
+  margin: 8px 0 16px;
+}
+.admin-aff-controls { display: inline-flex; gap: 4px; padding: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); }
+.admin-aff-range {
+  border: 0;
+  background: transparent;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 200ms var(--ease-out);
+}
+.admin-aff-range:hover { color: var(--text-1); }
+.admin-aff-range.is-active {
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow2);
+}
+
+.admin-aff-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+.admin-aff-stat {
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-aff-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.admin-aff-stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+
+.admin-aff-section { margin: 32px 0; }
+.admin-aff-section h2.title-2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+.admin-aff-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.admin-aff-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  background: color-mix(in srgb, var(--warning) 8%, var(--surface));
+  border: 1px dashed color-mix(in srgb, var(--warning) 40%, var(--border));
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  font-size: 14px;
+}
+.admin-aff-empty svg { color: var(--warning); flex-shrink: 0; }
+
+.admin-aff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.admin-aff-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+}
+.admin-aff-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-1);
+  vertical-align: middle;
+}
+.admin-aff-table tr:last-child td { border-bottom: 0; }
+.admin-aff-table tr:hover td { background: var(--surface-2); }
+.admin-aff-slug {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  background: var(--surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-2);
+}
+.admin-aff-label {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mini bar chart for daily volume */
+.admin-aff-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 96px;
+  padding: 16px;
+}
+.admin-aff-bar {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+.admin-aff-bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 70%, transparent) 100%);
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+  transition: opacity 160ms var(--ease-out);
+}
+.admin-aff-bar:hover .admin-aff-bar-fill { opacity: 0.8; }
+.admin-aff-bars-axis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px 12px;
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* ============================================================
+   Google Reviews block
+   ============================================================ */
+
+.reviews-section {
+  padding: clamp(40px, 5vw, 72px) 0;
+  background: var(--bg);
+}
+.reviews-head {
+  text-align: center;
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.reviews-head h2.title-1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 24px;
+}
+.reviews-stars { display: inline-flex; gap: 2px; align-items: center; }
+.reviews-rating-num { font-size: 22px; font-weight: 700; color: var(--text-1); }
+.reviews-rating-suffix { font-size: 14px; font-weight: 500; color: var(--text-2); }
+.reviews-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.reviews-profile-link:hover { color: var(--brand); }
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.review-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow2);
+}
+.review-card-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+.review-meta { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.review-meta strong { font-size: 14px; color: var(--text-1); }
+.review-time { font-size: 12px; color: var(--text-3); }
+.review-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Print styles — when the user hits Cmd+P / Ctrl+P, the page renders
+   as a plain WISP document. Hides nav, hero, upgrade card, newsletter,
+   and any other marketing chrome. */
+@media print {
+  body { background: white; color: black; }
+  .navbar, .footer, .mobile-action-bar, .wisp-hero, .wisp-newsletter-wrap,
+  .wisp-upgrade, .wisp-print-note, .live-defense-strip, .cookie-consent-banner,
+  .nav-actions, .nav-mobile-actions { display: none !important; }
+  .wisp-doc { padding: 0 !important; background: white !important; }
+  .wisp-doc .container { max-width: 100% !important; padding: 0 !important; }
+  .wisp-section h3.title-2 { color: black !important; }
+  .wisp-bullets svg, .wisp-trust-row svg { display: none !important; }
+}

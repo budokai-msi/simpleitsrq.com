@@ -26,6 +26,59 @@ import { clientIp, rateLimit } from "./_lib/security.js";
 import { sql } from "./_lib/db.js";
 import { validateEnv } from "./_lib/env.js";
 import { requireCsrf } from "./_lib/csrf.js";
+import { getSession } from "./_lib/session.js";
+import { runExposureScan } from "./_lib/exposure.js";
+import { identifyScanner } from "./_lib/scanner-fingerprints.js";
+
+// Inline admin check — gates OPSEC-sensitive surfaces (the threats feed)
+// without pulling the larger portal.js admin helper. Mirrors the email +
+// users.is_admin pattern used in api/portal.js#resolveAdmin.
+async function isAdminRequest(request) {
+  try {
+    const session = await getSession(request);
+    if (!session?.user?.email) return false;
+    const adminEmail = process.env.ADMIN_EMAIL || "";
+    if (!adminEmail) return false;
+    if (session.user.email.toLowerCase() !== adminEmail.toLowerCase()) return false;
+    const rows = await sql`SELECT is_admin FROM users WHERE id = ${session.user.id} LIMIT 1`;
+    return rows.length > 0 && rows[0].is_admin === true;
+  } catch {
+    return false;
+  }
+}
+
+/** Collapse an IPv4 to its /24 for public display — preserves "who" at
+ *  network level without ever leaking the exact host. IPv6 gets its
+ *  first 4 hextets for similar anonymization. Non-IP strings return as
+ *  "unknown" so a malformed row can never leak. */
+function anonIp(ip) {
+  if (!ip || typeof ip !== "string") return "unknown";
+  const v4 = ip.match(/^(\d+\.\d+\.\d+)\.\d+$/);
+  if (v4) return `${v4[1]}.x`;
+  const v6 = ip.match(/^([0-9a-fA-F:]+:)[0-9a-fA-F:]+$/);
+  if (v6 && ip.includes(":")) {
+    const parts = ip.split(":").filter(Boolean);
+    if (parts.length >= 4) return `${parts.slice(0, 4).join(":")}:::`;
+  }
+  return "unknown";
+}
+
+/** Convert an arbitrary probed path into a short category label so the
+ *  public feed doesn't expose unusual internal routes someone might
+ *  misconstrue as real endpoints. */
+function summarizePath(path = "") {
+  const p = String(path || "").toLowerCase();
+  if (/\b(wp-login|wp-admin|xmlrpc|wp-config)\b/.test(p)) return "/wordpress-*";
+  if (/\.env|\.git|\.aws|\.svn|\.ssh/.test(p))             return "/*-leak-probe";
+  if (/\b(phpmyadmin|pma|adminer)\b/.test(p))              return "/phpmyadmin-*";
+  if (/\b(actuator|spring|druid)\b/.test(p))               return "/spring-*";
+  if (/\b(admin|administrator|dashboard)\b/.test(p))       return "/admin-*";
+  if (/\b(jenkins|tomcat|manager)\b/.test(p))              return "/app-server-*";
+  if (/\b(api\/v\d|debug|test|health)\b/.test(p))          return "/api-probe";
+  if (/\.(php|asp|jsp)(\?|$)/.test(p))                     return "/script-probe";
+  if (/\$\{jndi:|class\.module|union\s+select/i.test(p))   return "/cve-payload";
+  return p.length > 30 ? p.slice(0, 30) + "…" : p || "/";
+}
 
 // Cold-start validation. Throws in production if any required secret is
 // missing; logs a warning in dev/preview so local iteration keeps working
@@ -37,6 +90,9 @@ validateEnv({
 
 const CONTACT_FROM = "Simple IT SRQ Website <contact@simpleitsrq.com>";
 const NEWSLETTER_FROM = "Simple IT Brief <hello@simpleitsrq.com>";
+// Routed to hello@simpleitsrq.com via ImprovMX (mx1/mx2.improvmx.com) which
+// forwards to the Gmail catch-all. Override with CONTACT_TO_EMAIL if the
+// destination needs to change (e.g. shared team inbox).
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
 const SITE_URL = "https://simpleitsrq.com";
 const TURNSTILE_VERIFY_URL =
@@ -51,6 +107,19 @@ const escapeHtml = (s = "") =>
     .replace(/'/g, "&#39;");
 
 const isEmail = (s = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+// Collapse C0 (U+0000..U+001F), DEL, and C1 (U+0080..U+009F) to spaces so
+// user input can't smuggle extra headers (Bcc:, etc.) into a Resend subject.
+// Some SMTP gateways treat the C1 range as line breaks.
+const stripHeaderCtrl = (s = "") => {
+  const str = String(s);
+  let out = "";
+  for (let k = 0; k < str.length; k++) {
+    const c = str.charCodeAt(k);
+    out += (c < 0x20 || c === 0x7F || (c >= 0x80 && c <= 0x9F)) ? " " : str[k];
+  }
+  return out.replace(/\s+/g, " ").trim();
+};
 
 const json = (status, body) =>
   new Response(JSON.stringify(body), {
@@ -113,6 +182,283 @@ function randomToken() {
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+// Public exposure-scan lead magnet.
+//
+// Visitor enters a domain + email, we run the passive DNS + CT scan
+// server-side, store their email as a newsletter lead (same pipeline as
+// the newsletter form), and return the report inline. This is a
+// top-of-funnel lead engine — the report itself is genuinely useful, so
+// a real-name email comes in naturally.
+//
+// We do NOT require double-opt-in here because the visitor just gave us
+// an email for a specific purpose (the scan). Mark the subscriber as
+// unconfirmed so our own cron doesn't spam them until they confirm via
+// some other path — we just want the lead stored.
+async function handleExposureScan(request, body, ip) {
+  const rawDomain = String(body.domain || "").trim().slice(0, 253);
+  const email = String(body.email || "").trim().toLowerCase().slice(0, 320);
+  const name  = String(body.name  || "").trim().slice(0, 120);
+  if (!rawDomain) return json(400, { ok: false, error: "domain_required" });
+  if (!email || !isEmail(email)) return json(400, { ok: false, error: "email_invalid" });
+
+  const report = await runExposureScan(rawDomain);
+  if (!report.ok) return json(400, report);
+
+  // Store as a lead — same table the newsletter uses, tagged so we can
+  // see where it came from. Don't auto-confirm; they can opt into the
+  // newsletter separately.
+  try {
+    const existing = await sql`
+      SELECT id FROM newsletter_subscribers WHERE lower(email) = ${email} LIMIT 1
+    `.catch(() => []);
+    if (existing[0]) {
+      await sql`
+        UPDATE newsletter_subscribers
+        SET source = ${"exposure-scan:" + report.domain}, ip = ${ip}
+        WHERE id = ${existing[0].id}
+      `;
+    } else {
+      await sql`
+        INSERT INTO newsletter_subscribers (email, confirm_token, unsubscribe_token, source, ip)
+        VALUES (${email}, ${randomToken()}, ${randomToken()}, ${"exposure-scan:" + report.domain}, ${ip})
+      `;
+    }
+  } catch (err) {
+    // Lead storage is best-effort — a DB hiccup shouldn't block the
+    // visitor's scan report from rendering.
+    console.warn("[exposure-scan] lead store failed", err);
+  }
+
+  // Fire the report as an email too, so the visitor has it in their
+  // inbox (gives them a reason to trust us with future outreach) and
+  // you get a copy in CONTACT_TO for lead review.
+  const apiKey = process.env.RESEND_API_KEY;
+  if (apiKey) {
+    try {
+      const resend = new Resend(apiKey);
+      const contactTo = process.env.CONTACT_TO_EMAIL || CONTACT_TO_DEFAULT;
+      const gradeColor = report.grade === "A" ? "#107C10"
+        : report.grade === "B" ? "#059669"
+        : report.grade === "C" ? "#D97706"
+        : report.grade === "D" ? "#DC2626" : "#7C2D12";
+      const findingsHtml = (report.findings || []).map((f) => `
+        <tr>
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;vertical-align:top;width:80px">
+            <span style="display:inline-block;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;
+              background:${f.severity === "critical" ? "#DC2626" : f.severity === "high" ? "#D97706" : f.severity === "medium" ? "#F59E0B" : "#9CA3AF"};
+              color:#fff;text-transform:uppercase">${f.severity}</span>
+          </td>
+          <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;vertical-align:top;font-size:13px">
+            <strong>${escapeHtmlSafe(f.title)}</strong>
+            <div style="color:#6b7280;margin-top:4px;line-height:1.5">${escapeHtmlSafe(f.detail)}</div>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="2" style="padding:16px;color:#107C10;font-size:14px">No findings — your domain is well-configured. Keep monitoring.</td></tr>`;
+
+      await resend.emails.send({
+        from: CONTACT_FROM,
+        to: [email],
+        bcc: [contactTo],
+        subject: `Your exposure scan for ${report.domain} — Grade ${report.grade}`,
+        html: `
+<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:640px;margin:0 auto;color:#1a1a1a">
+  <div style="padding:18px 22px;background:#0F6CBD;color:#fff;border-radius:10px 10px 0 0">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.9">Exposure Scan</div>
+    <div style="font-size:20px;font-weight:700;margin-top:2px">${escapeHtmlSafe(report.domain)}</div>
+  </div>
+  <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none">
+    <div style="display:flex;gap:18px;align-items:center;margin-bottom:14px">
+      <div style="font-size:48px;font-weight:700;color:${gradeColor};line-height:1">${report.grade}</div>
+      <p style="margin:0;font-size:14px;line-height:1.5;color:#1f2937">${escapeHtmlSafe(report.gradeNarrative)}</p>
+    </div>
+    <h3 style="font-size:15px;margin:18px 0 8px">Findings</h3>
+    <table style="width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+      ${findingsHtml}
+    </table>
+    ${report.subdomains?.length ? `
+      <h3 style="font-size:15px;margin:20px 0 6px">Subdomains discovered (${report.subdomains.length})</h3>
+      <p style="font-size:11px;color:#6b7280;margin:0 0 6px">From public Certificate Transparency logs — every scanner on the internet can see these.</p>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.6;color:#374151">${report.subdomains.map(escapeHtmlSafe).join("<br>")}</div>
+    ` : ""}
+  </div>
+  <div style="padding:16px 22px;background:#f7f7f8;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px">
+    <p style="margin:0 0 6px;font-size:13px"><strong>Want this fixed?</strong></p>
+    <p style="margin:0;font-size:13px;color:#4b5563;line-height:1.5">Reply to this email and we'll quote the fixes. Typical DNS-hardening engagement is a one-time flat fee, no retainer.</p>
+  </div>
+</div>`,
+        text: [
+          `Exposure scan for ${report.domain} — Grade ${report.grade}`,
+          ``,
+          report.gradeNarrative,
+          ``,
+          `Findings:`,
+          ...(report.findings || []).map((f) => `  [${f.severity.toUpperCase()}] ${f.title}\n    ${f.detail}`),
+          ``,
+          `Reply to this email for a quote on fixing these.`,
+        ].join("\n"),
+      });
+    } catch (err) {
+      console.warn("[exposure-scan] email send failed (non-blocking)", err);
+    }
+  }
+
+  return json(200, { ...report, leadStored: true });
+}
+
+// Minimal HTML escape for the email renderer — no dep needed.
+function escapeHtmlSafe(s = "") {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// Newsletter drip sequence (welcome + day-3 + day-7).
+//
+// Each function returns true on a successful Resend send, false on any
+// failure (no API key, network error, Resend rejection). Callers update
+// the matching *_sent_at column ONLY on true, so a transient failure
+// stays retryable on the next run.
+//
+// Email content lives inline so the operator can rewrite it without
+// touching schema or templates infrastructure. Plain-text fallback is
+// always included for mail clients that strip HTML.
+// ────────────────────────────────────────────────────────────────────────
+
+async function sendDripEmail({ to, unsubscribeToken, subject, html, text }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return false;
+  const unsubscribeUrl = `${SITE_URL}/api/contact?unsubscribe=${unsubscribeToken}`;
+  try {
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: NEWSLETTER_FROM,
+      to: [to],
+      subject,
+      text: text + "\n\nUnsubscribe: " + unsubscribeUrl,
+      html: html.replace("__UNSUBSCRIBE_URL__", unsubscribeUrl),
+      headers: { "List-Unsubscribe": `<${unsubscribeUrl}>` },
+    });
+    if (error) {
+      console.error("[newsletter] drip send error", error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("[newsletter] drip send exception", err);
+    return false;
+  }
+}
+
+const dripFooter = `
+<p style="font-size:11px;color:#9ca3af;margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb">
+  You're getting this because you confirmed your subscription to The Simple IT Brief at simpleitsrq.com.
+  <a href="__UNSUBSCRIBE_URL__" style="color:#9ca3af">Unsubscribe</a> at any time — one click, no questions.
+</p>`;
+
+async function sendWelcomeEmail(email, unsubscribeToken) {
+  return sendDripEmail({
+    to: email,
+    unsubscribeToken,
+    subject: "You're in — and here's your free starter WISP",
+    text: [
+      `Welcome to The Simple IT Brief.`,
+      ``,
+      `Your free starter Written Information Security Program template is here:`,
+      `${SITE_URL}/wisp-starter`,
+      ``,
+      `It's a 12-section Florida-flavored template — fillable, ready for your 2026 cyber-insurance renewal.`,
+      `Print → Save as PDF in your browser to keep an offline copy.`,
+      ``,
+      `What to expect: one email a month with plain-English security, AI, and cloud news for Florida small business owners. No fluff, no offers in every email — most months it's a single useful pointer.`,
+      ``,
+      `If we can help with anything specific (computer repair, security cameras, M365 migration, HIPAA paperwork, etc.) reply to this email and a real Sarasota / Bradenton tech will read it.`,
+      ``,
+      `— Simple IT SRQ`,
+    ].join("\n"),
+    html: `
+<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+  <h2 style="margin:0 0 16px;color:#0F6CBD">You're in.</h2>
+  <p style="font-size:15px;line-height:1.6">Welcome to <strong>The Simple IT Brief</strong>. As promised — your free starter Written Information Security Program template is ready below.</p>
+  <p style="margin:24px 0">
+    <a href="${SITE_URL}/wisp-starter" style="display:inline-block;padding:12px 22px;background:#0F6CBD;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Open the WISP starter →</a>
+  </p>
+  <p style="font-size:14px;line-height:1.6;color:#444">It's a 12-section Florida-flavored template — fillable, ready for a 2026 cyber-insurance renewal questionnaire. Print → Save as PDF in your browser to keep an offline copy.</p>
+  <p style="font-size:14px;line-height:1.6;color:#444">What to expect: one email a month, plain-English security and IT news for Florida small business owners. If we can help with anything specific — computer repair, cameras, M365 migration, HIPAA paperwork — just reply and a real tech will read it.</p>
+  <p style="font-size:14px;color:#444;margin-top:24px">— The Simple IT SRQ team</p>
+  ${dripFooter}
+</div>`,
+  });
+}
+
+async function sendDripDay3Email(email, unsubscribeToken) {
+  return sendDripEmail({
+    to: email,
+    unsubscribeToken,
+    subject: "What we'd actually buy if we were starting a Sarasota office today",
+    text: [
+      `Three days in — figured we'd send the most useful single thing we publish, the buyer's guide for business security cameras:`,
+      `${SITE_URL}/blog/business-security-cameras-sarasota-honest-guide-2026`,
+      ``,
+      `If you're a homeowner instead, the computer-repair guide is the equivalent — real prices, what's worth fixing, what's a scam:`,
+      `${SITE_URL}/blog/computer-repair-sarasota-honest-guide-2026`,
+      ``,
+      `If you're already shopping for an MSP, our public pricing is here (a thing most local IT shops don't publish):`,
+      `${SITE_URL}/pricing`,
+      ``,
+      `— Simple IT SRQ`,
+    ].join("\n"),
+    html: `
+<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+  <h2 style="margin:0 0 16px;color:#0F6CBD">A few things we'd actually use</h2>
+  <p style="font-size:15px;line-height:1.6">Three days into your subscription. Here are the three pieces we'd hand a new Sarasota / Bradenton business owner if they asked us where to start:</p>
+  <ul style="font-size:14px;line-height:1.7;padding-left:20px">
+    <li><a href="${SITE_URL}/blog/business-security-cameras-sarasota-honest-guide-2026" style="color:#0F6CBD;font-weight:600">Business security cameras buyer's guide</a> — honest prices, gear we recommend, brands we don't, Florida install gotchas.</li>
+    <li><a href="${SITE_URL}/blog/computer-repair-sarasota-honest-guide-2026" style="color:#0F6CBD;font-weight:600">Computer repair guide</a> — repair-vs-replace tree, real prices, six red flags in a quote.</li>
+    <li><a href="${SITE_URL}/pricing" style="color:#0F6CBD;font-weight:600">Public pricing page</a> — managed-IT tiers, one-shot service prices. No quote-and-call dance.</li>
+  </ul>
+  <p style="font-size:14px;line-height:1.6;color:#444;margin-top:24px">If something on those pages doesn't make sense, reply and we'll explain. Real humans on this side.</p>
+  <p style="font-size:14px;color:#444;margin-top:16px">— Simple IT SRQ</p>
+  ${dripFooter}
+</div>`,
+  });
+}
+
+async function sendDripDay7Email(email, unsubscribeToken) {
+  return sendDripEmail({
+    to: email,
+    unsubscribeToken,
+    subject: "Want a free 30-min walk-through with a Sarasota IT tech?",
+    text: [
+      `Week one of the brief — and a pitch.`,
+      ``,
+      `If you're an owner reading this and your IT setup is held together with copy-paste advice from Reddit, we'd be glad to look at it for free.`,
+      ``,
+      `30 minutes. Phone or video. We'll tell you the top 2-3 risks we hear in the call, ballpark pricing if any work is worth doing, and a written follow-up email summarizing the conversation.`,
+      ``,
+      `No sales pitch on the call — that's a different conversation that comes after, only if you want it.`,
+      ``,
+      `Book here: ${SITE_URL}/book`,
+      ``,
+      `— Simple IT SRQ`,
+    ].join("\n"),
+    html: `
+<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+  <h2 style="margin:0 0 16px;color:#0F6CBD">Free 30-min walk-through?</h2>
+  <p style="font-size:15px;line-height:1.6">Week one of the brief — and the only pitch you'll get from us in a while.</p>
+  <p style="font-size:14px;line-height:1.6">If your IT setup is held together with copy-paste advice from Reddit, we're glad to look at it for free. 30 minutes, phone or video. We'll tell you the top 2-3 risks we hear, ballpark pricing if any work's worth doing, and email you a written follow-up.</p>
+  <p style="font-size:14px;line-height:1.6">No sales pitch ON the call. That's a different conversation that comes after, only if you want it.</p>
+  <p style="margin:24px 0">
+    <a href="${SITE_URL}/book" style="display:inline-block;padding:12px 22px;background:#0F6CBD;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Book the free 30-min →</a>
+  </p>
+  <p style="font-size:14px;color:#444;margin-top:24px">— Simple IT SRQ</p>
+  ${dripFooter}
+</div>`,
+  });
+}
+
+export { sendWelcomeEmail, sendDripDay3Email, sendDripDay7Email };
 
 // Double-opt-in newsletter subscribe. Creates or refreshes a row in
 // newsletter_subscribers, emails a confirmation link. Does NOT add
@@ -203,6 +549,93 @@ export async function GET(request) {
   const confirm = url.searchParams.get("confirm");
   const unsubscribe = url.searchParams.get("unsubscribe");
   const testimonials = url.searchParams.get("testimonials");
+  const action = url.searchParams.get("action");
+
+  // Threat Wall feed — admin-only. Returns 403 to anonymous callers so
+  // the per-attack timeline isn't part of our public attack surface.
+  // The /live-threats page checks this and redirects non-admins. The
+  // homepage live-defense strip used to read this endpoint too — it
+  // now uses ?action=protection-status (anonymous, summary-only) so
+  // visitors get a trust signal without seeing per-attack rows.
+  if (action === "threats") {
+    if (!(await isAdminRequest(request))) {
+      return json(403, { ok: false, error: "admin_only" });
+    }
+    try {
+      const rows = await sql`
+        SELECT ip, country, city, path, user_agent, threat_class, ts
+        FROM threat_actors
+        WHERE ts > now() - interval '48 hours'
+          AND threat_class IN ('scanner', 'exploit_attempt', 'hostile_geo', 'osint_match')
+        ORDER BY ts DESC
+        LIMIT 100
+      `.catch(() => []);
+      const [stats] = await sql`
+        SELECT
+          COUNT(*)::int                                AS hits_48h,
+          COUNT(DISTINCT ip)::int                      AS uniq_ips_48h,
+          COUNT(*) FILTER (WHERE threat_class = 'exploit_attempt')::int AS exploits_48h
+        FROM threat_actors
+        WHERE ts > now() - interval '48 hours'
+      `.catch(() => [{}]);
+      const [blocklist] = await sql`SELECT COUNT(*)::int AS n FROM ip_blocklist`.catch(() => [{}]);
+
+      const items = rows.map((r) => {
+        const id = identifyScanner({ userAgent: r.user_agent, path: r.path });
+        return {
+          ip: anonIp(r.ip),
+          country: r.country || null,
+          city: r.city || null,
+          threatClass: r.threat_class,
+          tool: id.tool || null,
+          cms: id.cms || null,
+          cve: id.cve || null,
+          cveName: id.cveName || null,
+          // Truncate the path so we don't leak unusual honeypot tokens.
+          pathSummary: summarizePath(r.path),
+          ts: r.ts,
+        };
+      });
+
+      return new Response(JSON.stringify({
+        items,
+        stats: {
+          hits48h: stats?.hits_48h || 0,
+          uniqueIps48h: stats?.uniq_ips_48h || 0,
+          exploitAttempts48h: stats?.exploits_48h || 0,
+          blocklistTotal: blocklist?.n || 0,
+        },
+        generatedAt: new Date().toISOString(),
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          // Admin-only data — never cache at edge.
+          "Cache-Control": "private, no-store",
+        },
+      });
+    } catch {
+      return json(200, { items: [], stats: {} });
+    }
+  }
+
+  // Public protection-status — only ever returns abstract trust copy.
+  // No live counts, no per-attack rows. Used by the homepage strip so
+  // visitors see "this site is actively protected" without the actual
+  // numbers becoming public OPSEC intelligence.
+  if (action === "protection-status") {
+    return new Response(JSON.stringify({
+      ok: true,
+      protectionActive: true,
+      headline: "Active 24/7 — automated CVE auto-block, OSINT threat-feed enrichment, honeypot trapping, and rate-limit defense.",
+    }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    });
+  }
 
   if (testimonials) {
     const productSlug = url.searchParams.get("product") || null;
@@ -235,13 +668,48 @@ export async function GET(request) {
   }
 
   if (confirm) {
+    // Use a CTE so we know whether THIS request is the one that flipped
+    // confirmed_at from null to a value. We only fire the welcome email
+    // on the actual transition — re-clicking a confirm link a second
+    // time should be idempotent (no second welcome).
     const rows = await sql`
-      UPDATE newsletter_subscribers
-      SET confirmed_at = COALESCE(confirmed_at, now())
-      WHERE confirm_token = ${confirm}
-      RETURNING email
+      WITH before AS (
+        SELECT id, confirmed_at AS prior_confirmed_at, welcome_sent_at, unsubscribe_token
+        FROM newsletter_subscribers
+        WHERE confirm_token = ${confirm}
+        FOR UPDATE
+      ),
+      updated AS (
+        UPDATE newsletter_subscribers ns
+        SET confirmed_at = COALESCE(ns.confirmed_at, now())
+        FROM before
+        WHERE ns.id = before.id
+        RETURNING ns.id, ns.email, before.prior_confirmed_at, before.welcome_sent_at, before.unsubscribe_token
+      )
+      SELECT * FROM updated
     `.catch(() => []);
-    const ok = rows.length > 0;
+    const row = rows[0];
+    const ok = !!row;
+    const justConfirmed = ok && row.prior_confirmed_at === null && row.welcome_sent_at === null;
+
+    if (justConfirmed) {
+      // Fire welcome email out-of-band — never block the redirect on
+      // mail delivery. Sets welcome_sent_at on success so the cron job
+      // doesn't double-send. Failures are logged; the user is still
+      // confirmed (the welcome email is deliverable separately).
+      sendWelcomeEmail(row.email, row.unsubscribe_token).then(async (sent) => {
+        if (sent) {
+          await sql`
+            UPDATE newsletter_subscribers
+            SET welcome_sent_at = now()
+            WHERE id = ${row.id}
+          `.catch(() => {});
+        }
+      }).catch((err) => {
+        console.error("[newsletter] welcome email failed", err);
+      });
+    }
+
     return new Response(ok ? `<!doctype html><meta http-equiv="refresh" content="0; url=/?newsletter=confirmed"><title>Confirmed</title><p>Subscription confirmed. Redirecting…</p>` : `<!doctype html><title>Link expired</title><p>That confirmation link has expired or was already used. <a href="/">Back to home</a>.</p>`, {
       status: ok ? 200 : 410,
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
@@ -305,6 +773,19 @@ export async function POST(request) {
     return handleNewsletterSubscribe(request, body, ip);
   }
 
+  // Short-circuit: public exposure-scan lead magnet. Runs a passive DNS +
+  // Cert-Transparency scan of a domain the visitor entered, stores the
+  // email as a newsletter lead, and returns the report. Rate-limited
+  // aggressively (bucket=scan) so someone can't scan 10k domains through
+  // our quota. Does NOT require Turnstile — the scan itself is bounded
+  // and cheap, and asking for a captcha before showing value kills the
+  // conversion rate.
+  if (body.kind === "exposure_scan") {
+    const rl = await rateLimit({ ip, bucket: "scan", windowSeconds: 3600, max: 12 });
+    if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
+    return handleExposureScan(request, body, ip);
+  }
+
   // 3. Cloudflare Turnstile
   const turnstile = await verifyTurnstile(body.turnstileToken, ip);
   if (!turnstile.ok) {
@@ -325,10 +806,10 @@ export async function POST(request) {
   // 5. Honeypot — real users leave this blank; bots fill it.
   if (body._hp) return json(200, { ok: true });
 
-  const name = String(body.name || "").trim().slice(0, 200);
-  const company = String(body.company || "").trim().slice(0, 200);
-  const email = String(body.email || "").trim().slice(0, 320);
-  const phone = String(body.phone || "").trim().slice(0, 50);
+  const name = stripHeaderCtrl(String(body.name || "").slice(0, 200));
+  const company = stripHeaderCtrl(String(body.company || "").slice(0, 200));
+  const email = stripHeaderCtrl(String(body.email || "").slice(0, 320));
+  const phone = stripHeaderCtrl(String(body.phone || "").slice(0, 50));
   const message = String(body.message || "").trim().slice(0, 5000);
 
   // 6. Validate

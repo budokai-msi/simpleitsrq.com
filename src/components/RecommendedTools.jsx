@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ArrowRight, Zap, HardDrive, KeyRound } from "lucide-react";
 
 const TAG = import.meta.env.VITE_AFF_AMAZON_TAG || "";

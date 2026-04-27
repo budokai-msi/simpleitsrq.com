@@ -10,8 +10,10 @@
 // Fluent UI is kept inside the lazy portal chunk — this page is the only
 // consumer of FluentProvider, so the runtime never ships with the homepage.
 
-import { Link, useSearchParams } from "react-router-dom";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Link } from "../lib/Link";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { createDOMRenderer, RendererProvider } from "@griffel/react";
 import {
   FluentProvider,
   Title2,
@@ -1084,6 +1086,8 @@ function ProfilePanel({ styles, user, onSaved }) {
   const [phone, setPhone] = useState(user.phone || "");
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function save(e) {
     e.preventDefault();
@@ -1103,6 +1107,62 @@ function ProfilePanel({ styles, user, onSaved }) {
       setStatus({ type: "error", msg: err.message || "Could not save." });
     } finally {
       setSaving(false);
+    }
+  }
+
+  // GDPR Article 15 / CCPA §1798.110 — full data export. Server returns
+  // a JSON dump with Content-Disposition: attachment so the browser
+  // downloads it directly. We don't post the data into the DOM; large
+  // exports could exceed comfortable browser limits.
+  async function exportData() {
+    setExporting(true);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/portal?action=export-data", { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `simpleitsrq-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      setStatus({ type: "success", msg: "Data export downloaded." });
+    } catch (err) {
+      setStatus({ type: "error", msg: err.message || "Export failed." });
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  // GDPR Article 17 / CCPA §1798.105 — anonymize the account. Server
+  // NULLs PII fields, kills sessions, and unsubscribes the newsletter
+  // row. Tickets/invoices stay (legal holds) but lose the email
+  // attachment. Two confirms: typed string + native confirm dialog.
+  async function deleteAccount() {
+    const typed = window.prompt(
+      `This permanently anonymizes your account, signs you out everywhere, and unsubscribes you from all email.\n\nTickets and invoices remain on file (legal/tax retention) but lose your name + email.\n\nType DELETE to confirm:`,
+    );
+    if (typed !== "DELETE") {
+      if (typed !== null) {
+        setStatus({ type: "error", msg: "Account not deleted — confirmation text didn't match." });
+      }
+      return;
+    }
+    setDeleting(true);
+    try {
+      const res = await csrfFetch("/api/portal?action=delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      // Hard-redirect to home — the server already cleared the session
+      // cookie, so any subsequent client-side navigation would 401.
+      window.location.href = `/?account-deleted=${encodeURIComponent(data.confirmationToken || "ok")}`;
+    } catch (err) {
+      setStatus({ type: "error", msg: err.message || "Delete failed — email hello@simpleitsrq.com if this persists." });
+      setDeleting(false);
     }
   }
 
@@ -1129,6 +1189,31 @@ function ProfilePanel({ styles, user, onSaved }) {
         <Button type="submit" appearance="primary" disabled={saving}>
           {saving ? "Saving…" : "Save changes"}
         </Button>
+      </div>
+
+      {/* Privacy controls — GDPR / CCPA self-service. Visually
+          separated from profile editing so it's never hit by
+          accident. */}
+      <div style={{
+        marginTop: 32,
+        paddingTop: 20,
+        borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+      }}>
+        <h3 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600, color: tokens.colorNeutralForeground2 }}>
+          Privacy controls
+        </h3>
+        <p style={{ margin: "0 0 12px", fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+          Self-service rights under GDPR Article 15 + 17 and CCPA §1798.105 / 110.
+          Same outcome as emailing us with a privacy request.
+        </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Button type="button" appearance="secondary" onClick={exportData} disabled={exporting}>
+            {exporting ? "Preparing…" : "Download my data (JSON)"}
+          </Button>
+          <Button type="button" appearance="subtle" onClick={deleteAccount} disabled={deleting} style={{ color: "#DC2626" }}>
+            {deleting ? "Deleting…" : "Delete my account"}
+          </Button>
+        </div>
       </div>
     </form>
   );
@@ -2227,6 +2312,31 @@ function OpsConsole() {
   const [osintRefreshing, setOsintRefreshing] = useState(false);
   const [revenueData, setRevenueData] = useState(null);
   const [revenueLoading, setRevenueLoading] = useState(false);
+  const [adsenseData, setAdsenseData] = useState(null);
+  const [adsenseLoading, setAdsenseLoading] = useState(false);
+  // null = not yet probed | true = your network blocks AdSense |
+  // false = your network reaches AdSense fine. Used to surface a
+  // "your DNS is blocking ads — real visitors are unaffected" banner
+  // so the admin doesn't waste time debugging a non-bug.
+  const [adsBlocked, setAdsBlocked] = useState(null);
+
+  // Detect whether THIS browser's network can reach AdSense's creative
+  // delivery endpoint. We do a no-cors fetch; on a clean network it
+  // resolves; on DNSFilter / pi-hole / Brave-shields it throws or returns
+  // an opaque error before any data arrives. Either way the boolean tells
+  // us whether the admin's "ads aren't showing" complaint is about THEIR
+  // machine vs. site config.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4000);
+    fetch("https://googleads.g.doubleclick.net/favicon.ico", {
+      mode: "no-cors", cache: "no-store", signal: ctrl.signal,
+    })
+      .then(() => { setAdsBlocked(false); })
+      .catch(() => { setAdsBlocked(true); })
+      .finally(() => clearTimeout(t));
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, []);
 
   const loadStatus = useCallback(async () => {
     setStatusLoading(true);
@@ -2275,6 +2385,18 @@ function OpsConsole() {
     }
   }, []);
 
+  const loadAdsense = useCallback(async () => {
+    setAdsenseLoading(true);
+    try {
+      const res = await fetch("/api/portal?action=adsense-health&range=7d", { credentials: "same-origin" });
+      setAdsenseData(await res.json().catch(() => ({})));
+    } catch {
+      setAdsenseData({ noData: true });
+    } finally {
+      setAdsenseLoading(false);
+    }
+  }, []);
+
   // eslint-disable-next-line react-hooks/set-state-in-effect -- loadStatus is a stable useCallback
   useEffect(() => { loadStatus(); }, [loadStatus]);
   // Auto-load the three operational-status widgets on mount. Wrapped in an
@@ -2284,10 +2406,10 @@ function OpsConsole() {
     let alive = true;
     (async () => {
       if (!alive) return;
-      await Promise.all([loadAudit(), loadOsint(), loadRevenue()]);
+      await Promise.all([loadAudit(), loadOsint(), loadRevenue(), loadAdsense()]);
     })();
     return () => { alive = false; };
-  }, [loadAudit, loadOsint, loadRevenue]);
+  }, [loadAudit, loadOsint, loadRevenue, loadAdsense]);
 
   const run = useCallback(async (action, method = "POST") => {
     setRunning(action);
@@ -2414,6 +2536,32 @@ function OpsConsole() {
           <pre style={pre}>{JSON.stringify(output["full-setup"], null, 2)}</pre>
         )}
       </div>
+
+      {/* DNS-block diagnostic banner — only renders when this browser
+          itself can't reach AdSense (DNSFilter, pi-hole, Brave shields,
+          uBlock, etc.). Stops the admin from chasing a phantom bug
+          when ads "aren't showing" because of their own setup. */}
+      {adsBlocked === true && (
+        <div style={{
+          padding: "12px 16px",
+          marginBottom: 14,
+          borderRadius: 8,
+          background: "rgba(217, 119, 6, 0.08)",
+          border: "1px solid rgba(217, 119, 6, 0.3)",
+          borderLeft: "3px solid #D97706",
+          fontSize: 13,
+          color: tokens.colorNeutralForeground1,
+          lineHeight: 1.5,
+        }}>
+          <strong style={{ color: "#D97706" }}>Your network is blocking AdSense.</strong>{" "}
+          Your browser can't reach googleads.g.doubleclick.net (probably DNSFilter,
+          pi-hole, Brave shields, or an extension). <strong>Real visitors on
+          unfiltered networks see ads normally</strong> — check the AdSense
+          health card below for live fill-rate. To stop seeing this banner,
+          allow-list <code>googleads.g.doubleclick.net</code> and{" "}
+          <code>pagead2.googlesyndication.com</code> in your DNS filter.
+        </div>
+      )}
 
       {/* ── Operational status widgets ── */}
       <div style={sectionHeader}>Operational status — auto-loaded on open</div>
@@ -2562,6 +2710,54 @@ function OpsConsole() {
           ) : (
             <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
               {revenueLoading ? "Loading…" : (revenueData?.error || "Unable to load Stripe data.")}
+            </p>
+          )}
+        </div>
+
+        {/* Widget 4 — AdSense health (fill rate, blocked, timeout) */}
+        <div style={card}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+            <div>
+              <h4 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 600 }}>AdSense health (7d)</h4>
+              <p style={{ margin: 0, fontSize: 11, color: tokens.colorNeutralForeground3 }}>
+                Beacon-fed fill rate from real visitors — answers "are ads serving?" without curl.
+              </p>
+            </div>
+            <Button appearance="subtle" size="small" onClick={loadAdsense} disabled={adsenseLoading}>
+              {adsenseLoading ? "Loading…" : "Refresh"}
+            </Button>
+          </div>
+          {adsenseData?.noData ? (
+            <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+              No beacons received yet. Visit /glossary in a fresh browser to seed the first measurement.
+            </p>
+          ) : adsenseData?.summary ? (
+            <>
+              <p style={{ marginTop: 10, fontSize: 12, color: tokens.colorNeutralForeground1, lineHeight: 1.5 }}>
+                {adsenseData.headline}
+              </p>
+              <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Filled</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#107C10" }}>{adsenseData.summary.fillPct}%</div>
+                </div>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Blocked</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#D97706" }}>{adsenseData.summary.blockedPct}%</div>
+                </div>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Timeout</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#DC2626" }}>{adsenseData.summary.timeoutPct}%</div>
+                </div>
+                <div style={{ padding: 8, background: tokens.colorNeutralBackground2, borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em", color: tokens.colorNeutralForeground3 }}>Sessions</div>
+                  <div style={{ fontSize: 18, fontWeight: 700 }}>{adsenseData.summary.sessions}</div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <p style={{ marginTop: 12, fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+              {adsenseLoading ? "Loading…" : "No data."}
             </p>
           )}
         </div>
@@ -2923,6 +3119,12 @@ function SecurityPanel({
 }) {
   const [intel, setIntel] = useState(null);
   const [intelLoading, setIntelLoading] = useState(true);
+  const [enumData, setEnumData] = useState(null);
+  const [enumLoading, setEnumLoading] = useState(false);
+  const [credIntel, setCredIntel] = useState(null);
+  const [credIntelLoading, setCredIntelLoading] = useState(false);
+  const [geoData, setGeoData] = useState(null);
+  const [geoLoading, setGeoLoading] = useState(false);
   const [subTab, setSubTab] = useState("overview");
   const [range, setRange] = useState("7d");
   const [showInvestigate, setShowInvestigate] = useState(false);
@@ -2936,9 +3138,39 @@ function SecurityPanel({
     finally { setIntelLoading(false); }
   }, [range]);
 
+  const loadEnum = useCallback(async () => {
+    setEnumLoading(true);
+    try {
+      const res = await fetch(`/api/portal?action=enum-intel&range=${range}`, { credentials: "same-origin" });
+      if (res.ok) setEnumData(await res.json());
+    } catch { /* best effort */ }
+    finally { setEnumLoading(false); }
+  }, [range]);
+
+  const loadCredIntel = useCallback(async () => {
+    setCredIntelLoading(true);
+    try {
+      const res = await fetch(`/api/portal?action=cred-intel&range=${range}`, { credentials: "same-origin" });
+      if (res.ok) setCredIntel(await res.json());
+    } catch { /* best effort */ }
+    finally { setCredIntelLoading(false); }
+  }, [range]);
+
+  const loadGeo = useCallback(async () => {
+    setGeoLoading(true);
+    try {
+      const res = await fetch(`/api/portal?action=geo-intel&range=${range}`, { credentials: "same-origin" });
+      if (res.ok) setGeoData(await res.json());
+    } catch { /* best effort */ }
+    finally { setGeoLoading(false); }
+  }, [range]);
+
   // eslint-disable-next-line react-hooks/set-state-in-effect -- loadIntel is a stable useCallback
   useEffect(() => { loadIntel(); }, [loadIntel]);
   useEffect(() => { if (subTab === "credentials") loadHpCreds?.(); }, [subTab, loadHpCreds]);
+  useEffect(() => { if (subTab === "enumeration") loadEnum(); }, [subTab, loadEnum]);
+  useEffect(() => { if (subTab === "cred-intel")  loadCredIntel(); }, [subTab, loadCredIntel]);
+  useEffect(() => { if (subTab === "geo")         loadGeo(); }, [subTab, loadGeo]);
 
   const pillStyle = (active) => ({
     padding: "6px 14px", borderRadius: 999, fontSize: 13, fontWeight: active ? 600 : 400, cursor: "pointer", border: "none",
@@ -2953,9 +3185,16 @@ function SecurityPanel({
     <div>
       {/* ── Sub-nav ── */}
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
-        {["overview", "campaigns", "credentials", "countermeasures", "ops"].map((t) => (
+        {["overview", "enumeration", "campaigns", "credentials", "cred-intel", "geo", "countermeasures", "ops"].map((t) => (
           <button key={t} style={pillStyle(subTab === t)} onClick={() => setSubTab(t)}>
-            {t === "overview" ? "Threat Overview" : t === "campaigns" ? "Campaign Clusters" : t === "credentials" ? "Captured Creds" : t === "countermeasures" ? "Countermeasures" : "Ops Console"}
+            {t === "overview" ? "Status"
+              : t === "enumeration" ? "Site mapping"
+              : t === "campaigns" ? "Coordinated attacks"
+              : t === "credentials" ? "Captured passwords"
+              : t === "cred-intel" ? "Login attempts"
+              : t === "geo" ? "By country"
+              : t === "countermeasures" ? "Automatic actions"
+              : "Ops Console"}
           </button>
         ))}
         <div style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
@@ -2966,9 +3205,140 @@ function SecurityPanel({
 
       {intelLoading && !intel && <div style={{ padding: 24 }}><Spinner label="Loading threat intelligence…" /></div>}
 
-      {/* ════ OVERVIEW TAB ════ */}
+      {/* ════ OVERVIEW (STATUS) TAB ════ */}
       {subTab === "overview" && intel && (
         <>
+          {/* ── Big status header: what's happening right now ── */}
+          {(() => {
+            const n = intel.narrative || {};
+            const colors = {
+              calm:         { bg: "rgba(16, 124, 16, 0.08)",  border: "#107C10", label: "CALM",           labelColor: "#107C10" },
+              elevated:     { bg: "rgba(217, 119, 6, 0.08)",  border: "#D97706", label: "ELEVATED",       labelColor: "#D97706" },
+              under_attack: { bg: "rgba(220, 38, 38, 0.08)",  border: "#DC2626", label: "UNDER ATTACK",   labelColor: "#DC2626" },
+            };
+            const c = colors[n.statusLevel] || colors.calm;
+            return (
+              <div style={{
+                padding: "20px 24px",
+                borderRadius: 12,
+                background: c.bg,
+                border: `1px solid ${c.border}`,
+                borderLeft: `4px solid ${c.border}`,
+                marginBottom: 16,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+                    padding: "4px 10px", borderRadius: 999,
+                    background: c.border, color: "#fff",
+                  }}>{c.label}</span>
+                  {n.activeAttackers > 0 && (
+                    <span style={{ fontSize: 12, color: tokens.colorNeutralForeground3 }}>
+                      {n.activeAttackers} active attacker{n.activeAttackers > 1 ? "s" : ""} · last hour
+                    </span>
+                  )}
+                </div>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 500, lineHeight: 1.5 }}>
+                  {n.statusHeadline || "No activity data yet."}
+                </p>
+              </div>
+            );
+          })()}
+
+          {/* ── Incidents worth your attention ── */}
+          {intel.narrative?.incidents?.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <h4 style={{ margin: "0 0 10px", fontSize: 14, fontWeight: 600, color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                Worth your attention
+              </h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {intel.narrative.incidents.map((inc, i) => {
+                  const sev = {
+                    critical: { color: "#DC2626", label: "Critical" },
+                    warning:  { color: "#D97706", label: "Heads up" },
+                    info:     { color: "#0F6CBD", label: "FYI" },
+                  }[inc.severity] || { color: "#6b7280", label: "Info" };
+                  return (
+                    <div key={i} style={{
+                      padding: "16px 18px",
+                      borderRadius: 10,
+                      background: tokens.colorNeutralBackground1,
+                      border: `1px solid ${tokens.colorNeutralStroke2}`,
+                      borderLeft: `4px solid ${sev.color}`,
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                        <Badge appearance="filled" color={inc.severity === "critical" ? "danger" : inc.severity === "warning" ? "warning" : "brand"} style={{ fontSize: 10 }}>
+                          {sev.label}
+                        </Badge>
+                        <strong style={{ fontSize: 14 }}>{inc.title}</strong>
+                        {inc.ts && <span style={{ marginLeft: "auto", fontSize: 11, color: tokens.colorNeutralForeground3 }}>{ago(inc.ts)}</span>}
+                      </div>
+                      <p style={{ margin: "0 0 8px", fontSize: 13, color: tokens.colorNeutralForeground1, lineHeight: 1.5 }}>
+                        {inc.explanation}
+                      </p>
+                      <div style={{ display: "grid", gridTemplateColumns: "80px 1fr", gap: "4px 12px", fontSize: 12, color: tokens.colorNeutralForeground2, marginTop: 8 }}>
+                        <span style={{ color: "#107C10", fontWeight: 600 }}>We did:</span>
+                        <span>{inc.weDid}</span>
+                        <span style={{ color: tokens.colorBrandForeground1, fontWeight: 600 }}>You should:</span>
+                        <span>{inc.youShould}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── What we stopped for you (positive framing) ── */}
+          {intel.narrative?.stopped && (
+            <div style={{ marginBottom: 20 }}>
+              <h4 style={{ margin: "0 0 10px", fontSize: 14, fontWeight: 600, color: tokens.colorNeutralForeground2, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                What we handled this {range === "24h" ? "day" : range === "7d" ? "week" : "month"}
+              </h4>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 10,
+                padding: "16px 18px",
+                borderRadius: 10,
+                background: "rgba(16, 124, 16, 0.04)",
+                border: "1px solid rgba(16, 124, 16, 0.2)",
+              }}>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#107C10" }}>{intel.narrative.stopped.blocks}</div>
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground2 }}>malicious IPs blocked</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#107C10" }}>{intel.narrative.stopped.exploitAttempts}</div>
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground2 }}>exploit attempts stopped</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#107C10" }}>{intel.narrative.stopped.hostileGeoHits}</div>
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground2 }}>hostile-country probes</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#107C10" }}>{intel.narrative.stopped.credAttempts}</div>
+                  <div style={{ fontSize: 12, color: tokens.colorNeutralForeground2 }}>fake-login attempts</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Details section (collapsed by default) ── */}
+          <details style={{ marginTop: 24 }}>
+            <summary style={{
+              cursor: "pointer",
+              fontSize: 13,
+              fontWeight: 600,
+              color: tokens.colorNeutralForeground2,
+              padding: "10px 14px",
+              background: tokens.colorNeutralBackground2,
+              borderRadius: 8,
+              userSelect: "none",
+            }}>
+              Deep details (raw stats, hourly chart, top ASNs)
+            </summary>
+            <div style={{ padding: "16px 0" }}>
           <div className={styles.cardGrid}>
             <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
               <div className={styles.statLabel}>Threats ({range})</div>
@@ -3091,6 +3461,8 @@ function SecurityPanel({
               </div>
             </div>
           )}
+            </div>
+          </details>
         </>
       )}
 
@@ -3225,6 +3597,320 @@ function SecurityPanel({
               </div>
             ))}
           </div>
+        </>
+      )}
+
+      {/* ════ ENUMERATION TAB ════ */}
+      {subTab === "enumeration" && (
+        <>
+          {enumLoading && !enumData && <div style={{ padding: 24 }}><Spinner label="Analyzing enumeration patterns…" /></div>}
+          {enumData && (
+            <>
+              <div className={styles.cardGrid}>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+                  <div className={styles.statLabel}>Exploit attempts</div>
+                  <div className={styles.statValue} style={{ color: "#DC2626" }}>{enumData.summary.exploitAttempts}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+                  <div className={styles.statLabel}>Unique paths probed</div>
+                  <div className={styles.statValue}>{enumData.summary.distinctPaths}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #7C3AED" }}>
+                  <div className={styles.statLabel}>First-time attackers</div>
+                  <div className={styles.statValue} style={{ color: "#7C3AED" }}>{enumData.summary.freshIps}</div>
+                  <span style={{ fontSize: 11, color: tokens.colorNeutralForeground3 }}>{enumData.summary.recurringIps} recurring</span>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #059669" }}>
+                  <div className={styles.statLabel}>Scanned hits</div>
+                  <div className={styles.statValue}>{enumData.summary.totalThreats}</div>
+                </div>
+              </div>
+
+              {enumData.exploitAttempts?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600, color: "#DC2626" }}>Active exploit attempts</h4>
+                  <div className={styles.list}>
+                    {enumData.exploitAttempts.map((e, i) => (
+                      <div key={i} className={styles.listRow} style={{ borderColor: "#DC2626", borderLeftWidth: 3 }}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>{e.cve}</p>
+                          <div className={styles.listMeta}>
+                            <span>{e.name}</span><span>·</span>
+                            <span><strong>{e.hits}</strong> hits from {e.uniqueIps} IPs</span>
+                            {e.lastSeen && <><span>·</span><span>last seen {ago(e.lastSeen)}</span></>}
+                          </div>
+                        </div>
+                        <Badge appearance="filled" color="danger">EXPLOIT</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enumData.tools?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Scanner / tool fingerprints</h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 8 }}>
+                    {enumData.tools.map((t) => (
+                      <div key={t.id} style={{ padding: "8px 12px", background: tokens.colorNeutralBackground2, borderRadius: 8, fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontFamily: "monospace" }}>{t.id}</span>
+                        <Badge appearance="outline">{t.hits}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enumData.cms?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Targeted products / CMS</h4>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {enumData.cms.map((c) => (
+                      <div key={c.id} style={{ padding: "6px 14px", background: tokens.colorNeutralBackground2, borderRadius: 999, fontSize: 13 }}>
+                        <strong>{c.id}</strong>
+                        <span style={{ marginLeft: 8, color: tokens.colorNeutralForeground3 }}>{c.hits}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enumData.topEnumerators?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top enumerators (by path breadth)</h4>
+                  <div className={styles.list}>
+                    {enumData.topEnumerators.map((e, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>{e.ip}</p>
+                          <div className={styles.listMeta}>
+                            <span><strong>{e.uniquePaths}</strong> unique paths</span><span>·</span>
+                            <span>{e.hits} hits</span>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <Button size="small" appearance="subtle" icon={<Eye24Regular />} onClick={() => { investigate(e.ip); setShowInvestigate(true); }}>Investigate</Button>
+                          <Button size="small" appearance="subtle" icon={<Delete24Regular />} onClick={() => blockIp(e.ip, `enumerator: ${e.uniquePaths} unique paths / ${e.hits} hits`)} disabled={blockBusy}>Block</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enumData.topPaths?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top probed paths</h4>
+                  <div className={styles.list}>
+                    {enumData.topPaths.map((p, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>{p.path}</p>
+                        </div>
+                        <Badge appearance="outline">{p.hits} hits</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ════ CREDENTIAL INTEL TAB ════ */}
+      {subTab === "cred-intel" && (
+        <>
+          {credIntelLoading && !credIntel && <div style={{ padding: 24 }}><Spinner label="Analyzing credential attempts…" /></div>}
+          {credIntel && (
+            <>
+              <div className={styles.cardGrid}>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #DC2626" }}>
+                  <div className={styles.statLabel}>Attempts</div>
+                  <div className={styles.statValue} style={{ color: "#DC2626" }}>{credIntel.summary.totalAttempts}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #D97706" }}>
+                  <div className={styles.statLabel}>Unique attackers</div>
+                  <div className={styles.statValue}>{credIntel.summary.uniqueIps}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #7C3AED" }}>
+                  <div className={styles.statLabel}>Distinct usernames</div>
+                  <div className={styles.statValue} style={{ color: "#7C3AED" }}>{credIntel.summary.uniqueUsernames}</div>
+                </div>
+                <div className={styles.statCard} style={{ borderLeft: "3px solid #059669" }}>
+                  <div className={styles.statLabel}>Patterns</div>
+                  <div style={{ fontSize: 11, marginTop: 4, display: "flex", flexDirection: "column", gap: 2 }}>
+                    {Object.entries(credIntel.summary.patternCounts || {}).map(([k, v]) => (
+                      <span key={k}><strong>{v}</strong> {k}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {credIntel.topUsernames?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top usernames tried</h4>
+                  <div className={styles.list}>
+                    {credIntel.topUsernames.map((u, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace", fontSize: 13 }}>{u.username}</p>
+                        </div>
+                        <Badge appearance="outline" color={u.hits > 50 ? "danger" : u.hits > 10 ? "warning" : "subtle"}>{u.hits}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {credIntel.pwLengthHistogram?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Password length distribution</h4>
+                  <div style={{ display: "flex", gap: 2, alignItems: "flex-end", height: 80, padding: "0 4px" }}>
+                    {credIntel.pwLengthHistogram.map((b) => {
+                      const max = Math.max(...credIntel.pwLengthHistogram.map((x) => x.hits), 1);
+                      const pct = (b.hits / max) * 100;
+                      return (
+                        <div key={b.length} title={`${b.length} chars — ${b.hits} attempts`}
+                             style={{ flex: 1, minWidth: 14, background: `rgba(124, 58, 237, ${0.3 + pct / 150})`, height: `${Math.max(4, pct)}%`, borderRadius: 2 }} />
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: tokens.colorNeutralForeground3, marginTop: 2, padding: "0 4px" }}>
+                    <span>0</span><span>8</span><span>16</span><span>24</span><span>32+</span>
+                  </div>
+                </div>
+              )}
+
+              {credIntel.ipBreakdown?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Per-IP attack pattern</h4>
+                  <div className={styles.list}>
+                    {credIntel.ipBreakdown.map((b, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>
+                            {b.ip}{" "}
+                            <Badge appearance="filled" color={
+                              b.pattern === "stuffing" ? "danger"
+                              : b.pattern === "brute-force" ? "danger"
+                              : b.pattern === "spray" ? "warning"
+                              : "subtle"
+                            } style={{ fontSize: 10, marginLeft: 6 }}>{
+                              b.pattern === "stuffing" ? "Credential stuffing"
+                              : b.pattern === "brute-force" ? "Password guessing"
+                              : b.pattern === "spray" ? "Password spraying"
+                              : "Probing"
+                            }</Badge>
+                          </p>
+                          <div className={styles.listMeta}>
+                            <span>{b.total} attempts</span><span>·</span>
+                            <span>{b.distinctUsers} users</span><span>·</span>
+                            <span>max {b.maxPerUser}/user</span><span>·</span>
+                            <span>{b.spanSeconds}s window</span>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <Button size="small" appearance="subtle" icon={<Eye24Regular />} onClick={() => { investigate(b.ip); setShowInvestigate(true); }}>Investigate</Button>
+                          <Button size="small" appearance="subtle" icon={<Delete24Regular />} onClick={() => blockIp(b.ip, `${b.pattern}: ${b.total} attempts on ${b.distinctUsers} users`)} disabled={blockBusy}>Block</Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {/* ════ GEO TAB ════ */}
+      {subTab === "geo" && (
+        <>
+          {geoLoading && !geoData && <div style={{ padding: 24 }}><Spinner label="Loading geographic intel…" /></div>}
+          {geoData && (
+            <>
+              {geoData.byCountry?.length > 0 && (
+                <div>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Attacks by country</h4>
+                  <div className={styles.list}>
+                    {geoData.byCountry.slice(0, 10).map((c, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle}>{c.country}</p>
+                          <div className={styles.listMeta}>
+                            <span>{c.ips} unique IPs</span>
+                          </div>
+                        </div>
+                        <Badge appearance="filled" color={c.hits > 500 ? "danger" : c.hits > 100 ? "warning" : "subtle"}>{c.hits}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {geoData.conversionByCountry?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Visit→threat conversion rate</h4>
+                  <p style={{ color: tokens.colorNeutralForeground3, fontSize: 12, margin: "0 0 8px" }}>
+                    What fraction of visits from each country turned hostile. Countries above 50% are candidates for geofencing.
+                  </p>
+                  <div className={styles.list}>
+                    {geoData.conversionByCountry.slice(0, 15).map((c, i) => (
+                      <div key={i} className={styles.listRow} style={{
+                        borderColor: c.pct >= 50 ? "#DC2626" : c.pct >= 20 ? "#D97706" : "transparent",
+                        borderLeftWidth: c.pct >= 20 ? 3 : 1,
+                      }}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle}>{c.country}</p>
+                          <div className={styles.listMeta}>
+                            <span>{c.threatIps} / {c.visitIps} IPs hostile</span>
+                          </div>
+                        </div>
+                        <Badge appearance="filled" color={c.pct >= 50 ? "danger" : c.pct >= 20 ? "warning" : "subtle"}>{c.pct ?? 0}%</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {geoData.byCidr?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top attacking /24 subnets</h4>
+                  <p style={{ color: tokens.colorNeutralForeground3, fontSize: 12, margin: "0 0 8px" }}>
+                    Multiple IPs in the same /24 = same actor / same datacenter. Block the whole range if you see more than 5 IPs in one /24.
+                  </p>
+                  <div className={styles.list}>
+                    {geoData.byCidr.map((c, i) => (
+                      <div key={i} className={styles.listRow}>
+                        <div className={styles.listMain}>
+                          <p className={styles.listTitle} style={{ fontFamily: "monospace" }}>{c.cidr}</p>
+                          <div className={styles.listMeta}>
+                            <span>{c.ips} IPs · {c.hits} hits</span>
+                            {c.countries?.length > 0 && <><span>·</span><span>{c.countries.join(", ")}</span></>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {geoData.byCity?.length > 0 && (
+                <div style={{ marginTop: 20 }}>
+                  <h4 style={{ margin: "0 0 8px", fontSize: 15, fontWeight: 600 }}>Top attacking cities</h4>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {geoData.byCity.slice(0, 20).map((c, i) => (
+                      <div key={i} style={{ padding: "6px 12px", background: tokens.colorNeutralBackground2, borderRadius: 8, fontSize: 12 }}>
+                        <strong>{c.city}</strong>, {c.country}
+                        <span style={{ marginLeft: 6, color: tokens.colorNeutralForeground3 }}>{c.hits}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </>
       )}
 
@@ -3754,6 +4440,23 @@ function ClientPortalContent() {
   );
 }
 
+// Griffel renderer — created lazily here (instead of in main.jsx) so the
+// homepage entry chunk doesn't ship @griffel/react. Reads the per-request
+// CSP nonce from the meta tag so every runtime-emitted Fluent <style>
+// tag carries nonce="<value>" and is accepted by the strict CSP. Memoized
+// per-component-instance — Fluent recommends one renderer per provider.
+function useGriffelRenderer() {
+  return useMemo(() => {
+    const nonceMeta = document.querySelector('meta[name="csp-nonce"]');
+    const rawNonce = nonceMeta?.getAttribute("content") || "";
+    const cspNonce = rawNonce && rawNonce !== "__CSP_NONCE__" ? rawNonce : null;
+    return createDOMRenderer(
+      document,
+      cspNonce ? { styleElementAttributes: { nonce: cspNonce } } : {},
+    );
+  }, []);
+}
+
 export default function ClientPortal() {
   useSEO({
     title: "Client Portal | Simple IT SRQ",
@@ -3767,12 +4470,15 @@ export default function ClientPortal() {
     ],
   });
   const { theme } = useTheme();
+  const griffelRenderer = useGriffelRenderer();
   return (
-    <FluentProvider
-      className="fluent-root"
-      theme={theme === "dark" ? brandedDarkTheme : brandedLightTheme}
-    >
-      <ClientPortalContent />
-    </FluentProvider>
+    <RendererProvider renderer={griffelRenderer} targetDocument={document}>
+      <FluentProvider
+        className="fluent-root"
+        theme={theme === "dark" ? brandedDarkTheme : brandedLightTheme}
+      >
+        <ClientPortalContent />
+      </FluentProvider>
+    </RendererProvider>
   );
 }

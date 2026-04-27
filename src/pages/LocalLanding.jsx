@@ -1,21 +1,28 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
+import { Link } from "../lib/Link";
 import {
-  Check, MapPin, Star, Clock, ShieldCheck, ArrowRight,
+  Check, MapPin, Star, ShieldCheck, ArrowRight,
   Headphones, Lock, Cloud, Server, FileCheck, Phone, Wifi, Briefcase,
+  Wrench, Camera, Network, RefreshCw,
 } from "lucide-react";
 import { cities } from "../data/cities";
+import { industries, matchIndustryPattern } from "../data/industries";
 import { useSEO, SITE_URL } from "../lib/seo";
 import RecommendedTools from "../components/RecommendedTools";
 
 const SERVICES = [
-  { Icon: Headphones, title: "Everyday IT Support", desc: "One flat monthly price covers unlimited help desk, monitoring, and software updates. A local tech answers the phone in under 15 minutes when something's critical." },
+  { Icon: Headphones, title: "Helpdesk and Everyday IT Support", desc: "Unlimited help desk, monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
+  { Icon: Wrench, title: "Computer Repair (Business and Residential)", desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade you've been putting off. We work on home machines too." },
+  { Icon: Camera, title: "Security Camera Installation", desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording." },
+  { Icon: Network, title: "Enterprise Domain Environments", desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one." },
+  { Icon: RefreshCw, title: "Migrations and Upgrades", desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, file-share moves, Windows 11 rollouts, and hardware refreshes." },
   { Icon: Lock, title: "Cybersecurity and Virus Protection", desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring — plus the written proof your cyber-insurance carrier asks for at renewal." },
   { Icon: Cloud, title: "Microsoft 365, Email, and Cloud Apps", desc: "We set up your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone." },
   { Icon: Server, title: "Backups and Disaster Recovery", desc: "Automatic backups of every computer and server, with a second copy stored off-site. We test the backups every quarter so a restore actually works when you need it." },
-  { Icon: FileCheck, title: "HIPAA and Cyber-Insurance Paperwork", desc: "Written security reviews, the protections auditors and insurers expect, and a binder of documents you can hand them the same day." },
   { Icon: Phone, title: "Business Phone Systems", desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email." },
   { Icon: Wifi, title: "Networking, Wi-Fi, and Cabling", desc: "Business-grade firewalls, Wi-Fi that reaches every corner, guest-separated networks, and clean cable runs with every jack labeled." },
+  { Icon: FileCheck, title: "HIPAA and Cyber-Insurance Paperwork", desc: "Written security reviews, the protections auditors and insurers expect, and a binder of documents you can hand them on audit day." },
   { Icon: Briefcase, title: "IT Planning and Budgeting", desc: "Quarterly check-ins with a senior tech, a simple 12-month plan, and an IT budget you can explain to anyone in plain English." },
 ];
 
@@ -64,6 +71,56 @@ function buildLocalBusinessLd(city) {
   return schema;
 }
 
+// Emit one Service node per offering so Google associates each named
+// IT service with the city's geo + service area. Significantly stronger
+// signal than the flat LocalBusiness node alone — when someone searches
+// "managed IT services Bradenton" Google can match the Service node's
+// areaServed instead of inferring from page copy.
+function buildServiceLd(city) {
+  const serviceArea = (typeof city.lat === "number" && typeof city.lng === "number" && typeof city.radiusMiles === "number")
+    ? {
+        "@type": "GeoCircle",
+        geoMidpoint: { "@type": "GeoCoordinates", latitude: city.lat, longitude: city.lng },
+        geoRadius: Math.round(city.radiusMiles * 1609.34),
+      }
+    : { "@type": "AdministrativeArea", name: city.city };
+
+  const provider = {
+    "@type": "LocalBusiness",
+    "@id": `${SITE_URL}/${city.slug}#business`,
+    name: "Simple IT SRQ",
+    url: `${SITE_URL}/${city.slug}`,
+  };
+
+  const services = [
+    { name: `Managed IT Support in ${city.city}`,                  type: "Managed IT services" },
+    { name: `Computer Repair in ${city.city}`,                     type: "Computer repair" },
+    { name: `Security Camera Installation in ${city.city}`,        type: "Security camera installation" },
+    { name: `Enterprise Domain + Active Directory in ${city.city}`, type: "Active Directory administration" },
+    { name: `Migrations and Upgrades in ${city.city}`,             type: "IT migration" },
+    { name: `Cybersecurity for ${city.city} small businesses`,     type: "Cybersecurity" },
+    { name: `Microsoft 365 + Cloud setup in ${city.city}`,         type: "Cloud computing" },
+    { name: `Backup + Disaster Recovery in ${city.city}`,          type: "Backup and disaster recovery" },
+    { name: `Business Phone Systems in ${city.city}`,              type: "VoIP" },
+    { name: `Networking, Wi-Fi, and Cabling in ${city.city}`,      type: "Network setup" },
+    { name: `HIPAA + Cyber-Insurance Paperwork in ${city.city}`,   type: "Compliance documentation" },
+    { name: `IT Planning + Budgeting in ${city.city}`,             type: "vCIO" },
+  ];
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": services.map((s, i) => ({
+      "@type": "Service",
+      "@id": `${SITE_URL}/${city.slug}#service-${i + 1}`,
+      name: s.name,
+      serviceType: s.type,
+      provider,
+      areaServed: serviceArea,
+      url: `${SITE_URL}/${city.slug}`,
+    })),
+  };
+}
+
 function buildFaqLd(city) {
   return {
     "@context": "https://schema.org",
@@ -103,9 +160,17 @@ export default function LocalLanding() {
           title: city.title,
           description: city.metaDescription,
           canonical: `${SITE_URL}/${city.slug}`,
-          image: `${SITE_URL}/og-image.png`,
+          // Per-city Open Graph card (rendered by
+          // scripts/generate-city-og-images.mjs at prebuild time).
+          // Lifts social-share CTR vs. the generic site-wide image
+          // because the city name shows in the link preview.
+          image: `${SITE_URL}/og-city-${city.slug}.png`,
+          // 3-deep breadcrumb: Home → Service Area → This city. Richer
+          // BreadcrumbList signal than 2 levels and gives Google a clean
+          // entity-relationship between the city pages and the hub.
           breadcrumbs: [
             { name: "Home", url: `${SITE_URL}/` },
+            { name: "Service Area", url: `${SITE_URL}/service-area` },
             { name: city.city, url: `${SITE_URL}/${city.slug}` },
           ],
         }
@@ -115,9 +180,11 @@ export default function LocalLanding() {
   useEffect(() => {
     if (!city) return;
     injectSchema("jsonld-local-business", buildLocalBusinessLd(city));
+    injectSchema("jsonld-services", buildServiceLd(city));
     injectSchema("jsonld-faq", buildFaqLd(city));
     return () => {
       removeSchema("jsonld-local-business");
+      removeSchema("jsonld-services");
       removeSchema("jsonld-faq");
     };
   }, [city]);
@@ -148,7 +215,7 @@ export default function LocalLanding() {
             <ul className="trust-row" aria-label="Trust indicators">
               <li><Star size={14} fill="#F7630C" stroke="#F7630C" /> 5.0 Google rating</li>
               <li><ShieldCheck size={14} /> HIPAA documented</li>
-              <li><Clock size={14} /> Same-day response in {city.city}</li>
+              <li><MapPin size={14} /> Local team in {city.city}</li>
             </ul>
           </div>
         </div>
@@ -160,7 +227,7 @@ export default function LocalLanding() {
             <span className="eyebrow">Neighborhoods we serve</span>
             <h2 className="title-1">Local IT support across {city.city}</h2>
             <p className="section-sub">
-              We support businesses across {city.neighborhoods}. Our engineers live in Sarasota and Bradenton, which means same-day on-site response and none of the drive-down-from-Tampa excuses.
+              We support businesses and residential clients across {city.neighborhoods}. Our engineers live in Sarasota and Bradenton — local, no drive-downs from Tampa.
             </p>
           </div>
         </div>
@@ -207,6 +274,43 @@ export default function LocalLanding() {
                 </article>
               ))}
             </div>
+
+            {/* Industry deep-links — for each pattern that matches a vertical
+                we ship a dedicated landing page for, surface that page so
+                visitors can drill into industry-specific FAQs and so Google
+                sees the parent → child entity link. */}
+            {(() => {
+              const cityKey = Object.keys(cities).find((k) => cities[k].slug === city.slug);
+              const verticals = Object.values(industries).filter(
+                (i) => i.cities.includes(cityKey) && matchIndustryPattern(i, city),
+              );
+              if (verticals.length === 0) return null;
+              return (
+                <div style={{ marginTop: 24, padding: "16px 18px", borderRadius: 10, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
+                  <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--syn-text-muted, #6b7280)" }}>
+                    Industry-specific pages for {city.city}
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                    {verticals.map((v) => (
+                      <Link
+                        key={v.slug}
+                        to={`/${v.slug}-${cityKey}`}
+                        style={{
+                          padding: "6px 12px", borderRadius: 999,
+                          background: "var(--syn-surface-2, #fff)",
+                          border: "1px solid var(--syn-border, #e5e7eb)",
+                          fontSize: 13, fontWeight: 500, color: "var(--text-1)",
+                          textDecoration: "none",
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                        }}
+                      >
+                        {v.displayName} → IT in {city.city}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </section>
       )}
@@ -255,7 +359,7 @@ export default function LocalLanding() {
               <h2 className="title-2">Get a free 15-minute IT assessment for your {city.city} business</h2>
               <p>Tell us a little about your team and we'll schedule a no-pressure call with a local engineer. No sales pitch — just a clear read on your risk, your Microsoft 365, and what good would look like.</p>
               <ul className="feature-list">
-                <li><Check size={16} color="#0F6CBD" /> Local engineer, same-day callback</li>
+                <li><Check size={16} color="#0F6CBD" /> Local Sarasota/Bradenton engineer</li>
                 <li><Check size={16} color="#0F6CBD" /> No long-term contract required</li>
                 <li><Check size={16} color="#0F6CBD" /> Works with your current team or replaces it</li>
               </ul>

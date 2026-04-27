@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { Check, X, ArrowRight, ExternalLink, ArrowLeft } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { getComparison, COMPARISONS } from "../data/comparisons";

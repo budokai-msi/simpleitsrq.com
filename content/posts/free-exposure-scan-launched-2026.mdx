@@ -1,0 +1,71 @@
+---
+slug: "free-exposure-scan-launched-2026"
+title: "We Just Launched a Free Exposure Scan — Here's What Your Domain Looks Like to an Attacker"
+metaDescription: "Simple IT SRQ now offers a free passive-OSINT scan for any Florida small business. Plain-English grade on your DNS, SPF, DMARC, DKIM, and exposed subdomains in 10 seconds. No signup."
+date: "2026-04-24"
+author: "Simple IT SRQ Team"
+category: "Cybersecurity"
+tags:
+  - dns
+  - email-security
+  - smb
+  - sarasota
+  - bradenton
+excerpt: "Yesterday we shipped /exposure-scan — a free, no-signup-required passive scan that grades your domain's DNS hygiene the same way a ransomware operator would size you up before deciding whether to bother. Here's what it checks and why every Florida business owner should run it once."
+heroAlt: "A computer screen showing an A-through-F report card grading a small business domain on email authentication, DNS records, and exposed subdomains."
+---
+
+## What "exposure" actually means
+
+When ransomware operators pick targets, they don't sit in front of a Hollywood-style green-text terminal. They run automated tools against millions of domains and rank the results. The first filters they apply are public — anyone on the internet can read the same data. If your domain looks soft on those filters, you climb the priority list.
+
+We just published a free tool at **[simpleitsrq.com/exposure-scan](/exposure-scan)** that runs the same passive checks an attacker's first-pass tooling would run, and turns the result into a plain-English A-through-F grade. No signup is required to see the report. We do ask for your email so we can send you a copy you can forward to your IT person or insurance broker — but if you don't want it, you can close the page after reading it inline.
+
+## What it actually checks
+
+Six categories, all from public sources:
+
+**1. MX records.** Can your domain even receive email? You'd be amazed how many Florida small businesses have a fancy domain on their business cards but no working inbox because nobody added MX records when the website was set up. If yours is missing, every customer who replies to a marketing email gets a bounce. We check this first because it's the single most common "wait, that's broken?" finding in our scan.
+
+**2. SPF (Sender Policy Framework).** Without SPF, anyone in the world can send email *claiming to be from your domain* and Gmail/Outlook will accept it. We check whether you have an SPF record AND whether it's actually enforcing (`~all` or `-all`) instead of the soft `?all` that does nothing.
+
+**3. DMARC.** SPF + DKIM tell receiving servers what's authentic. DMARC tells them what to do with the rest. Without DMARC, spoofed mail from your domain hits inboxes. Our scan checks the DMARC policy and flags `p=none` (monitoring only — common starter setup, but not protective).
+
+**4. DKIM.** Cryptographic signing of your outgoing mail. We probe the 15 most common selector names (Resend, SendGrid, Google, Mailchimp, etc.) so we can detect whether you're signing even if you don't know the selector name yourself.
+
+**5. Subdomain exposure via Certificate Transparency.** Every TLS certificate ever issued for your domain is logged publicly in CT logs. We pull the list and show you what's there. If you have `staging.yourcompany.com` or `vpn.yourcompany.com` exposed and you forgot, that's a target. Most small businesses don't realize this list exists.
+
+**6. IPv6 readiness.** Cosmetic but worth flagging — most modern mobile networks are IPv6-first now. Missing AAAA records mean some visitors have a slower experience.
+
+## What it deliberately does NOT do
+
+We made one design call up front: **this is a passive scan only.** No port scanning, no authenticated requests, no anything that touches your servers or could violate a terms of service. The scan runs the same DNS lookups + Certificate Transparency search any browser-based scanner can run against any public domain. Safe to run on your own domain, your competitor's, or any domain you're considering buying.
+
+## What we tested it against — our own site
+
+Pre-scan, we ran our own domain (simpleitsrq.com) through it. Got a Grade F. Three findings:
+
+- **No MX records** — our `hello@simpleitsrq.com` inbox was bouncing every contact form submission for two weeks. (We didn't notice immediately because forms still SAVED to the database; only the email-out leg was broken.)
+- **DMARC at `p=none`** — monitoring only, not blocking spoofers
+- **No IPv6** — cosmetic
+
+Within an afternoon we had MX records added (via [ImprovMX](https://improvmx.com), free), confirmed all our existing aliases work, and ran the scan again. Grade jumped to **B**. The remaining findings are intentional (DMARC needs 2-4 weeks of monitoring before tightening; IPv6 is cosmetic).
+
+The point: even the people who shipped the tool found a real, embarrassing problem with their own domain when they ran it. Your site probably has at least one finding that surprises you too.
+
+## What we'll do with your scan if you want help
+
+If your scan returns findings you'd rather not fix yourself, reply to the email we send you. We do DNS-hardening and email-authentication setup for Florida small businesses as a one-time engagement — flat fee, no retainer, usually a 2-week project that includes:
+
+- Adding any missing MX, SPF, DMARC, DKIM records on your DNS
+- Tightening SPF to `~all` or `-all` properly without breaking legitimate senders
+- Walking DMARC from `p=none` → `p=quarantine` → `p=reject` over a few weeks of monitoring
+- Cleaning up exposed subdomains (taking them off the public internet or putting them behind auth)
+
+If you'd rather hand it to your existing IT vendor, the report is detailed enough that a competent admin can implement everything in it. We don't need the work. We just want fewer Florida small businesses on the soft-target list.
+
+## Run the scan
+
+[**simpleitsrq.com/exposure-scan**](/exposure-scan)
+
+Takes 10 seconds. No signup required to see the report. Bring a domain you own.

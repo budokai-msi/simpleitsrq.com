@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "../lib/Link";
 import { ShieldCheck, AlertTriangle, Lock, ArrowRight, Eye, EyeOff, Key } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { resolveAffiliate } from "../data/affiliates";

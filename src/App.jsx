@@ -1,6 +1,7 @@
-﻿import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+﻿import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { Link } from "./lib/Link";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
-import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin } from "lucide-react";
+import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from "./pages/Home";
@@ -10,8 +11,11 @@ import { AuthProvider } from "./lib/auth.jsx";
 import { useAuth } from "./lib/authContext.js";
 import CookieConsent from "./components/CookieConsent.jsx";
 import VisitorTracker from "./components/VisitorTracker.jsx";
-import { useAnalyticsPageviews, useAnalyticsConsent } from "./lib/analytics.js";
+import { useAnalyticsPageviews, useAnalyticsConsent, trackEvent } from "./lib/analytics.js";
+import { useClarity } from "./lib/clarity.js";
+import { useEngagementTracking } from "./lib/engagement.js";
 import { AutoAds } from "./components/AdSense.jsx";
+import LiveChat from "./components/LiveChat.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./App.css";
 
@@ -20,6 +24,8 @@ import "./App.css";
 const BlogIndex = lazy(() => import("./pages/BlogIndex"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const LocalLanding = lazy(() => import("./pages/LocalLanding"));
+const IndustryLanding = lazy(() => import("./pages/IndustryLanding"));
+const IndustriesHub = lazy(() => import("./pages/IndustriesHub"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Book = lazy(() => import("./pages/Book"));
 const Support = lazy(() => import("./pages/Support"));
@@ -29,6 +35,10 @@ const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.T
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
 const Tools = lazy(() => import("./pages/Tools"));
 const Store = lazy(() => import("./pages/Store"));
+const Services = lazy(() => import("./pages/Services"));
+const WispStarter = lazy(() => import("./pages/WispStarter"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
@@ -37,6 +47,10 @@ const Partners = lazy(() => import("./pages/Partners"));
 const CyberInsuranceQuote = lazy(() => import("./pages/CyberInsuranceQuote"));
 const Stack = lazy(() => import("./pages/Stack"));
 const ComplianceAuditReferral = lazy(() => import("./pages/ComplianceAuditReferral"));
+const Glossary = lazy(() => import("./pages/Glossary"));
+const GlossaryEntry = lazy(() => import("./pages/GlossaryEntry"));
+const ExposureScan = lazy(() => import("./pages/ExposureScan"));
+const LiveThreats = lazy(() => import("./pages/LiveThreats"));
 const Advertise = lazy(() => import("./pages/Advertise"));
 const CompareIndex = lazy(() => import("./pages/CompareIndex"));
 const CompareDetail = lazy(() => import("./pages/CompareDetail"));
@@ -137,13 +151,18 @@ function Navbar() {
       <div className="container nav-inner">
         <Logo />
         <nav className="nav-links" aria-label="Primary">
+          {/* IT Services takes the headline slot — we're a managed-IT
+              company first, security/scans are how we earn trust, not
+              the headline product. The /service-area hub sits next to
+              it because LOCAL is the second-most-important identity. */}
+          <Link to="/#solutions">IT Services</Link>
+          <Link to="/services">Buy a Service</Link>
+          <Link to="/pricing">Pricing</Link>
+          <Link to="/service-area">Service Area</Link>
+          <Link to="/store">Templates</Link>
+          <Link to="/stack">Vendor Stack</Link>
           <Link to="/blog">Blog</Link>
-          <Link to="/tools">Recommended Tools</Link>
-          <Link to="/store">Templates &amp; Playbooks</Link>
-          <Link to="/stack">Our Vendor Stack</Link>
-          <Link to="/#industries">Industries</Link>
-          <Link to="/#compliance">Compliance</Link>
-          <Link to="/support">Support</Link>
+          <Link to="/exposure-scan">Free Scan</Link>
         </nav>
         <div className="nav-actions">
           <ThemeToggle />
@@ -160,12 +179,17 @@ function Navbar() {
       {open && (
         <div className="mobile-menu" role="menu">
           <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
+          <Link to="/services" onClick={() => setOpen(false)}>Buy a Service</Link>
+          <Link to="/pricing" onClick={() => setOpen(false)}>Pricing</Link>
+          <Link to="/glossary" onClick={() => setOpen(false)}>Glossary</Link>
+          <Link to="/industries" onClick={() => setOpen(false)}>Industries we serve</Link>
+          <Link to="/exposure-scan" onClick={() => setOpen(false)}>Free Exposure Scan</Link>
           <Link to="/tools" onClick={() => setOpen(false)}>Recommended Tools</Link>
           <Link to="/store" onClick={() => setOpen(false)}>Templates &amp; Playbooks</Link>
-          <Link to="/stack" onClick={() => setOpen(false)}>Our Vendor Stack</Link>
+          <Link to="/stack" onClick={() => setOpen(false)}>Vendor Stack</Link>
+          <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#industries" onClick={() => setOpen(false)}>Industries</Link>
           <Link to="/#compliance" onClick={() => setOpen(false)}>Compliance</Link>
-          <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
           <Link to="/#contact" onClick={() => setOpen(false)}>Contact</Link>
           <Link to="/portal" onClick={() => setOpen(false)}>
             {user ? "My Portal" : "Sign In"}
@@ -183,7 +207,7 @@ function Footer() {
       <div className="container footer-grid">
         <div>
           <Logo />
-          <p className="footer-desc">Local IT support, cybersecurity, and cloud services for Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
+          <p className="footer-desc">Local IT support, helpdesk, computer repair, security cameras, and enterprise IT — for businesses and homes across Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
           <a className="footer-email" href="mailto:hello@simpleitsrq.com">
             <AtSign size={16} /> hello@simpleitsrq.com
           </a>
@@ -191,7 +215,10 @@ function Footer() {
         <div>
           <h4>What We Do</h4>
           <ul>
-            <li><Link to="/#solutions">Everyday IT support</Link></li>
+            <li><Link to="/#solutions">Helpdesk and IT support</Link></li>
+            <li><Link to="/#solutions">Computer repair</Link></li>
+            <li><Link to="/#solutions">Security cameras</Link></li>
+            <li><Link to="/#solutions">Enterprise domains and migrations</Link></li>
             <li><Link to="/#solutions">Cybersecurity</Link></li>
             <li><Link to="/#solutions">Microsoft 365 and cloud</Link></li>
             <li><Link to="/#solutions">Backups and recovery</Link></li>
@@ -201,11 +228,18 @@ function Footer() {
           <h4>Resources</h4>
           <ul>
             <li><Link to="/blog">Blog</Link></li>
+            <li><Link to="/glossary">Glossary</Link></li>
+            <li><Link to="/exposure-scan">Free Exposure Scan</Link></li>
             <li><Link to="/tools">Recommended Tools</Link></li>
-            <li><Link to="/store">Templates & Playbooks</Link></li>
-            <li><Link to="/partners">Our Vendor Stack</Link></li>
-            <li><Link to="/#industries">Industries</Link></li>
-            <li><Link to="/#compliance">Compliance</Link></li>
+            <li><Link to="/store">Templates &amp; Playbooks</Link></li>
+            {/* Vendor Stack is /stack (the page with the cost calculator).
+                /partners is the partner-program page — different surface,
+                kept as a separate link below to avoid the previous semantic
+                404 where visitors clicked "Our Vendor Stack" expecting the
+                tools and landed on the partners page instead. */}
+            <li><Link to="/stack">Our Vendor Stack</Link></li>
+            <li><Link to="/industries">Industries we serve</Link></li>
+            <li><Link to="/partners">Partner Program</Link></li>
             <li><Link to="/book">Book a Call</Link></li>
             <li><Link to="/support">Support</Link></li>
           </ul>
@@ -220,7 +254,7 @@ function Footer() {
             <li><Link to="/venice-it-support"><MapPin size={12} /> Venice</Link></li>
             <li><Link to="/service-area" className="footer-cities-all">View all markets →</Link></li>
           </ul>
-          <p className="footer-area-note">Serving Southwest Florida. On-site response within 2 hours for Sarasota + Bradenton.</p>
+          <p className="footer-area-note">Serving Southwest Florida — Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
         </div>
       </div>
       <div className="footer-bottom">
@@ -229,7 +263,22 @@ function Footer() {
           <span>
             <Link to="/privacy">Privacy</Link> &middot;{" "}
             <Link to="/terms">Terms</Link> &middot;{" "}
-            <Link to="/accessibility">Accessibility</Link>
+            <Link to="/accessibility">Accessibility</Link> &middot;{" "}
+            {/* Reopens the cookie-consent banner so visitors can change
+                their analytics/marketing choice without clearing
+                localStorage. Required by GDPR + CCPA "withdraw consent"
+                language in our Privacy Policy §3 / §7. */}
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent("sirq:reopen-consent"))}
+              style={{
+                background: "none", border: "none", padding: 0,
+                color: "inherit", cursor: "pointer",
+                font: "inherit", textDecoration: "underline",
+              }}
+            >
+              Cookie preferences
+            </button>
           </span>
         </div>
       </div>
@@ -258,12 +307,51 @@ function MobileStickyCTA() {
   // Hide where the CTA would be redundant (already-booking page) or
   // disruptive (signed-in portal area doesn't need a marketing CTA).
   if (pathname === "/book" || pathname.startsWith("/portal")) return null;
+
+  // Bottom action bar — four channels in thumb-reach instead of one
+  // single CTA. Each tap fires a GA4 event so the conversion report
+  // tells us which channel mobile visitors actually use. The mailto/
+  // tel: hrefs work on every mobile platform without an SDK.
+  const tap = (channel) => () => trackEvent("mobile_cta_tap", { channel, source_path: pathname });
+
   return (
-    <div className="mobile-sticky-cta" role="complementary" aria-label="Quick action">
-      <Link to="/book" className="btn btn-primary mobile-sticky-cta-btn">
-        Book a Free Call
+    <nav className="mobile-action-bar" role="navigation" aria-label="Quick contact">
+      <a
+        href="tel:+14072421456"
+        className="mobile-action-bar__btn"
+        onClick={tap("call")}
+        aria-label="Call (407) 242-1456"
+      >
+        <Phone size={18} aria-hidden="true" />
+        <span>Call</span>
+      </a>
+      <a
+        href="sms:+14072421456?body=Hi%20Simple%20IT%20SRQ%20%E2%80%94%20"
+        className="mobile-action-bar__btn"
+        onClick={tap("sms")}
+        aria-label="Text (407) 242-1456"
+      >
+        <MessageSquare size={18} aria-hidden="true" />
+        <span>Text</span>
+      </a>
+      <a
+        href="mailto:hello@simpleitsrq.com"
+        className="mobile-action-bar__btn"
+        onClick={tap("email")}
+        aria-label="Email hello@simpleitsrq.com"
+      >
+        <Mail size={18} aria-hidden="true" />
+        <span>Email</span>
+      </a>
+      <Link
+        to="/book"
+        className="mobile-action-bar__btn mobile-action-bar__btn--primary"
+        onClick={tap("book")}
+      >
+        <Calendar size={18} aria-hidden="true" />
+        <span>Book</span>
       </Link>
-    </div>
+    </nav>
   );
 }
 
@@ -274,6 +362,8 @@ function AnalyticsMount() {
   // hooks in Layout so the router context is definitely available.
   useAnalyticsConsent();
   useAnalyticsPageviews();
+  useClarity();
+  useEngagementTracking();
   return null;
 }
 
@@ -290,6 +380,7 @@ function Layout({ children }) {
       <ExitIntentMount />
       <CookieConsent />
       <AutoAds />
+      <LiveChat />
       <Analytics />
       <SpeedInsights />
     </>
@@ -348,12 +439,30 @@ export default function App() {
               <Route path="/nokomis-it-support" element={<LocalLanding />} />
               <Route path="/venice-it-support" element={<LocalLanding />} />
               <Route path="/bradenton-34207-it-support" element={<LocalLanding />} />
+              {/* Industry-vertical landing pages — one route handles every
+                  (industry, city) combo. The component derives both from
+                  the URL slug and 404s out to /service-area if invalid.
+                  Patterns matched: /medical-it-sarasota,
+                  /law-firm-it-venice, /financial-advisor-it-lakewood-ranch,
+                  /marine-it-bradenton, /construction-it-bradenton,
+                  /vacation-rental-it-nokomis, etc. */}
+              <Route path="/industries" element={<IndustriesHub />} />
+              <Route path="/medical-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/law-firm-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/financial-advisor-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/marine-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/construction-it-:cityKey" element={<IndustryLanding />} />
+              <Route path="/vacation-rental-it-:cityKey" element={<IndustryLanding />} />
               <Route path="/service-area" element={<ServiceArea />} />
               <Route path="/partners" element={<Partners />} />
               <Route path="/book" element={<Book />} />
               <Route path="/support" element={<Support />} />
               <Route path="/tools" element={<Tools />} />
               <Route path="/store" element={<Store />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/wisp-starter" element={<WispStarter />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/admin/affiliates" element={<AdminAffiliates />} />
               <Route path="/store/:slug" element={<ProductDetail />} />
               <Route path="/security-academy" element={<SecurityAcademy />} />
               <Route path="/cyber-insurance-quote" element={<CyberInsuranceQuote />} />
@@ -364,6 +473,10 @@ export default function App() {
               <Route path="/sponsor" element={<Advertise />} />
               <Route path="/compare" element={<CompareIndex />} />
               <Route path="/compare/:slug" element={<CompareDetail />} />
+              <Route path="/glossary" element={<Glossary />} />
+              <Route path="/glossary/:slug" element={<GlossaryEntry />} />
+              <Route path="/exposure-scan" element={<ExposureScan />} />
+              <Route path="/live-threats" element={<LiveThreats />} />
               <Route path="/password-check" element={<PasswordCheck />} />
               <Route path="/portal" element={<ClientPortal />} />
               <Route path="/privacy" element={<PrivacyPage />} />

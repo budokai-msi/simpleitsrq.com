@@ -12,6 +12,10 @@
     {
       "path": "/api/cron/agent",
       "schedule": "15 11 * * *"
+    },
+    {
+      "path": "/api/cron/newsletter-drip",
+      "schedule": "30 13 * * *"
     }
   ],
   "rewrites": [
@@ -45,7 +49,7 @@
     { "source": "/phpinfo.php",                "destination": "/api/hp?canary=1&orig=phpinfo.php" },
     { "source": "/_ignition/:path*",           "destination": "/api/hp?canary=1&orig=ignition" },
 
-    { "source": "/((?!api/|_vercel/|assets/|fonts/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|_vercel/|assets/|fonts/|site\\.webmanifest$).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

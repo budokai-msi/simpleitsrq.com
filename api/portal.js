@@ -20,11 +20,14 @@ import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { clientIp, auditVerify, logSecurityEvent } from "./_lib/security.js";
 import { refreshThreatFeeds, matchOsintFeeds, osintStatus } from "./_lib/osint.js";
+import { aggregateScanners, identifyScanner } from "./_lib/scanner-fingerprints.js";
 import { json } from "./_lib/http.js";
 import { csrfValid } from "./_lib/csrf.js";
 import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
+// See note in api/contact.js — default goes to Gmail while simpleitsrq.com
+// has no MX records. Override via CONTACT_TO_EMAIL once inbound mail is live.
 const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
 
 const escapeHtml = (s = "") =>
@@ -164,6 +167,149 @@ async function handleMePatch(session, request) {
       company: u.company,
       phone: u.phone,
       isAdmin: u.is_admin === true,
+    },
+  });
+}
+
+// GDPR / CCPA Right to Access — full data export.
+//
+// Returns a JSON dump of every row in our DB tied to the calling user's
+// identity (by user_id AND by email match for tables that don't carry
+// the FK, like newsletter_subscribers). Format is human-readable JSON
+// so it can be opened in any text editor or fed into a privacy
+// portability flow at the user's next provider.
+//
+// Read-only — no mutations. Does not surface other users' data even
+// in joined tables (every query is scoped to session.user.id or
+// session.user.email).
+async function handleExportData(session) {
+  const userId = session.user.id;
+  const email = (session.user.email || "").toLowerCase();
+
+  const [user, tickets, ticketMessages, invoices, sessions, newsletterRows, visits, affiliateClicks] = await Promise.all([
+    sql`SELECT id, email, name, avatar_url, company, phone, is_admin, created_at, updated_at
+        FROM users WHERE id = ${userId}`.catch(() => []),
+    sql`SELECT id, ticket_code, email, name, company, phone, priority, category, subject,
+               description, status, created_at, updated_at, closed_at
+        FROM tickets WHERE user_id = ${userId} OR lower(email) = ${email}
+        ORDER BY created_at DESC`.catch(() => []),
+    sql`SELECT tm.id, tm.ticket_id, tm.author_type, tm.author_email, tm.body, tm.created_at
+        FROM ticket_messages tm
+        JOIN tickets t ON t.id = tm.ticket_id
+        WHERE t.user_id = ${userId} OR lower(t.email) = ${email}
+        ORDER BY tm.created_at ASC`.catch(() => []),
+    sql`SELECT id, stripe_invoice_id, amount_cents, currency, status, hosted_invoice_url,
+               created_at, paid_at
+        FROM invoices WHERE user_id = ${userId} OR lower(email) = ${email}
+        ORDER BY created_at DESC`.catch(() => []),
+    sql`SELECT id, ip_at_login, user_agent, created_at, expires_at, last_seen_at
+        FROM sessions WHERE user_id = ${userId} ORDER BY created_at DESC`.catch(() => []),
+    sql`SELECT id, email, source, created_at, confirmed_at, unsubscribed_at
+        FROM newsletter_subscribers WHERE lower(email) = ${email}`.catch(() => []),
+    sql`SELECT id, ts, path, referrer, country, city
+        FROM visits WHERE user_id = ${userId} ORDER BY ts DESC LIMIT 1000`.catch(() => []),
+    sql`SELECT id, slug, destination, label, network, country, referrer_path, ts
+        FROM affiliate_clicks WHERE user_id = ${userId} ORDER BY ts DESC`.catch(() => []),
+  ]);
+
+  // Audit-log this access request itself — required by some privacy
+  // frameworks (Illinois BIPA, Virginia VCDPA) for inspection later.
+  await logSecurityEvent({
+    kind: "data.export",
+    severity: "info",
+    ip: null,
+    userId,
+    detail: { rowCounts: {
+      tickets: tickets.length, messages: ticketMessages.length, invoices: invoices.length,
+      sessions: sessions.length, newsletter: newsletterRows.length, visits: visits.length,
+      affiliateClicks: affiliateClicks.length,
+    } },
+  }).catch(() => {});
+
+  return new Response(JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    request: { kind: "data-export", legalBasis: "GDPR Article 15 / CCPA §1798.110" },
+    user: user[0] || null,
+    tickets,
+    ticketMessages,
+    invoices,
+    sessions,
+    newsletterSubscriptions: newsletterRows,
+    visits,
+    affiliateClicks,
+  }, null, 2), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Content-Disposition": `attachment; filename="simpleitsrq-data-export-${userId}-${new Date().toISOString().slice(0,10)}.json"`,
+      "Cache-Control": "private, no-store",
+    },
+  });
+}
+
+// GDPR / CCPA Right to Erasure — account anonymization.
+//
+// Anonymizes rather than hard-deletes for two reasons:
+//   1. Tickets + invoices retain legal value (warranty, tax, dispute
+//      resolution) — Florida law requires keeping invoices ~5 years.
+//      Hard-delete would force us to violate that.
+//   2. The audit chain in security_events references user_id; breaking
+//      it with a hard-delete would corrupt the chain forever.
+//
+// What we do:
+//   - users: NULL email/name/avatar/company/phone, set deleted_at
+//   - sessions: hard-delete (forces logout everywhere)
+//   - newsletter_subscribers (matched by email): set unsubscribed_at +
+//     anonymize email so the "user" can't be re-identified
+//   - tickets: keep the rows, NULL the email + name (FK to users
+//     remains so admin can still see the linkage was deleted)
+//
+// The user is logged out at the end (cookie cleared by clearing all
+// sessions for that user_id). Returns 200 + a confirmation token they
+// can keep for their records.
+async function handleDeleteAccount(session) {
+  const userId = session.user.id;
+  const email = (session.user.email || "").toLowerCase();
+  const confirmationToken = `del-${userId.slice(0, 8)}-${Date.now()}`;
+
+  try {
+    await sql`UPDATE users
+              SET email = NULL, name = NULL, avatar_url = NULL,
+                  company = NULL, phone = NULL,
+                  deleted_at = COALESCE(deleted_at, now()),
+                  updated_at = now()
+              WHERE id = ${userId}`;
+    await sql`DELETE FROM sessions WHERE user_id = ${userId}`;
+    await sql`UPDATE newsletter_subscribers
+              SET email = ${"anonymized-" + userId.slice(0, 8)},
+                  unsubscribed_at = COALESCE(unsubscribed_at, now())
+              WHERE lower(email) = ${email}`.catch(() => {});
+    await sql`UPDATE tickets
+              SET email = NULL, name = NULL, company = NULL, phone = NULL
+              WHERE user_id = ${userId}`.catch(() => {});
+
+    await logSecurityEvent({
+      kind: "account.deleted",
+      severity: "info",
+      ip: null,
+      userId,
+      detail: { confirmationToken, legalBasis: "GDPR Article 17 / CCPA §1798.105" },
+    }).catch(() => {});
+  } catch (err) {
+    console.error("[portal] delete-account failed", err);
+    return json(500, { ok: false, error: "deletion_failed" });
+  }
+
+  // Session cookie is invalidated server-side by the DELETE above.
+  // Tell the client to also clear local state — Set-Cookie with
+  // Max-Age=0 ensures the browser drops the session cookie even
+  // before its TTL expires.
+  return new Response(JSON.stringify({ ok: true, confirmationToken }), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Set-Cookie": `sit_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`,
     },
   });
 }
@@ -790,8 +936,103 @@ async function handleThreatIntel(session, url) {
   const totalThreats = threatClasses.reduce((s, t) => s + t.hits, 0);
   const blockedCount = await sql`SELECT COUNT(*)::int AS n FROM ip_blocklist`;
 
+  // ── Narrative summary (Huntress-style) ──────────────────────────────
+  // Turns raw numbers into a plain-English story the MSP owner can read
+  // in 10 seconds. Status level is the first thing they see; incidents
+  // are the second. Everything else is optional drill-down.
+  const activeAttackers = attackVelocity.length;
+  const exploitAttempts = (recentCritical || []).filter((e) =>
+    e.kind === "exploit_attempt" || String(e.detail?.cve || "").length > 0
+  ).length;
+  const scannerBlocks = (autoActions || []).filter((a) =>
+    String(a.reason || "").includes("scanner trap") || String(a.reason || "").includes("exploit attempt")
+  ).length;
+
+  let statusLevel = "calm";
+  let statusHeadline = "No notable activity in the last window.";
+  if (exploitAttempts > 0 || activeAttackers >= 5) {
+    statusLevel = "under_attack";
+    statusHeadline = exploitAttempts > 0
+      ? `${exploitAttempts} active exploit attempt${exploitAttempts > 1 ? "s" : ""} in progress — all blocked.`
+      : `${activeAttackers} attackers hitting hard right now — site still healthy.`;
+  } else if (activeAttackers >= 2 || campaigns.length >= 1) {
+    statusLevel = "elevated";
+    statusHeadline = campaigns.length >= 1
+      ? `Coordinated activity detected — ${campaigns.length} attacker${campaigns.length > 1 ? "s" : ""} rotating through multiple IPs.`
+      : `${activeAttackers} attackers active — automatic defenses engaged.`;
+  }
+
+  // Build the "incidents worth your attention" list — the 3-5 highest-
+  // severity events with plain-English explanations + recommendations.
+  const incidents = [];
+
+  if (exploitAttempts > 0) {
+    const first = (recentCritical || []).find((e) => e.kind === "exploit_attempt" || e.detail?.cve);
+    incidents.push({
+      severity: "critical",
+      title: `Exploit payload thrown at your site`,
+      explanation: "Someone tried to land a known CVE payload (like Log4Shell, Spring4Shell, or ProxyShell) in a request header or URL. These are automated attacks — the same IP has probably tried thousands of other sites today.",
+      weDid: "Instantly blocked the IP, served them a fake login page, and logged every byte of the payload for your records.",
+      youShould: "Nothing urgent — this is covered. Review the blocked IP list weekly to make sure we're not catching anyone legit.",
+      ts: first?.ts || null,
+    });
+  }
+
+  if (campaigns.length >= 1) {
+    const c = campaigns[0];
+    incidents.push({
+      severity: "warning",
+      title: `One attacker, multiple IPs`,
+      explanation: `We spotted a single device fingerprint rotating through ${c.ip_count} different IPs${c.countries?.length ? ` (${c.countries.slice(0, 3).join(", ")})` : ""}. That's someone using a proxy pool to look like many people — classic for credential stuffing or vulnerability sweeps.`,
+      weDid: `Logged every request and fingerprinted their browser/OS combo so we recognize them even if they switch networks again.`,
+      youShould: `Consider blocking the /24 range from the Geo tab — one range often covers the whole campaign.`,
+      ts: c.last_seen,
+    });
+  }
+
+  const credCount = credStats[0]?.total_captures || 0;
+  if (credCount >= 5) {
+    incidents.push({
+      severity: "warning",
+      title: `Automated login attempts against your admin panel`,
+      explanation: `${credCount} credential attempts from ${credStats[0]?.unique_ips || "multiple"} IPs hit the honeypot login page. Attackers don't know it's fake — they're burning through username/password pairs.`,
+      weDid: `Let them keep trying (tarpit'd the response so it's slow) and captured every username + password shape they submitted.`,
+      youShould: `Open the "Login attempts" tab to see what usernames they're trying — if "admin" or your real username is in the list, rotate that password.`,
+      ts: null,
+    });
+  }
+
+  const hostileGeoHits = (threatClasses.find((t) => t.threat_class === "hostile_geo") || {}).hits || 0;
+  if (hostileGeoHits >= 50) {
+    incidents.push({
+      severity: "info",
+      title: `High traffic from China / Russia / North Korea`,
+      explanation: `${hostileGeoHits} requests from hostile-geo countries in this window. These visitors see the honeypot, not your real site — they never know the difference.`,
+      weDid: `Every request from those countries is served the fake site. Your real content is protected.`,
+      youShould: `Nothing. This is normal — small-business sites attract routine sweeps from these regions.`,
+      ts: null,
+    });
+  }
+
+  // Positive framing — "what we saved you from" card.
+  const stopped = {
+    blocks: blockedCount[0]?.n || 0,
+    autoActions: (autoActions || []).length,
+    scannerBlocks,
+    exploitAttempts,
+    hostileGeoHits,
+    credAttempts: credCount,
+  };
+
   return json(200, {
     range,
+    narrative: {
+      statusLevel,
+      statusHeadline,
+      activeAttackers,
+      incidents,
+      stopped,
+    },
     summary: {
       totalThreats,
       blockedIps: blockedCount[0]?.n || 0,
@@ -832,6 +1073,411 @@ async function handleThreatIntel(session, url) {
     recentCritical: recentCritical.map((e) => ({
       kind: e.kind, severity: e.severity, ip: e.ip, path: e.path,
       detail: e.detail, ts: e.ts,
+    })),
+  });
+}
+
+// ---------- enumeration intel (admin only) ----------
+//
+// Turns the raw threat_actors table into "what tools are scanning us",
+// "which CMS/products are being probed", and "which CVEs are being
+// thrown at us". The scanner fingerprint library runs in-process over
+// the recent rows — no per-query CPU hit on the DB.
+
+async function handleEnumIntel(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  // Pull (ip, path, user_agent) for every threat in the window. We cap
+  // at 20k rows so a runaway scanner can't blow up the function — the
+  // aggregations below are all frequency-based, so sampling still
+  // produces a representative shape.
+  const rows = await sql`
+    SELECT ip, path, user_agent, ts
+    FROM threat_actors
+    WHERE ts > now() - ${interval}::interval
+    ORDER BY ts DESC
+    LIMIT 20000
+  `;
+
+  // Path frequency — what attackers are looking for, regardless of who.
+  const pathCounts = new Map();
+  for (const r of rows) {
+    const p = r.path || "/";
+    pathCounts.set(p, (pathCounts.get(p) || 0) + 1);
+  }
+  const topPaths = [...pathCounts.entries()]
+    .map(([path, hits]) => ({ path, hits }))
+    .sort((a, b) => b.hits - a.hits)
+    .slice(0, 25);
+
+  // Scanner / CMS / CVE aggregation (pure function over the rows).
+  const scannerAgg = aggregateScanners(
+    rows.map((r) => ({ userAgent: r.user_agent, path: r.path })),
+  );
+
+  // Per-IP path entropy — many unique paths = directory-busting or
+  // full-CMS fingerprint sweep; few unique paths with many hits = a
+  // targeted exploit attempt or credential brute-force.
+  const perIp = new Map();
+  for (const r of rows) {
+    const e = perIp.get(r.ip) || { hits: 0, paths: new Set() };
+    e.hits += 1;
+    e.paths.add(r.path || "/");
+    perIp.set(r.ip, e);
+  }
+  const topEnumerators = [...perIp.entries()]
+    .map(([ip, { hits, paths }]) => ({ ip, hits, uniquePaths: paths.size }))
+    .sort((a, b) => b.uniquePaths - a.uniquePaths || b.hits - a.hits)
+    .slice(0, 15);
+
+  // First-seen vs recurring — IPs that attacked us this window but
+  // have never been in visits or threat_actors before it.
+  const startISO = new Date(Date.now() - (
+    range === "24h" ? 86400e3 : range === "30d" ? 30 * 86400e3 : 7 * 86400e3
+  )).toISOString();
+  const ipsInWindow = [...new Set(rows.map((r) => r.ip))];
+  let freshIps = [];
+  if (ipsInWindow.length > 0) {
+    const prior = await sql`
+      SELECT DISTINCT ip FROM threat_actors
+      WHERE ip = ANY(${ipsInWindow}) AND ts < ${startISO}
+    `;
+    const seenBefore = new Set(prior.map((p) => p.ip));
+    freshIps = ipsInWindow.filter((ip) => !seenBefore.has(ip));
+  }
+
+  // Exploit attempts — rows matched to a CVE. Surface the top N so the
+  // dashboard can show "CVE-2021-44228 × 47 hits from 9 IPs".
+  const cveHits = new Map();
+  for (const r of rows) {
+    const id = identifyScanner({ userAgent: r.user_agent, path: r.path });
+    if (!id.cve) continue;
+    const e = cveHits.get(id.cve) || { cve: id.cve, name: id.cveName, hits: 0, ips: new Set(), lastSeen: null };
+    e.hits += 1;
+    e.ips.add(r.ip);
+    if (!e.lastSeen || r.ts > e.lastSeen) e.lastSeen = r.ts;
+    cveHits.set(id.cve, e);
+  }
+  const exploitAttempts = [...cveHits.values()]
+    .map((e) => ({ cve: e.cve, name: e.name, hits: e.hits, uniqueIps: e.ips.size, lastSeen: e.lastSeen }))
+    .sort((a, b) => b.hits - a.hits);
+
+  return json(200, {
+    range,
+    summary: {
+      totalThreats: rows.length,
+      uniqueIps: ipsInWindow.length,
+      freshIps: freshIps.length,
+      recurringIps: ipsInWindow.length - freshIps.length,
+      distinctPaths: pathCounts.size,
+      exploitAttempts: exploitAttempts.reduce((s, e) => s + e.hits, 0),
+    },
+    topPaths,
+    topEnumerators,
+    tools: scannerAgg.tools.slice(0, 15),
+    cms:   scannerAgg.cms.slice(0, 15),
+    cve:   scannerAgg.cve.slice(0, 15),
+    exploitAttempts,
+    freshIps: freshIps.slice(0, 20),
+  });
+}
+
+// ---------- credential-enumeration intel (admin only) ----------
+//
+// The honeypot logs every login attempt into security_events as
+// 'honeypot.credential'. This endpoint mines that table for:
+//   - Top usernames tried (is admin/root/test dominant? → classic)
+//   - Password length + first-char shape distribution
+//   - Per-IP pattern: spray (many usernames, few tries each) vs
+//     brute-force (one username, many tries) vs stuffing (diverse, bursty)
+
+async function handleCredIntel(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  const rows = await sql`
+    SELECT ip, detail, ts
+    FROM security_events
+    WHERE kind = 'honeypot.credential'
+      AND ts > now() - ${interval}::interval
+    ORDER BY ts ASC
+    LIMIT 10000
+  `;
+
+  const normEmail = (d) => {
+    const raw = String(d?.email || d?.d?.email || "").toLowerCase().trim();
+    return raw || "(empty)";
+  };
+  const pwShape = (d) => d?.passwordShape || d?.d?.passwordShape || null;
+
+  // Top usernames
+  const userCounts = new Map();
+  for (const r of rows) {
+    const u = normEmail(r.detail);
+    userCounts.set(u, (userCounts.get(u) || 0) + 1);
+  }
+  const topUsernames = [...userCounts.entries()]
+    .map(([username, hits]) => ({ username, hits }))
+    .sort((a, b) => b.hits - a.hits)
+    .slice(0, 20);
+
+  // Password length distribution (histogram, buckets of 1 char up to 32)
+  const lenBuckets = new Array(33).fill(0); // 0..32, 32 = "32+"
+  for (const r of rows) {
+    const sh = pwShape(r.detail);
+    const len = Number(sh?.length) || 0;
+    const idx = Math.min(32, Math.max(0, len));
+    lenBuckets[idx] += 1;
+  }
+  const pwLengthHistogram = lenBuckets
+    .map((hits, len) => ({ length: len, hits }))
+    .filter((b) => b.hits > 0);
+
+  // Per-IP pattern classification.
+  //   spray       → distinct usernames >= 3 AND max attempts per username <= 3
+  //   brute-force → distinct usernames <= 2 AND total >= 5
+  //   stuffing    → distinct usernames >= 5 AND total >= 10
+  //   probe       → otherwise
+  const perIp = new Map();
+  for (const r of rows) {
+    const u = normEmail(r.detail);
+    const e = perIp.get(r.ip) || { total: 0, users: new Map(), first: r.ts, last: r.ts };
+    e.total += 1;
+    e.users.set(u, (e.users.get(u) || 0) + 1);
+    if (r.ts < e.first) e.first = r.ts;
+    if (r.ts > e.last)  e.last  = r.ts;
+    perIp.set(r.ip, e);
+  }
+  const classify = (e) => {
+    const distinct = e.users.size;
+    const maxPerUser = [...e.users.values()].reduce((m, v) => Math.max(m, v), 0);
+    if (distinct >= 5 && e.total >= 10) return "stuffing";
+    if (distinct >= 3 && maxPerUser <= 3) return "spray";
+    if (distinct <= 2 && e.total >= 5) return "brute-force";
+    return "probe";
+  };
+  const ipBreakdown = [...perIp.entries()]
+    .map(([ip, e]) => ({
+      ip,
+      total: e.total,
+      distinctUsers: e.users.size,
+      maxPerUser: [...e.users.values()].reduce((m, v) => Math.max(m, v), 0),
+      pattern: classify(e),
+      firstSeen: e.first,
+      lastSeen: e.last,
+      spanSeconds: Math.max(1, Math.round((new Date(e.last) - new Date(e.first)) / 1000)),
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 30);
+
+  const patternCounts = ipBreakdown.reduce((acc, row) => {
+    acc[row.pattern] = (acc[row.pattern] || 0) + 1;
+    return acc;
+  }, {});
+
+  return json(200, {
+    range,
+    summary: {
+      totalAttempts: rows.length,
+      uniqueIps: perIp.size,
+      uniqueUsernames: userCounts.size,
+      patternCounts,
+    },
+    topUsernames,
+    pwLengthHistogram,
+    ipBreakdown,
+  });
+}
+
+// ---------- geo intel (admin only) ----------
+//
+// Country + city + /24 rollup. Uses inet arithmetic for the CIDR
+// bucketing so we count every attack in the same /24 as one entry.
+
+async function handleGeoIntel(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  const [byCountry, byCity, byCidr, conversionByCountry] = await Promise.all([
+    sql`
+      SELECT country, COUNT(*)::int AS hits, COUNT(DISTINCT ip)::int AS ips
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval AND country IS NOT NULL
+      GROUP BY country
+      ORDER BY hits DESC
+      LIMIT 25
+    `,
+    sql`
+      SELECT country, city, COUNT(*)::int AS hits, COUNT(DISTINCT ip)::int AS ips
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval AND city IS NOT NULL
+      GROUP BY country, city
+      ORDER BY hits DESC
+      LIMIT 25
+    `,
+    // /24 rollup — cast ip text to inet then mask to /24. Rows where
+    // the cast fails (e.g. malformed IP) are silently excluded by the
+    // WHERE inet check.
+    sql`
+      SELECT (host(set_masklen(ip::inet, 24)) || '/24') AS cidr,
+             COUNT(*)::int AS hits,
+             COUNT(DISTINCT ip)::int AS ips,
+             array_agg(DISTINCT country) FILTER (WHERE country IS NOT NULL) AS countries
+      FROM threat_actors
+      WHERE ts > now() - ${interval}::interval
+        AND ip ~ '^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$'
+      GROUP BY cidr
+      HAVING COUNT(DISTINCT ip) >= 2
+      ORDER BY hits DESC
+      LIMIT 20
+    `,
+    // Visit-to-threat conversion rate by country — what fraction of
+    // traffic from each country turned hostile. High rate = consider
+    // geofencing; low rate = normal user traffic mixed with noise.
+    sql`
+      WITH v AS (
+        SELECT country, COUNT(DISTINCT ip)::int AS visit_ips
+        FROM visits
+        WHERE ts > now() - ${interval}::interval AND country IS NOT NULL
+        GROUP BY country
+      ),
+      t AS (
+        SELECT country, COUNT(DISTINCT ip)::int AS threat_ips
+        FROM threat_actors
+        WHERE ts > now() - ${interval}::interval AND country IS NOT NULL
+        GROUP BY country
+      )
+      SELECT v.country,
+             v.visit_ips,
+             COALESCE(t.threat_ips, 0) AS threat_ips,
+             ROUND(100.0 * COALESCE(t.threat_ips, 0) / NULLIF(v.visit_ips, 0), 1)::float AS pct
+      FROM v
+      LEFT JOIN t ON t.country = v.country
+      WHERE v.visit_ips >= 3
+      ORDER BY pct DESC NULLS LAST, threat_ips DESC
+      LIMIT 20
+    `,
+  ]);
+
+  return json(200, {
+    range,
+    byCountry: byCountry.map((r) => ({ country: r.country, hits: r.hits, ips: r.ips })),
+    byCity:    byCity.map((r) => ({ country: r.country, city: r.city, hits: r.hits, ips: r.ips })),
+    byCidr:    byCidr.map((r) => ({ cidr: r.cidr, hits: r.hits, ips: r.ips, countries: r.countries || [] })),
+    conversionByCountry: conversionByCountry.map((r) => ({
+      country: r.country, visitIps: r.visit_ips, threatIps: r.threat_ips, pct: r.pct,
+    })),
+  });
+}
+
+// ---------- adsense health (admin only) ----------
+//
+// Aggregates the client-side AdSense beacons so we can answer "are
+// real visitors seeing ads?" in 10 seconds instead of logging into
+// Google AdSense. Fill rate and block rate are the two numbers the
+// owner actually cares about:
+//
+//   - High blocked% → most visitors run ad-blockers; expected, don't
+//     confuse with a broken deploy.
+//   - High timeout%  → AdSense approval is pending, or Google is
+//     rate-limiting us (brand-new site, low traffic, thin content).
+//   - High unfilled% → Google's accepting us but not selling — low
+//     inventory on our niche. Expect over time as pages mature.
+//   - High filled%   → Everything working; revenue is real.
+
+async function handleAdsenseHealth(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const range = url.searchParams.get("range") || "7d";
+  const interval = range === "24h" ? "24 hours" : range === "30d" ? "30 days" : "7 days";
+
+  // The adsense_events table is created on-demand by the first /api/track
+  // beacon, so a cold portal that's never seen traffic returns an empty
+  // summary gracefully instead of a "relation does not exist" 500.
+  let rows = [];
+  try {
+    rows = await sql`
+      SELECT
+        COUNT(*)::int                                 AS sessions,
+        COUNT(*) FILTER (WHERE script_loaded)::int    AS script_loaded_sessions,
+        SUM(slot_count)::int                          AS total_slots,
+        SUM(filled)::int                              AS total_filled,
+        SUM(unfilled)::int                            AS total_unfilled,
+        SUM(blocked)::int                             AS total_blocked,
+        SUM(timeout)::int                             AS total_timeout
+      FROM adsense_events
+      WHERE ts > now() - ${interval}::interval
+    `;
+  } catch {
+    return json(200, { range, noData: true, hint: "Table not yet created — no beacons received." });
+  }
+
+  const byPath = await sql`
+    SELECT path,
+           COUNT(*)::int AS sessions,
+           SUM(slot_count)::int AS slots,
+           SUM(filled)::int AS filled,
+           SUM(unfilled)::int AS unfilled,
+           SUM(blocked)::int AS blocked,
+           SUM(timeout)::int AS timeout
+    FROM adsense_events
+    WHERE ts > now() - ${interval}::interval
+    GROUP BY path
+    ORDER BY sessions DESC
+    LIMIT 15
+  `.catch(() => []);
+
+  const r = rows[0] || {};
+  const totalSlots = r.total_slots || 0;
+  const pct = (n) => totalSlots === 0 ? 0 : Math.round((n / totalSlots) * 1000) / 10;
+
+  // One-line narrative that tells the owner what to do.
+  let headline;
+  const fillPct = pct(r.total_filled || 0);
+  const blockPct = pct(r.total_blocked || 0);
+  const timeoutPct = pct(r.total_timeout || 0);
+  const scriptPct = r.sessions ? Math.round((r.script_loaded_sessions / r.sessions) * 100) : 0;
+
+  if (totalSlots === 0) {
+    headline = "No AdSense beacons received yet. Visit a page with ads (e.g. /glossary) in a fresh browser to seed the first measurement.";
+  } else if (fillPct >= 20) {
+    headline = `AdSense is healthy — ${fillPct}% of slot impressions served a real ad.`;
+  } else if (timeoutPct >= 40) {
+    headline = `Google isn't responding to most slots (${timeoutPct}% timeout). Your AdSense account is probably still in "Getting ready" — check adsense.google.com → Sites for the approval state.`;
+  } else if (blockPct >= 40) {
+    headline = `Ad blockers are the main problem — ${blockPct}% of sessions block the adsbygoogle script entirely. Real visitors on clean browsers will see ads; the "missing ads" complaint from your own browser is expected.`;
+  } else if (fillPct < 5) {
+    headline = `Low fill rate (${fillPct}%). Site is approved but Google isn't finding many advertisers for your pages. Normal for new sites; improves with traffic + pagecount.`;
+  } else {
+    headline = `AdSense is working — ${fillPct}% fill, ${blockPct}% blocked, ${timeoutPct}% timed out.`;
+  }
+
+  return json(200, {
+    range,
+    headline,
+    summary: {
+      sessions: r.sessions || 0,
+      scriptLoadedPct: scriptPct,
+      totalSlots,
+      fillPct,
+      unfilledPct: pct(r.total_unfilled || 0),
+      blockedPct: blockPct,
+      timeoutPct,
+    },
+    byPath: byPath.map((b) => ({
+      path: b.path, sessions: b.sessions, slots: b.slots,
+      filled: b.filled, unfilled: b.unfilled, blocked: b.blocked, timeout: b.timeout,
     })),
   });
 }
@@ -1420,6 +2066,69 @@ async function handleResetAuditChain(session) {
 // the admin panel reflects the live account state (no local cache). When
 // STRIPE_SECRET_KEY is unset, returns a `stripe_not_configured` shape so
 // the widget can show a "Stripe not configured" pill instead of 500-ing.
+// Per-network + per-day affiliate click counts for the last N days.
+// Drives the /admin/affiliates dashboard. Admin-gated. Pure SELECT —
+// no Stripe call, no upstream API, just the affiliate_clicks table.
+async function handleAffiliateStats(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const days = Math.min(Math.max(parseInt(url.searchParams.get("days") || "30", 10) || 30, 7), 365);
+  const since = `${days} days`;
+
+  const [byNetwork, byDay, topPosts, recent] = await Promise.all([
+    sql`
+      SELECT
+        COALESCE(network, 'unknown') AS network,
+        COUNT(*)::int AS clicks,
+        COUNT(DISTINCT anon_id)::int AS unique_visitors,
+        MAX(ts) AS last_click
+      FROM affiliate_clicks
+      WHERE ts > now() - ${since}::interval
+      GROUP BY network
+      ORDER BY clicks DESC
+    `.catch(() => []),
+    sql`
+      SELECT
+        date_trunc('day', ts)::date AS day,
+        COUNT(*)::int AS clicks
+      FROM affiliate_clicks
+      WHERE ts > now() - ${since}::interval
+      GROUP BY 1
+      ORDER BY 1 ASC
+    `.catch(() => []),
+    sql`
+      SELECT
+        COALESCE(NULLIF(slug, ''), referrer_path, '(unknown)') AS slug,
+        COUNT(*)::int AS clicks,
+        COUNT(DISTINCT network)::int AS networks
+      FROM affiliate_clicks
+      WHERE ts > now() - ${since}::interval
+      GROUP BY 1
+      ORDER BY clicks DESC
+      LIMIT 15
+    `.catch(() => []),
+    sql`
+      SELECT ts, network, label, slug, country
+      FROM affiliate_clicks
+      ORDER BY ts DESC
+      LIMIT 25
+    `.catch(() => []),
+  ]);
+
+  const totalClicks = byNetwork.reduce((sum, r) => sum + (r.clicks || 0), 0);
+
+  return json(200, {
+    ok: true,
+    days,
+    totalClicks,
+    byNetwork,
+    byDay,
+    topPosts,
+    recent,
+  });
+}
+
 async function handleRevenueSummary(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
@@ -2327,8 +3036,10 @@ async function handleHealth() {
     const r = await sql`SELECT 1 AS ping`;
     checks.db = r.length > 0 ? "connected" : "no_response";
   } catch (err) {
+    // Public endpoint — don't leak schema/host/connection details from
+    // the driver error. Log server-side, return a generic status.
+    console.error("[portal/health] db ping failed", err);
     checks.db = "error";
-    checks.dbError = String(err.message || err).slice(0, 200);
   }
   try {
     const r = await sql`
@@ -2438,10 +3149,25 @@ async function handleGithubHealth(session) {
 }
 
 // ---------- entry points ----------
-// CSRF is enforced via the double-submit-cookie helper in _lib/csrf.js.
-// Mutating requests must (a) come from an allowed Origin and (b) echo the
-// `sit_csrf` cookie back as the `x-csrf-token` header. GET requests skip
-// the check so dashboards/feeds keep working.
+// CSRF is enforced in two layers:
+//   1. csrfCheck() — Origin must be present AND match an allowed host.
+//      Browsers always set Origin on cross-origin non-GET fetches, so a
+//      missing Origin on a mutation is itself a CSRF signal. GET skips.
+//   2. csrfValid() (from _lib/csrf.js) — double-submit cookie pattern;
+//      mutating requests must echo the `sit_csrf` cookie back as the
+//      `x-csrf-token` header.
+// Both must pass for any mutation. Defense in depth.
+const ALLOWED_ORIGINS = new Set([
+  "https://simpleitsrq.com",
+  "https://www.simpleitsrq.com",
+]);
+
+function csrfCheck(request, method) {
+  if (method === "GET") return true;
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  return ALLOWED_ORIGINS.has(origin);
+}
 
 async function dispatch(request, method) {
   const url = new URL(request.url);
@@ -2450,6 +3176,12 @@ async function dispatch(request, method) {
   // Health check is unauthenticated — must be before requireSession.
   if (action === "health" && method === "GET") return handleHealth();
 
+  // Layer 1: Origin check (rejects cross-origin and missing-Origin
+  // mutations before any DB work).
+  if (!csrfCheck(request, method)) {
+    return json(403, { ok: false, error: "csrf_origin_rejected" });
+  }
+  // Layer 2: double-submit cookie (rejects same-origin XSS-driven CSRF).
   if (!csrfValid(request)) {
     return json(403, { ok: false, error: "csrf_rejected" });
   }
@@ -2459,6 +3191,8 @@ async function dispatch(request, method) {
 
   if (action === "me"              && method === "GET")   return handleMeGet(session);
   if (action === "me"              && method === "PATCH") return handleMePatch(session, request);
+  if (action === "export-data"     && method === "GET")   return handleExportData(session);
+  if (action === "delete-account"  && method === "POST")  return handleDeleteAccount(session);
   if (action === "tickets"         && method === "GET")   return handleTickets(session, url);
   if (action === "ticket"          && method === "GET")   return handleTicket(session, url);
   if (action === "ticket"          && method === "PATCH") return handleTicketPatch(session, request);
@@ -2466,9 +3200,14 @@ async function dispatch(request, method) {
   if (action === "invoices"        && method === "GET")   return handleInvoices(session);
   if (action === "visitors"        && method === "GET")   return handleVisitors(session);
   if (action === "investigate-ip"   && method === "GET")   return handleInvestigateIp(session, url);
+  if (action === "investigate"      && method === "GET")   return handleInvestigateIp(session, url);
   if (action === "block-ip"         && method === "POST")  return handleBlockIp(session, request);
   if (action === "honeypot-creds"   && method === "GET")   return handleHoneypotCreds(session);
   if (action === "threat-intel"     && method === "GET")   return handleThreatIntel(session, url);
+  if (action === "enum-intel"       && method === "GET")   return handleEnumIntel(session, url);
+  if (action === "cred-intel"       && method === "GET")   return handleCredIntel(session, url);
+  if (action === "geo-intel"        && method === "GET")   return handleGeoIntel(session, url);
+  if (action === "adsense-health"   && method === "GET")   return handleAdsenseHealth(session, url);
   if (action === "audit-verify"     && method === "GET")   return handleAuditVerify(session);
   if (action === "run-audit-migration" && method === "POST") return handleRunAuditMigration(session);
   if (action === "reset-audit-chain"    && method === "POST") return handleResetAuditChain(session);
@@ -2477,6 +3216,7 @@ async function dispatch(request, method) {
   if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
   if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
   if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);
+  if (action === "affiliate-stats"      && method === "GET")  return handleAffiliateStats(session, url);
   if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);
   if (action === "testimonial-save"     && method === "POST") return handleTestimonialSave(session, request);
   if (action === "testimonial-delete"   && method === "POST") return handleTestimonialDelete(session, request);

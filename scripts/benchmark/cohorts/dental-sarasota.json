@@ -1,0 +1,10 @@
+{
+  "cohort": "dental-sarasota",
+  "label": "Sarasota-area dental + orthodontic practices, Q2 2026",
+  "publishedQuarter": "2026-Q2",
+  "intent": "public-aggregate-report",
+  "notes": "Sarasota + Manatee + south Sarasota county dental + orthodontic practices. Curated from public Google Business + Florida Dental Association directory listings. ALL FINDINGS IN THE PUBLISHED REPORT MUST BE AGGREGATE — never name an individual practice. Only the per-practice email (sent privately) carries the practice's specific grade.",
+  "domains": [
+    "REPLACE_THIS_FIRST.example.com"
+  ]
+}

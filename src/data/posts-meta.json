@@ -1,5 +1,100 @@
 [
   {
+    "slug": "business-security-cameras-sarasota-honest-guide-2026",
+    "title": "Business Security Cameras in Sarasota: An Honest Buyer's Guide for 2026",
+    "date": "2026-04-25",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "security-cameras",
+      "smb",
+      "sarasota",
+      "bradenton",
+      "venice",
+      "hardware"
+    ],
+    "excerpt": "We just put security camera installation back on the homepage — it's something we've quietly done for shop, office, and warehouse clients across Sarasota and Bradenton for years, and it's overdue for an honest writeup. Here's what we actually install in 2026, what we steer clients away from, what each tier costs, and the Florida-specific install gotchas (heat, humidity, hurricane mounts, salt air on barrier islands) that the YouTube reviews never mention.",
+    "metaDescription": "What we actually install for Sarasota small businesses, what we won't install, and what each tier costs. UniFi Protect, Reolink, why we steer clients away from Hikvision and Dahua, and the Florida-specific install gotchas (humidity, salt air, hurricane mounts) that don't get talked about in YouTube reviews.",
+    "heroAlt": "A wall-mounted PoE security camera over the back door of a Sarasota retail shop, with a network cable running into a structured wiring rack inside."
+  },
+  {
+    "slug": "computer-repair-sarasota-honest-guide-2026",
+    "title": "Computer Repair in Sarasota: When to Fix It, When to Replace It, and How to Spot a Scam Quote (2026)",
+    "date": "2026-04-25",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "computer-repair",
+      "residential",
+      "smb",
+      "sarasota",
+      "bradenton",
+      "venice"
+    ],
+    "excerpt": "We just put computer repair back on the homepage as a real, named service — for both businesses and homes — and that means it's overdue for an honest writeup. When is a repair worth doing, when should you replace, what should each common repair actually cost, and what are the six red flags in a quote that mean you're being upsold? Written for Sarasota and Bradenton owners who'd rather be told the truth than handed an expensive estimate.",
+    "metaDescription": "Honest guide to computer repair in Sarasota and Bradenton. The repair-vs-replace decision tree, real prices for SSD upgrades, screen swaps, virus removal, and dead power supplies. Six red flags in a repair quote that mean you're being upsold. For business and residential.",
+    "heroAlt": "An open laptop on a workbench with the keyboard removed, showing a technician's hand replacing an internal component, alongside a printed quote sheet."
+  },
+  {
+    "slug": "free-exposure-scan-launched-2026",
+    "title": "We Just Launched a Free Exposure Scan — Here's What Your Domain Looks Like to an Attacker",
+    "date": "2026-04-24",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "dns",
+      "email-security",
+      "smb",
+      "sarasota",
+      "bradenton"
+    ],
+    "excerpt": "Yesterday we shipped /exposure-scan — a free, no-signup-required passive scan that grades your domain's DNS hygiene the same way a ransomware operator would size you up before deciding whether to bother. Here's what it checks and why every Florida business owner should run it once.",
+    "metaDescription": "Simple IT SRQ now offers a free passive-OSINT scan for any Florida small business. Plain-English grade on your DNS, SPF, DMARC, DKIM, and exposed subdomains in 10 seconds. No signup.",
+    "heroAlt": "A computer screen showing an A-through-F report card grading a small business domain on email authentication, DNS records, and exposed subdomains."
+  },
+  {
+    "slug": "windows-11-printer-fix-sarasota",
+    "title": "Windows 11 Update Just Broke Your Printers (Heres the Fix)",
+    "date": "2026-04-24",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "A recent Windows update is causing printer failures across small businesses. Well explain what happened and how to fix it without calling IT.",
+    "metaDescription": "Windows 11 update breaks printers. Learn why and get the fix for your Sarasota small business.",
+    "heroAlt": "An illustration accompanying Windows 11 Update Just Broke Your Printers (Heres the Fix)."
+  },
+  {
+    "slug": "windows-11-printer-update-sarasota",
+    "title": "Windows 11 Update Broke Your Printer? Heres What Sarasota Businesses Need to Know",
+    "date": "2026-04-24",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "A recent Windows 11 update is causing printing problems for small businesses. Well explain what happened and how to fix it without losing a day of work.",
+    "metaDescription": "Windows 11 update causing printer issues? Simple IT SRQ explains the fix for Sarasota, Bradenton & Venice businesses.",
+    "heroAlt": "An illustration accompanying Windows 11 Update Broke Your Printer? Heres What Sarasota Businesses Need to Know."
+  },
+  {
+    "slug": "florida-data-privacy-law-sarasota-business-owners",
+    "title": "Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know",
+    "date": "2026-04-24",
+    "category": "Compliance",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "Florida just passed new data privacy rules that affect how you handle customer information. Heres what changed and what you need to do about it.",
+    "metaDescription": "Florida data privacy law explained for small business owners in Sarasota. What changed and how to comply.",
+    "heroAlt": "An illustration accompanying Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know."
+  },
+  {
     "slug": "florida-compliance-audit-referral-2026",
     "title": "How to Pick a Florida Compliance Audit Firm in 2026 (SOC 2, HIPAA, PCI, FTC Safeguards)",
     "date": "2026-04-22",

@@ -27,8 +27,12 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 const FROM = "Simple IT SRQ Agent <agent@simpleitsrq.com>";
 
 function verifyCron(request) {
+  // Vercel sets x-vercel-cron: 1 on genuine cron invocations — this header
+  // cannot be spoofed from outside the Vercel edge. Accept either that or a
+  // valid CRON_SECRET bearer (for manual triggers). Fail closed if neither.
+  if (request.headers.get("x-vercel-cron") === "1") return true;
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
+  if (!secret) return false;
   const auth = request.headers.get("authorization") || "";
   const expected = `Bearer ${secret}`;
   if (auth.length !== expected.length) return false;
@@ -88,6 +92,42 @@ async function autoCounter() {
 
   // 5. Clean old auth throttle entries (>1 hour)
   await sql`DELETE FROM auth_throttle WHERE window_start < now() - interval '1 hour'`;
+
+  // 6. GDPR/CCPA retention cleanup — privacy policy §8 commits us to
+  // 12-month retention for security/threat data and 24-month for
+  // affiliate-click analytics. Run once per cron tick (every 15 min)
+  // so the table never drifts more than a quarter-hour past stated
+  // policy. RETURNING ... is bounded to LIMIT 5000 per tick so a long
+  // gap doesn't cause one DELETE to lock the table for minutes.
+  const purgedThreats = await sql`
+    DELETE FROM threat_actors
+    WHERE ts < now() - interval '12 months'
+      AND id IN (SELECT id FROM threat_actors WHERE ts < now() - interval '12 months' LIMIT 5000)
+    RETURNING id
+  `.catch(() => []);
+  if (purgedThreats.length > 0) {
+    actions.push({ action: "retention_purge_threats", target: `${purgedThreats.length} rows`, reason: "GDPR/CCPA 12mo retention policy" });
+  }
+  const purgedClicks = await sql`
+    DELETE FROM affiliate_clicks
+    WHERE ts < now() - interval '24 months'
+      AND id IN (SELECT id FROM affiliate_clicks WHERE ts < now() - interval '24 months' LIMIT 5000)
+    RETURNING id
+  `.catch(() => []);
+  if (purgedClicks.length > 0) {
+    actions.push({ action: "retention_purge_clicks", target: `${purgedClicks.length} rows`, reason: "24mo retention policy" });
+  }
+  // Soft-deleted user rows (deleted_at set by handleDeleteAccount in
+  // api/portal.js) get hard-deleted 30 days after the user clicked
+  // delete, so the audit log keeps the deletion event but the row
+  // itself goes away within the regulated window.
+  const purgedUsers = await sql`
+    DELETE FROM users WHERE deleted_at IS NOT NULL AND deleted_at < now() - interval '30 days'
+    RETURNING id
+  `.catch(() => []);
+  if (purgedUsers.length > 0) {
+    actions.push({ action: "retention_purge_users", target: `${purgedUsers.length} rows`, reason: "30-day grace post-delete" });
+  }
 
   // 6. Alert on critical security events in last 15 min
   const criticals = await sql`
