@@ -9,6 +9,7 @@ import LeadCaptureCTA from "../components/LeadCaptureCTA";
 import Newsletter from "../components/Newsletter";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
 import AdUnit from "../components/AdSense";
+import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
 import ToolsUsedFooter from "../components/ToolsUsedFooter";
 import StoreCrossSell from "../components/StoreCrossSell";
 import Affiliate from "../components/Affiliate";
@@ -334,9 +335,9 @@ export default function BlogPost() {
               // MDX path — one lazy chunk per post, sandwiched between the
               // same ad units the legacy renderer uses.
               <>
-                <AdUnit key="ad-top" format="auto" className="ad-in-article" />
+                <AdUnit key="ad-top" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
                 <MdxBody slug={slug} />
-                <AdUnit key="ad-bottom" format="auto" className="ad-in-article" />
+                <AdUnit key="ad-bottom" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
               </>
             ) : (
               (() => {
@@ -344,9 +345,9 @@ export default function BlogPost() {
                 const mid = Math.min(4, Math.floor(blocks.length / 2));
                 return [
                   ...blocks.slice(0, mid),
-                  <AdUnit key="ad-mid" format="auto" className="ad-in-article" />,
+                  <AdUnit key="ad-mid" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />,
                   ...blocks.slice(mid),
-                  <AdUnit key="ad-bottom" format="auto" className="ad-in-article" />,
+                  <AdUnit key="ad-bottom" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />,
                 ];
               })()
             )}

@@ -7,6 +7,12 @@ import { useEffect, useRef } from "react";
 const CLIENT_ID =
   import.meta.env.VITE_ADSENSE_CLIENT || "ca-pub-7420716928607113";
 
+// Per-placement slot IDs live in src/lib/adsenseSlots.js so this file
+// stays component-only (fast-refresh requires it). Each call site
+// passes its slot via the `slot` prop; without one, AdUnit fails closed
+// — that's the fix for the silent-no-ad bug where empty data-ad-slot=""
+// tags rendered but AdSense couldn't fill them.
+
 // The adsbygoogle.js script is loaded from <head> in index.html so
 // AdSense's site-review crawler sees it on first paint (faster
 // approval, more reliable verification). Consent is centrally handled
@@ -18,16 +24,20 @@ const CLIENT_ID =
 
 export default function AdUnit({ slot, format = "auto", responsive = true, className = "" }) {
   const pushed = useRef(false);
+  const effectiveSlot = slot || "";
 
   useEffect(() => {
-    if (!CLIENT_ID || pushed.current) return;
+    if (!CLIENT_ID || !effectiveSlot || pushed.current) return;
     pushed.current = true;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch { /* ad blocker, script not yet loaded, or fast-nav cleanup */ }
-  }, []);
+  }, [effectiveSlot]);
 
-  if (!CLIENT_ID) return null;
+  // Fail closed: without a client ID or a slot ID, render nothing rather
+  // than emit a malformed <ins> that AdSense will silently refuse to fill
+  // and Lighthouse will flag as a layout-shift culprit.
+  if (!CLIENT_ID || !effectiveSlot) return null;
 
   return (
     <div className={`ad-container ${className}`}>
@@ -35,7 +45,7 @@ export default function AdUnit({ slot, format = "auto", responsive = true, class
         className="adsbygoogle"
         style={{ display: "block" }}
         data-ad-client={CLIENT_ID}
-        data-ad-slot={slot || ""}
+        data-ad-slot={effectiveSlot}
         data-ad-format={format}
         data-full-width-responsive={responsive ? "true" : "false"}
       />
