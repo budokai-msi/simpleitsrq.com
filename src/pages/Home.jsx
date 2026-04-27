@@ -25,12 +25,13 @@ function Hero() {
       </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display">IT support that just works — for Sarasota and Bradenton businesses.</h1>
+          <span className="eyebrow">Managed IT · Helpdesk · Cybersecurity — Sarasota · Bradenton · Venice</span>
+          <h1 id="hero-title" className="display">Managed IT and helpdesk for Sarasota and Bradenton small businesses.</h1>
           <p className="lede">
-            We keep your computers running, your data safe, and your team productive.
-            A local crew that picks up the phone, flat monthly pricing, and all the
-            paperwork your insurance company and auditors ask for.
+            Call one local number and a real Sarasota engineer picks up. One flat
+            monthly fee covers unlimited helpdesk, 24/7 monitoring, Microsoft 365,
+            and security for everyone in your office — so your team stops fighting
+            their computers and gets back to the work that pays the bills.
           </p>
           <div className="hero-ctas">
             <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Check-Up</a>
@@ -38,8 +39,8 @@ function Hero() {
           </div>
           <ul className="trust-row" aria-label="Why clients trust us">
             <li><Star size={14} strokeWidth={2.25} fill="#F7630C" stroke="#F7630C" /> 5-star Google reviews</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included</li>
-            <li><Clock size={14} strokeWidth={2.25} /> Local team · same-day response</li>
+            <li><Clock size={14} strokeWidth={2.25} /> Same-day response · &lt;15 min for urgent</li>
+            <li><ShieldCheck size={14} strokeWidth={2.25} /> Local SW Florida team · no offshore queue</li>
           </ul>
           {/* Stat ticker */}
           <div className="hero-stats">
@@ -116,8 +117,8 @@ function LogosBar() {
 const SOLUTIONS = [
   {
     Icon: Headphones,
-    title: "Everyday IT Support",
-    desc: "One flat monthly price covers unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and critical problems get a live tech in under 15 minutes."
+    title: "Managed IT and Helpdesk",
+    desc: "Unlimited helpdesk, 24/7 computer and network monitoring, software updates, and new-employee onboarding — all under one flat monthly fee per user. Call, email, or text and a real Sarasota engineer answers; critical problems get a live tech in under 15 minutes."
   },
   {
     Icon: Lock,
@@ -163,9 +164,9 @@ function Solutions() {
     <section className="section" id="solutions" aria-labelledby="solutions-title">
       <div className="container" ref={ref}>
         <div className="section-head reveal-up" data-reveal>
-          <span className="eyebrow">What We Do</span>
-          <h2 id="solutions-title" className="title-1">Everything your business needs from an IT company</h2>
-          <p className="section-sub">One local team for your computers, phones, email, Wi-Fi, backups, and security — so you don't have to call five different vendors when something breaks.</p>
+          <span className="eyebrow">Managed IT Services</span>
+          <h2 id="solutions-title" className="title-1">Your outsourced IT department, run from Sarasota</h2>
+          <p className="section-sub">One local team for your helpdesk, computers, phones, email, Wi-Fi, backups, and security — so when something breaks you call one number and a real engineer answers.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
@@ -203,7 +204,7 @@ function Industries() {
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Who We Work With</span>
           <h2 id="industries-title" className="title-1">Businesses we know how to support</h2>
-          <p className="section-sub">We specialize in the industries that have to deal with the most paperwork — medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton.</p>
+          <p className="section-sub">We support medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton — the verticals with the most demanding day-to-day IT and the strictest data-handling rules.</p>
         </div>
         <div className="industries-grid">
           {INDUSTRIES.map(({ Icon, name, badges }, i) => (
@@ -234,11 +235,12 @@ function Compliance() {
     <section className="section" id="compliance" aria-labelledby="compliance-title">
       <div className="container compliance-grid reveal-up" ref={ref}>
         <div>
-          <span className="eyebrow">Paperwork and Disaster Planning</span>
-          <h2 id="compliance-title" className="title-1">We handle the paperwork most IT guys hate</h2>
+          <span className="eyebrow">Beyond the Helpdesk</span>
+          <h2 id="compliance-title" className="title-1">When you need it, we cover compliance and disaster recovery too</h2>
           <p className="section-sub">
-            Audits, cyber-insurance renewals, HIPAA reviews, disaster-recovery plans — we do
-            the work and hand you the documents so you can focus on running your business.
+            Most months we're just keeping your team productive. But when an audit lands, an
+            insurance carrier asks for proof, or a hurricane is headed for the Gulf, we already
+            have the paperwork drafted and the recovery plan ready to execute.
           </p>
           <ul className="feature-list">
             {features.map((f) => (
@@ -640,8 +642,8 @@ function Contact() {
 
 export default function Home() {
   useSEO({
-    title: "Simple IT SRQ | IT Support for Sarasota and Bradenton Businesses",
-    description: "Local IT support, cybersecurity, and cloud services for small businesses in Sarasota, Bradenton, and Venice. Flat monthly pricing, same-day response, HIPAA and cyber-insurance paperwork included. Email hello@simpleitsrq.com.",
+    title: "Simple IT SRQ | Managed IT and Helpdesk Support for Sarasota and Bradenton",
+    description: "Local managed IT and helpdesk for Sarasota, Bradenton, and Venice small businesses. Flat monthly pricing covers unlimited helpdesk, monitoring, Microsoft 365, and security — answered by a real SW Florida engineer with same-day response.",
     canonical: "https://simpleitsrq.com/",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [{ name: "Home", url: "https://simpleitsrq.com/" }],
