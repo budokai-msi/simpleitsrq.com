@@ -313,6 +313,153 @@ function escapeHtmlSafe(s = "") {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+// ────────────────────────────────────────────────────────────────────────
+// Newsletter drip sequence (welcome + day-3 + day-7).
+//
+// Each function returns true on a successful Resend send, false on any
+// failure (no API key, network error, Resend rejection). Callers update
+// the matching *_sent_at column ONLY on true, so a transient failure
+// stays retryable on the next run.
+//
+// Email content lives inline so the operator can rewrite it without
+// touching schema or templates infrastructure. Plain-text fallback is
+// always included for mail clients that strip HTML.
+// ────────────────────────────────────────────────────────────────────────
+
+async function sendDripEmail({ to, unsubscribeToken, subject, html, text }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return false;
+  const unsubscribeUrl = `${SITE_URL}/api/contact?unsubscribe=${unsubscribeToken}`;
+  try {
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: NEWSLETTER_FROM,
+      to: [to],
+      subject,
+      text: text + "\n\nUnsubscribe: " + unsubscribeUrl,
+      html: html.replace("__UNSUBSCRIBE_URL__", unsubscribeUrl),
+      headers: { "List-Unsubscribe": `<${unsubscribeUrl}>` },
+    });
+    if (error) {
+      console.error("[newsletter] drip send error", error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("[newsletter] drip send exception", err);
+    return false;
+  }
+}
+
+const dripFooter = `
+<p style="font-size:11px;color:#9ca3af;margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb">
+  You're getting this because you confirmed your subscription to The Simple IT Brief at simpleitsrq.com.
+  <a href="__UNSUBSCRIBE_URL__" style="color:#9ca3af">Unsubscribe</a> at any time — one click, no questions.
+</p>`;
+
+async function sendWelcomeEmail(email, unsubscribeToken) {
+  return sendDripEmail({
+    to: email,
+    unsubscribeToken,
+    subject: "You're in — and here's your free starter WISP",
+    text: [
+      `Welcome to The Simple IT Brief.`,
+      ``,
+      `Your free starter Written Information Security Program template is here:`,
+      `${SITE_URL}/wisp-starter`,
+      ``,
+      `It's a 12-section Florida-flavored template — fillable, ready for your 2026 cyber-insurance renewal.`,
+      `Print → Save as PDF in your browser to keep an offline copy.`,
+      ``,
+      `What to expect: one email a month with plain-English security, AI, and cloud news for Florida small business owners. No fluff, no offers in every email — most months it's a single useful pointer.`,
+      ``,
+      `If we can help with anything specific (computer repair, security cameras, M365 migration, HIPAA paperwork, etc.) reply to this email and a real Sarasota / Bradenton tech will read it.`,
+      ``,
+      `— Simple IT SRQ`,
+    ].join("\n"),
+    html: `
+<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+  <h2 style="margin:0 0 16px;color:#0F6CBD">You're in.</h2>
+  <p style="font-size:15px;line-height:1.6">Welcome to <strong>The Simple IT Brief</strong>. As promised — your free starter Written Information Security Program template is ready below.</p>
+  <p style="margin:24px 0">
+    <a href="${SITE_URL}/wisp-starter" style="display:inline-block;padding:12px 22px;background:#0F6CBD;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Open the WISP starter →</a>
+  </p>
+  <p style="font-size:14px;line-height:1.6;color:#444">It's a 12-section Florida-flavored template — fillable, ready for a 2026 cyber-insurance renewal questionnaire. Print → Save as PDF in your browser to keep an offline copy.</p>
+  <p style="font-size:14px;line-height:1.6;color:#444">What to expect: one email a month, plain-English security and IT news for Florida small business owners. If we can help with anything specific — computer repair, cameras, M365 migration, HIPAA paperwork — just reply and a real tech will read it.</p>
+  <p style="font-size:14px;color:#444;margin-top:24px">— The Simple IT SRQ team</p>
+  ${dripFooter}
+</div>`,
+  });
+}
+
+async function sendDripDay3Email(email, unsubscribeToken) {
+  return sendDripEmail({
+    to: email,
+    unsubscribeToken,
+    subject: "What we'd actually buy if we were starting a Sarasota office today",
+    text: [
+      `Three days in — figured we'd send the most useful single thing we publish, the buyer's guide for business security cameras:`,
+      `${SITE_URL}/blog/business-security-cameras-sarasota-honest-guide-2026`,
+      ``,
+      `If you're a homeowner instead, the computer-repair guide is the equivalent — real prices, what's worth fixing, what's a scam:`,
+      `${SITE_URL}/blog/computer-repair-sarasota-honest-guide-2026`,
+      ``,
+      `If you're already shopping for an MSP, our public pricing is here (a thing most local IT shops don't publish):`,
+      `${SITE_URL}/pricing`,
+      ``,
+      `— Simple IT SRQ`,
+    ].join("\n"),
+    html: `
+<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+  <h2 style="margin:0 0 16px;color:#0F6CBD">A few things we'd actually use</h2>
+  <p style="font-size:15px;line-height:1.6">Three days into your subscription. Here are the three pieces we'd hand a new Sarasota / Bradenton business owner if they asked us where to start:</p>
+  <ul style="font-size:14px;line-height:1.7;padding-left:20px">
+    <li><a href="${SITE_URL}/blog/business-security-cameras-sarasota-honest-guide-2026" style="color:#0F6CBD;font-weight:600">Business security cameras buyer's guide</a> — honest prices, gear we recommend, brands we don't, Florida install gotchas.</li>
+    <li><a href="${SITE_URL}/blog/computer-repair-sarasota-honest-guide-2026" style="color:#0F6CBD;font-weight:600">Computer repair guide</a> — repair-vs-replace tree, real prices, six red flags in a quote.</li>
+    <li><a href="${SITE_URL}/pricing" style="color:#0F6CBD;font-weight:600">Public pricing page</a> — managed-IT tiers, one-shot service prices. No quote-and-call dance.</li>
+  </ul>
+  <p style="font-size:14px;line-height:1.6;color:#444;margin-top:24px">If something on those pages doesn't make sense, reply and we'll explain. Real humans on this side.</p>
+  <p style="font-size:14px;color:#444;margin-top:16px">— Simple IT SRQ</p>
+  ${dripFooter}
+</div>`,
+  });
+}
+
+async function sendDripDay7Email(email, unsubscribeToken) {
+  return sendDripEmail({
+    to: email,
+    unsubscribeToken,
+    subject: "Want a free 30-min walk-through with a Sarasota IT tech?",
+    text: [
+      `Week one of the brief — and a pitch.`,
+      ``,
+      `If you're an owner reading this and your IT setup is held together with copy-paste advice from Reddit, we'd be glad to look at it for free.`,
+      ``,
+      `30 minutes. Phone or video. We'll tell you the top 2-3 risks we hear in the call, ballpark pricing if any work is worth doing, and a written follow-up email summarizing the conversation.`,
+      ``,
+      `No sales pitch on the call — that's a different conversation that comes after, only if you want it.`,
+      ``,
+      `Book here: ${SITE_URL}/book`,
+      ``,
+      `— Simple IT SRQ`,
+    ].join("\n"),
+    html: `
+<div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+  <h2 style="margin:0 0 16px;color:#0F6CBD">Free 30-min walk-through?</h2>
+  <p style="font-size:15px;line-height:1.6">Week one of the brief — and the only pitch you'll get from us in a while.</p>
+  <p style="font-size:14px;line-height:1.6">If your IT setup is held together with copy-paste advice from Reddit, we're glad to look at it for free. 30 minutes, phone or video. We'll tell you the top 2-3 risks we hear, ballpark pricing if any work's worth doing, and email you a written follow-up.</p>
+  <p style="font-size:14px;line-height:1.6">No sales pitch ON the call. That's a different conversation that comes after, only if you want it.</p>
+  <p style="margin:24px 0">
+    <a href="${SITE_URL}/book" style="display:inline-block;padding:12px 22px;background:#0F6CBD;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Book the free 30-min →</a>
+  </p>
+  <p style="font-size:14px;color:#444;margin-top:24px">— Simple IT SRQ</p>
+  ${dripFooter}
+</div>`,
+  });
+}
+
+export { sendWelcomeEmail, sendDripDay3Email, sendDripDay7Email };
+
 // Double-opt-in newsletter subscribe. Creates or refreshes a row in
 // newsletter_subscribers, emails a confirmation link. Does NOT add
 // the subscriber to the list until they click the link. Re-subscribing
@@ -521,13 +668,48 @@ export async function GET(request) {
   }
 
   if (confirm) {
+    // Use a CTE so we know whether THIS request is the one that flipped
+    // confirmed_at from null to a value. We only fire the welcome email
+    // on the actual transition — re-clicking a confirm link a second
+    // time should be idempotent (no second welcome).
     const rows = await sql`
-      UPDATE newsletter_subscribers
-      SET confirmed_at = COALESCE(confirmed_at, now())
-      WHERE confirm_token = ${confirm}
-      RETURNING email
+      WITH before AS (
+        SELECT id, confirmed_at AS prior_confirmed_at, welcome_sent_at, unsubscribe_token
+        FROM newsletter_subscribers
+        WHERE confirm_token = ${confirm}
+        FOR UPDATE
+      ),
+      updated AS (
+        UPDATE newsletter_subscribers ns
+        SET confirmed_at = COALESCE(ns.confirmed_at, now())
+        FROM before
+        WHERE ns.id = before.id
+        RETURNING ns.id, ns.email, before.prior_confirmed_at, before.welcome_sent_at, before.unsubscribe_token
+      )
+      SELECT * FROM updated
     `.catch(() => []);
-    const ok = rows.length > 0;
+    const row = rows[0];
+    const ok = !!row;
+    const justConfirmed = ok && row.prior_confirmed_at === null && row.welcome_sent_at === null;
+
+    if (justConfirmed) {
+      // Fire welcome email out-of-band — never block the redirect on
+      // mail delivery. Sets welcome_sent_at on success so the cron job
+      // doesn't double-send. Failures are logged; the user is still
+      // confirmed (the welcome email is deliverable separately).
+      sendWelcomeEmail(row.email, row.unsubscribe_token).then(async (sent) => {
+        if (sent) {
+          await sql`
+            UPDATE newsletter_subscribers
+            SET welcome_sent_at = now()
+            WHERE id = ${row.id}
+          `.catch(() => {});
+        }
+      }).catch((err) => {
+        console.error("[newsletter] welcome email failed", err);
+      });
+    }
+
     return new Response(ok ? `<!doctype html><meta http-equiv="refresh" content="0; url=/?newsletter=confirmed"><title>Confirmed</title><p>Subscription confirmed. Redirecting…</p>` : `<!doctype html><title>Link expired</title><p>That confirmation link has expired or was already used. <a href="/">Back to home</a>.</p>`, {
       status: ok ? 200 : 410,
       headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
