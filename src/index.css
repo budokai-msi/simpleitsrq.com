@@ -357,6 +357,82 @@ svg { stroke-width: 1.75; }
   box-shadow: var(--shadow4);
 }
 
+/* ============================================================
+   content-visibility — skip layout/paint for off-screen sections.
+   The browser doesn't render or measure children of an element
+   marked content-visibility: auto until it scrolls near the
+   viewport. Pairs with contain-intrinsic-size to reserve space
+   so scrollbar position doesn't jump as content paints in.
+   Real win on long pages (WISP starter, blog posts, pricing
+   tables) — INP and LCP both drop. Chrome / Edge / Safari 18+
+   support it; Firefox renders normally with no penalty.
+   ============================================================ */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 1200px;
+}
+
+/* Apply to long-form sections automatically. The first section on
+   every page stays render-eager (so above-the-fold work isn't
+   skipped); .section:nth-of-type(n+3) catches everything below the
+   second viewport. */
+@media (min-width: 720px) {
+  main .section:nth-of-type(n+3) {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 800px;
+  }
+}
+
+/* ============================================================
+   :has() — modern parent-selector wins.
+   When any input inside a form has been interacted with AND fails
+   constraint validation, soften the form's border to a danger
+   tint. No JS, no aria mutation, no re-render — just CSS reacting
+   to :user-invalid bubbling up via :has().
+   Chrome 121+ adds :user-invalid; Safari/Firefox shipped earlier.
+   The double-selector below first matches forms containing an
+   input that has been edited and is now invalid.
+   ============================================================ */
+.form:has(:user-invalid),
+.lead-cta-form:has(:user-invalid),
+.newsletter-form:has(:user-invalid) {
+  --form-invalid-glow: 0 0 0 3px color-mix(in srgb, var(--error) 18%, transparent);
+}
+.form:has(:user-invalid) input:user-invalid,
+.form:has(:user-invalid) textarea:user-invalid,
+.lead-cta-form:has(:user-invalid) input:user-invalid,
+.newsletter-form:has(:user-invalid) input:user-invalid {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 1px var(--error);
+}
+
+/* Body class while a native <dialog> is open — locks scroll without
+   needing a JS state hook. */
+body:has(dialog[open][data-blocking-modal]) {
+  overflow: hidden;
+}
+
+/* Share button — small affordance under blog post titles.
+   Sits inside .blog-post-meta beside the date / author / read-time. */
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out);
+}
+.share-btn:hover { background: var(--surface); color: var(--text-1); border-color: var(--border-strong); }
+.share-btn[data-state="copied"] { color: var(--success); border-color: color-mix(in srgb, var(--success) 40%, var(--border)); }
+
 /* Selection */
 ::selection {
   background: var(--brand);

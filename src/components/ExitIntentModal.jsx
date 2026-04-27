@@ -111,38 +111,36 @@ export default function ExitIntentModal() {
     return () => document.removeEventListener("mouseout", onMouseOut);
   }, []);
 
-  // Body-scroll lock + focus management while open.
+  // Native <dialog> handles scroll-lock (via the body:has(dialog[open])
+  // CSS rule), backdrop, focus return, focus trap, and Escape closing
+  // for free. We just drive showModal/close from React state. The
+  // dialog also self-fires a "close" event when the user hits Escape
+  // — we listen so React state stays in sync.
   useEffect(() => {
-    if (!open) return undefined;
-    previouslyFocusedRef.current =
-      typeof document !== "undefined" ? document.activeElement : null;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    const el = dialogRef.current;
+    if (!el) return undefined;
 
-    // Defer so the node is in the DOM.
-    const id = window.requestAnimationFrame(() => {
-      if (firstFocusRef.current) firstFocusRef.current.focus();
-    });
+    if (open && !el.open) {
+      try { el.showModal(); } catch { /* invalid state — likely re-mount races */ }
+    } else if (!open && el.open) {
+      try { el.close(); } catch { /* already closing */ }
+    }
 
-    const onKey = (e) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        close();
-      }
+    const onCancel = (e) => {
+      // Native Escape close — sync React state. Calling close() also
+      // emits this so the listener has to be defensive against
+      // duplicate fires; React's state setter is idempotent.
+      e.preventDefault();
+      setOpen(false);
     };
-    document.addEventListener("keydown", onKey);
-
+    const onClose = () => setOpen(false);
+    el.addEventListener("cancel", onCancel);
+    el.addEventListener("close", onClose);
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.removeEventListener("keydown", onKey);
-      window.cancelAnimationFrame(id);
-      // Return focus to the originally-focused element.
-      const prev = previouslyFocusedRef.current;
-      if (prev && typeof prev.focus === "function") {
-        try { prev.focus(); } catch { /* element may be detached */ }
-      }
+      el.removeEventListener("cancel", onCancel);
+      el.removeEventListener("close", onClose);
     };
-  }, [open, close]);
+  }, [open]);
 
   // Focus the first card button when the picker first renders, or the email
   // field when a choice is selected.
@@ -194,27 +192,30 @@ export default function ExitIntentModal() {
     }
   };
 
-  if (!open) return null;
-
+  // We render the <dialog> unconditionally so showModal/close can run
+  // against a stable DOM node — gating on `open` here would unmount
+  // and break the imperative API.
   const picked = choice ? CHOICES[choice] : null;
   const titleId = "exit-intent-title";
   const descId = "exit-intent-desc";
 
   return (
-    <div
-      className="exit-intent-backdrop"
+    <dialog
+      ref={dialogRef}
+      className="exit-intent-modal"
+      data-blocking-modal
+      aria-labelledby={titleId}
+      aria-describedby={descId}
       onClick={(e) => {
+        // Click-outside-to-close: native <dialog> reports clicks on the
+        // ::backdrop pseudo-element with target === the dialog itself
+        // (not a child). The form/card content sits inside an inner
+        // wrapper so any e.target === e.currentTarget click is the
+        // backdrop area only.
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div
-        ref={dialogRef}
-        className="exit-intent-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={descId}
-      >
+      <div className="exit-intent-modal-inner">
         <button
           type="button"
           className="exit-intent-close"
@@ -324,6 +325,6 @@ export default function ExitIntentModal() {
           </form>
         )}
       </div>
-    </div>
+    </dialog>
   );
 }
