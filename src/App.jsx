@@ -15,6 +15,7 @@ import { useAnalyticsPageviews, useAnalyticsConsent, trackEvent } from "./lib/an
 import { useClarity } from "./lib/clarity.js";
 import { useEngagementTracking } from "./lib/engagement.js";
 import { AutoAds } from "./components/AdSense.jsx";
+import LiveChat from "./components/LiveChat.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./App.css";
 
@@ -378,6 +379,7 @@ function Layout({ children }) {
       <ExitIntentMount />
       <CookieConsent />
       <AutoAds />
+      <LiveChat />
       <Analytics />
       <SpeedInsights />
     </>
