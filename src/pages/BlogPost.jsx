@@ -15,6 +15,7 @@ import StoreCrossSell from "../components/StoreCrossSell";
 import Affiliate from "../components/Affiliate";
 import StackToolInline from "../components/StackToolInline";
 import RelatedPosts from "../components/RelatedPosts";
+import ShareButton from "../components/ShareButton";
 import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
 import ComplianceAuditCTA from "../components/ComplianceAuditCTA";
 import { trackAffiliateClick } from "../lib/trackClick";
@@ -326,6 +327,12 @@ export default function BlogPost() {
             <span><Calendar size={14} /> {new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
             <span><User size={14} /> {post.author}</span>
             <span>{minutes} min read</span>
+            <ShareButton
+              slug={post.slug}
+              title={post.title}
+              url={`https://simpleitsrq.com/blog/${post.slug}`}
+              className="blog-post-share"
+            />
           </div>
           <div className="blog-post-hero">
             <BlogCover post={post} variant="hero" />

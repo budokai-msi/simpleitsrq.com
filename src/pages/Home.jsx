@@ -78,7 +78,13 @@ function Hero() {
   return (
     <section className="hero hero-clean" aria-labelledby="hero-title" data-experiment-variant={variant}>
       <div className="hero-bg" aria-hidden="true">
-        <img src={heroGrid} alt="" className="hero-grid-bg" />
+        <img
+          src={heroGrid}
+          alt=""
+          className="hero-grid-bg"
+          fetchpriority="high"
+          decoding="async"
+        />
       </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
