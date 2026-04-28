@@ -2679,10 +2679,27 @@ main, #main {
 }
 
 /* ============ Nav user pill ============ */
+/* Renders as a rounded chip rather than a plain link so it reads as
+ * peer to the primary "Book a Call" button. Without the surface +
+ * border the avatar + name floats unstyled in the right cluster and
+ * looks broken next to the filled CTA. */
 .nav-user {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 6px 12px 6px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+  transition: background 120ms, border-color 120ms;
+}
+.nav-user:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text-1);
 }
 .nav-avatar {
   width: 22px;

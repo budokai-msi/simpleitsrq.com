@@ -151,18 +151,15 @@ function Navbar() {
       <div className="container nav-inner">
         <Logo />
         <nav className="nav-links" aria-label="Primary">
-          {/* IT Services takes the headline slot — we're a managed-IT
-              company first, security/scans are how we earn trust, not
-              the headline product. The /service-area hub sits next to
-              it because LOCAL is the second-most-important identity. */}
-          <Link to="/#solutions">IT Services</Link>
-          <Link to="/services">Buy a Service</Link>
+          {/* Primary nav is trimmed to four items so the right-side
+              CTA cluster (theme toggle, portal pill, Book a Call) has
+              room to breathe at 1280px-and-down. Templates, Vendor
+              Stack, Buy a Service, and Free Scan still surface from
+              the home page, the mobile menu, and the footer. */}
+          <Link to="/#solutions">Services</Link>
           <Link to="/pricing">Pricing</Link>
           <Link to="/service-area">Service Area</Link>
-          <Link to="/store">Templates</Link>
-          <Link to="/stack">Vendor Stack</Link>
           <Link to="/blog">Blog</Link>
-          <Link to="/exposure-scan">Free Scan</Link>
         </nav>
         <div className="nav-actions">
           <ThemeToggle />
