@@ -136,17 +136,27 @@ function BuyCta({ product }) {
   const joinWaitlist = async (e) => {
     e.preventDefault();
     if (!email) return;
+    const source = `product-detail-waitlist-${product.slug}`;
     try {
-      await csrfFetch("/api/contact", {
+      const r = await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
           name: "(product waitlist)",
           message: `Waitlist signup for: ${product.title} ($${product.price}${product.priceSuffix || ""})`,
-          source: `product-detail-waitlist-${product.slug}`,
+          source,
         }),
-      }).catch(() => {});
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.ok) {
+        track.lead(source, typeof product.price === "number" ? product.price : undefined, {
+          product_slug: product.slug,
+          product_title: product.title,
+        });
+      }
+      // UX intentionally shows success regardless — waitlist is low-stakes
+      // and we'd rather not surface an error inline on a buy button.
       setSent(true);
     } catch { setSent(true); }
   };
@@ -193,7 +203,9 @@ export default function ProductDetail() {
   const [previewLoading, setPreviewLoading] = useState(false);
 
   // Schema.org Product markup — ships rich-result eligibility to Google.
-  // Using offers with price + priceCurrency is the minimum for product-snippet.
+  // Using offers with price + priceCurrency is the minimum for product-snippet;
+  // the per-product OG card doubles as the schema image so the rich snippet
+  // gets a real preview rather than the generic site logo.
   const productJsonLd = useMemo(() => {
     if (!product) return null;
     const offer = product.buyLink
@@ -216,6 +228,7 @@ export default function ProductDetail() {
       name: product.title,
       description: product.description,
       url: `${SITE_URL}/store/${product.slug}`,
+      image: `${SITE_URL}/og-product-${product.slug}.png`,
       brand: { "@type": "Brand", name: "Simple IT SRQ" },
       offers: offer,
     };
@@ -225,7 +238,7 @@ export default function ProductDetail() {
     title: `${product.title} | Simple IT SRQ Store`,
     description: product.description.slice(0, 160),
     canonical: `${SITE_URL}/store/${product.slug}`,
-    image: `${SITE_URL}/og-image.png`,
+    image: `${SITE_URL}/og-product-${product.slug}.png`,
     breadcrumbs: [
       { name: "Home", url: `${SITE_URL}/` },
       { name: "Store", url: `${SITE_URL}/store` },
