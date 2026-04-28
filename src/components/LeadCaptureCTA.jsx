@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
+import { track } from "../lib/analytics";
 
 export default function LeadCaptureCTA({
   title = "Get a Free 15-Min IT Assessment",
   subtitle = "A local Sarasota/Bradenton engineer will review your Microsoft 365, security posture, and backups — no sales pitch.",
   endpoint = "/api/contact",
+  source = "blog-cta",
 }) {
   const [form, setForm] = useState({ name: "", email: "" });
   const [sent, setSent] = useState(false);
@@ -19,14 +21,20 @@ export default function LeadCaptureCTA({
       return;
     }
     try {
-      await csrfFetch(endpoint, {
+      const r = await csrfFetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, source: "blog-cta" }),
-      }).catch(() => {});
+        body: JSON.stringify({ ...form, source }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok || !data.ok) {
+        setError("We couldn't send that just now. Try again in a moment or email hello@simpleitsrq.com.");
+        return;
+      }
+      track.lead(source, 250);
       setSent(true);
     } catch {
-      setSent(true);
+      setError("Network hiccup. Check your connection and try again.");
     }
   };
 

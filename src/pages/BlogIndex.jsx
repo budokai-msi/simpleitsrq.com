@@ -7,6 +7,7 @@ import { useSEO } from "../lib/seo";
 import BlogCover from "../components/BlogCover";
 import BlogSearch from "../components/BlogSearch";
 import AdUnit from "../components/AdSense";
+import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
 
 const PAGE_SIZE = 12;
 
@@ -130,7 +131,7 @@ export default function BlogIndex() {
               // fluid/in-feed format renders as a native-looking card so it
               // doesn't disrupt the grid visually.
               return (i + 1) % 6 === 0 && i < visible.length - 1
-                ? [card, <AdUnit key={`ad-feed-${i}`} format="fluid" className="ad-in-feed" />]
+                ? [card, <AdUnit key={`ad-feed-${i}`} slot={ADSENSE_SLOTS.inFeed} format="fluid" className="ad-in-feed" />]
                 : [card];
             })}
           </div>

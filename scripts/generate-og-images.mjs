@@ -1,11 +1,12 @@
 // scripts/generate-og-images.mjs
 //
-// Generates a branded 1200×630 Open Graph card per blog post:
-//   public/og-blog-<slug>.png
+// Generates branded 1200×630 Open Graph cards:
+//   public/og-blog-<slug>.png      — one per blog post
+//   public/og-product-<slug>.png   — one per /store product
 //
-// The URL shape is fixed by BlogPost.jsx, which emits
-//   <meta property="og:image" content="https://simpleitsrq.com/og-blog-<slug>.png">
-// so one PNG per post slug is the contract.
+// The URL shapes are fixed by their respective consumers:
+//   BlogPost.jsx     →  og-blog-<slug>.png
+//   ProductDetail.jsx → og-product-<slug>.png  (also embedded in Product JSON-LD)
 //
 // Rendering path: build an SVG string (brand background, logo mark top-left,
 // wrapped title, category · date line, wordmark bottom-right) and feed it to
@@ -13,11 +14,11 @@
 // handles Arial/Helvetica + Latin/em-dash fine.
 //
 // Usage:
-//   node scripts/generate-og-images.mjs           # cache-aware (skips unchanged posts)
+//   node scripts/generate-og-images.mjs           # cache-aware (skips unchanged)
 //   node scripts/generate-og-images.mjs --force   # rebuild every card
 //
-// Wired into `prebuild` in package.json so new posts get a card on every
-// `vercel build` without a manual step.
+// Wired into `prebuild` in package.json so new posts/products get a card on
+// every `vercel build` without a manual step.
 
 import sharp from "sharp";
 import { createHash } from "node:crypto";
@@ -31,15 +32,20 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadAllPosts } from "./_posts-source.mjs";
+import { products } from "../src/data/products.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const PUBLIC_DIR = join(ROOT, "public");
 const POSTS_META_PATH = join(ROOT, "src", "data", "posts-meta.json");
-// Sidecar manifest keyed by slug → input-hash of what the SVG derives from.
-// Lets us skip regeneration when title/category/date are unchanged, even
-// though posts-meta.json's mtime bumps on every prebuild.
-const CACHE_PATH = join(PUBLIC_DIR, ".og-blog-cache.json");
+// Sidecar manifest keyed by `${kind}:${slug}` → input-hash. Single file
+// covers both blog posts and store products so a future "kind" can join
+// without a new cache file.
+const CACHE_PATH = join(PUBLIC_DIR, ".og-card-cache.json");
+// Legacy blog-only cache path. We migrate it once on first run after this
+// file's introduction so the first build doesn't regen 59 unchanged blog
+// cards. Safe to delete once the deploy that ships this has run twice.
+const LEGACY_BLOG_CACHE_PATH = join(PUBLIC_DIR, ".og-blog-cache.json");
 // Bump when the SVG template changes to force a full rebuild on next run.
 const TEMPLATE_VERSION = 1;
 
@@ -212,26 +218,61 @@ function buildSvg({ title, category, date }) {
 
 // Hash the exact inputs that feed buildSvg(). Bump TEMPLATE_VERSION when the
 // template body changes so stale cards are invalidated on the next run.
-function postInputHash(post) {
+function inputHash(fields) {
   const payload = JSON.stringify({
     v: TEMPLATE_VERSION,
-    title: post.title || "",
-    category: post.category || "",
-    date: post.date || "",
+    title: fields.title || "",
+    category: fields.category || "",
+    date: fields.date || "",
   });
   return createHash("sha1").update(payload).digest("hex");
 }
 
 function loadCache() {
-  if (FORCE || !existsSync(CACHE_PATH)) return {};
-  try {
-    return JSON.parse(readFileSync(CACHE_PATH, "utf8"));
-  } catch {
-    return {};
+  if (FORCE) return {};
+  if (existsSync(CACHE_PATH)) {
+    try {
+      return JSON.parse(readFileSync(CACHE_PATH, "utf8"));
+    } catch {
+      return {};
+    }
   }
+  // First run after rename: import the legacy blog-only cache so we don't
+  // needlessly regenerate every blog card on the deploy that introduces
+  // product cards.
+  if (existsSync(LEGACY_BLOG_CACHE_PATH)) {
+    try {
+      const legacy = JSON.parse(readFileSync(LEGACY_BLOG_CACHE_PATH, "utf8"));
+      const migrated = {};
+      for (const [slug, hash] of Object.entries(legacy)) {
+        migrated[`blog:${slug}`] = hash;
+      }
+      return migrated;
+    } catch {
+      return {};
+    }
+  }
+  return {};
 }
 
 // ---------- main ----------
+
+// Render one card if (and only if) inputs changed since the last build. Mutates
+// `nextCache` and the running counters so the caller can log a single summary.
+async function renderCard({ kind, slug, fields, outPath, cache, nextCache, counters }) {
+  const cacheKey = `${kind}:${slug}`;
+  const hash = inputHash(fields);
+  nextCache[cacheKey] = hash;
+  if (!FORCE && existsSync(outPath) && cache[cacheKey] === hash) {
+    counters.skipped++;
+    return;
+  }
+  const svg = buildSvg(fields);
+  await sharp(Buffer.from(svg))
+    .png({ compressionLevel: 9, palette: true })
+    .toFile(outPath);
+  counters.generated++;
+}
 
 async function main() {
   // Prefer the generated posts-meta.json (cheap, already committed). Fall back
@@ -246,8 +287,8 @@ async function main() {
 
   const cache = loadCache();
   const nextCache = {};
-  let generated = 0;
-  let skipped = 0;
+  const blogCounters = { generated: 0, skipped: 0 };
+  const productCounters = { generated: 0, skipped: 0 };
   const t0 = Date.now();
 
   // Sort for deterministic iteration (alphabetical by slug) — the output is
@@ -256,34 +297,53 @@ async function main() {
 
   for (const post of posts) {
     if (!post.slug) continue;
-    const outPath = join(PUBLIC_DIR, `og-blog-${post.slug}.png`);
-    const hash = postInputHash(post);
-    nextCache[post.slug] = hash;
-
-    // Skip when the output still exists and the input hash matches what we
-    // rendered last time. posts-meta.json's mtime is not used here: it
-    // changes on every prebuild even when nothing substantive was edited.
-    if (!FORCE && existsSync(outPath) && cache[post.slug] === hash) {
-      skipped++;
-      continue;
-    }
-
-    const svg = buildSvg({
-      title: post.title || "Simple IT SRQ",
-      category: post.category || "",
-      date: post.date || "",
+    await renderCard({
+      kind: "blog",
+      slug: post.slug,
+      fields: {
+        title: post.title || "Simple IT SRQ",
+        category: post.category || "",
+        date: post.date || "",
+      },
+      outPath: join(PUBLIC_DIR, `og-blog-${post.slug}.png`),
+      cache,
+      nextCache,
+      counters: blogCounters,
     });
-    await sharp(Buffer.from(svg))
-      .png({ compressionLevel: 9, palette: true })
-      .toFile(outPath);
-    generated++;
+  }
+
+  // Products. Category line shows "Store · $price[suffix]" so the card reads
+  // like a price tag at a glance — beats a blank "Simple IT SRQ" eyebrow on
+  // social previews.
+  const sortedProducts = [...products].sort((a, b) => a.slug.localeCompare(b.slug));
+  for (const product of sortedProducts) {
+    if (!product.slug) continue;
+    const priceLabel =
+      typeof product.price === "number"
+        ? `$${product.price}${product.priceSuffix || ""}`
+        : "";
+    await renderCard({
+      kind: "product",
+      slug: product.slug,
+      fields: {
+        title: product.title || "Simple IT SRQ Store",
+        category: ["Simple IT SRQ Store", priceLabel].filter(Boolean).join("  ·  "),
+        date: "",
+      },
+      outPath: join(PUBLIC_DIR, `og-product-${product.slug}.png`),
+      cache,
+      nextCache,
+      counters: productCounters,
+    });
   }
 
   writeFileSync(CACHE_PATH, JSON.stringify(nextCache, null, 2) + "\n", "utf8");
 
   const ms = Date.now() - t0;
   console.log(
-    `og-blog: generated ${generated}, skipped ${skipped} (${posts.length} posts) in ${ms} ms${FORCE ? " [--force]" : ""}`,
+    `og: blog ${blogCounters.generated}/${posts.length} new, ${blogCounters.skipped} cached · ` +
+      `product ${productCounters.generated}/${sortedProducts.length} new, ${productCounters.skipped} cached · ` +
+      `${ms} ms${FORCE ? " [--force]" : ""}`,
   );
 }
 
