@@ -1,18 +1,16 @@
 ﻿import {
   Headphones, Server, ShieldCheck, Lock, Cloud, FileCheck,
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
-  Phone, Mail, MapPin, Clock, Star, Check, ArrowRight, Wifi, Briefcase,
-  Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key, Wrench,
+  Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi, Briefcase,
+  Loader2, CheckCircle2, AlertCircle, Send, Wrench,
   Camera, Network, RefreshCw, Users
 } from "lucide-react";
 import { Link } from "../lib/Link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSEO } from "../lib/seo";
 import heroGrid from "../assets/hero-grid.svg";
 import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
-import RecommendedTools from "../components/RecommendedTools";
-import NewsletterSignup from "../components/NewsletterSignup";
 import GoogleReviews from "../components/GoogleReviews";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
@@ -33,140 +31,24 @@ function Hero() {
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
           <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display">Local IT support for Sarasota and Bradenton — businesses and homes.</h1>
+          <h1 id="hero-title" className="display">Managed IT for Sarasota and Bradenton businesses.</h1>
           <p className="lede">
-            Helpdesk, computer repair, security cameras, and enterprise IT — under one
-            roof. We keep your computers running, your data safe, and your team
-            productive. A local crew that picks up the phone, flat monthly pricing,
-            and all the paperwork your insurance company and auditors ask for.
+            Helpdesk, networks, Microsoft 365, cybersecurity, backups, and on-site repair —
+            delivered by a local team on a flat monthly rate. We keep your workstations,
+            servers, and email running, document everything your insurance carrier and
+            auditors ask for, and answer the phone when something breaks.
           </p>
           <div className="hero-ctas">
-            <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Check-Up</a>
-            <a href="#solutions" className="btn btn-secondary btn-lg">See What We Do</a>
+            <a href="#contact" className="btn btn-primary btn-lg">Request an IT assessment</a>
+            <a href="#solutions" className="btn btn-secondary btn-lg">See our services</a>
           </div>
-          <ul className="trust-row" aria-label="Why clients trust us">
-            <li><MapPin size={14} strokeWidth={2.25} /> Local Sarasota and Bradenton team</li>
-            <li><HomeIcon size={14} strokeWidth={2.25} /> Businesses and residential — both</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included on every onboarding</li>
+          <ul className="trust-row" aria-label="Why clients work with us">
+            <li><MapPin size={14} strokeWidth={2.25} /> On-site coverage across Sarasota, Bradenton, and Venice</li>
+            <li><Clock size={14} strokeWidth={2.25} /> Flat monthly contracts — no hourly surprises</li>
+            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA, GLBA, and cyber-insurance documentation included</li>
           </ul>
         </div>
       </div>
-    </section>
-  );
-}
-
-function HeroPaths() {
-  // Three revenue / lead-magnet paths surfaced immediately below the hero.
-  // Free tier (Tools) captures top-of-funnel, mid-tier (Store playbooks)
-  // monetizes the audience that isn't ready to call yet, and the Academy
-  // pulls the cyber-insurance-required subscription crowd.
-  return (
-    <section className="hero-paths" aria-label="Other ways to start">
-      <div className="container">
-        <div className="hero-paths-row">
-          <Link to="/tools" className="hero-path">
-            <span className="hero-path-icon" aria-hidden="true"><Wrench size={22} /></span>
-            <span className="hero-path-copy">
-              <span className="hero-path-label">Free Tools</span>
-              <span className="hero-path-desc">Password breach check, more coming</span>
-            </span>
-          </Link>
-          <Link to="/store" className="hero-path">
-            <span className="hero-path-icon" aria-hidden="true"><FileCheck size={22} /></span>
-            <span className="hero-path-copy">
-              <span className="hero-path-label">Playbooks &amp; Templates</span>
-              <span className="hero-path-desc">$19–$299 · WISP, HIPAA, compliance</span>
-            </span>
-          </Link>
-          <Link to="/security-academy" className="hero-path">
-            <span className="hero-path-icon" aria-hidden="true"><GraduationCap size={22} /></span>
-            <span className="hero-path-copy">
-              <span className="hero-path-label">Security Academy</span>
-              <span className="hero-path-desc">$12/user/mo · insurance-required training</span>
-            </span>
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// Static defense trust card — earlier version pulled live attack
-// counts from a public endpoint, but live OPSEC numbers shouldn't be
-// part of our public attack surface (a sophisticated attacker can
-// fingerprint our defenses by watching the counters move). Now reads
-// only the boolean `protectionActive` from /api/contact?action=protection-status
-// and shows abstract trust copy. Real numbers stay inside the admin
-// portal.
-function LiveDefenseStrip() {
-  const [active, setActive] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch("/api/contact?action=protection-status")
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (!cancelled && data) setActive(!!data.protectionActive); })
-      .catch(() => { /* defaults to active=true */ });
-    return () => { cancelled = true; };
-  }, []);
-
-  if (!active) return null;
-
-  return (
-    <section className="live-defense-strip" aria-label="Defense status">
-      <div className="container">
-        <Link to="/exposure-scan" className="live-defense-card" style={{
-          display: "grid",
-          gridTemplateColumns: "auto 1fr auto",
-          gap: "16px 20px",
-          alignItems: "center",
-          padding: "18px 22px",
-          borderRadius: 14,
-          background: "linear-gradient(180deg, rgba(16, 124, 16, 0.05) 0%, rgba(16, 124, 16, 0.02) 100%)",
-          border: "1px solid rgba(16, 124, 16, 0.18)",
-          textDecoration: "none",
-          color: "inherit",
-          transition: "transform 160ms ease, box-shadow 160ms ease",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{
-              display: "inline-block", width: 10, height: 10, borderRadius: 999,
-              background: "#107C10", animation: "pulse-green 2s infinite",
-            }} />
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#107C10" }}>
-              Active defense
-            </span>
-          </div>
-          <div>
-            <p style={{ margin: 0, fontWeight: 600, fontSize: 15, color: "var(--text-1)" }}>
-              Same defense layer protecting this site is what we deploy on client sites
-            </p>
-            <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--syn-text-muted, #6b7280)" }}>
-              Automated CVE auto-block · OSINT threat-feed enrichment · honeypot trapping · rate-limit defense
-            </p>
-          </div>
-          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#107C10", whiteSpace: "nowrap" }}>
-            Run a free scan <ArrowRight size={14} />
-          </span>
-        </Link>
-      </div>
-      <style>{`
-        @keyframes pulse-green {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(16, 124, 16, 0.55); }
-          50% { box-shadow: 0 0 0 6px rgba(16, 124, 16, 0); }
-        }
-        .live-defense-card:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 16px rgba(16, 124, 16, 0.1);
-        }
-        @media (max-width: 720px) {
-          .live-defense-card {
-            grid-template-columns: 1fr !important;
-            text-align: center;
-          }
-          .live-defense-card > * { justify-self: center; }
-        }
-      `}</style>
     </section>
   );
 }
@@ -373,56 +255,17 @@ function Testimonial() {
       <div className="container">
         <figure className="testimonial">
           <blockquote>
-            "We switched to Simple IT SRQ after our last IT company missed a
-            ransomware attempt. Within a month they had two-step sign-in on
-            every account, replaced our backups, and walked our cyber-insurance
-            carrier through everything they'd put in place. Our renewal premium
-            dropped 18%."
+            "We brought Simple IT SRQ in after a ransomware scare our previous
+            provider missed. They turned on two-step sign-in across every
+            account, rebuilt our backup setup, and walked our cyber-insurance
+            carrier through every control they'd put in place. The renewal
+            paperwork went through without a single follow-up question."
           </blockquote>
           <figcaption>
             <strong>Karen M.</strong>
             <span> Practice Administrator, Sarasota dental group</span>
           </figcaption>
         </figure>
-      </div>
-    </section>
-  );
-}
-
-function FreeTools() {
-  return (
-    <section className="section" id="free-tools" aria-labelledby="free-tools-title">
-      <div className="container">
-        <div className="section-head">
-          <span className="eyebrow">Free + Upgrade</span>
-          <h2 id="free-tools-title" className="title-1">Try a tool, train your team, or skip ahead</h2>
-          <p className="section-sub">
-            Three ways to engage without ever calling us — one is free, one is recurring, one is a $29 one-shot.
-          </p>
-        </div>
-        <div className="free-tools-grid">
-          <Link to="/password-check" className="free-tools-card">
-            <span className="free-tools-icon"><Key size={22} /></span>
-            <span className="free-tools-tag">Free · No signup</span>
-            <h3>Is your password breached?</h3>
-            <p>Privacy-preserving check against 800M+ known-breached passwords. Password never leaves your browser. Same technique 1Password Watchtower uses.</p>
-            <span className="free-tools-cta">Run the check <ArrowRight size={14} /></span>
-          </Link>
-          <Link to="/security-academy" className="free-tools-card is-featured">
-            <span className="free-tools-icon"><GraduationCap size={22} /></span>
-            <span className="free-tools-tag">Recurring · From $12/user/mo</span>
-            <h3>Simple IT SRQ Security Academy</h3>
-            <p>Fully-managed security awareness training for your team. Monthly 5-minute modules, quarterly phishing sims, annual compliance report your carrier will love.</p>
-            <span className="free-tools-cta">Join the waitlist <ArrowRight size={14} /></span>
-          </Link>
-          <Link to="/store/saas-incident-response-playbook" className="free-tools-card">
-            <span className="free-tools-icon"><FileCheck size={22} /></span>
-            <span className="free-tools-tag">$29 · One-shot</span>
-            <h3>SaaS Incident Response Playbook</h3>
-            <p>The 14-page printable fillable version of our vendor-breach audit. Florida FIPA-aware. Drops into your cyber-insurance binder. Written the morning two SaaS vendors had a bad day.</p>
-            <span className="free-tools-cta">See the preview <ArrowRight size={14} /></span>
-          </Link>
-        </div>
       </div>
     </section>
   );
@@ -465,14 +308,11 @@ function BlogPreview() {
 }
 
 function StatsBar() {
-  // Honest stats only. "100% Florida-based" is geographic fact. "24/7
-  // monitoring" is true (we run automated agent checks every 15 min).
-  // No SLA puffery — response-time claims have been retired.
   const stats = [
-    { v: "Local", l: "Sarasota and Bradenton based" },
-    { v: "B2B + Home", l: "Businesses and residential" },
-    { v: "24/7", l: "Automated monitoring" },
-    { v: "Flat", l: "Monthly pricing — no surprises" },
+    { v: "Local", l: "Sarasota, Bradenton, and Venice" },
+    { v: "Flat", l: "Monthly contracts" },
+    { v: "24/7", l: "Endpoint and network monitoring" },
+    { v: "Documented", l: "HIPAA, GLBA, and cyber-insurance" },
   ];
   return (
     <section className="stats-bar" aria-label="Key statistics">
@@ -493,11 +333,11 @@ function CtaBanner() {
     <section className="section">
       <div className="container">
         <div className="cta-banner reveal-scale">
-          <h2 className="title-2">Tired of fighting with your IT?</h2>
-          <p>Book a free 30-minute call with a local tech. No sales pitch, no jargon — just a straight answer on what's wrong and what it'd take to fix.</p>
+          <h2 className="title-2">Talk to a local engineer</h2>
+          <p>Book a 30-minute consult with a Sarasota-based engineer. We'll review your current stack, the gaps you already know about, and where a managed agreement would or wouldn't make sense for your business.</p>
           <div className="cta-actions">
-            <Link to="/book" className="btn btn-primary btn-lg">Book a free call</Link>
-            <Link to="/support" className="btn btn-secondary btn-lg">Existing client? Get help</Link>
+            <Link to="/book" className="btn btn-primary btn-lg">Book a consult</Link>
+            <Link to="/support" className="btn btn-secondary btn-lg">Existing client support</Link>
           </div>
         </div>
       </div>
@@ -743,23 +583,14 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <HeroPaths />
-      <LiveDefenseStrip />
       <LogosBar />
       <Solutions />
       <Industries />
       <Compliance />
       <Testimonial />
       <GoogleReviews />
-      <BlogPreview />
-      <section className="section section-alt">
-        <div className="container">
-          <NewsletterSignup variant="card" />
-        </div>
-      </section>
-      <FreeTools />
-      <RecommendedTools />
       <StatsBar />
+      <BlogPreview />
       <CtaBanner />
       <Contact />
     </>
