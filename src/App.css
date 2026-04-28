@@ -5309,22 +5309,19 @@ select:focus-visible {
   }
 }
 
-/* Section reveal — anything tagged data-reveal fades up the first
- * time it intersects the viewport. The class added by the existing
- * useRevealChildren hook (src/lib/useScrollReveal.js) is `.revealed`
- * — getting this wrong leaves elements stuck at opacity:0 forever,
- * which is exactly what happened on the first iteration of this
- * polish layer. Don't rename without updating both. */
+/* Section reveal — outer .section, .stats-bar, .logos-bar containers
+ * fade up via the @supports (animation-timeline: view()) rule earlier
+ * in this file (the one that's actually wired now). The per-element
+ * opacity:0 default that used to live here was paired with a JS
+ * IntersectionObserver (src/lib/useScrollReveal.js) that has since
+ * been removed; without the hook every [data-reveal] child element
+ * stayed at opacity 0 forever, producing huge blank gaps where cards
+ * and section heads should have been. Default to visible — the
+ * outer-container scroll-timeline animation still gives the "fade up
+ * on scroll" polish on capable browsers. */
 [data-reveal] {
-  opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity 480ms var(--ease-out, ease),
-    transform 480ms var(--ease-out, ease);
-}
-[data-reveal].revealed {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 /* Visited-state nudge for Glossary + Blog index lists so visitors
