@@ -12,6 +12,7 @@ import { sql } from "../_lib/db.js";
 import { Resend } from "resend";
 import { timingSafeEqual } from "node:crypto";
 import { validateEnv } from "../_lib/env.js";
+import { runNewsletterDrip } from "../_lib/newsletter-drip.js";
 
 // Cold-start validation. The agent cron is useless without Claude + Resend —
 // throw loudly in production so a missing key surfaces on the first run
@@ -654,6 +655,9 @@ export async function GET(request) {
   result.tasks.supplyChain = await supplyChainAudit();
   result.tasks.healthCheck = await selfHealthCheck();
   result.tasks.reviewRequests = await sendReviewRequests();
+  result.tasks.newsletterDrip = await runNewsletterDrip().catch((e) => ({
+    error: String(e.message || e).slice(0, 200),
+  }));
 
   return new Response(JSON.stringify(result, null, 2), {
     status: 200,
