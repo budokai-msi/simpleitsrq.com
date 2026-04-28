@@ -2,48 +2,53 @@
   Headphones, Server, ShieldCheck, Lock, Cloud, FileCheck,
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
   Phone, Mail, MapPin, Clock, Star, Check, ArrowRight, Wifi, Briefcase,
-  Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key, Wrench
+  Loader2, CheckCircle2, AlertCircle, Send, GraduationCap, Key, Wrench,
+  Camera, Network, RefreshCw, Users
 } from "lucide-react";
 import { Link } from "../lib/Link";
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSEO } from "../lib/seo";
 import heroGrid from "../assets/hero-grid.svg";
-import { posts } from "../data/posts";
+import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
 import RecommendedTools from "../components/RecommendedTools";
+import NewsletterSignup from "../components/NewsletterSignup";
+import GoogleReviews from "../components/GoogleReviews";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
+import { csrfFetch } from "../lib/csrf";
 
 function Hero() {
   return (
     <section className="hero hero-clean" aria-labelledby="hero-title">
       <div className="hero-bg" aria-hidden="true">
-        <img src={heroGrid} alt="" className="hero-grid-bg" />
+        <img
+          src={heroGrid}
+          alt=""
+          className="hero-grid-bg"
+          fetchpriority="high"
+          decoding="async"
+        />
       </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
           <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display">IT support that just works — for Sarasota and Bradenton businesses.</h1>
+          <h1 id="hero-title" className="display">Local IT support for Sarasota and Bradenton — businesses and homes.</h1>
           <p className="lede">
-            We keep your computers running, your data safe, and your team productive.
-            A local crew that picks up the phone, flat monthly pricing, and all the
-            paperwork your insurance company and auditors ask for.
+            Helpdesk, computer repair, security cameras, and enterprise IT — under one
+            roof. We keep your computers running, your data safe, and your team
+            productive. A local crew that picks up the phone, flat monthly pricing,
+            and all the paperwork your insurance company and auditors ask for.
           </p>
           <div className="hero-ctas">
             <a href="#contact" className="btn btn-primary btn-lg">Get a Free IT Check-Up</a>
             <a href="#solutions" className="btn btn-secondary btn-lg">See What We Do</a>
           </div>
           <ul className="trust-row" aria-label="Why clients trust us">
-            <li><Star size={14} strokeWidth={2.25} fill="#F7630C" stroke="#F7630C" /> 5-star Google reviews</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included</li>
-            <li><Clock size={14} strokeWidth={2.25} /> Local team · same-day response</li>
+            <li><MapPin size={14} strokeWidth={2.25} /> Local Sarasota and Bradenton team</li>
+            <li><HomeIcon size={14} strokeWidth={2.25} /> Businesses and residential — both</li>
+            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA paperwork included on every onboarding</li>
           </ul>
-          {/* Stat ticker */}
-          <div className="hero-stats">
-            <div className="hero-stat"><span className="val tabular">0</span><span className="lbl">Security breaches</span></div>
-            <div className="hero-stat"><span className="val tabular">&lt;4h</span><span className="lbl">Recovery time</span></div>
-            <div className="hero-stat"><span className="val tabular">99.99%</span><span className="lbl">Uptime</span></div>
-          </div>
         </div>
       </div>
     </section>
@@ -86,6 +91,86 @@ function HeroPaths() {
   );
 }
 
+// Static defense trust card — earlier version pulled live attack
+// counts from a public endpoint, but live OPSEC numbers shouldn't be
+// part of our public attack surface (a sophisticated attacker can
+// fingerprint our defenses by watching the counters move). Now reads
+// only the boolean `protectionActive` from /api/contact?action=protection-status
+// and shows abstract trust copy. Real numbers stay inside the admin
+// portal.
+function LiveDefenseStrip() {
+  const [active, setActive] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/contact?action=protection-status")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (!cancelled && data) setActive(!!data.protectionActive); })
+      .catch(() => { /* defaults to active=true */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  if (!active) return null;
+
+  return (
+    <section className="live-defense-strip" aria-label="Defense status">
+      <div className="container">
+        <Link to="/exposure-scan" className="live-defense-card" style={{
+          display: "grid",
+          gridTemplateColumns: "auto 1fr auto",
+          gap: "16px 20px",
+          alignItems: "center",
+          padding: "18px 22px",
+          borderRadius: 14,
+          background: "linear-gradient(180deg, rgba(16, 124, 16, 0.05) 0%, rgba(16, 124, 16, 0.02) 100%)",
+          border: "1px solid rgba(16, 124, 16, 0.18)",
+          textDecoration: "none",
+          color: "inherit",
+          transition: "transform 160ms ease, box-shadow 160ms ease",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{
+              display: "inline-block", width: 10, height: 10, borderRadius: 999,
+              background: "#107C10", animation: "pulse-green 2s infinite",
+            }} />
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#107C10" }}>
+              Active defense
+            </span>
+          </div>
+          <div>
+            <p style={{ margin: 0, fontWeight: 600, fontSize: 15, color: "var(--text-1)" }}>
+              Same defense layer protecting this site is what we deploy on client sites
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 13, color: "var(--syn-text-muted, #6b7280)" }}>
+              Automated CVE auto-block · OSINT threat-feed enrichment · honeypot trapping · rate-limit defense
+            </p>
+          </div>
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, fontWeight: 600, color: "#107C10", whiteSpace: "nowrap" }}>
+            Run a free scan <ArrowRight size={14} />
+          </span>
+        </Link>
+      </div>
+      <style>{`
+        @keyframes pulse-green {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(16, 124, 16, 0.55); }
+          50% { box-shadow: 0 0 0 6px rgba(16, 124, 16, 0); }
+        }
+        .live-defense-card:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(16, 124, 16, 0.1);
+        }
+        @media (max-width: 720px) {
+          .live-defense-card {
+            grid-template-columns: 1fr !important;
+            text-align: center;
+          }
+          .live-defense-card > * { justify-self: center; }
+        }
+      `}</style>
+    </section>
+  );
+}
+
 function LogosBar() {
   // The brands we use under the hood. Kept so prospective clients (and their
   // insurance carriers or auditors) can recognize the tools, but framed as
@@ -113,38 +198,58 @@ function LogosBar() {
 const SOLUTIONS = [
   {
     Icon: Headphones,
-    title: "Everyday IT Support",
-    desc: "One flat monthly price covers unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and critical problems get a live tech in under 15 minutes."
+    title: "Helpdesk and Everyday IT Support",
+    desc: "Unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and we triage critical issues first."
+  },
+  {
+    Icon: Wrench,
+    title: "Computer Repair (Business and Residential)",
+    desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade that's been sitting on the desk for a year. We work on home machines too — no contract, no minimum, just an honest diagnosis and a quote."
+  },
+  {
+    Icon: Camera,
+    title: "Security Camera Installation",
+    desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording. We pick the gear, run the cable, mount it, and show you how to use it."
+  },
+  {
+    Icon: Network,
+    title: "Enterprise Domain Environments",
+    desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one. New domain build-outs and rescues of the one you inherited."
+  },
+  {
+    Icon: RefreshCw,
+    title: "Migrations and Upgrades",
+    desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, file-share moves, Windows 11 rollouts, and hardware refreshes. We plan the cutover, do the work over a weekend, and stay on-site the morning after."
   },
   {
     Icon: Lock,
     title: "Cybersecurity and Virus Protection",
-    desc: "Modern antivirus, email scam filtering, safer web browsing, and 24/7 monitoring that catches attacks while you sleep. We turn on two-step sign-in for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
+    desc: "Modern antivirus, email scam filtering, safer web browsing, and 24/7 monitoring. We turn on two-step sign-in for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
   },
   {
     Icon: Cloud,
     title: "Microsoft 365, Email and Cloud Apps",
-    desc: "We set up (or clean up) your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone. Moving from another provider? We handle the switch over a weekend so nobody loses a message."
+    desc: "We set up (or clean up) your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone."
   },
   {
     Icon: Server,
     title: "Backups and Disaster Recovery",
-    desc: "Automatic backups of every computer and server, with a second copy stored off-site so a fire, a hurricane, or a ransomware attack can't wipe you out. We test the backups every quarter and keep a simple plan for getting you back up and running in hours, not days."
-  },
-  {
-    Icon: FileCheck,
-    title: "HIPAA and Cyber-Insurance Paperwork",
-    desc: "Made for medical and dental practices, law firms, and any business renewing their cyber-insurance policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor or an insurance agent the same day."
+    desc: "Automatic backups of every computer and server, with a second copy stored off-site so a fire, a hurricane, or a ransomware attack can't wipe you out. We test the backups every quarter."
   },
   {
     Icon: Phone,
     title: "Business Phone Systems",
-    desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email. We move your existing numbers, set up after-hours routing, and train your front desk so switching over is quiet."
+    desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email. We move your existing numbers and set up after-hours routing."
   },
   {
     Icon: Wifi,
     title: "Networking, Wi-Fi, and Cabling",
-    desc: "Business-grade firewalls and Wi-Fi that actually reach every corner of your office. We run new network cables, label every jack, and guest-separate the Wi-Fi so your customers and staff are never on the same network."
+    desc: "Business-grade firewalls and Wi-Fi that actually reach every corner of your office or home. We run new network cables, label every jack, and guest-separate the Wi-Fi."
+  },
+  {
+    Icon: FileCheck,
+    title: "HIPAA and Cyber-Insurance Paperwork",
+    desc: "Made for medical and dental practices, law firms, and any business renewing their cyber-insurance policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor."
   },
   {
     Icon: Briefcase,
@@ -154,25 +259,23 @@ const SOLUTIONS = [
 ];
 
 function Solutions() {
-  const ref = useRef(null);
-
   return (
     <section className="section" id="solutions" aria-labelledby="solutions-title">
-      <div className="container" ref={ref}>
+      <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">What We Do</span>
-          <h2 id="solutions-title" className="title-1">Everything your business needs from an IT company</h2>
-          <p className="section-sub">One local team for your computers, phones, email, Wi-Fi, backups, and security — so you don't have to call five different vendors when something breaks.</p>
+          <h2 id="solutions-title" className="title-1">Everything you'd hire a local IT shop for — under one roof</h2>
+          <p className="section-sub">Helpdesk, computer repair, security cameras, networking, enterprise domains, migrations and upgrades. For Sarasota and Bradenton businesses and homes — so you don't have to call five different people when something breaks.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
-            <a key={title} href="#contact" className="solution-card card-hover card-tilt gradient-border reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
+            <a key={title} href="#contact" className="solution-card reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
               <div className="solution-card-head">
-                <span className="solution-card-icon gradient-icon"><Icon size={18} /></span>
+                <span className="solution-card-icon"><Icon size={18} /></span>
                 <h3 className="solution-card-title">{title}</h3>
               </div>
               <p className="solution-card-desc">{desc}</p>
-              <span className="solution-card-link shimmer-line">
+              <span className="solution-card-link">
                 Learn more <ArrowRight size={14} />
               </span>
             </a>
@@ -189,18 +292,17 @@ const INDUSTRIES = [
   { Icon: Landmark, name: "Finance", badges: ["GLBA", "PCI-DSS"] },
   { Icon: HardHat, name: "Construction", badges: ["OSHA", "CMMC"] },
   { Icon: HomeIcon, name: "Real Estate", badges: ["NAR", "SOC 2"] },
+  { Icon: Users, name: "Residential", badges: ["Home offices", "Snowbird condos"] },
 ];
 
 function Industries() {
-  const ref = useRef(null);
-
   return (
     <section className="section section-alt" id="industries" aria-labelledby="industries-title">
-      <div className="container" ref={ref}>
+      <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Who We Work With</span>
-          <h2 id="industries-title" className="title-1">Businesses we know how to support</h2>
-          <p className="section-sub">We specialize in the industries that have to deal with the most paperwork — medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton.</p>
+          <h2 id="industries-title" className="title-1">Who we know how to support</h2>
+          <p className="section-sub">Medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton — plus residential clients, home offices, and snowbird condos that need a local tech who'll just show up.</p>
         </div>
         <div className="industries-grid">
           {INDUSTRIES.map(({ Icon, name, badges }, i) => (
@@ -219,7 +321,6 @@ function Industries() {
 }
 
 function Compliance() {
-  const ref = useRef(null);
   const features = [
     "HIPAA paperwork and risk reviews",
     "Cyber-insurance renewal help",
@@ -229,7 +330,7 @@ function Compliance() {
   ];
   return (
     <section className="section" id="compliance" aria-labelledby="compliance-title">
-      <div className="container compliance-grid reveal-up" ref={ref}>
+      <div className="container compliance-grid reveal-up">
         <div>
           <span className="eyebrow">Paperwork and Disaster Planning</span>
           <h2 id="compliance-title" className="title-1">We handle the paperwork most IT guys hate</h2>
@@ -328,12 +429,10 @@ function FreeTools() {
 }
 
 function BlogPreview() {
-  const ref = useRef(null);
-
   const recent = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
   return (
     <section className="section section-alt" id="blog" aria-labelledby="blog-title">
-      <div className="container" ref={ref}>
+      <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">From the Blog</span>
           <h2 id="blog-title" className="title-1">Tips for local business owners</h2>
@@ -366,17 +465,18 @@ function BlogPreview() {
 }
 
 function StatsBar() {
-  const ref = useRef(null);
-
+  // Honest stats only. "100% Florida-based" is geographic fact. "24/7
+  // monitoring" is true (we run automated agent checks every 15 min).
+  // No SLA puffery — response-time claims have been retired.
   const stats = [
-    { v: "99.99%", l: "Uptime promise" },
-    { v: "<15 min", l: "Response time" },
-    { v: "24/7", l: "Monitoring" },
-    { v: "100%", l: "Local team" },
+    { v: "Local", l: "Sarasota and Bradenton based" },
+    { v: "B2B + Home", l: "Businesses and residential" },
+    { v: "24/7", l: "Automated monitoring" },
+    { v: "Flat", l: "Monthly pricing — no surprises" },
   ];
   return (
     <section className="stats-bar" aria-label="Key statistics">
-      <div className="container stats-grid" ref={ref}>
+      <div className="container stats-grid">
         {stats.map((s, i) => (
           <div key={s.l} className="stat reveal-up" data-reveal data-reveal-delay={i + 1}>
             <span className="stat-v">{s.v}</span>
@@ -389,11 +489,10 @@ function StatsBar() {
 }
 
 function CtaBanner() {
-  const ref = useRef(null);
   return (
     <section className="section">
       <div className="container">
-        <div className="cta-banner reveal-scale" ref={ref}>
+        <div className="cta-banner reveal-scale">
           <h2 className="title-2">Tired of fighting with your IT?</h2>
           <p>Book a free 30-minute call with a local tech. No sales pitch, no jargon — just a straight answer on what's wrong and what it'd take to fix.</p>
           <div className="cta-actions">
@@ -459,7 +558,7 @@ function Contact() {
     setErrorMsg("");
 
     try {
-      const r = await fetch("/api/contact", {
+      const r = await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, turnstileToken }),
@@ -495,7 +594,7 @@ function Contact() {
         <div className="section-head">
           <span className="eyebrow">Contact</span>
           <h2 id="contact-title" className="title-1">Tell us what's going on</h2>
-          <p className="section-sub">Drop us a note and a real person will get back to you within one business hour.</p>
+          <p className="section-sub">Drop us a note and a real person will get back to you during business hours.</p>
         </div>
         <div className="contact-grid">
           <div className="form-shell">
@@ -594,7 +693,7 @@ function Contact() {
               </button>
 
               <p className="form-note">
-                We'll reply within one business hour. No spam, ever.
+                We'll reply during business hours. No spam, ever.
               </p>
 
               {status === "error" && (
@@ -612,7 +711,7 @@ function Contact() {
                     <CheckCircle2 size={56} />
                   </div>
                   <h3>Message sent</h3>
-                  <p>Thanks for reaching out — a real human at Simple IT SRQ will reply within one business hour.</p>
+                  <p>Thanks for reaching out — a real human at Simple IT SRQ will reply during business hours.</p>
                   <button type="button" className="btn btn-secondary" onClick={reset}>
                     Send another
                   </button>
@@ -634,22 +733,30 @@ function Contact() {
 
 export default function Home() {
   useSEO({
-    title: "Simple IT SRQ | IT Support for Sarasota and Bradenton Businesses",
-    description: "Local IT support, cybersecurity, and cloud services for small businesses in Sarasota, Bradenton, and Venice. Flat monthly pricing, same-day response, HIPAA and cyber-insurance paperwork included. Email hello@simpleitsrq.com.",
+    title: "Simple IT SRQ | Local IT Support, Computer Repair, and Security Cameras — Sarasota and Bradenton",
+    description: "Local IT support, helpdesk, computer repair, security cameras, and enterprise IT (Active Directory, migrations, upgrades) for businesses and homes in Sarasota, Bradenton, and Venice. Flat monthly pricing for businesses, no-contract repair for residential. Email hello@simpleitsrq.com.",
     canonical: "https://simpleitsrq.com/",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [{ name: "Home", url: "https://simpleitsrq.com/" }],
+    organization: true,
   });
   return (
     <>
       <Hero />
       <HeroPaths />
+      <LiveDefenseStrip />
       <LogosBar />
       <Solutions />
       <Industries />
       <Compliance />
       <Testimonial />
+      <GoogleReviews />
       <BlogPreview />
+      <section className="section section-alt">
+        <div className="container">
+          <NewsletterSignup variant="card" />
+        </div>
+      </section>
       <FreeTools />
       <RecommendedTools />
       <StatsBar />
