@@ -1,0 +1,90 @@
+---
+slug: "openclaw-local-ai-agent-runtime-2026"
+title: "OpenClaw — The Local AI Agent Runtime We Use to Run Our Own MSP"
+metaDescription: "OpenClaw is the local AI-agent harness our team built to run our own internal IT operations — ticket triage, threat-feed ingestion, blog drafting, security audits. Here is what it does, why we use it instead of a SaaS, and what a small business should learn from the architecture."
+date: "2026-04-28"
+author: "Simple IT SRQ Team"
+category: "AI & Productivity"
+tags:
+  - "ai"
+  - "openclaw"
+  - "local-ai"
+  - "agents"
+  - "automation"
+  - "msp"
+  - "smb"
+excerpt: "We run a managed IT business, but we also run our own AI-agent layer to handle ticket triage, threat-feed ingestion, daily blog drafts, and security audits. OpenClaw is the runtime under all of it. Here is what it is, why we built it instead of paying a SaaS, and what a small business can take from the design."
+heroAlt: "A workstation in a Sarasota MSP office showing the OpenClaw agent dashboard with active agents handling tickets, security feeds, and content drafts in parallel."
+---
+
+## What OpenClaw is
+
+OpenClaw is a local AI-agent runtime — the harness, the gateway, and the agent-management layer that runs on top of a model like Claude Opus 4.7 to turn it into a long-running automation rather than a chat tab. It lives on the operator's machine (or a small server inside the office network) and exposes a workspace, an agent registry, a flow runner, and a device gateway for talking to the rest of the stack.
+
+The short version: ChatGPT is a chatbot. OpenClaw is the layer between a model and the rest of your business.
+
+We built it because by mid-2025 our internal automation needs had outgrown what a chat tab could do. We needed:
+
+- **Persistent agents** that wake up on a schedule, do work, and check back in.
+- **A workspace** where the agent could actually read and write files, not just discuss them.
+- **A device layer** so an agent could talk to a workstation, a server, or a router on the local network.
+- **Identity** so we could run multiple specialized agents in the same workspace without them stepping on each other.
+- **A gateway** so the whole thing could be run locally, with a single auth token, without needing to pipe everything through a SaaS dashboard.
+
+There were close-enough commercial products. None of them ran local-first. All of them charged per-seat or per-token markup on top of the underlying model cost. The cheapest credible "agentic SaaS" tier was more per month than the underlying API usage would have cost us in a year.
+
+So we wrote our own. OpenClaw is what we ended up with.
+
+## What we use it for, internally
+
+A short tour through what OpenClaw is doing for Simple IT SRQ on any given day:
+
+- **Daily blog drafting.** A scheduled agent reads a topic queue, drafts a post in the house voice, and emails the founder a review link. Drafts hit the admin portal; a single click publishes them via the GitHub API.
+- **Ticket triage.** When a new ticket arrives, an agent reads the subject and body, classifies it, suggests a priority, and pre-drafts a response based on prior similar tickets. The human agent edits and sends.
+- **Threat-feed ingestion.** Every fifteen minutes, an agent pulls from public security feeds (AbuseIPDB, OSINT lists, CISA advisories), enriches with our own honeypot data, and writes the result to our blocklist database. The same data shows up in the [/exposure-scan](/exposure-scan) tool clients use.
+- **Self-healing checks.** A health-check agent runs every cycle, verifies the database, the email sender, the cron schedule, and the public site. If anything is broken it pages us before a customer notices.
+- **Supply-chain audit.** Once a day an agent checks our `package-lock.json` against published advisories, opens dependabot-style PRs for fixable issues, and emails a summary.
+- **Newsletter drip.** Three-stage drip on confirmed newsletter signups (welcome, day 3, day 7), all triggered by the same daily cron and all sent through a single agent that owns the rate-limiting logic.
+
+None of those would be possible from a chat tab. They are possible because there is a runtime underneath that owns the workspace, the schedule, and the credentials.
+
+## Why this matters for a small business
+
+You are probably not going to run OpenClaw yourself. Fine. The architecture is what's worth taking away.
+
+**1. Agents need a workspace, not a chat window.**
+Every business automation worth doing involves reading and writing files, talking to a database, hitting an API, and remembering what it did last time. A chat-only interface forces you to copy-paste between turns. A real agent runtime owns the workspace and the memory.
+
+**2. The right deployment is local-first for the data and cloud for the model.**
+The model itself doesn't have to live on your server. Letting Claude Opus 4.7 do the thinking through Anthropic's API while keeping the *data* and the *workspace* on your machine is the right balance for almost every small-business workflow. Your customer information stays inside your network. Your AI-quality bar stays at the frontier.
+
+**3. One identity, many specialized agents beats one giant prompt.**
+The pattern that works is small, focused agents that each own one job. A "ticket triage" agent. A "blog draft" agent. A "security audit" agent. Each has its own prompt, its own tools, its own success criteria. You compose them rather than overloading one giant chat thread.
+
+**4. The schedule is half the value.**
+A chat-only AI is a tool you have to remember to use. An agent runtime is something that wakes up at 6:00 AM whether you remember it or not. Most of the actual ROI from AI in a small business comes from this: things that get done while you are asleep.
+
+## What it doesn't do
+
+OpenClaw is internal infrastructure. It's not a product you can buy from us, and we don't sell hosted seats on it.
+
+If you want something *kind of like it* that you can install today:
+
+- [Claude Code](https://www.anthropic.com/claude-code) (Anthropic's official CLI) is the closest commercial equivalent for technical operators.
+- [Cursor](https://cursor.sh) gives you the agent-in-an-IDE experience.
+- [Open WebUI](https://openwebui.com) plus [Ollama](/blog/ollama-local-llm-private-ai-2026) gives you the chat UI and local-model story without the agent-orchestration layer.
+- For non-technical operators, [Make.com](https://www.make.com) and [n8n](https://n8n.io) cover the "automation with AI nodes" middle ground without requiring you to manage a runtime.
+
+The right answer depends on how much you are willing to learn and how custom your workflows are. For our use case (running a managed-IT business with a small team and very specific automation needs) building it was the right call. For most small businesses, one of those four off-the-shelf options is the right call.
+
+## What we'd build for you
+
+When we deploy AI automation for a client, we usually start by asking three questions:
+
+1. What do you do every week that would be done better at 6 AM by a script?
+2. What data should never leave your building?
+3. Who on staff is going to own the result when an agent makes a mistake?
+
+The first question identifies the workflow. The second decides where the model runs. The third decides whether we ship it or not — there is no point standing up an agent that nobody owns.
+
+If those questions sound like ones worth running through for your business, [book a call](/book). We'll do the audit live, recommend a stack (sometimes ours, more often something off-the-shelf), and write a one-page plan with a per-month cost.
