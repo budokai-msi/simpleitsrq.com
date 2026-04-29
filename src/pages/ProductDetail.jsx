@@ -266,7 +266,12 @@ export default function ProductDetail() {
     try {
       const r = await fetch(product.previewUrl);
       const text = r.ok ? await r.text() : null;
-      if (!signal.cancelled) setPreviewMd(text);
+      // Defensive: when the SPA fallback or middleware ever serves the
+      // HTML shell instead of the .md file, the preview block was rendering
+      // raw <!doctype html> ... markup as if it were markdown. Bail when the
+      // response looks like HTML rather than blowing up the page.
+      const looksLikeHtml = text && /^\s*(<!doctype|<html|<head)/i.test(text);
+      if (!signal.cancelled) setPreviewMd(looksLikeHtml ? null : text);
     } catch {
       if (!signal.cancelled) setPreviewMd(null);
     } finally {
