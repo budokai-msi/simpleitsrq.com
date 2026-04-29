@@ -377,13 +377,13 @@
       <description>A viral browser game walks players through building a GPU from logic gates up. Its a sharp lesson in how serious technical training can hide inside something that feels like play.</description>
     </item>
     <item>
-      <title>AI Vendor Lock-In: Update Your Bradenton Procurement Playbook</title>
+      <title>AI Vendor Lock-In Is the Default. The Anthropic Wrapper Block Just Made It Visible.</title>
       <link>https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</guid>
       <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Business Tech</category>
-      <description>Anthropic quietly blocked third-party tools from using paid Claude Code subscriptions. The move sparked a debate about lock-in - and a useful checklist for any business buying AI tooling.</description>
+      <description>Anthropic quietly blocked third-party wrappers from paid Claude Code accounts. No email, no announcement — users found out when their tools stopped working. This was not a one-off. It is the structural pattern every AI vendor will follow, and your procurement playbook needs to assume it.</description>
     </item>
     <item>
       <title>LinkedIn Is Fingerprinting Your Browser. Heres What to Do.</title>
@@ -413,13 +413,13 @@
       <description>An accidentally shipped source map exposed the bundled JavaScript behind Claude Code, including prompts and undisclosed product behaviors. Source maps in production remain a top OWASP-class leak.</description>
     </item>
     <item>
-      <title>AI Assistants Now Inject Ads. Audit Your Supply Chain.</title>
+      <title>AI Assistants Are a Distribution Channel. Vendors Will Sell It.</title>
       <link>https://simpleitsrq.com/blog/copilot-ad-injection-ai-supply-chain-risk</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/copilot-ad-injection-ai-supply-chain-risk</guid>
       <pubDate>Mon, 30 Mar 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Cybersecurity</category>
-      <description>A developer caught GitHub Copilot inserting promotional language for a third-party product into a code review comment. Treat AI assistant output as untrusted content in your supply chain.</description>
+      <description>A developer caught GitHub Copilot inserting a promotional line for a third-party product into a code-review comment with no disclosure. The narrow story is one company, one slip. The structural story is that every AI assistant is a distribution channel and the vendors who own them will eventually monetize it.</description>
     </item>
     <item>
       <title>Bot Detections Hidden Privacy Cost for Local SaaS Users</title>
@@ -584,13 +584,13 @@
       <description>Malus is a new service offering on-demand clean-room reverse-engineering environments for teams reimplementing proprietary specs. A sign that legal-engineering hybrid services are productizing.</description>
     </item>
     <item>
-      <title>Drawing the Line on AI-Generated Content at Work</title>
+      <title>Your AI Content Policy Is About Ownership, Not Quality</title>
       <link>https://simpleitsrq.com/blog/ai-content-policy-sarasota-business</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-content-policy-sarasota-business</guid>
       <pubDate>Wed, 11 Mar 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>AI &amp; Productivity</category>
-      <description>Hacker News updated its guidelines to explicitly prohibit AI-generated or AI-edited comments after a year of growing slop. Communities are pushing back. Whats your business policy?</description>
+      <description>Hacker News banned AI-generated comments and most coverage framed it as a quality complaint. It is not. The real question is whether you still own your voice — and your liability, and your client trust — once your staff routes their writing through a third-party model. Here is the policy frame that actually matters.</description>
     </item>
     <item>
       <title>Tony Hoares Lessons That Still Matter for Sarasota IT Leaders</title>
