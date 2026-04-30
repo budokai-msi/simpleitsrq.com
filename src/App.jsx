@@ -117,12 +117,13 @@ function ThemeToggle() {
 function Logo() {
   return (
     <Link to="/" className="brand" aria-label="Simple IT SRQ home">
-      <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="6" fill="#0F6CBD" />
-        <text x="16" y="22" textAnchor="middle" fontFamily="Segoe UI, system-ui, sans-serif"
-              fontSize="18" fontWeight="700" fill="#FFFFFF">S</text>
-      </svg>
-      <span className="brand-text">Simple IT <span className="brand-accent">SRQ</span></span>
+      <img
+        src="/logo.png"
+        alt="Simple IT SRQ"
+        width="63"
+        height="36"
+        style={{ display: "block", objectFit: "contain" }}
+      />
     </Link>
   );
 }
