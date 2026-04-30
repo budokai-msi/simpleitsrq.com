@@ -117,13 +117,21 @@ function ThemeToggle() {
 function Logo() {
   return (
     <Link to="/" className="brand" aria-label="Simple IT SRQ home">
-      <img
-        src="/logo.png"
-        alt="Simple IT SRQ"
-        width="63"
-        height="36"
-        style={{ display: "block", objectFit: "contain" }}
-      />
+      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
+        <defs>
+          <linearGradient id="logo-bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="var(--brand)" />
+            <stop offset="100%" stopColor="var(--brand-hover, #0A4F8A)" />
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="36" height="36" rx="9" fill="url(#logo-bg)" />
+        <path
+          d="M23.5 12.4c-1.2-1.4-3.1-2.2-5.3-2.2-3.7 0-6.4 2.1-6.4 5.1 0 2.7 1.9 4.1 5.2 4.8l1.7.4c1.9.4 2.7 1 2.7 2 0 1.2-1.2 2-3.2 2-1.9 0-3.4-.7-4.6-1.9l-1.9 2.3c1.6 1.7 3.9 2.7 6.4 2.7 4 0 6.6-2.1 6.6-5.3 0-2.7-1.7-4.1-5.2-4.8l-1.8-.4c-1.7-.4-2.5-.9-2.5-1.9 0-1.1 1.1-1.9 2.9-1.9 1.6 0 2.9.6 3.9 1.6l1.5-2.1z"
+          fill="#FFFFFF"
+        />
+        <circle cx="27.5" cy="9.5" r="2" fill="#FFD66B" />
+      </svg>
+      <span className="brand-text">Simple IT <span className="brand-accent">SRQ</span></span>
     </Link>
   );
 }
