@@ -2238,6 +2238,13 @@ async function runCreateAllPaymentLinks() {
     { slug: "cyber-insurance-evidence-binder", title: "Cyber-Insurance Evidence Binder Template", price: 39, envVar: "VITE_PRODUCT_INSURANCE_BINDER_BUY_URL" },
     { slug: "ransomware-tabletop-kit", title: "Ransomware Tabletop Exercise Kit",               price: 49,  envVar: "VITE_PRODUCT_TABLETOP_KIT_BUY_URL" },
     { slug: "compliance-library",     title: "Complete Florida Compliance Library",            price: 299, envVar: "VITE_PRODUCT_BUNDLE_BUY_URL" },
+    // Synapse Pro — desktop LLM orchestration IDE. Local install, lifetime
+    // updates, license keys signed by SYNAPSE_LICENSE_SECRET (kept in Vercel
+    // env). The Stripe Payment Link this admin endpoint creates points back
+    // to /store?purchased=synapse-pro for now; once the license-issuance
+    // webhook (api/synapse-license-webhook.js) lands the redirect should
+    // change to /synapse/thanks?session_id={CHECKOUT_SESSION_ID}.
+    { slug: "synapse-pro",            title: "Synapse Pro — Visual LLM Orchestration IDE",      price: 49,  envVar: "VITE_PRODUCT_SYNAPSE_PRO_BUY_URL" },
   ];
 
   const results = [];
