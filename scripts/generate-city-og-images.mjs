@@ -26,7 +26,8 @@ import { cityList } from "../src/data/cities.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const PUBLIC_DIR = join(ROOT, "public");
-const CACHE_PATH = join(PUBLIC_DIR, ".og-city-cache.json");
+const CACHE_DIR = join(ROOT, ".og-cache");
+const CACHE_PATH = join(CACHE_DIR, "city.json");
 const TEMPLATE_VERSION = 1;
 const FORCE = process.argv.includes("--force");
 
@@ -43,6 +44,7 @@ const TEXT = "#FFFFFF";
 const TEXT_MUTED = "#9AA4B2";
 
 mkdirSync(PUBLIC_DIR, { recursive: true });
+mkdirSync(CACHE_DIR, { recursive: true });
 
 function escapeXml(s = "") {
   return String(s)
