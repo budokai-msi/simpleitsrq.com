@@ -91,6 +91,21 @@ export function geoFromHeaders(request) {
 // db/migrations/001_audit_chain.sql once, then every new event gets chained.
 // If the migration hasn't been run yet, the helper degrades to the plain
 // insert path so existing code keeps working.
+
+// Canonical JSON: deterministic key order + no whitespace. Required because
+// Postgres JSONB doesn't preserve object key order or numeric formatting on
+// round-trip — without this, verify recomputes a different `detailJson`
+// string than insert hashed, and every row with an object detail breaks the
+// chain (this was the row 147 bug). Same normalizer on both sides keeps the
+// hash stable across JSONB storage. Exported for the test suite.
+export function canonicalJson(value) {
+  if (value === null || value === undefined) return "null";
+  if (typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]";
+  const keys = Object.keys(value).sort();
+  return "{" + keys.map((k) => JSON.stringify(k) + ":" + canonicalJson(value[k])).join(",") + "}";
+}
+
 async function chainHash(parts) {
   const raw = parts.map((p) => (p == null ? "" : String(p))).join("\x00");
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
@@ -116,7 +131,9 @@ export async function logSecurityEvent({
   path = null,
   detail = null,
 }) {
-  const detailJson = detail ? JSON.stringify(detail) : null;
+  // detailJson: what we INSERT into the JSONB column AND what we hash. Same
+  // canonical form on both sides — see canonicalJson() comment for why.
+  const detailJson = detail ? canonicalJson(detail) : null;
   const ts = new Date().toISOString();
 
   const prevHash = await getLastRowHash();
@@ -169,7 +186,11 @@ export async function auditVerify(limit = 5000) {
       if (r.prev_hash !== expectedPrev) {
         breaks.push({ id: r.id, reason: `prev_hash mismatch (got ${r.prev_hash?.slice(0, 12)}, expected ${expectedPrev.slice(0, 12)})` });
       }
-      const detailJson = r.detail == null ? null : JSON.stringify(r.detail);
+      // r.detail comes back from JSONB — Postgres has already normalized it
+      // (key order, whitespace, number formatting). canonicalJson() lets us
+      // recompute the same string the INSERT hashed, regardless of how the
+      // user's original JSON was shaped.
+      const detailJson = r.detail == null ? null : canonicalJson(r.detail);
       const recomputed = await chainHash([
         r.prev_hash, r.kind, r.severity, r.ip, r.user_id, r.path, detailJson, new Date(r.ts).toISOString(),
       ]);

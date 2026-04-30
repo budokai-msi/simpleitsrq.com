@@ -22,7 +22,7 @@ const fakeSql = vi.fn((strings, ...values) => {
 
 vi.mock("../db.js", () => ({ sql: fakeSql }));
 
-const { logSecurityEvent, auditVerify } = await import("../security.js");
+const { logSecurityEvent, auditVerify, canonicalJson } = await import("../security.js");
 
 // Reimplement the private chainHash(parts) helper so the tests can build
 // canonical row hashes the same way security.js does.
@@ -116,6 +116,61 @@ describe("auditVerify — tamper detection", () => {
     const result = await auditVerify();
     expect(result.ok).toBe(false);
     expect(result.breaks.some((b) => /prev_hash mismatch/.test(b.reason))).toBe(true);
+  });
+});
+
+describe("canonicalJson — JSONB round-trip safety", () => {
+  it("produces the same string for any key order", () => {
+    // The actual bug from row 147: insert serialized {b:2,a:1} as
+    // '{"b":2,"a":1}', stored to JSONB, JSONB returned {a:1,b:2}, verify
+    // restringified as '{"a":1,"b":2}' — different string, hash mismatch.
+    expect(canonicalJson({ b: 2, a: 1 })).toBe(canonicalJson({ a: 1, b: 2 }));
+    expect(canonicalJson({ b: 2, a: 1 })).toBe('{"a":1,"b":2}');
+  });
+
+  it("normalises nested objects and arrays", () => {
+    const a = { z: { c: 3, a: 1 }, list: [{ y: 2, x: 1 }] };
+    const b = { list: [{ x: 1, y: 2 }], z: { a: 1, c: 3 } };
+    expect(canonicalJson(a)).toBe(canonicalJson(b));
+  });
+
+  it("returns 'null' for null/undefined and matches JSON.stringify for primitives", () => {
+    expect(canonicalJson(null)).toBe("null");
+    expect(canonicalJson(undefined)).toBe("null");
+    expect(canonicalJson("hi")).toBe('"hi"');
+    expect(canonicalJson(42)).toBe("42");
+    expect(canonicalJson(true)).toBe("true");
+  });
+});
+
+describe("auditVerify — JSONB round-trip safety (regression for row 147)", () => {
+  it("validates rows whose detail JSON keys reordered after JSONB normalisation", async () => {
+    // Insert-side: user passed { user: 'alice', action: 'rotate-key' } in
+    // that order. logSecurityEvent canonicalJson()s before hashing.
+    const ts = "2026-04-21T00:00:00.000Z";
+    const insertedDetail = { user: "alice", action: "rotate-key" };
+    const detailJson = canonicalJson(insertedDetail); // '{"action":"rotate-key","user":"alice"}'
+    const rowHash = await chainHash([
+      "GENESIS", "admin.action", "warn", "1.1.1.1", "u1", "/admin",
+      detailJson, ts,
+    ]);
+
+    // Read-side: JSONB normalises and Postgres returns keys in any order.
+    // Simulate the worst case — opposite order from insert.
+    const jsonbReturned = { action: "rotate-key", user: "alice" };
+    sqlQueue.push([
+      {
+        id: 147, kind: "admin.action", severity: "warn", ip: "1.1.1.1",
+        user_id: "u1", path: "/admin",
+        detail: jsonbReturned,
+        ts: new Date(ts), prev_hash: "GENESIS", row_hash: rowHash,
+      },
+    ]);
+    sqlQueue.push([{ n: 1 }]);
+
+    const result = await auditVerify();
+    expect(result.ok).toBe(true);
+    expect(result.breaks).toEqual([]);
   });
 });
 
