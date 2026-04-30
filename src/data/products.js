@@ -320,4 +320,29 @@ export const products = [
     featured: true,
     priority: 5,
   },
+  {
+    slug: "synapse-pro",
+    title: "Synapse Pro — Visual LLM Orchestration IDE",
+    tagline: "The only AI workflow tool you need on your desktop. Wire any model to any tool, watch it run, ship the result.",
+    price: 49,
+    audience:
+      "Indie hackers, agencies, and small teams who run multi-step LLM workflows daily and got tired of paying $20/mo for each of ChatGPT, Claude, Gemini, and a custom dashboard. One-time purchase, lifetime updates, runs locally.",
+    description:
+      "A native Windows desktop app for orchestrating LLMs with a visual node-based canvas. Connect any of the 30+ supported providers (Anthropic, Gemini, xAI, Groq, Mistral, Cohere, OpenRouter, etc.), wire up Stripe / Vercel / Notion / Supabase / Redis / Railway / GitHub via built-in MCP integrations, and let canvases build whole workflows for you. Includes the full agent surface so Claude Code can drive it from outside.",
+    contents: [
+      "17 node types: Prompt, Agent, Swarm (multi-model debate), Synthesize (fan-in merge), Loop, Router, Batch, Code, MCP, Gateway, Parallel, Auto-Builder, and more",
+      "Auto-fallback when a provider has billing/rate-limit issues — runs roll over to the next configured provider transparently",
+      "Cost dashboard per workflow — see what each model is costing you in real time",
+      "30+ LLM providers, 130+ models, dynamic discovery — model lists update automatically as providers ship new ones",
+      "Built-in integrations panel — one-click connect for Stripe, Vercel, GitHub, Notion, Supabase, Redis, Railway, GCP, and more (each via official MCP servers)",
+      "Persistent autosave — never lose a canvas to a crash",
+      "Encrypted secrets vault — OS-level credential storage, keys never leave your machine except to their respective APIs",
+      "Agent surface — HTTP control API + bundled MCP server so Claude Code, Cursor, or your own tools can drive Synapse from outside",
+      "Lifetime updates — every release covered by your license, including the Pro-only nodes (Swarm, Agent, Parallel, Gateway)",
+    ],
+    buyLink: env.VITE_PRODUCT_SYNAPSE_PRO_BUY_URL || null,
+    previewUrl: null,
+    featured: true,
+    priority: 0,
+  },
 ];
