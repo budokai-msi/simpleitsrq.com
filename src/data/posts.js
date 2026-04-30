@@ -300,6 +300,91 @@ If youd like a free assessment of where you stand with Floridas new privacy law,
 
 The sooner you act, the sooner you can stop worrying about this and get back to running your business.`
   },
+  {
+    slug: "sarasota-business-phone-spoofing-security-risk",
+    title: "Your Business Phone Number Just Became a Security Risk (Heres Why)",
+    metaDescription: "Business phone spoofing attacks targeting Sarasota companies. Learn why your phone number is at risk and what to do.",
+    date: "2026-04-30",
+    author: "Simple IT SRQ Team",
+    category: "Cybersecurity",
+    tags: ["ai", "smb"],
+    excerpt: "Hackers are spoofing local Sarasota and Bradenton business phone numbers to trick your customers and employees. Heres whats happening and how to protect your company.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying Your Business Phone Number Just Became a Security Risk (Heres Why).",
+    content: `If youve gotten a call from your own business phone number lately, youre not alone. This weird, unsettling experience is becoming increasingly common in Florida—and its a real security problem for small businesses.
+
+## Whats Actually Happening
+
+Criminals are using software to "spoof" business phone numbers in your area. They make it look like calls are coming from your company, a local government office, or a trusted business—but theyre actually coming from scammers halfway around the world.
+
+Your customers see a local Sarasota or Bradenton number on their caller ID and think its legitimate. They answer. Then they get hit with a scam—fake payment requests, fake tax threats, fake package delivery notices, or requests for personal information.
+
+## Why Your Business Matters to Scammers
+
+Small businesses in healthcare, law, finance, and real estate are prime targets. Heres why: Your customers already trust you. When a spoofed call appears to come from your business, people let their guard down.
+
+A spoofed call claiming to be from "your dental office" asking for your credit card to update your file? Thats way more convincing than a random number.
+
+Plus, if youre a law firm or financial advisor, your clients handle sensitive information daily. Scammers know this and exploit it.
+
+## The Real Damage to Your Business
+
+Its not just your customers getting scammed—your reputation takes the hit. When clients call you asking "Why did you call me asking for passwords?" you lose trust instantly.
+
+Weve worked with Bradenton and Venice businesses that spent weeks managing customer complaints because of spoofed calls. Your support team wastes time fielding angry calls. Your customers question your security practices.
+
+In regulated industries like healthcare and finance, spoofing can also trigger compliance questions. Your cyber-insurance provider may want to know how it happened.
+
+## What to Do About It
+
+### 1. Alert Your Team (Today)
+
+Tell your staff that spoofing is happening. Scammers may call *them* pretending to be customers, vendors, or management. Make sure they know your actual internal phone tree and verify requests through a separate channel before sharing info.
+
+### 2. Use STIR/SHAKEN (Next Week)
+
+This is a call-authentication technology that major carriers are rolling out. It makes it harder to spoof numbers. Ask your phone provider (whether its AT&T, Verizon, or a VoIP service) if you have it enabled. Most businesses should by now—if not, request it.
+
+Its not perfect, but it helps. And its free or very cheap.
+
+### 3. Put a Voicemail Message in Place
+
+Update your voicemail to say something like: "If you received a suspicious call claiming to be from [Your Business Name], please do not share any personal information. Contact us directly at [verified number] to confirm."
+
+This simple step stops a lot of damage.
+
+### 4. Set Up a Real Phone Security Filter
+
+If you use a business phone system (VoIP, Asterisk, 3CX, etc.), enable spam-filtering features. If you use traditional lines, many carriers offer spam-blocking apps and settings.
+
+For Android and iPhone business phones, apps like RoboKiller and Nomorobo are worth the $3-5/month per line.
+
+### 5. Warn Customers the Right Way
+
+Dont scare them. Just be transparent. Add a line to your email signature, website, or monthly statements: "Simple IT SRQ never calls unsolicited asking for passwords or payment info. If you receive a suspicious call from our number, please contact us directly."
+
+Healthcare practices can mention this during appointment reminders. Law firms can add it to engagement letters. Real estate agents can mention it in listing documents.
+
+### 6. Document Everything
+
+If customers report spoofed calls claiming to be from you, create a simple log. Date, time, what was said. This protects you if the FTC or a client questions what happened.
+
+## The Hard Truth
+
+You cant completely stop spoofing. Scammers will always find ways. But you *can* minimize the damage by being proactive.
+
+The businesses that handle this well are the ones that communicate clearly with their teams and customers before something happens—not after.
+
+## Next Steps
+
+Start by asking your phone provider about STIR/SHAKEN and spam-filtering options this week. Brief your team on what to watch for. Update your voicemail.
+
+These three things take maybe 30 minutes total and stop most of the damage.
+
+If youre running a healthcare practice, law firm, or financial services business in Sarasota, Bradenton, or Venice, spoofing is just one part of a larger security picture. A lot of small businesses in your industry are targets—and most arent ready.
+
+If youd like help reviewing your phone security and overall cybersecurity posture, [reach out to Simple IT SRQ](/#contact). Weve worked with dozens of local practices and can tell you exactly where the weak spots are—and how to fix them without disrupting your operations.`
+  },
 ];
 
 export default posts;
