@@ -37,11 +37,12 @@ import { products } from "../src/data/products.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const PUBLIC_DIR = join(ROOT, "public");
+const CACHE_DIR = join(ROOT, ".og-cache");
 const POSTS_META_PATH = join(ROOT, "src", "data", "posts-meta.json");
 // Sidecar manifest keyed by `${kind}:${slug}` → input-hash. Single file
 // covers both blog posts and store products so a future "kind" can join
-// without a new cache file.
-const CACHE_PATH = join(PUBLIC_DIR, ".og-card-cache.json");
+// without a new cache file. Lives outside public/ so it never ships.
+const CACHE_PATH = join(CACHE_DIR, "card.json");
 // Legacy blog-only cache path. We migrate it once on first run after this
 // file's introduction so the first build doesn't regen 59 unchanged blog
 // cards. Safe to delete once the deploy that ships this has run twice.
@@ -62,6 +63,7 @@ const HEIGHT = 630;
 const FORCE = process.argv.includes("--force");
 
 mkdirSync(PUBLIC_DIR, { recursive: true });
+mkdirSync(CACHE_DIR, { recursive: true });
 
 // ---------- title sanitising ----------
 

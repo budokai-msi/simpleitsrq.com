@@ -24,8 +24,10 @@ dist-ssr
 # during the rename window.
 public/og-blog-*.png
 public/og-product-*.png
-public/.og-blog-cache.json
-public/.og-card-cache.json
+
+# OG generator cache — sidecar manifests written at prebuild. Lives
+# outside public/ so it never ships to the live site.
+.og-cache/
 
 # Environment — NEVER commit secrets
 .env
@@ -45,8 +47,24 @@ public/.og-card-cache.json
 .vercel
 .env*.local
 
-# Claude Code local agent scratch
+# AI tooling local scratch / context files — never ship to client.
 .claude/
+.cursor/
+.cursorrules
+.aider*
+.codex/
+.windsurf/
+.gemini/
+.openclaw/
+.qwen/
+.antigravity/
+CLAUDE.md
+AGENT.md
+AGENTS.md
+GEMINI.md
+HEARTBEAT.md
+HANDOFF.md
+CONTEXT.md
 
 # OneDrive / Google Drive restore duplicates — patterns like ".env(1).vault",
 # "dist(2)/", ".claude(1)/" that cloud-sync tools create when they restore
