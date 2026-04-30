@@ -385,6 +385,91 @@ If youre running a healthcare practice, law firm, or financial services business
 
 If youd like help reviewing your phone security and overall cybersecurity posture, [reach out to Simple IT SRQ](/#contact). Weve worked with dozens of local practices and can tell you exactly where the weak spots are—and how to fix them without disrupting your operations.`
   },
+  {
+    slug: "microsoft-copilot-pc-requirements-sarasota-small-business",
+    title: "The New Microsoft Copilot+ PC Requirements: What Your Sarasota Business Needs to Know",
+    metaDescription: "Copilot+ PCs require expensive hardware. Learn what your Sarasota business really needs before upgrading.",
+    date: "2026-04-30",
+    author: "Simple IT SRQ Team",
+    category: "Business Tech",
+    tags: ["ai", "smb"],
+    excerpt: "Microsoft is pushing AI-powered Copilot+ PCs hard, and they come with strict hardware requirements. Heres what that means for your upgrade budget and whether you actually need one.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying The New Microsoft Copilot+ PC Requirements: What Your Sarasota Business Needs to Know.",
+    content: `Microsoft is making a big push toward Copilot+ PCs—computers designed specifically to run their new AI assistant. If youve been thinking about refreshing your teams computers, youve probably heard about this. But heres what you need to know before you start budgeting for upgrades.
+
+## Whats a Copilot+ PC Anyway?
+
+Copilot+ PCs are standard Windows computers with extra AI processing power built in. Microsoft added a special chip called an NPU (neural processing unit) that handles AI tasks locally on your computer instead of sending them to the cloud.
+
+Sounds good on paper. But theres a catch.
+
+## The Hardware Reality Check
+
+To qualify as a Copilot+ PC, your computer needs:
+
+- An NPU with at least 40 TOPS (tera operations per second)—thats a specific measure of AI processing speed
+- At least 16GB of RAM (double what most small business laptops need)
+- 256GB of solid-state storage minimum
+- A modern processor from Intel, AMD, or Qualcomm
+
+Translate that to real dollars: a Copilot+ PC laptop starts around $1,200-$1,500. Desktop systems run similar or higher. If youve got 10 employees, youre looking at a $12,000-$15,000 minimum hardware refresh.
+
+## Do You Actually Need One?
+
+Heres the honest answer: probably not yet.
+
+Copilot+ PCs are designed for power users who need advanced AI features. If your team uses Word, Excel, email, and accounting software, your current computers are fine. A 5-year-old laptop will still do the job.
+
+Where Copilot+ PCs make sense:
+
+- Your team uses AI tools daily (video editing, complex data analysis, design work)
+- You need to process sensitive client data locally without sending it to the cloud
+- Youre replacing computers anyway and want future-proofing
+
+Where they dont:
+
+- Youve got budget constraints (which most small businesses do)
+- Your current computers still work fine
+- Your staff does standard business tasks
+
+## The Real Cost Youre Not Seeing
+
+Hardware is only part of the equation. When you upgrade 10 computers, youre also paying for:
+
+- IT setup and configuration (usually 2-4 hours per machine)
+- Software licensing that might need updating
+- Employee training if youre changing operating systems
+- Transferring files and settings from old computers
+
+That can easily add 20-30% to your hardware costs.
+
+## What About Windows 10?
+
+If youre still running Windows 10, youve got a bigger timeline concern. Microsoft is ending support for Windows 10 in October 2025. That means no more security updates after that date.
+
+So you will need to upgrade eventually. But you dont have to jump straight to Copilot+ PCs.
+
+Windows 11 runs fine on older hardware (as long as it meets minimum specs). A standard Windows 11 laptop costs $600-$1,000 and works great for small business tasks. You can upgrade to Copilot+ later when theyre more mature and prices drop.
+
+## What to Do About It
+
+**Step 1: Take inventory.** How old are your computers? What are they doing? A 3-year-old machine running standard business software doesnt need replacing yet.
+
+**Step 2: Make a realistic upgrade timeline.** If computers are 5+ years old, plan to replace them in the next 12 months. If theyre newer, youve got time.
+
+**Step 3: Dont confuse "new" with "needed." Copilot+ is marketing hype right now. Your business doesnt need cutting-edge AI hardware to run efficiently.**
+
+**Step 4: Talk to someone before you buy.** Every business has different needs. A construction company might benefit from AI-powered image analysis on site. A legal firm might not need it at all. We can help you figure out what actually makes sense for your budget and workflow.
+
+## The Bottom Line
+
+Copilot+ PCs are impressive technology, but theyre expensive and most small businesses dont need them yet. If your computers work, keep them running. When you do upgrade, go for standard Windows 11 machines unless you have a specific reason to spend the extra money on AI hardware.
+
+Dont let marketing push you into unnecessary expenses. Thats how IT budgets explode.
+
+If youre not sure whether your current setup is doing its job, or you need help planning realistic hardware upgrades for your Sarasota or Bradenton business, [reach out to Simple IT SRQ](/#contact). Well give you straight answers about what you actually need—not what vendors want to sell you.`
+  },
 ];
 
 export default posts;
