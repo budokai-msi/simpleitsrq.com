@@ -1405,7 +1405,7 @@ async function handleAdsenseHealth(session, url) {
   // The adsense_events table is created on-demand by the first /api/track
   // beacon, so a cold portal that's never seen traffic returns an empty
   // summary gracefully instead of a "relation does not exist" 500.
-  let rows = [];
+  let rows;
   try {
     rows = await sql`
       SELECT

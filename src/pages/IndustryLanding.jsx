@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { Link } from "../lib/Link";
+import NotFound from "./NotFound";
 import {
   Check, MapPin, ShieldCheck, ArrowRight, Headphones, Lock, Cloud, Server,
   FileCheck, Phone, Wifi, Briefcase, Wrench, Camera, Network, RefreshCw,
@@ -126,7 +127,8 @@ export default function IndustryLanding() {
   // We parse from the catch-all param so a single Route element handles
   // every (industry, city) combo without enumerating in App.jsx.
   const params = useParams();
-  const slug = params["*"] || params.slug || "";
+  const { pathname } = useLocation();
+  const slug = params["*"] || params.slug || pathname.replace(/^\/+|\/+$/g, "");
 
   // Find which (industry, city) this slug resolves to. Industry slugs
   // already end with "-it" so we match by suffix to find the city key.
@@ -189,7 +191,7 @@ export default function IndustryLanding() {
     };
   }, [resolved, url]);
 
-  if (!resolved) return <Navigate to="/service-area" replace />;
+  if (!resolved) return <NotFound />;
   const { industry, city, pattern } = resolved;
 
   return (

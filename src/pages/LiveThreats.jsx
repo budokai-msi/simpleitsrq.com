@@ -60,18 +60,20 @@ export default function LiveThreats() {
   }, []);
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    queueMicrotask(() => { if (!cancelled) load(); });
     const id = setInterval(load, 15_000);
     const onFocus = () => { if (document.visibilityState === "visible") load(); };
     document.addEventListener("visibilitychange", onFocus);
     return () => {
       clearInterval(id);
       document.removeEventListener("visibilitychange", onFocus);
+      cancelled = true;
       abortRef.current?.abort();
     };
   }, [load]);
 
-  const items = data?.items || [];
+  const items = useMemo(() => data?.items || [], [data?.items]);
   const stats = data?.stats || {};
 
   const countries = useMemo(() => {

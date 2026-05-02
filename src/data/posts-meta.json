@@ -1,5 +1,61 @@
 [
   {
+    "slug": "sarasota-small-business-ai-mistakes",
+    "title": "Your Team Is Probably Using AI Wrong (And Its Costing You Money)",
+    "date": "2026-05-02",
+    "category": "AI & Productivity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "Most small businesses are adopting AI tools without a plan. Heres whats actually happening—and how to fix it before it becomes a security and compliance nightmare.",
+    "metaDescription": "Small business owners in Sarasota are using AI tools unsafely. Learn the risks and how to implement AI securely.",
+    "heroAlt": "An illustration accompanying Your Team Is Probably Using AI Wrong (And Its Costing You Money)."
+  },
+  {
+    "slug": "windows-11-security-update-sarasota-bradenton",
+    "title": "Windows 11 Security Update: What Sarasota Businesses Need to Know",
+    "date": "2026-05-02",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "Microsoft just released critical security patches for Windows 11. Heres what small business owners in Sarasota need to do right now to protect their data.",
+    "metaDescription": "Windows 11 security update guide for Sarasota small businesses. What changed, why it matters, and what to do.",
+    "heroAlt": "An illustration accompanying Windows 11 Security Update: What Sarasota Businesses Need to Know."
+  },
+  {
+    "slug": "sarasota-business-phone-spoofing-security-risk",
+    "title": "Your Business Phone Number Just Became a Security Risk (Heres Why)",
+    "date": "2026-04-30",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "Hackers are spoofing local Sarasota and Bradenton business phone numbers to trick your customers and employees. Heres whats happening and how to protect your company.",
+    "metaDescription": "Business phone spoofing attacks targeting Sarasota companies. Learn why your phone number is at risk and what to do.",
+    "heroAlt": "An illustration accompanying Your Business Phone Number Just Became a Security Risk (Heres Why)."
+  },
+  {
+    "slug": "microsoft-copilot-pc-requirements-sarasota-small-business",
+    "title": "The New Microsoft Copilot+ PC Requirements: What Your Sarasota Business Needs to Know",
+    "date": "2026-04-30",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai",
+      "smb"
+    ],
+    "excerpt": "Microsoft is pushing AI-powered Copilot+ PCs hard, and they come with strict hardware requirements. Heres what that means for your upgrade budget and whether you actually need one.",
+    "metaDescription": "Copilot+ PCs require expensive hardware. Learn what your Sarasota business really needs before upgrading.",
+    "heroAlt": "An illustration accompanying The New Microsoft Copilot+ PC Requirements: What Your Sarasota Business Needs to Know."
+  },
+  {
     "slug": "hermes-ai-uncensored-open-model-business-2026",
     "title": "Hermes AI — What an 'Uncensored' Open Model Actually Is, and When a Small Business Should Care",
     "date": "2026-04-28",

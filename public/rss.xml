@@ -6,7 +6,43 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Tue, 28 Apr 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 02 May 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>Your Team Is Probably Using AI Wrong (And Its Costing You Money)</title>
+      <link>https://simpleitsrq.com/blog/sarasota-small-business-ai-mistakes</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-small-business-ai-mistakes</guid>
+      <pubDate>Sat, 02 May 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>AI &amp; Productivity</category>
+      <description>Most small businesses are adopting AI tools without a plan. Heres whats actually happening—and how to fix it before it becomes a security and compliance nightmare.</description>
+    </item>
+    <item>
+      <title>Windows 11 Security Update: What Sarasota Businesses Need to Know</title>
+      <link>https://simpleitsrq.com/blog/windows-11-security-update-sarasota-bradenton</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/windows-11-security-update-sarasota-bradenton</guid>
+      <pubDate>Sat, 02 May 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>Microsoft just released critical security patches for Windows 11. Heres what small business owners in Sarasota need to do right now to protect their data.</description>
+    </item>
+    <item>
+      <title>Your Business Phone Number Just Became a Security Risk (Heres Why)</title>
+      <link>https://simpleitsrq.com/blog/sarasota-business-phone-spoofing-security-risk</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-business-phone-spoofing-security-risk</guid>
+      <pubDate>Thu, 30 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Hackers are spoofing local Sarasota and Bradenton business phone numbers to trick your customers and employees. Heres whats happening and how to protect your company.</description>
+    </item>
+    <item>
+      <title>The New Microsoft Copilot+ PC Requirements: What Your Sarasota Business Needs to Know</title>
+      <link>https://simpleitsrq.com/blog/microsoft-copilot-pc-requirements-sarasota-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/microsoft-copilot-pc-requirements-sarasota-small-business</guid>
+      <pubDate>Thu, 30 Apr 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>Microsoft is pushing AI-powered Copilot+ PCs hard, and they come with strict hardware requirements. Heres what that means for your upgrade budget and whether you actually need one.</description>
+    </item>
     <item>
       <title>Hermes AI — What an &apos;Uncensored&apos; Open Model Actually Is, and When a Small Business Should Care</title>
       <link>https://simpleitsrq.com/blog/hermes-ai-uncensored-open-model-business-2026</link>
