@@ -574,6 +574,91 @@ If you dont have good answers, this is your sign to lock it down now before it b
 
 If youd like help building an AI policy that works for your team or setting up secure AI tools, [reach out to Simple IT SRQ](/contact). We work with small businesses in healthcare, legal, finance, and real estate across Sarasota, Bradenton, and Venice. We can audit what your team is currently doing and build a plan that lets them use AI safely.`
   },
+  {
+    slug: "windows-11-security-update-sarasota-bradenton",
+    title: "Windows 11 Security Update: What Sarasota Businesses Need to Know",
+    metaDescription: "Windows 11 security update guide for Sarasota small businesses. What changed, why it matters, and what to do.",
+    date: "2026-05-02",
+    author: "Simple IT SRQ Team",
+    category: "Business Tech",
+    tags: ["ai", "smb"],
+    excerpt: "Microsoft just released critical security patches for Windows 11. Heres what small business owners in Sarasota need to do right now to protect their data.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying Windows 11 Security Update: What Sarasota Businesses Need to Know.",
+    content: `# Windows 11 Security Update: What Sarasota Businesses Need to Know
+
+Microsoft released a major security update this month, and if youre running Windows 11 across your Sarasota office, you need to pay attention. This isnt one of those updates you can ignore until next month. Were talking about vulnerabilities that hackers are actively exploiting right now.
+
+Lets break down what happened, why it matters for your business, and what you should do about it.
+
+## What Changed?
+
+Microsoft patched a vulnerability in Windows 11 that affects how the system handles file encryption and user authentication. Think of it like someone finding a crack in your office door lock—it works fine most of the time, but under certain conditions, someone could slip through without the key.
+
+The vulnerability is in something called "Local Security Authority" (LSA), which is basically Windowss security gatekeeper. If left unpatched, an attacker with limited access to your network could potentially gain full administrative control over a computer.
+
+For small businesses in healthcare, legal, or finance—industries we work with constantly here in Sarasota and Bradenton—this is serious. Your patient records, client files, or financial data could be at risk.
+
+## Why Should You Care?
+
+You might be thinking, "My team has antivirus software. Isnt that enough?" Unfortunately, no. Antivirus catches malware after it arrives. This patch prevents hackers from even being able to exploit the weakness in the first place—its like fixing that door crack before someone tries to sneak in.
+
+Heres what makes this particular update urgent: hackers dont wait for businesses to patch vulnerabilities. They actively scan networks looking for unpatched computers. Every day you delay, youre leaving your business exposed.
+
+If youre running a dental practice, law office, or real estate firm with client data on those computers, the stakes are higher. A breach could mean regulatory fines, lost client trust, and the cost of notifying affected people—sometimes thousands of dollars per incident.
+
+## Who Needs to Update?
+
+Any Windows 11 computer in your office needs this update. That includes:
+
+- Desktop computers and laptops
+- Servers that run Windows Server 2022 or 2019
+- Remote workers home computers (if they connect to your network)
+
+Macs and Linux computers arent affected, but dont let that make you complacent—update everything else immediately.
+
+## What to Do About It
+
+Heres your action plan:
+
+**Step 1: Check if youve already installed it**
+
+Go to Settings > System > About on any Windows 11 computer. Look for "OS Build." If it says 22H2 Build 22621.2506 or higher, youre good. If its lower, you need to update.
+
+**Step 2: Schedule updates during off-hours**
+
+Windows updates sometimes require a restart. Dont push this out Friday afternoon when your team is trying to close their day. Plan for Tuesday or Wednesday morning, and give people a heads-up.
+
+**Step 3: Make sure automatic updates are enabled**
+
+This is the real fix—you dont want to manually check for security patches every month. In Settings > System > Windows Update, make sure "Automatic updates" is toggled on. You can set it to install during off-hours so it doesnt interrupt work.
+
+**Step 4: Update remote workers**
+
+If people work from home, send them an email explaining this isnt optional. They might try to defer updates on their personal schedule—dont let them. A laptop infected through this vulnerability could give hackers access to your entire network when it connects back.
+
+**Step 5: If you have IT support, let them handle it**
+
+If youre using Simple IT SRQ or another managed IT service, contact them today. Let them push this update across your network remotely. Its faster, safer, and takes the risk off your shoulders.
+
+## What If Youve Already Had a Problem?
+
+If you suspect someone has already accessed your network, dont panic—but do reach out to an IT professional immediately. They can check your security logs and see if anyone exploited this vulnerability before it was patched.
+
+For businesses in regulated industries like healthcare or finance, document everything. You may need to report the incident, and having clear records helps.
+
+## The Bigger Picture
+
+This update is a reminder that security isnt a one-time thing. Microsoft releases patches regularly, and hackers are constantly finding new ways in. The businesses that stay secure are the ones that keep up with updates, train employees, and have someone (either internal IT or an external partner) watching their back.
+
+In Sarasota, Bradenton, and Venice, we work with plenty of small businesses running on tight IT budgets. You cant afford a major breach. Regular patching, strong passwords, and current software are the cheapest insurance policy you can buy.
+
+## Need Help?
+
+If youre not sure whether your Windows 11 computers are updated, or if youd rather have someone handle this for you, we can help. Simple IT SRQ manages IT for small businesses across Sarasota, Bradenton, and Venice—from healthcare practices to legal firms to construction companies.
+
+We can patch your network remotely, verify everythings current, and make sure this doesnt happen again. [Get in touch with us today to make sure your business is protected.](/#contact)`
+  },
 ];
 
 export default posts;
