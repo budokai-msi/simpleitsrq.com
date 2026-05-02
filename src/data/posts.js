@@ -470,6 +470,110 @@ Dont let marketing push you into unnecessary expenses. Thats how IT budgets expl
 
 If youre not sure whether your current setup is doing its job, or you need help planning realistic hardware upgrades for your Sarasota or Bradenton business, [reach out to Simple IT SRQ](/#contact). Well give you straight answers about what you actually need—not what vendors want to sell you.`
   },
+  {
+    slug: "sarasota-small-business-ai-mistakes",
+    title: "Your Team Is Probably Using AI Wrong (And Its Costing You Money)",
+    metaDescription: "Small business owners in Sarasota are using AI tools unsafely. Learn the risks and how to implement AI securely.",
+    date: "2026-05-02",
+    author: "Simple IT SRQ Team",
+    category: "AI & Productivity",
+    tags: ["ai", "smb"],
+    excerpt: "Most small businesses are adopting AI tools without a plan. Heres whats actually happening—and how to fix it before it becomes a security and compliance nightmare.",
+    sourceUrl: "https://simpleitsrq.com/blog",
+    heroAlt: "An illustration accompanying Your Team Is Probably Using AI Wrong (And Its Costing You Money).",
+    content: `# Your Team Is Probably Using AI Wrong (And Its Costing You Money)
+
+Lets be honest: ChatGPT, Copilot, and other AI tools are amazing. Your team loves them. Theyre using them to draft emails, analyze spreadsheets, write contracts, and summarize documents.
+
+And your business is getting riskier by the day.
+
+Were seeing this across Sarasota and Bradenton right now. Employees are copying sensitive client information, patient details, and financial data directly into public AI tools. They dont realize what theyre doing. Neither do their managers. But the liability is real.
+
+## Whats Actually Happening in Your Office
+
+A paralegal pastes a client contract into ChatGPT to get a summary. A real estate agent uploads property records to an AI tool to help organize listings. Your accountant uses Claude to draft tax advice based on actual client files.
+
+All of that data is now training the AI model. Its out of your control.
+
+If youre in healthcare, thats a HIPAA violation waiting to happen. In legal services, youve just breached client confidentiality. In finance, you might have exposed account details and tax information.
+
+Your cyber-insurance probably wont cover it either.
+
+## The Three AI Risks Your Team Is Creating
+
+**Risk #1: Data Leakage**
+
+Public AI tools (the free versions everyone uses) retain what you type. Your proprietary information becomes training data. Competitors could eventually see it. Clients could too.
+
+**Risk #2: Compliance Violations**
+
+If you handle regulated data—patient records, client confidential information, financial details—using public AI tools violates your industrys rules. HIPAA, attorney-client privilege, and financial regulations all have specific requirements about where data goes.
+
+**Risk #3: False Information (And You Cant Tell)**
+
+AI hallucinates. It confidently creates fake citations, invents contract clauses, and generates plausible-sounding advice thats completely wrong. Your staff member doesnt catch it. You deliver bad work to a client. Now you have a liability problem.
+
+## What to Do About It
+
+**Step 1: Acknowledge the Problem Exists**
+
+Your team is using AI. Theyre not doing it maliciously. They just dont know its risky. Have a honest conversation this week: "We love that youre finding ways to work smarter. We need to do this safely."
+
+**Step 2: Create a Simple AI Use Policy**
+
+You dont need a 50-page document. One page is fine. It should say:
+
+- Never paste client/patient/financial data into public AI tools (ChatGPT, Gemini, Claude free versions)
+- Enterprise or private AI tools (Microsoft Copilot Pro with a business account, company-licensed software) can be used for general work
+- Always fact-check AI outputs before using them in client work
+- Ask a manager if youre unsure whether something is okay to share
+
+**Step 3: Get Enterprise AI Tools if You Need Them**
+
+If your team needs AI for sensitive work, use business versions that dont train on your data:
+
+- **Microsoft Copilot Pro** (business account) or **Copilot for Microsoft 365** if you use Office
+- **OpenAIs enterprise options** (data isnt used for training)
+- **Claude for business** (Anthropics enterprise tier)
+- **Specialized tools** for your industry (legal AI platforms, healthcare-compliant AI, accounting software with built-in AI)
+
+These arent free, but the cost is tiny compared to a compliance violation or data breach.
+
+**Step 4: Train Your Team (Take 30 Minutes)**
+
+Show them examples of what should and shouldnt go into AI. Make it real:
+
+- "This client contract? Dont paste it. This general email outline? Fine."
+- "This patients treatment plan? No. This template for new patient forms? Yes."
+
+People want to do the right thing. They just need to know what it is.
+
+## What Simple IT SRQ Is Seeing
+
+Were working with healthcare practices, law firms, and real estate companies across Sarasota and Bradenton who realized they had zero oversight on AI. Some had already had data incidents. Others caught it just in time.
+
+The ones doing it right have:
+
+1. A written policy everyone knows about
+2. Enterprise-grade tools for sensitive work
+3. Regular check-ins to make sure the policy is working
+4. Insurance that actually covers AI-related incidents
+
+It doesnt take much—just intention and a little structure.
+
+## Your Next Move
+
+This week, spend 30 minutes answering these questions:
+
+- What data does your team work with that shouldnt go into public AI?
+- Are they currently using public AI tools for sensitive work? (Honest answer: probably yes.)
+- Do you have enterprise AI licenses, or is everyone using free versions?
+- Does your cyber-insurance cover AI-related incidents?
+
+If you dont have good answers, this is your sign to lock it down now before it becomes a problem.
+
+If youd like help building an AI policy that works for your team or setting up secure AI tools, [reach out to Simple IT SRQ](/contact). We work with small businesses in healthcare, legal, finance, and real estate across Sarasota, Bradenton, and Venice. We can audit what your team is currently doing and build a plan that lets them use AI safely.`
+  },
 ];
 
 export default posts;
