@@ -79,8 +79,7 @@ export default function AdminAffiliates() {
   const [status, setStatus] = useState("loading"); // loading | ready | forbidden | error
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) { setStatus("forbidden"); return; }
+    if (authLoading || !user) return undefined;
 
     let cancelled = false;
     fetch(`/api/portal?action=affiliate-stats&days=${days}`, {
@@ -109,7 +108,8 @@ export default function AdminAffiliates() {
     setDays(next);
   };
 
-  const networkRows = data?.byNetwork ?? [];
+  const viewStatus = !authLoading && !user ? "forbidden" : status;
+  const networkRows = useMemo(() => data?.byNetwork ?? [], [data?.byNetwork]);
   const dayRows = data?.byDay ?? [];
   const topPosts = data?.topPosts ?? [];
   const recent = data?.recent ?? [];
@@ -133,7 +133,7 @@ export default function AdminAffiliates() {
     return { lo, hi };
   }, [networkRows]);
 
-  if (authLoading || status === "loading") {
+  if (authLoading || viewStatus === "loading") {
     return (
       <main id="main" className="admin-affiliates">
         <div className="container" style={{ padding: "48px 24px", textAlign: "center" }}>
@@ -143,7 +143,7 @@ export default function AdminAffiliates() {
     );
   }
 
-  if (status === "forbidden") {
+  if (viewStatus === "forbidden") {
     return (
       <main id="main" className="admin-affiliates">
         <div className="container" style={{ padding: "64px 24px", maxWidth: 560 }}>
@@ -155,7 +155,7 @@ export default function AdminAffiliates() {
     );
   }
 
-  if (status === "error") {
+  if (viewStatus === "error") {
     return (
       <main id="main" className="admin-affiliates">
         <div className="container" style={{ padding: "64px 24px", maxWidth: 560 }}>

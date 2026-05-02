@@ -198,7 +198,6 @@ function randomToken() {
 async function handleExposureScan(request, body, ip) {
   const rawDomain = String(body.domain || "").trim().slice(0, 253);
   const email = String(body.email || "").trim().toLowerCase().slice(0, 320);
-  const name  = String(body.name  || "").trim().slice(0, 120);
   if (!rawDomain) return json(400, { ok: false, error: "domain_required" });
   if (!email || !isEmail(email)) return json(400, { ok: false, error: "email_invalid" });
 

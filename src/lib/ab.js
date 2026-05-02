@@ -77,18 +77,27 @@ export function useExperiment(experimentId, variants) {
   });
 
   useEffect(() => {
-    if (!experimentId || !variants?.length) return;
-    const all = readAll();
-    const existing = all[experimentId]?.v;
-    if (existing && variants.includes(existing)) {
-      setVariant(existing);
-      return;
-    }
-    const v = deterministicVariant(experimentId, variants, readAnon());
-    all[experimentId] = { v, ts: Date.now() };
-    writeAll(all);
-    setVariant(v);
-    track("experiment_assigned", { experiment_id: experimentId, variant: v });
+    if (!experimentId || !variants?.length) return undefined;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      const all = readAll();
+      const existing = all[experimentId]?.v;
+      if (existing && variants.includes(existing)) {
+        setVariant(existing);
+        return;
+      }
+
+      const v = deterministicVariant(experimentId, variants, readAnon());
+      all[experimentId] = { v, ts: Date.now() };
+      writeAll(all);
+      setVariant(v);
+      track("experiment_assigned", { experiment_id: experimentId, variant: v });
+    });
+
+    return () => { cancelled = true; };
   }, [experimentId, variants]);
 
   return variant;

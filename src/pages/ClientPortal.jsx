@@ -3168,9 +3168,24 @@ function SecurityPanel({
   // eslint-disable-next-line react-hooks/set-state-in-effect -- loadIntel is a stable useCallback
   useEffect(() => { loadIntel(); }, [loadIntel]);
   useEffect(() => { if (subTab === "credentials") loadHpCreds?.(); }, [subTab, loadHpCreds]);
-  useEffect(() => { if (subTab === "enumeration") loadEnum(); }, [subTab, loadEnum]);
-  useEffect(() => { if (subTab === "cred-intel")  loadCredIntel(); }, [subTab, loadCredIntel]);
-  useEffect(() => { if (subTab === "geo")         loadGeo(); }, [subTab, loadGeo]);
+  useEffect(() => {
+    if (subTab !== "enumeration") return undefined;
+    let cancelled = false;
+    queueMicrotask(() => { if (!cancelled) loadEnum(); });
+    return () => { cancelled = true; };
+  }, [subTab, loadEnum]);
+  useEffect(() => {
+    if (subTab !== "cred-intel") return undefined;
+    let cancelled = false;
+    queueMicrotask(() => { if (!cancelled) loadCredIntel(); });
+    return () => { cancelled = true; };
+  }, [subTab, loadCredIntel]);
+  useEffect(() => {
+    if (subTab !== "geo") return undefined;
+    let cancelled = false;
+    queueMicrotask(() => { if (!cancelled) loadGeo(); });
+    return () => { cancelled = true; };
+  }, [subTab, loadGeo]);
 
   const pillStyle = (active) => ({
     padding: "6px 14px", borderRadius: 999, fontSize: 13, fontWeight: active ? 600 : 400, cursor: "pointer", border: "none",

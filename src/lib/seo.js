@@ -232,7 +232,7 @@ export function useSEO({
     } else {
       removeJsonLd("jsonld-faq");
     }
-  }, [title, description, canonical, image, post, breadcrumbs, products, organization, localBusiness, faqs]);
+  }, [title, description, canonical, image, robots, post, breadcrumbs, products, organization, localBusiness, faqs]);
 }
 
 // Build an ItemList of Product+Offer entries for a /store-style page. Google

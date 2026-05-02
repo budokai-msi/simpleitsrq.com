@@ -82,7 +82,6 @@ export default function ExitIntentModal() {
 
   const mountedAtRef = useRef(0);
   const firedRef = useRef(false);
-  const previouslyFocusedRef = useRef(null);
   const dialogRef = useRef(null);
   const firstFocusRef = useRef(null);
 
