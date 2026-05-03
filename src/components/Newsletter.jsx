@@ -49,7 +49,9 @@ export default function Newsletter() {
           One email a month. Plain-English security, AI, and cloud news for Sarasota and Bradenton business owners. No spam, unsubscribe with one click.
         </p>
         {state === "done" ? (
-          <p className="newsletter-success"><Check size={16} color="#107C10" /> Check your inbox — we sent a confirmation link. Click it and you're on the list.</p>
+          <p className="newsletter-success">
+            <Check size={16} color="#107C10" /> Check your inbox — we sent a confirmation link. Click it and you&apos;re on the list.
+          </p>
         ) : (
           <form className="newsletter-form" onSubmit={submit} noValidate>
             <input
