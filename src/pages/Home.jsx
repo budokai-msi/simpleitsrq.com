@@ -31,7 +31,7 @@ function Hero() {
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
           <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display">Managed IT for Sarasota and Bradenton businesses.</h1>
+          <h1 id="hero-title" className="display hero-aura-title">Managed IT for Sarasota and Bradenton businesses.</h1>
           <p className="lede">
             Helpdesk, networks, Microsoft 365, cybersecurity, backups, and on-site repair —
             delivered by a local team on a flat monthly rate. We keep your workstations,

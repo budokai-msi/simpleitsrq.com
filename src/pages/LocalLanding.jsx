@@ -10,6 +10,7 @@ import { cities } from "../data/cities";
 import { industries, matchIndustryPattern } from "../data/industries";
 import { useSEO, SITE_URL } from "../lib/seo";
 import RecommendedTools from "../components/RecommendedTools";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 const SERVICES = [
   { Icon: Headphones, title: "Helpdesk and Everyday IT Support", desc: "Unlimited help desk, monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
@@ -205,6 +206,10 @@ export default function LocalLanding() {
       <section className="hero hero-clean">
         <div className="hero-bg" aria-hidden="true" />
         <div className="container hero-stack-clean">
+          <Breadcrumbs items={[
+            { name: "Service Area", url: "/service-area" },
+            { name: city.city, url: `/${city.slug}` },
+          ]} />
           <div className="hero-copy hero-copy-centered">
             <span className="eyebrow"><MapPin size={14} /> {city.cityFull}</span>
             <h1 className="display">{city.h1}<br /><span className="brand-accent">Simple IT SRQ</span></h1>

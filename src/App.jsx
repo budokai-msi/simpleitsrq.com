@@ -158,17 +158,15 @@ function Navbar() {
   return (
     <header className="navbar" role="banner">
       <div className="container nav-inner">
+        <ReadingProgress />
         <Logo />
         <nav className="nav-links" aria-label="Primary">
-          {/* Primary nav is trimmed to four items so the right-side
-              CTA cluster (theme toggle, portal pill, Book a Call) has
-              room to breathe at 1280px-and-down. Templates, Vendor
-              Stack, Buy a Service, and Free Scan still surface from
-              the home page, the mobile menu, and the footer. */}
           <Link to="/#solutions">Services</Link>
           <Link to="/pricing">Pricing</Link>
-          <Link to="/service-area">Service Area</Link>
           <Link to="/blog">Blog</Link>
+          <Link to="/support" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span className="live-dot" /> Support
+          </Link>
         </nav>
         <div className="nav-actions">
           <ThemeToggle />
@@ -281,6 +279,9 @@ function Footer() {
             <Link to="/privacy">Privacy</Link> &middot;{" "}
             <Link to="/terms">Terms</Link> &middot;{" "}
             <Link to="/accessibility">Accessibility</Link> &middot;{" "}
+            <a href="https://status.simpleitsrq.com" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <span className="live-dot" style={{ width: 6, height: 6 }} /> System Status
+            </a> &middot;{" "}
             {/* Reopens the cookie-consent banner so visitors can change
                 their analytics/marketing choice without clearing
                 localStorage. Required by GDPR + CCPA "withdraw consent"
@@ -395,6 +396,7 @@ function Layout({ children }) {
       <Footer />
       <MobileStickyCTA />
       <ExitIntentMount />
+      <ScrollToTop />
       <CookieConsent />
       <AutoAds />
       <LiveChat />
@@ -436,6 +438,22 @@ function ThemeProvider({ children }) {
       {children}
     </ThemeContext.Provider>
   );
+}
+
+function ReadingProgress() {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const handleScroll = () => {
+      const winScroll = document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      setProgress(scrolled);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return <div className="reading-progress" style={{ width: `${progress}%` }} />;
 }
 
 export default function App() {
