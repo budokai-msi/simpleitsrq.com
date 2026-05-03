@@ -4,6 +4,7 @@ import {
   AlertTriangle, TrendingUp, FileCheck, Loader2, Send,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
+import Breadcrumbs from "../components/Breadcrumbs";
 import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { trackAffiliateClick } from "../lib/trackClick";
