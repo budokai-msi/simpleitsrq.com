@@ -29,6 +29,9 @@ public/og-product-*.png
 # outside public/ so it never ships to the live site.
 .og-cache/
 
+# OG image build caches (written into public/ at prebuild)
+public/.og-*-cache.json
+
 # Environment — NEVER commit secrets
 .env
 .env.*
@@ -69,10 +72,10 @@ CONTEXT.md
 # OneDrive / Google Drive restore duplicates — patterns like ".env(1).vault",
 # "dist(2)/", ".claude(1)/" that cloud-sync tools create when they restore
 # previously-deleted files. They always match "something (N)" or "something(N)".
-*\ \(?\)*
-*\(?\)*
-*\ \(??\)*
-*\(??\)*
+*\ \(?)\*
+*\(?)\*
+*\ \(??)\*
+*\(??)\*
 
 # Private strategy / TODO / setup docs — live alongside the repo in
 # SimpleITSRQ/private-notes/, never in git. If these patterns match a
