@@ -1,4 +1,4 @@
-﻿/* ============ Layout ============ */
+/* ============ Layout ============ */
 /* Reserve viewport height on every <main> so route transitions don't
  * collapse the page between Suspense unmount + new chunk render. The
  * exact height (calc(100vh - navbar - footer-area)) keeps footer from
@@ -47,7 +47,8 @@ main, #main {
 .lede {
   font-size: 18px;
   line-height: 28px;
-  color: var(--text-2);
+  color: var(--text-1);
+  opacity: 0.8;
   margin: 0 0 28px;
   max-width: 56ch;
 }
@@ -87,11 +88,17 @@ main, #main {
 .btn-primary:hover { background: var(--brand-hover); color: #fff; box-shadow: var(--shadow8); transform: translateY(-1px); }
 .btn-primary:active { background: var(--brand-pressed); transform: translateY(0); box-shadow: var(--shadow2); }
 .btn-secondary {
-  background: var(--surface);
+  background: var(--bg-elevated);
   color: var(--text-1);
   border-color: var(--border-strong);
+  box-shadow: var(--shadow2);
 }
-.btn-secondary:hover { background: var(--surface-2); color: var(--text-1); border-color: var(--text-2); }
+.btn-secondary:hover { 
+  background: var(--surface-2); 
+  color: var(--text-1); 
+  border-color: var(--text-3);
+  box-shadow: var(--shadow4);
+}
 .link-btn {
   font-size: 14px;
   font-weight: 600;
@@ -172,6 +179,22 @@ main, #main {
   border-radius: var(--r-sm);
   color: var(--text-1);
   font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mobile-nav-header {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-3);
+  padding: 16px 12px 4px;
+}
+.mobile-nav-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 12px;
 }
 
 /* ============ Hero ============ */
@@ -326,9 +349,23 @@ main, #main {
   gap: 40px;
 }
 .logo-mark {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--text-2);
+  color: var(--text-1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 999px;
+  box-shadow: var(--shadow2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
+}
+.logo-mark:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow4);
+  border-color: var(--brand);
 }
 
 /* ============ Sections ============ */
