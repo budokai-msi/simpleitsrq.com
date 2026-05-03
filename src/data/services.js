@@ -245,11 +245,12 @@ export const services = [
     duration: "2-week prep + phased rollout",
     contents: [
       "Windows 11 Enterprise licensing review and procurement",
-      "Entra ID (formerly Azure AD) join for every device — no local server needed",
+      "Entra ID join for every device — no local server needed",
       "Intune / Autopilot setup for zero-touch deployment of new machines",
-      "Security baseline deployment (BitLocker encryption, Windows Defender, MFA)",
-      "Application compatibility testing for your specific Sarasota/Bradenton local apps",
+      "M365 Copilot & Google Gemini security governance (Data Loss Prevention)",
+      "Security baseline deployment (BitLocker, Phishing-resistant MFA, Passkeys)",
       "Legacy printer and file-share migration to cloud-native workflows",
+      "Employee training on secure AI usage in the workplace",
     ],
     notInScope: [
       "New hardware costs (we'll quote laptops separately)",

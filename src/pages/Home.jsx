@@ -3,7 +3,7 @@ import {
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
   Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi, Briefcase,
   Loader2, CheckCircle2, AlertCircle, Send, Wrench,
-  Camera, Network, RefreshCw, Users, Monitor
+  Camera, Network, RefreshCw, Users, Monitor, Bot, Sparkles
 } from "lucide-react";
 import { Link } from "../lib/Link";
 import { useState } from "react";
@@ -55,10 +55,10 @@ function Hero() {
 
 function LogosBar() {
   const vendors = [
-    { name: "Microsoft 365", Icon: Cloud },
+    { name: "M365 Copilot", Icon: Bot },
+    { name: "Google Gemini", Icon: Sparkles },
     { name: "SentinelOne", Icon: Shield },
-    { name: "Microsoft Defender", Icon: Lock },
-    { name: "Intune", Icon: Monitor },
+    { name: "Entra ID", Icon: Lock },
     { name: "Fortinet", Icon: Server },
     { name: "Cisco Meraki", Icon: Wifi },
   ];
@@ -97,23 +97,23 @@ const SOLUTIONS = [
   },
   {
     Icon: Network,
-    title: "Enterprise Domain Environments",
-    desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one. New domain build-outs and rescues of the one you inherited."
+    title: "Enterprise Domain Environments (Entra ID)",
+    desc: "Microsoft Entra ID, Active Directory, Group Policy, and the user/computer setup that lets a 20-person office act like one. New cloud-native build-outs and rescues of legacy on-premise servers."
   },
   {
     Icon: RefreshCw,
-    title: "Migrations and Upgrades",
-    desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, file-share moves, Windows 11 rollouts, and hardware refreshes. We plan the cutover, do the work over a weekend, and stay on-site the morning after."
+    title: "Migrations and AI Readiness",
+    desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, and Copilot/Gemini AI readiness audits. We plan the cutover, do the work over a weekend, and stay on-site the morning after."
   },
   {
     Icon: Lock,
-    title: "Cybersecurity and Virus Protection",
-    desc: "Modern antivirus, email scam filtering, safer web browsing, and 24/7 monitoring. We turn on two-step sign-in for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
+    title: "Cybersecurity and Zero Trust",
+    desc: "Modern antivirus, email scam filtering, and 24/7 monitoring. We turn on phishing-resistant MFA and passkeys for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
   },
   {
     Icon: Cloud,
-    title: "Microsoft 365, Email and Cloud Apps",
-    desc: "We set up (or clean up) your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone."
+    title: "Microsoft 365, Google Workspace & AI",
+    desc: "We set up (or clean up) your email, Teams, and cloud apps like Copilot and Gemini so your team can actually use AI safely without leaking company data."
   },
   {
     Icon: Server,
