@@ -20,6 +20,7 @@ import ShareButton from "../components/ShareButton";
 import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
 import ComplianceAuditCTA from "../components/ComplianceAuditCTA";
 import { trackAffiliateClick } from "../lib/trackClick";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 // Lazy-loaded MDX modules. Each post ships as its own chunk so adding a
 // post to content/posts/*.mdx doesn't bloat the entry bundle. The `?raw`
@@ -294,7 +295,7 @@ export default function BlogPost() {
     return () => { cancelled = true; };
   }, [slug, isMdx]);
 
-  useSEO(
+  const seo = useSEO(
     post
       ? {
           title: `${post.title} | Simple IT SRQ`,
@@ -320,6 +321,10 @@ export default function BlogPost() {
     <main id="main" className="blog-post-main">
       <article className="blog-post">
         <div className="container blog-post-container">
+          <Breadcrumbs items={[
+            { name: "Blog", url: "/blog" },
+            { name: post.title, url: `/blog/${post.slug}` },
+          ]} />
           <Link to="/blog" className="blog-back"><ArrowLeft size={14} /> Back to all posts</Link>
           <span className="blog-card-category">{post.category}</span>
           <h1 className="blog-post-title">{post.title}</h1>
