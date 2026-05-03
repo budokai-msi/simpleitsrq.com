@@ -223,9 +223,11 @@ function Footer() {
         <div>
           <Logo />
           <p className="footer-desc">Local IT support, helpdesk, computer repair, security cameras, and enterprise IT — for businesses and homes across Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
-          <a className="footer-email" href="mailto:hello@simpleitsrq.com">
-            <AtSign size={16} /> hello@simpleitsrq.com
-          </a>
+          <div style={{ marginTop: 20 }}>
+            <a className="footer-email" href="mailto:hello@simpleitsrq.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}>
+              <AtSign size={16} color="var(--brand)" /> hello@simpleitsrq.com
+            </a>
+          </div>
         </div>
         <div>
           <h4>What We Do</h4>

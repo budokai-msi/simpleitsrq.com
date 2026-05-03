@@ -86,7 +86,11 @@ main, #main {
   transition: background 200ms var(--ease-out), box-shadow 200ms var(--ease-out), transform 200ms var(--ease-out);
 }
 .btn-primary:hover { background: var(--brand-hover); color: #fff; box-shadow: var(--shadow8); transform: translateY(-1px); }
-.btn-primary:active { background: var(--brand-pressed); transform: translateY(0); box-shadow: var(--shadow2); }
+.btn-primary:active { 
+  background: var(--brand-pressed); 
+  transform: scale(0.97); 
+  box-shadow: var(--shadow2); 
+}
 .btn-secondary {
   background: var(--bg-elevated);
   color: var(--text-1);
@@ -112,7 +116,9 @@ main, #main {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg-elevated);
+  background: var(--mica);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
 .nav-inner {
@@ -242,7 +248,25 @@ main, #main {
 }
 
 /* Hero visual dashboard mockup */
-.hero-visual { display: flex; justify-content: center; }
+.hero-visual { 
+  display: flex; 
+  justify-content: center; 
+  position: relative;
+}
+.hero-visual::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  background: var(--brand);
+  filter: blur(120px);
+  opacity: 0.15;
+  z-index: -1;
+  pointer-events: none;
+}
 .dash-card {
   width: 100%;
   max-width: 420px;
@@ -252,6 +276,11 @@ main, #main {
   border: 1px solid var(--border);
   overflow: hidden;
   transform: perspective(1200px) rotateY(-4deg) rotateX(2deg);
+  animation: floating 6s ease-in-out infinite;
+}
+@keyframes floating {
+  0%, 100% { transform: perspective(1200px) rotateY(-4deg) rotateX(2deg) translateY(0); }
+  50% { transform: perspective(1200px) rotateY(-3deg) rotateX(1deg) translateY(-10px); }
 }
 .dash-header {
   background: linear-gradient(135deg, #0F6CBD, #115EA3);
@@ -5782,6 +5811,51 @@ select:focus-visible {
   margin-bottom: 12px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
+}
+.solutions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+.solution-card {
+  padding: 32px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  transition: all 300ms var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+.solution-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--brand);
+  box-shadow: var(--shadow16);
+}
+.solution-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 16px 0 10px;
+  color: var(--text-1);
+}
+.solution-card p {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--text-2);
+  margin: 0;
+}
+.solution-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at top right, var(--brand-glow), transparent 70%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+.solution-card:hover::after {
+  opacity: 1;
 }
 .wisp-section p {
   font-size: 14px;
