@@ -1,9 +1,9 @@
-﻿import {
+import {
   Headphones, Server, ShieldCheck, Lock, Cloud, FileCheck,
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
   Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi, Briefcase,
   Loader2, CheckCircle2, AlertCircle, Send, Wrench,
-  Camera, Network, RefreshCw, Users
+  Camera, Network, RefreshCw, Users, Monitor
 } from "lucide-react";
 import { Link } from "../lib/Link";
 import { useState } from "react";
@@ -54,23 +54,25 @@ function Hero() {
 }
 
 function LogosBar() {
-  // The brands we use under the hood. Kept so prospective clients (and their
-  // insurance carriers or auditors) can recognize the tools, but framed as
-  // "what we install for you" instead of a raw vendor dump.
   const vendors = [
-    "Microsoft 365",
-    "SentinelOne",
-    "Microsoft Defender",
-    "Intune",
-    "Fortinet",
-    "Cisco Meraki",
+    { name: "Microsoft 365", Icon: Cloud },
+    { name: "SentinelOne", Icon: Shield },
+    { name: "Microsoft Defender", Icon: Lock },
+    { name: "Intune", Icon: Monitor },
+    { name: "Fortinet", Icon: Server },
+    { name: "Cisco Meraki", Icon: Wifi },
   ];
   return (
     <section className="logos-bar" aria-label="Tools and brands we install">
       <div className="container">
         <p className="logos-title">The tools we install and support for you</p>
         <div className="logos-row">
-          {vendors.map((v) => <span key={v} className="logo-mark">{v}</span>)}
+          {vendors.map((v) => (
+            <span key={v.name} className="logo-mark">
+              <v.Icon size={16} color="var(--brand)" />
+              {v.name}
+            </span>
+          ))}
         </div>
       </div>
     </section>

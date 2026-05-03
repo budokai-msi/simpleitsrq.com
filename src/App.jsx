@@ -1,7 +1,7 @@
-﻿import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Link } from "./lib/Link";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
-import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar } from "lucide-react";
+import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, Tag, BookOpen, ShieldAlert, Wrench, FileText, Info, Briefcase } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from "./pages/Home";
@@ -184,23 +184,32 @@ function Navbar() {
       </div>
       {open && (
         <div className="mobile-menu" role="menu">
-          <Link to="/blog" onClick={() => setOpen(false)}>Blog</Link>
-          <Link to="/services" onClick={() => setOpen(false)}>Buy a Service</Link>
-          <Link to="/pricing" onClick={() => setOpen(false)}>Pricing</Link>
-          <Link to="/glossary" onClick={() => setOpen(false)}>Glossary</Link>
-          <Link to="/industries" onClick={() => setOpen(false)}>Industries we serve</Link>
-          <Link to="/exposure-scan" onClick={() => setOpen(false)}>Free Exposure Scan</Link>
-          <Link to="/tools" onClick={() => setOpen(false)}>Recommended Tools</Link>
-          <Link to="/store" onClick={() => setOpen(false)}>Templates &amp; Playbooks</Link>
-          <Link to="/stack" onClick={() => setOpen(false)}>Vendor Stack</Link>
-          <Link to="/support" onClick={() => setOpen(false)}>Support</Link>
-          <Link to="/#industries" onClick={() => setOpen(false)}>Industries</Link>
-          <Link to="/#compliance" onClick={() => setOpen(false)}>Compliance</Link>
-          <Link to="/#contact" onClick={() => setOpen(false)}>Contact</Link>
+          <div className="mobile-nav-header">Services</div>
+          <Link to="/#solutions" onClick={() => setOpen(false)}><LayoutGrid size={16} /> All Services</Link>
+          <Link to="/services" onClick={() => setOpen(false)}><ShoppingBag size={16} /> Buy a Service</Link>
+          <Link to="/pricing" onClick={() => setOpen(false)}><Tag size={16} /> Pricing</Link>
+          <Link to="/industries" onClick={() => setOpen(false)}><Briefcase size={16} /> Industries we serve</Link>
+          <Link to="/stack" onClick={() => setOpen(false)}><Shield size={16} /> Vendor Stack</Link>
+          
+          <div className="mobile-nav-divider" />
+          <div className="mobile-nav-header">Resources</div>
+          <Link to="/blog" onClick={() => setOpen(false)}><BookOpen size={16} /> Blog</Link>
+          <Link to="/exposure-scan" onClick={() => setOpen(false)}><ShieldAlert size={16} /> Free Exposure Scan</Link>
+          <Link to="/tools" onClick={() => setOpen(false)}><Wrench size={16} /> Recommended Tools</Link>
+          <Link to="/store" onClick={() => setOpen(false)}><FileText size={16} /> Templates & Playbooks</Link>
+          <Link to="/glossary" onClick={() => setOpen(false)}><Info size={16} /> Glossary</Link>
+          
+          <div className="mobile-nav-divider" />
+          <div className="mobile-nav-header">Account</div>
           <Link to="/portal" onClick={() => setOpen(false)}>
-            {user ? "My Portal" : "Sign In"}
+            <UserIcon size={16} /> {user ? "My Portal" : "Sign In"}
           </Link>
-          <Link to="/book" className="btn btn-primary" onClick={() => setOpen(false)}>Book a Call</Link>
+          <Link to="/support" onClick={() => setOpen(false)}><Shield size={16} /> Support</Link>
+          <div style={{ marginTop: 12 }}>
+            <Link to="/book" className="btn btn-primary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>
+              <Calendar size={16} /> Book a Call
+            </Link>
+          </div>
         </div>
       )}
     </header>

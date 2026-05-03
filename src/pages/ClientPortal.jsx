@@ -686,6 +686,33 @@ function Overview({ styles, user, openCount, closedCount, unpaidCount }) {
           <PersonSupport24Regular /> <span>Email your team</span>
         </a>
       </div>
+
+      <div style={{ marginTop: 40, padding: 24, borderRadius: tokens.borderRadiusLarge, background: tokens.colorNeutralBackground3, border: `1px solid ${tokens.colorNeutralStroke2}` }}>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: tokens.colorNeutralForeground1, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ShieldCheckmark24Regular style={{ color: tokens.colorBrandForeground1 }} /> Getting Started Checklist
+        </h3>
+        <p style={{ color: tokens.colorNeutralForeground3, fontSize: 13, margin: '8px 0 20px' }}>
+          Complete these steps to get the most out of your managed IT service.
+        </p>
+        <div style={{ display: 'grid', gap: 12 }}>
+          {[
+            { label: "Run your first Exposure Scan", done: false, link: "/exposure-scan" },
+            { label: "Verify your emergency contact info", done: true, link: "#profile" },
+            { label: "Download the WISP starter kit", done: false, link: "/store/wisp-template" },
+            { label: "Connect your primary Microsoft 365 account", done: false, link: "#" },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium, border: `1px solid ${tokens.colorNeutralStroke2}` }}>
+              <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${item.done ? tokens.colorBrandForeground1 : tokens.colorNeutralStrokeAccessible}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: item.done ? tokens.colorBrandForeground1 : 'transparent' }}>
+                {item.done && <Checkmark24Regular style={{ width: 12, height: 12, color: "white" }} />}
+              </div>
+              <span style={{ fontSize: 14, color: item.done ? tokens.colorNeutralForeground3 : tokens.colorNeutralForeground1, textDecoration: item.done ? 'line-through' : 'none', flex: 1 }}>{item.label}</span>
+              {item.link !== "#" && (
+                <Link to={item.link} style={{ fontSize: 12, fontWeight: 600, color: tokens.colorBrandForeground1 }}>Action</Link>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
