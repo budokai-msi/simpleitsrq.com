@@ -174,8 +174,8 @@ const TABS = ["All", "Residential", "Business"];
 
 export default function Services() {
   useSEO({
-    title: "Buy a Service | Computer Repair, Cameras, Migrations — Sarasota & Bradenton",
-    description: "Productized fixed-fee IT services for Sarasota and Bradenton. Computer tune-up $99, virus removal from $179, SSD upgrade $249, security camera install reservation $500 deposit, M365 migration $1,500, snowbird pre-arrival setup $349. No quotes, no phone tag — just a Buy Now button.",
+    title: "Buy IT Services | Copiers, Fax, Migrations, Windows Enterprise — Sarasota & Bradenton",
+    description: "Productized IT services for Sarasota and Bradenton. Copier and fax setup $499, Windows Enterprise migration $2,499, computer tune-up $99, virus removal from $179, M365 migration $1,500. Fixed fees, buy online.",
     canonical: "https://simpleitsrq.com/services",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
