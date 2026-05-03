@@ -212,8 +212,11 @@ export async function exchangeCodeForToken(provider, code, request) {
   const cfg = PROVIDERS[provider];
   const clientId = process.env[cfg.clientIdEnv];
   const clientSecret = process.env[cfg.clientSecretEnv];
-  if (!clientId || !clientSecret) {
-    throw new Error(`${cfg.clientIdEnv}/${cfg.clientSecretEnv} not set`);
+  if (!clientId) {
+    throw new Error(`${cfg.clientIdEnv} not set`);
+  }
+  if (!clientSecret) {
+    throw new Error(`${cfg.clientSecretEnv} not set`);
   }
 
   // Resolve Auth0 token URL dynamically.
