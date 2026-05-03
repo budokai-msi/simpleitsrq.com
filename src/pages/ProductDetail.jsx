@@ -85,13 +85,24 @@ function renderMarkdown(md) {
   while (i < lines.length) {
     const line = lines[i];
     if (!line.trim()) { i++; continue; }
-    if (line.startsWith("# ")) { out.push(<h1 key={key++}>{renderInline(line.slice(2), key)}</h1>); i++; continue; }
-    if (line.startsWith("## ")) { out.push(<h2 key={key++}>{renderInline(line.slice(3), key)}</h2>); i++; continue; }
-    if (line.startsWith("### ")) { out.push(<h3 key={key++}>{renderInline(line.slice(4), key)}</h3>); i++; continue; }
+    if (line.startsWith("#")) { 
+      let level = 0;
+      while (level < line.length && line[level] === "#") level++;
+      if (level >= 1 && level <= 6 && (line[level] === " " || line.length === level)) {
+        const content = line.slice(level).trim();
+        if (level === 1) out.push(<h1 key={key++}>{renderInline(content, key)}</h1>);
+        else if (level === 2) out.push(<h2 key={key++}>{renderInline(content, key)}</h2>);
+        else out.push(<h3 key={key++}>{renderInline(content, key)}</h3>);
+        i++; continue;
+      }
+    }
     if (line.startsWith("---")) { out.push(<hr key={key++} />); i++; continue; }
-    if (line.startsWith("> ")) {
+    if (line.startsWith(">")) {
       const quote = [];
-      while (i < lines.length && lines[i].startsWith("> ")) { quote.push(lines[i].slice(2)); i++; }
+      while (i < lines.length && lines[i].startsWith(">")) { 
+        quote.push(lines[i].startsWith("> ") ? lines[i].slice(2) : lines[i].slice(1)); 
+        i++; 
+      }
       out.push(<blockquote key={key++}>{renderInline(quote.join(" "), key)}</blockquote>);
       continue;
     }
@@ -120,7 +131,7 @@ function renderMarkdown(md) {
       continue;
     }
     const para = [];
-    while (i < lines.length && lines[i].trim() && !lines[i].startsWith("#") && !lines[i].startsWith("- ") && !lines[i].startsWith("|") && !lines[i].startsWith(">") && !/^\s*\d+\.\s/.test(lines[i])) {
+    while (i < lines.length && lines[i].trim() && !lines[i].match(/^#{1,6}(\s|$)/) && !lines[i].startsWith("- ") && !lines[i].startsWith("|") && !lines[i].startsWith(">") && !/^\s*\d+\.\s/.test(lines[i])) {
       para.push(lines[i]); i++;
     }
     out.push(<p key={key++}>{renderInline(para.join(" "), key)}</p>);
