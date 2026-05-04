@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Link } from "./lib/Link";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
-import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, Tag, BookOpen, ShieldAlert, Wrench, FileText, Info, Briefcase } from "lucide-react";
+import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, Tag, BookOpen, Shield, ShieldAlert, Wrench, FileText, Info, Briefcase } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from "./pages/Home";
