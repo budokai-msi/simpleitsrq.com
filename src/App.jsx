@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Link } from "./lib/Link";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
-import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, Tag, BookOpen, ShieldAlert, Wrench, FileText, Info, Briefcase } from "lucide-react";
+import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, Tag, BookOpen, ShieldAlert, Shield, Wrench, FileText, Info, Briefcase } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from "./pages/Home";
@@ -17,6 +17,7 @@ import { useEngagementTracking } from "./lib/engagement.js";
 import { AutoAds } from "./components/AdSense.jsx";
 import LiveChat from "./components/LiveChat.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 import "./App.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
@@ -279,7 +280,7 @@ function Footer() {
             <Link to="/privacy">Privacy</Link> &middot;{" "}
             <Link to="/terms">Terms</Link> &middot;{" "}
             <Link to="/accessibility">Accessibility</Link> &middot;{" "}
-            <a href="https://status.simpleitsrq.com" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <a href="https://astatus.simpleitsrq.com" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <span className="live-dot" style={{ width: 6, height: 6 }} /> System Status
             </a> &middot;{" "}
             {/* Reopens the cookie-consent banner so visitors can change
