@@ -238,6 +238,16 @@ main, #main {
   gap: 8px;
   background: var(--bg-elevated);
   border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  /* Overlay page content instead of pushing it into the normal flow, which
+   * would make the page appear blank on mobile when the menu is open. */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  box-shadow: var(--shadow2);
 }
 .mobile-menu a {
   padding: 10px 12px;
