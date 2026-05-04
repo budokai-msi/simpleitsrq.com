@@ -17,6 +17,7 @@ import { useEngagementTracking } from "./lib/engagement.js";
 import { AutoAds } from "./components/AdSense.jsx";
 import LiveChat from "./components/LiveChat.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 import "./App.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
