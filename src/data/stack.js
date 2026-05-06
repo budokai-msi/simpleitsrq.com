@@ -224,26 +224,6 @@ export const STACK = [
       },
     ],
   },
-  {
-    id: "managed-services",
-    title: "Managed Services We Run Ourselves",
-    intro:
-      "Not every slot on the tech stack is a vendor referral. Some are things we do in-house for clients — listed here so the page is a complete picture of how we think about small-business IT.",
-    tools: [
-      {
-        id: "security-academy",
-        name: "Simple IT SRQ Security Academy",
-        tagline: "Managed security-awareness training for Florida small businesses.",
-        whyThis:
-          "Every 2026 cyber-insurance policy requires annual security training. Running that in-house burns 4-6 hours/month of an office manager's time. Security Academy is our white-labeled program that handles enrollment, monthly modules, quarterly phishing simulations, and the annual compliance report your insurer asks for. $12/user/mo, 10-user minimum.",
-        priceHint: "$12/user/mo",
-        cost: { type: "per_seat", usd: 12, minSeats: 10 },
-        fallbackUrl: "/security-academy",
-        goodFor: "Any Florida business whose cyber-insurance carrier requires annual training — which is all of them in 2026.",
-        calculatorDefault: true,
-      },
-    ],
-  },
 ];
 
 /**

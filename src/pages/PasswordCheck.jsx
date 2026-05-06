@@ -242,7 +242,7 @@ export default function PasswordCheck() {
                 <h3 className="solution-card-title">3. Train your staff on what to click</h3>
               </div>
               <p className="solution-card-desc">
-                The strongest password in the world still gets phished if your front desk clicks the wrong email. Our <Link to="/security-academy">Security Academy</Link> is a fully-managed training program — monthly 5-minute modules, quarterly phishing simulations, annual compliance report. Starts at $12/user/mo.
+                The strongest password in the world still gets phished if your front desk clicks the wrong email. Run a quarterly phishing simulation (KnowBe4 has a free tier; Microsoft Defender for Business includes Attack Simulator), then walk staff who clicked through a 10-minute refresher. Document it for your cyber-insurance renewal.
               </p>
             </article>
           </div>

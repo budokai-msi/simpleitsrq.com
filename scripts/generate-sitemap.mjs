@@ -31,7 +31,6 @@ const staticUrls = [
   { loc: "/services", priority: "0.95", changefreq: "weekly" },
   { loc: "/wisp-starter", priority: "0.9", changefreq: "monthly" },
   { loc: "/pricing", priority: "0.95", changefreq: "monthly" },
-  { loc: "/security-academy", priority: "0.9", changefreq: "monthly" },
   { loc: "/cyber-insurance-quote", priority: "0.9", changefreq: "monthly" },
   { loc: "/stack", priority: "0.9", changefreq: "monthly" },
   { loc: "/compliance-audit-referral", priority: "0.9", changefreq: "monthly" },
