@@ -30,22 +30,22 @@ function Hero() {
       </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">IT Support · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display hero-aura-title">Managed IT for Sarasota and Bradenton businesses.</h1>
+          <span className="eyebrow">Managed IT · Sarasota · Bradenton · Venice</span>
+          <h1 id="hero-title" className="display hero-aura-title">Enterprise IT operations, delivered locally.</h1>
           <p className="lede">
-            Helpdesk, networks, Microsoft 365, cybersecurity, backups, and on-site repair —
-            delivered by a local team on a flat monthly rate. We keep your workstations,
-            servers, and email running, document everything your insurance carrier and
-            auditors ask for, and answer the phone when something breaks.
+            Service desk, identity, security, network, cloud, and continuity — operated
+            as a single managed service for Sarasota and Bradenton businesses. Flat
+            monthly contract, named engineers, documented controls, and a phone number
+            that’s answered on the first ring when something breaks.
           </p>
           <div className="hero-ctas">
             <a href="#contact" className="btn btn-primary btn-lg">Request an IT assessment</a>
-            <a href="#solutions" className="btn btn-secondary btn-lg">See our services</a>
+            <a href="#solutions" className="btn btn-secondary btn-lg">See capabilities</a>
           </div>
           <ul className="trust-row" aria-label="Why clients work with us">
             <li><MapPin size={14} strokeWidth={2.25} /> On-site coverage across Sarasota, Bradenton, and Venice</li>
-            <li><Clock size={14} strokeWidth={2.25} /> Flat monthly contracts — no hourly surprises</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA, GLBA, and cyber-insurance documentation included</li>
+            <li><Clock size={14} strokeWidth={2.25} /> Flat monthly contract — no hourly surprises, no break/fix invoicing</li>
+            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA, GLBA, and cyber-insurance evidence packages included</li>
           </ul>
         </div>
       </div>
