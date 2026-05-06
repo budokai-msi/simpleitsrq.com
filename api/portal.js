@@ -168,6 +168,14 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "leadgen-crawl-emails",
   "leadgen-business-update",
   "leadgen-ai",
+  // opsec portal — defensive personal ops dashboard
+  "opsec-data",
+  "opsec-domain-add",
+  "opsec-domain-toggle",
+  "opsec-ioc-add",
+  "opsec-ioc-toggle",
+  "opsec-note-save",
+  "opsec-note-delete",
 ]);
 
 function verifyAdminToken(request) {
@@ -4517,6 +4525,161 @@ function csrfCheck(request, method) {
   return ALLOWED_ORIGINS.has(origin);
 }
 
+// ────────────────────────────────────────────────────────────
+// OpSec portal handlers — /portal/opsec
+// ────────────────────────────────────────────────────────────
+//
+// Personal defensive ops dashboard. Admin-only (gated by requireAdmin
+// + ADMIN_TOKEN_ACTIONS allowlist). Backed by the three opsec_* tables
+// from migration 015.
+//
+// All entries are scoped to created_by_user_id for a future multi-admin
+// world but today only one admin row exists, so every list query returns
+// every row.
+
+const OPSEC_IOC_TYPES = new Set(["ip","domain","url","email","hash","cidr","user_agent","other"]);
+const OPSEC_SEVERITIES = new Set(["low","medium","high","critical"]);
+
+async function handleOpsecData(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  // Run all reads in parallel; defensive try-per-query so a single
+  // missing-table doesn't blow up first-render after a fresh deploy
+  // where the migration hasn't been applied yet.
+  const safe = async (q) => { try { return await q; } catch { return []; } };
+  const [domains, iocs, notes, threatTop, threatTotal] = await Promise.all([
+    safe(sql`SELECT id, domain, label, notes, is_active, created_at, last_scanned_at
+             FROM opsec_watched_domains ORDER BY is_active DESC, created_at DESC LIMIT 100`),
+    safe(sql`SELECT id, ioc_type, value, source, severity, notes, first_seen_at, last_seen_at, is_active
+             FROM opsec_iocs ORDER BY is_active DESC, last_seen_at DESC LIMIT 200`),
+    safe(sql`SELECT id, title, body, tags, created_at, updated_at
+             FROM opsec_notes ORDER BY updated_at DESC LIMIT 50`),
+    safe(sql`SELECT feed_name, count(*)::int AS n, max(fetched_at) AS fetched_at
+             FROM threat_feeds GROUP BY feed_name ORDER BY n DESC LIMIT 10`),
+    safe(sql`SELECT count(*)::int AS n FROM threat_feeds`),
+  ]);
+
+  return json(200, {
+    ok: true,
+    domains,
+    iocs,
+    notes,
+    threats: { feeds: threatTop, total: threatTotal[0]?.n ?? 0 },
+  });
+}
+
+async function handleOpsecDomainAdd(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const domain = String(body.domain || "").trim().toLowerCase();
+  if (!/^[a-z0-9.-]{3,253}$/.test(domain) || !domain.includes(".")) {
+    return json(400, { ok: false, error: "invalid_domain" });
+  }
+  const label = String(body.label || "").slice(0, 200) || null;
+  const notes = String(body.notes || "").slice(0, 2000) || null;
+  const userId = (typeof session.user.id === "string" && session.user.id.length === 36) ? session.user.id : null;
+  const rows = await sql`
+    INSERT INTO opsec_watched_domains (domain, label, notes, created_by_user_id)
+    VALUES (${domain}, ${label}, ${notes}, ${userId})
+    ON CONFLICT (domain) DO UPDATE SET
+      label = EXCLUDED.label,
+      notes = EXCLUDED.notes,
+      is_active = true
+    RETURNING id, domain, label, notes, is_active, created_at, last_scanned_at
+  `;
+  return json(200, { ok: true, domain: rows[0] });
+}
+
+async function handleOpsecDomainToggle(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const id = Number.parseInt(body.id, 10);
+  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
+  const isActive = body.is_active !== false;
+  await sql`UPDATE opsec_watched_domains SET is_active = ${isActive} WHERE id = ${id}`;
+  return json(200, { ok: true });
+}
+
+async function handleOpsecIocAdd(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const ioc_type = String(body.ioc_type || "").toLowerCase();
+  if (!OPSEC_IOC_TYPES.has(ioc_type)) return json(400, { ok: false, error: "invalid_type" });
+  const value = String(body.value || "").trim();
+  if (!value || value.length > 500) return json(400, { ok: false, error: "invalid_value" });
+  const severity = OPSEC_SEVERITIES.has(body.severity) ? body.severity : "medium";
+  const source = String(body.source || "").slice(0, 200) || null;
+  const notes = String(body.notes || "").slice(0, 2000) || null;
+  const userId = (typeof session.user.id === "string" && session.user.id.length === 36) ? session.user.id : null;
+  const rows = await sql`
+    INSERT INTO opsec_iocs (ioc_type, value, source, severity, notes, created_by_user_id)
+    VALUES (${ioc_type}, ${value}, ${source}, ${severity}, ${notes}, ${userId})
+    ON CONFLICT (ioc_type, value) DO UPDATE SET
+      source = COALESCE(EXCLUDED.source, opsec_iocs.source),
+      severity = EXCLUDED.severity,
+      notes = COALESCE(EXCLUDED.notes, opsec_iocs.notes),
+      last_seen_at = now(),
+      is_active = true
+    RETURNING id, ioc_type, value, source, severity, notes, first_seen_at, last_seen_at, is_active
+  `;
+  return json(200, { ok: true, ioc: rows[0] });
+}
+
+async function handleOpsecIocToggle(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const id = Number.parseInt(body.id, 10);
+  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
+  const isActive = body.is_active !== false;
+  await sql`UPDATE opsec_iocs SET is_active = ${isActive}, last_seen_at = now() WHERE id = ${id}`;
+  return json(200, { ok: true });
+}
+
+async function handleOpsecNoteSave(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const title = String(body.title || "").slice(0, 200) || null;
+  const noteBody = String(body.body || "").slice(0, 50_000);
+  if (!noteBody.trim()) return json(400, { ok: false, error: "empty_body" });
+  const tags = Array.isArray(body.tags)
+    ? body.tags.map((t) => String(t).trim().toLowerCase()).filter(Boolean).slice(0, 16)
+    : [];
+  const id = Number.parseInt(body.id, 10);
+  const userId = (typeof session.user.id === "string" && session.user.id.length === 36) ? session.user.id : null;
+  let rows;
+  if (Number.isFinite(id) && id > 0) {
+    rows = await sql`
+      UPDATE opsec_notes
+      SET title = ${title}, body = ${noteBody}, tags = ${tags}, updated_at = now()
+      WHERE id = ${id}
+      RETURNING id, title, body, tags, created_at, updated_at
+    `;
+  } else {
+    rows = await sql`
+      INSERT INTO opsec_notes (title, body, tags, created_by_user_id)
+      VALUES (${title}, ${noteBody}, ${tags}, ${userId})
+      RETURNING id, title, body, tags, created_at, updated_at
+    `;
+  }
+  return json(200, { ok: true, note: rows[0] });
+}
+
+async function handleOpsecNoteDelete(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const id = Number.parseInt(body.id, 10);
+  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
+  await sql`DELETE FROM opsec_notes WHERE id = ${id}`;
+  return json(200, { ok: true });
+}
+
 async function dispatch(request, method) {
   const url = new URL(request.url);
   const action = url.searchParams.get("action") || "";
@@ -4641,6 +4804,16 @@ async function dispatchAuthed(request, method, url, action, session) {
   // env config, queue depth, schema state, and recent errors without
   // touching the dashboard.
   if (action === "admin-status"             && method === "GET")  return handleAdminStatus(session);
+
+  // OpSec portal — defensive personal ops dashboard at /portal/opsec.
+  // All admin-only; mutations write through the same admin-token allowlist.
+  if (action === "opsec-data"          && method === "GET")  return handleOpsecData(session);
+  if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
+  if (action === "opsec-domain-toggle" && method === "POST") return handleOpsecDomainToggle(session, request);
+  if (action === "opsec-ioc-add"       && method === "POST") return handleOpsecIocAdd(session, request);
+  if (action === "opsec-ioc-toggle"    && method === "POST") return handleOpsecIocToggle(session, request);
+  if (action === "opsec-note-save"     && method === "POST") return handleOpsecNoteSave(session, request);
+  if (action === "opsec-note-delete"   && method === "POST") return handleOpsecNoteDelete(session, request);
 
   return json(404, { ok: false, error: "unknown_action" });
 }
