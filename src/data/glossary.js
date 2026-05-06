@@ -105,7 +105,7 @@ export const GLOSSARY = [
     why: "Without a WISP your insurance premium goes up; with one you can answer the standard renewal questionnaire in 10 minutes.",
     action:
       "Adopt a WISP template, fill in your specifics, sign and date it, schedule annual reviews. Buy the WISP Template ($149) or build one with your IT advisor.",
-    related: ["ftc-safeguards", "soc-2", "risk-assessment", "incident-response", "cyber-insurance"],
+    related: ["ftc-safeguards", "soc-2", "risk-assessment", "incident-response"],
     product: "wisp-template",
   },
   {
@@ -121,8 +121,7 @@ export const GLOSSARY = [
     why: "If your insurance renewal asks 'do you have MFA on every account?' the wrong answer raises premium 14-30%. Hardware keys for admins is the 2026 baseline.",
     action:
       "Roll out hardware keys (YubiKey 5C NFC) for every admin account this month. Authenticator app for everyone else. Disable SMS as a fallback on every system that allows it.",
-    related: ["sso", "phishing", "cyber-insurance", "ftc-safeguards", "hipaa"],
-    product: "cyber-insurance-evidence-binder",
+    related: ["sso", "phishing", "ftc-safeguards", "hipaa"],
   },
   {
     slug: "phishing",
@@ -153,24 +152,8 @@ export const GLOSSARY = [
     why: "Ransomware is the single most-feared scenario in every cyber-insurance underwriter's mind in 2026. Premiums skyrocket if your defenses don't show.",
     action:
       "Run a tabletop exercise this quarter using a real ransomware scenario. Verify your backups by attempting an actual restore — most businesses discover their backups are unusable only after they need them.",
-    related: ["backup", "tabletop", "incident-response", "endpoint-protection", "cyber-insurance"],
+    related: ["backup", "tabletop", "incident-response", "endpoint-protection"],
     product: "ransomware-tabletop-kit",
-  },
-  {
-    slug: "cyber-insurance",
-    term: "Cyber Insurance",
-    short:
-      "Cyber insurance transfers the financial risk of a cyber incident — first-party losses (your downtime, recovery costs, ransom) and third-party losses (lawsuits, regulatory fines) — to an insurance carrier in exchange for an annual premium.",
-    full: [
-      "Standalone cyber insurance is now table-stakes for any business holding client data, processing payments, or running critical operations on technology. 2026 renewal questionnaires are 40-60 questions covering MFA, backups, training, vendor risk, and AI governance — answers directly determine premium.",
-      "Coverage typically includes: business interruption, data restoration, ransom negotiation, breach notification costs, regulatory defense, and third-party liability. Sub-limits often apply to ransomware payments, social-engineering fraud, and reputational harm.",
-      "First-time buyers are surprised to learn that the policy explicitly excludes losses from common scenarios — including losses from a known vulnerability you didn't patch in time, social engineering when MFA wasn't enabled, and acts of war (which carriers have used to deny ransomware claims attributed to nation-state actors).",
-    ],
-    why: "If you're a Florida small business and you don't have cyber insurance, you're betting your operations against the next phishing email. Premiums for unprepared offices doubled in 2025-2026.",
-    action:
-      "Get a free comparative quote — competing brokers will save you 15-30% even if you stay with your current carrier. We'll intro you to a Florida broker who quotes small business every week.",
-    related: ["wisp", "ftc-safeguards", "mfa", "ransomware", "incident-response", "tabletop"],
-    product: "cyber-insurance-answers",
   },
   {
     slug: "baa",
@@ -233,7 +216,7 @@ export const GLOSSARY = [
     why: "Your insurance carrier will ask 'what EDR do you run' on the renewal questionnaire. The answer 'Norton 360' will trigger a rate increase.",
     action:
       "Inventory every endpoint and confirm an enterprise EDR product is installed and reporting to a central console. Microsoft Defender for Business is the default for offices on M365.",
-    related: ["ransomware", "mfa", "cyber-insurance", "incident-response", "siem"],
+    related: ["ransomware", "mfa", "incident-response", "siem"],
     product: "wisp-template",
   },
   {
@@ -328,7 +311,7 @@ export const GLOSSARY = [
     why: "A tabletop is the cheapest test of your Incident Response Plan you can run — and the evidence binder it produces is what insurers want to see.",
     action:
       "Schedule a 90-minute tabletop this quarter using a real ransomware or BEC scenario. The Ransomware Tabletop Kit gives you the scenarios + facilitator guide ($49).",
-    related: ["incident-response", "ransomware", "phishing", "cyber-insurance"],
+    related: ["incident-response", "ransomware", "phishing"],
     product: "ransomware-tabletop-kit",
   },
   {
@@ -424,7 +407,7 @@ export const GLOSSARY = [
     why: "If your staff uses Copilot, ChatGPT, Claude, or Gemini at work and you don't have a written policy, your cyber-insurance renewal premium goes up.",
     action:
       "Adopt a written AI Acceptable Use Policy in the next 30 days. The AI Acceptable Use Policy Kit ($59) gets you a fillable policy + tool inventory + insurance answer pack.",
-    related: ["wisp", "cyber-insurance", "ftc-safeguards", "hipaa"],
+    related: ["wisp", "ftc-safeguards", "hipaa"],
     product: "ai-acceptable-use-policy",
   },
 ];

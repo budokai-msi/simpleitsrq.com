@@ -26,7 +26,7 @@
 // /api/contact still has BotID + DB-backed rate limiting.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { X, Check, ShieldCheck, Percent, ArrowRight } from "lucide-react";
+import { X, Check, Percent, ArrowRight } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
 
@@ -63,19 +63,11 @@ const CHOICES = {
     body: "Policy templates, audit checklists, and evidence packs for HIPAA, PCI, SOC 2, and NIST 800-171. Drop your email and we'll send a 10% discount code.",
     cta: "Email me the discount",
   },
-  cyberInsurance: {
-    id: "cyberInsurance",
-    source: "exit-intent-cyber-insurance-quote",
-    icon: ShieldCheck,
-    headline: "Free cyber-insurance intro",
-    body: "15 minutes with a local broker who actually reads your policy. We'll flag coverage gaps and ransomware sub-limits — no obligation, no upsell.",
-    cta: "Book my free intro",
-  },
 };
 
 export default function ExitIntentModal() {
   const [open, setOpen] = useState(false);
-  const [choice, setChoice] = useState(null); // null | "compliance" | "cyberInsurance"
+  const [choice, setChoice] = useState(null); // null | "compliance"
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
   const [error, setError] = useState("");
@@ -292,7 +284,7 @@ export default function ExitIntentModal() {
               ← Back
             </button>
             <span className="exit-intent-eyebrow">
-              {picked === CHOICES.compliance ? "Compliance Library" : "Cyber insurance"}
+              Compliance Library
             </span>
             <h2 id={titleId} className="exit-intent-title">{picked.headline}</h2>
             <p id={descId} className="exit-intent-sub">{picked.body}</p>

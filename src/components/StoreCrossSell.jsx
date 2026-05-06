@@ -11,13 +11,13 @@ const CATEGORY_TO_PRODUCT = {
   "Cloud": "saas-incident-response-playbook",
   "Privacy": "compliance-library",
   "Business Tech": "it-budget-calendar",
-  "Industry News": "cyber-insurance-answers",
+  "Industry News": "compliance-library",
   "AI & Productivity": "onboarding-runbook",
 };
 
 // Fallback when the category has no explicit mapping. Picked for
 // broad appeal + mid-range price.
-const FALLBACK_SLUG = "cyber-insurance-answers";
+const FALLBACK_SLUG = "compliance-library";
 
 function pickProduct(postCategory) {
   const slug = CATEGORY_TO_PRODUCT[postCategory] || FALLBACK_SLUG;

@@ -6,7 +6,6 @@ import { STACK, resolveStackLink, stackHasAffiliates, monthlyCostFor } from "../
 import { trackAffiliateClick } from "../lib/trackClick";
 import { track } from "../lib/analytics";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
-import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
 
 // Map each stack tool to { Product, Offer } JSON-LD so Google surfaces rich
 // pricing snippets under the page in search results. Only tools with a
@@ -460,15 +459,6 @@ export default function Stack() {
 
       <StackCalculator />
 
-      {/* Cyber-insurance CTA makes sense on this page for the same reason
-          it makes sense on blog posts about compliance: the reader is
-          evaluating their stack, which is one Google search away from
-          evaluating their coverage. */}
-      <section className="section">
-        <div className="container" style={{ maxWidth: 780 }}>
-          <CyberInsuranceCTA slug="stack" />
-        </div>
-      </section>
     </main>
   );
 }

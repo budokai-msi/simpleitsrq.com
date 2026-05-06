@@ -8,7 +8,6 @@ import { STACK, resolveStackLink } from "../data/stack";
 import { resolveAffiliate } from "../data/affiliates";
 import { trackAffiliateClick } from "../lib/trackClick";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
-import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
 
 // Resolve the outbound link for one side of a comparison. Preference order:
 //   1. product.stackToolId → resolveStackLink (picks up affiliateKey set on
@@ -289,12 +288,6 @@ export default function CompareDetail() {
           </div>
         </section>
       )}
-
-      <section className="section">
-        <div className="container" style={{ maxWidth: 780 }}>
-          <CyberInsuranceCTA slug={`compare/${comparison.slug}`} />
-        </div>
-      </section>
     </main>
   );
 }

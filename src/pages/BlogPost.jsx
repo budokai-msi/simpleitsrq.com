@@ -17,7 +17,6 @@ import Affiliate from "../components/Affiliate";
 import StackToolInline from "../components/StackToolInline";
 import RelatedPosts from "../components/RelatedPosts";
 import ShareButton from "../components/ShareButton";
-import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
 import ComplianceAuditCTA from "../components/ComplianceAuditCTA";
 import { trackAffiliateClick } from "../lib/trackClick";
 import Breadcrumbs from "../components/Breadcrumbs";
@@ -415,20 +414,9 @@ function renderReferralCta(post, body, slug) {
     return wrap(<ComplianceAuditCTA slug={slug} audit="FTC Safeguards" />);
   }
 
-  // Insurance-specific content → cyber-insurance CTA.
-  if (tags.includes("cyber-insurance") || tags.includes("insurance") || /cyber[- ]insurance/i.test(hay)) {
-    return wrap(<CyberInsuranceCTA slug={slug} />);
-  }
-
   // Compliance category without specific audit clue → generic audit CTA.
   if (cat === "compliance") {
     return wrap(<ComplianceAuditCTA slug={slug} />);
-  }
-
-  // Cybersecurity category without specific clue → cyber-insurance CTA
-  // (broadest SMB pain point in this category).
-  if (cat === "cybersecurity") {
-    return wrap(<CyberInsuranceCTA slug={slug} />);
   }
 
   return null;

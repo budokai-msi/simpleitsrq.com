@@ -6,7 +6,6 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { findGlossaryEntry, GLOSSARY } from "../data/glossary";
 import { products } from "../data/products";
 import AdUnit from "../components/AdSense";
-import CyberInsuranceCTA from "../components/CyberInsuranceCTA";
 
 function buildDefinedTermSchema(entry) {
   // schema.org/DefinedTerm — Google sometimes surfaces this as the
@@ -148,11 +147,6 @@ export default function GlossaryEntry() {
               </aside>
             )}
           </div>
-
-          {/* Cyber-insurance CTA at the bottom of every glossary entry —
-              all of these terms are insurance-adjacent. Drives the rail
-              that pays $300-$2k per bound policy. */}
-          <CyberInsuranceCTA slug={`glossary/${entry.slug}`} />
 
           <AdUnit format="auto" className="ad-in-article" />
 
