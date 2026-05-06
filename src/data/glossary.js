@@ -135,9 +135,8 @@ export const GLOSSARY = [
     ],
     why: "BEC scams targeting Florida small businesses average $50,000+ per incident in 2026. Most start with a single phishing email to bookkeeping or HR.",
     action:
-      "Run a phishing simulation this quarter, identify the staff who clicked, and route them through targeted training. Security Academy handles both ($12/user/mo).",
+      "Run a phishing simulation this quarter using a free tool like KnowBe4's free phishing test or Microsoft Defender Attack Simulator, then route staff who clicked through targeted refresher training.",
     related: ["mfa", "ransomware", "incident-response", "encryption"],
-    product: "security-academy",
   },
   {
     slug: "ransomware",
