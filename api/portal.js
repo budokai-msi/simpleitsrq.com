@@ -1672,6 +1672,193 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "create affiliate_clicks table", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 013 — lead-gen tables (businesses, emails, campaigns, sends,
+  // links, crawl jobs). Idempotent: every CREATE uses IF NOT EXISTS.
+  //
+  // The schema here is canonical. handlers in this file and the cron
+  // worker in api/cron/agent.js depend on the column names + uniqueness
+  // constraints below; if you rename anything, update both.
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS lead_businesses (
+        id            bigserial PRIMARY KEY,
+        name          text NOT NULL,
+        legal_name    text,
+        address       text,
+        city          text,
+        state         text,
+        zip           text,
+        lat           double precision,
+        lng           double precision,
+        website       text,
+        phone         text,
+        source        text NOT NULL,
+        source_id     text,
+        source_url    text,
+        industry      text,
+        naics         text,
+        status        text NOT NULL DEFAULT 'active'
+                      CHECK (status IN ('active','rejected','do_not_contact')),
+        notes         text,
+        created_at    timestamptz NOT NULL DEFAULT now(),
+        updated_at    timestamptz NOT NULL DEFAULT now(),
+        last_crawled_at timestamptz,
+        -- Upsert key for OSM/Sunbiz/etc rediscovery — same source row
+        -- updates in place rather than duplicating.
+        UNIQUE (source, source_id)
+      )`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_businesses_zip_idx     ON lead_businesses (zip, status)`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_businesses_status_idx  ON lead_businesses (status, created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_businesses_website_idx ON lead_businesses (website) WHERE website IS NOT NULL`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_businesses_name_idx    ON lead_businesses (zip, lower(name))`;
+    results.push({ step: "create lead_businesses table", ok: true });
+  } catch (e) {
+    results.push({ step: "create lead_businesses table", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS lead_emails (
+        id              bigserial PRIMARY KEY,
+        business_id     bigint NOT NULL REFERENCES lead_businesses(id) ON DELETE CASCADE,
+        email           text NOT NULL,
+        source          text NOT NULL,
+        source_url      text,
+        context_snippet text,
+        confidence      double precision NOT NULL DEFAULT 0.5
+                        CHECK (confidence >= 0 AND confidence <= 1),
+        mx_valid        boolean,
+        smtp_verified   boolean,
+        consent_basis   text NOT NULL DEFAULT 'legitimate_interest'
+                        CHECK (consent_basis IN ('legitimate_interest','public_record','opted_in')),
+        opted_out_at    timestamptz,
+        bounced_at      timestamptz,
+        last_sent_at    timestamptz,
+        created_at      timestamptz NOT NULL DEFAULT now(),
+        updated_at      timestamptz NOT NULL DEFAULT now(),
+        -- Same address can appear under multiple businesses (shared owner,
+        -- franchise HQ contact). Dedupe within a business only.
+        UNIQUE (business_id, email)
+      )`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_emails_business_idx   ON lead_emails (business_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_emails_optout_idx     ON lead_emails (opted_out_at) WHERE opted_out_at IS NOT NULL`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_emails_confidence_idx ON lead_emails (confidence DESC)`;
+    results.push({ step: "create lead_emails table", ok: true });
+  } catch (e) {
+    results.push({ step: "create lead_emails table", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS lead_campaigns (
+        id                bigserial PRIMARY KEY,
+        name              text NOT NULL,
+        description       text,
+        subject_template  text NOT NULL,
+        body_template     text NOT NULL,
+        ai_intro_prompt   text,
+        from_email        text NOT NULL,
+        reply_to          text,
+        throttle_per_hour int NOT NULL DEFAULT 30 CHECK (throttle_per_hour > 0),
+        daily_cap         int NOT NULL DEFAULT 200 CHECK (daily_cap > 0),
+        consent_basis     text NOT NULL DEFAULT 'legitimate_interest'
+                          CHECK (consent_basis IN ('legitimate_interest','public_record','opted_in')),
+        -- segment is a JSON filter that handleLeadgenCampaignStart reads
+        -- to materialize lead_campaign_sends rows. Today: { zip, min_confidence }.
+        segment           jsonb NOT NULL DEFAULT '{}'::jsonb,
+        status            text NOT NULL DEFAULT 'draft'
+                          CHECK (status IN ('draft','scheduled','running','paused','done','cancelled')),
+        scheduled_at      timestamptz,
+        started_at        timestamptz,
+        completed_at      timestamptz,
+        created_by        uuid REFERENCES users(id) ON DELETE SET NULL,
+        created_at        timestamptz NOT NULL DEFAULT now(),
+        updated_at        timestamptz NOT NULL DEFAULT now()
+      )`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_campaigns_status_idx ON lead_campaigns (status, scheduled_at)`;
+    results.push({ step: "create lead_campaigns table", ok: true });
+  } catch (e) {
+    results.push({ step: "create lead_campaigns table", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS lead_campaign_sends (
+        id                  bigserial PRIMARY KEY,
+        campaign_id         bigint NOT NULL REFERENCES lead_campaigns(id) ON DELETE CASCADE,
+        business_id         bigint NOT NULL REFERENCES lead_businesses(id) ON DELETE CASCADE,
+        email_id            bigint NOT NULL REFERENCES lead_emails(id) ON DELETE CASCADE,
+        to_email            text NOT NULL,
+        status              text NOT NULL DEFAULT 'queued'
+                            CHECK (status IN ('queued','sending','sent','failed','bounced','suppressed')),
+        -- Filled in by the sender at send time (so a paused campaign doesn't
+        -- store a 5000-row body cache it never uses).
+        rendered_subject    text,
+        rendered_body       text,
+        provider            text,
+        provider_message_id text,
+        queued_at           timestamptz NOT NULL DEFAULT now(),
+        sent_at             timestamptz,
+        delivered_at        timestamptz,
+        opened_at           timestamptz,
+        clicked_at          timestamptz,
+        replied_at          timestamptz,
+        bounced_at          timestamptz,
+        unsubscribed_at     timestamptz,
+        error               text,
+        -- open_token NULL until first send (then set + persisted so reopens
+        -- of the link still work after status='sent').
+        open_token          text UNIQUE,
+        unsubscribe_token   text NOT NULL UNIQUE,
+        open_count          int NOT NULL DEFAULT 0,
+        click_count         int NOT NULL DEFAULT 0,
+        UNIQUE (campaign_id, email_id)
+      )`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_campaign_sends_campaign_idx ON lead_campaign_sends (campaign_id, queued_at)`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_campaign_sends_email_idx    ON lead_campaign_sends (email_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_campaign_sends_provider_idx ON lead_campaign_sends (provider_message_id) WHERE provider_message_id IS NOT NULL`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_campaign_sends_status_idx   ON lead_campaign_sends (status, queued_at) WHERE sent_at IS NULL`;
+    results.push({ step: "create lead_campaign_sends table", ok: true });
+  } catch (e) {
+    results.push({ step: "create lead_campaign_sends table", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS lead_campaign_links (
+        id          bigserial PRIMARY KEY,
+        campaign_id bigint NOT NULL REFERENCES lead_campaigns(id) ON DELETE CASCADE,
+        url         text NOT NULL,
+        label       text,
+        click_count int NOT NULL DEFAULT 0,
+        created_at  timestamptz NOT NULL DEFAULT now(),
+        UNIQUE (campaign_id, url)
+      )`;
+    results.push({ step: "create lead_campaign_links table", ok: true });
+  } catch (e) {
+    results.push({ step: "create lead_campaign_links table", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS lead_crawl_jobs (
+        id          bigserial PRIMARY KEY,
+        kind        text NOT NULL CHECK (kind IN ('sunbiz_zip','osm_zip','website_emails','smtp_verify')),
+        payload     jsonb NOT NULL,
+        status      text NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending','running','done','failed','cancelled')),
+        attempts    int NOT NULL DEFAULT 0,
+        progress    int,
+        total       int,
+        error       text,
+        result      jsonb,
+        created_at  timestamptz NOT NULL DEFAULT now(),
+        started_at  timestamptz,
+        finished_at timestamptz,
+        created_by  uuid REFERENCES users(id) ON DELETE SET NULL
+      )`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_crawl_jobs_status_idx ON lead_crawl_jobs (status, created_at)`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_crawl_jobs_kind_idx   ON lead_crawl_jobs (kind, status)`;
+    results.push({ step: "create lead_crawl_jobs table", ok: true });
+  } catch (e) {
+    results.push({ step: "create lead_crawl_jobs table", ok: false, error: String(e.message || e) });
+  }
+
   const allOk = results.every((r) => r.ok);
   const failedSteps = results.filter((r) => !r.ok).map((r) => ({ step: r.step, error: r.error }));
   if (failedSteps.length > 0) {
@@ -1682,7 +1869,7 @@ async function handleRunAuditMigration(session) {
   }
   return json(allOk ? 200 : 500, {
     ok: allOk,
-    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers", "007_testimonials"],
+    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers", "007_testimonials", "013_leadgen"],
     failedSteps,
     results,
   });
@@ -3163,6 +3350,415 @@ async function handleGithubHealth(session) {
   return json(200, result);
 }
 
+// ============================================================
+// Lead generation (admin only)
+// ============================================================
+//
+// All handlers below back the /portal/leadgen admin dashboard. The pipeline
+// is:
+//
+//   1. Operator enters a zip code → handleLeadgenDiscover queues a
+//      `lead_crawl_jobs` row of kind='osm_zip'. The cron worker picks it up,
+//      calls discoverBusinessesByZip, and upserts into lead_businesses.
+//   2. Operator picks a batch of businesses → handleLeadgenCrawlEmails
+//      queues kind='website_emails' jobs (one per business). Cron worker
+//      runs crawlEmails(business.website) and inserts lead_emails rows.
+//   3. Operator builds a lead_campaigns row, ties it to a saved-segment
+//      query, and starts it. Cron worker drains lead_campaign_sends
+//      respecting throttle_per_hour + daily_cap, calling SES.
+//
+// The handlers are intentionally lightweight: they validate input, write
+// the queue row or read from the DB, and return. All real work happens
+// in api/cron/agent.js so we stay well under serverless time limits.
+
+const LEADGEN_VALID_KINDS = new Set(["osm_zip", "website_emails"]);
+
+async function handleLeadgenStatus(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  // Aggregate counts in one round-trip per table. These power the
+  // dashboard top-line numbers.
+  const [biz, emails, camps, sends, jobs] = await Promise.all([
+    sql`SELECT COUNT(*)::int AS total,
+               COUNT(*) FILTER (WHERE status='active')::int AS active,
+               COUNT(*) FILTER (WHERE website IS NOT NULL)::int AS with_website
+        FROM lead_businesses`,
+    sql`SELECT COUNT(*)::int AS total,
+               COUNT(*) FILTER (WHERE opted_out_at IS NULL AND bounced_at IS NULL)::int AS deliverable,
+               COUNT(DISTINCT business_id)::int AS businesses_with_email
+        FROM lead_emails`,
+    sql`SELECT COUNT(*)::int AS total,
+               COUNT(*) FILTER (WHERE status='running')::int AS running
+        FROM lead_campaigns`,
+    sql`SELECT COUNT(*)::int AS total,
+               COUNT(*) FILTER (WHERE sent_at IS NOT NULL)::int AS sent,
+               COUNT(*) FILTER (WHERE opened_at IS NOT NULL)::int AS opened,
+               COUNT(*) FILTER (WHERE clicked_at IS NOT NULL)::int AS clicked,
+               COUNT(*) FILTER (WHERE replied_at IS NOT NULL)::int AS replied
+        FROM lead_campaign_sends`,
+    sql`SELECT id, kind, status, progress, total, created_at
+        FROM lead_crawl_jobs
+        ORDER BY created_at DESC
+        LIMIT 20`,
+  ]);
+
+  return json(200, {
+    ok: true,
+    businesses: biz[0] || {},
+    emails: emails[0] || {},
+    campaigns: camps[0] || {},
+    sends: sends[0] || {},
+    recent_jobs: jobs,
+  });
+}
+
+// POST { zip }
+async function handleLeadgenDiscover(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const zip = String(body?.zip || "").trim();
+  if (!/^\d{5}$/.test(zip)) return json(400, { ok: false, error: "invalid_zip" });
+
+  // Refuse to queue a duplicate pending job for the same zip — operators
+  // hitting the button twice shouldn't double-spend Overpass quota.
+  const existing = await sql`
+    SELECT id FROM lead_crawl_jobs
+    WHERE kind='osm_zip' AND status IN ('pending','running') AND payload->>'zip' = ${zip}
+    LIMIT 1
+  `;
+  if (existing.length) {
+    return json(200, { ok: true, job_id: existing[0].id, deduped: true });
+  }
+
+  const rows = await sql`
+    INSERT INTO lead_crawl_jobs (kind, status, payload, created_by)
+    VALUES ('osm_zip', 'pending', ${JSON.stringify({ zip })}::jsonb, ${session.userId || null})
+    RETURNING id
+  `;
+  return json(200, { ok: true, job_id: rows[0].id });
+}
+
+// POST { business_ids?: number[], zip?: string, limit?: number }
+//
+// If business_ids is provided, queue a website_emails job per id. Otherwise
+// pick the first `limit` (default 25, max 200) active businesses in the
+// given zip that still have a website and no recent crawl.
+async function handleLeadgenCrawlEmails(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+
+  let ids = Array.isArray(body?.business_ids) ? body.business_ids.filter(Number.isInteger) : [];
+  if (!ids.length) {
+    const zip = String(body?.zip || "").trim();
+    const limit = Math.min(Math.max(Number(body?.limit) || 25, 1), 200);
+    if (!/^\d{5}$/.test(zip)) return json(400, { ok: false, error: "missing_zip_or_ids" });
+    const rows = await sql`
+      SELECT b.id FROM lead_businesses b
+      WHERE b.zip = ${zip}
+        AND b.website IS NOT NULL
+        AND b.status = 'active'
+        AND NOT EXISTS (
+          SELECT 1 FROM lead_crawl_jobs j
+          WHERE j.kind='website_emails'
+            AND j.status IN ('pending','running','done')
+            AND (j.payload->>'business_id')::int = b.id
+            AND j.created_at > now() - interval '30 days'
+        )
+      ORDER BY b.id
+      LIMIT ${limit}
+    `;
+    ids = rows.map((r) => r.id);
+  }
+  if (!ids.length) return json(200, { ok: true, queued: 0, ids: [] });
+
+  const inserted = [];
+  for (const id of ids) {
+    const r = await sql`
+      INSERT INTO lead_crawl_jobs (kind, status, payload, created_by)
+      VALUES ('website_emails', 'pending', ${JSON.stringify({ business_id: id })}::jsonb, ${session.userId || null})
+      RETURNING id
+    `;
+    inserted.push(r[0].id);
+  }
+  return json(200, { ok: true, queued: inserted.length, ids: inserted });
+}
+
+// GET ?zip=&status=&q=&page=&limit=
+async function handleLeadgenBusinesses(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const zip = (url.searchParams.get("zip") || "").trim();
+  const status = (url.searchParams.get("status") || "").trim();
+  const q = (url.searchParams.get("q") || "").trim();
+  const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
+  const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit")) || 50));
+  const offset = (page - 1) * limit;
+
+  // Build dynamic WHERE in a way that works with neon's tagged template:
+  // each predicate is its own SQL fragment we conditionally compose.
+  const wantsZip = /^\d{5}$/.test(zip);
+  const wantsStatus = ["active", "rejected", "do_not_contact"].includes(status);
+  const wantsQ = q.length >= 2;
+  const like = `%${q.toLowerCase()}%`;
+
+  const rows = await sql`
+    SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.website,
+           b.phone, b.industry, b.status, b.created_at,
+           (SELECT COUNT(*)::int FROM lead_emails e
+              WHERE e.business_id = b.id
+                AND e.opted_out_at IS NULL
+                AND e.bounced_at IS NULL) AS deliverable_emails
+    FROM lead_businesses b
+    WHERE (${!wantsZip}::bool OR b.zip = ${zip})
+      AND (${!wantsStatus}::bool OR b.status = ${status})
+      AND (${!wantsQ}::bool OR lower(b.name) LIKE ${like} OR lower(coalesce(b.website,'')) LIKE ${like})
+    ORDER BY b.id DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
+  const totalRow = await sql`
+    SELECT COUNT(*)::int AS total
+    FROM lead_businesses b
+    WHERE (${!wantsZip}::bool OR b.zip = ${zip})
+      AND (${!wantsStatus}::bool OR b.status = ${status})
+      AND (${!wantsQ}::bool OR lower(b.name) LIKE ${like} OR lower(coalesce(b.website,'')) LIKE ${like})
+  `;
+
+  return json(200, {
+    ok: true,
+    page, limit,
+    total: totalRow[0]?.total || 0,
+    rows,
+  });
+}
+
+// GET ?business_id=
+async function handleLeadgenBusinessDetail(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const id = Number(url.searchParams.get("business_id"));
+  if (!Number.isInteger(id)) return json(400, { ok: false, error: "invalid_id" });
+
+  const [biz, emails] = await Promise.all([
+    sql`SELECT * FROM lead_businesses WHERE id = ${id}`,
+    sql`SELECT id, email, source, source_url, context_snippet, confidence,
+               opted_out_at, bounced_at, last_sent_at, created_at
+        FROM lead_emails WHERE business_id = ${id} ORDER BY confidence DESC, id ASC`,
+  ]);
+  if (!biz.length) return json(404, { ok: false, error: "not_found" });
+  return json(200, { ok: true, business: biz[0], emails });
+}
+
+// POST { id, status }   id required, status in ('active','rejected','do_not_contact')
+async function handleLeadgenBusinessUpdate(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const id = Number(body?.id);
+  const status = String(body?.status || "");
+  if (!Number.isInteger(id)) return json(400, { ok: false, error: "invalid_id" });
+  if (!["active","rejected","do_not_contact"].includes(status)) {
+    return json(400, { ok: false, error: "invalid_status" });
+  }
+  await sql`UPDATE lead_businesses SET status=${status}, updated_at=now() WHERE id=${id}`;
+  return json(200, { ok: true });
+}
+
+// GET — list campaigns
+async function handleLeadgenCampaigns(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const rows = await sql`
+    SELECT c.id, c.name, c.status, c.subject_template, c.from_email, c.reply_to,
+           c.throttle_per_hour, c.daily_cap, c.consent_basis, c.segment,
+           c.created_at, c.updated_at,
+           (SELECT COUNT(*)::int FROM lead_campaign_sends s WHERE s.campaign_id = c.id) AS total_sends,
+           (SELECT COUNT(*)::int FROM lead_campaign_sends s
+              WHERE s.campaign_id = c.id AND s.sent_at IS NOT NULL) AS sent,
+           (SELECT COUNT(*)::int FROM lead_campaign_sends s
+              WHERE s.campaign_id = c.id AND s.opened_at IS NOT NULL) AS opened,
+           (SELECT COUNT(*)::int FROM lead_campaign_sends s
+              WHERE s.campaign_id = c.id AND s.replied_at IS NOT NULL) AS replied
+    FROM lead_campaigns c
+    ORDER BY c.id DESC
+  `;
+  return json(200, { ok: true, rows });
+}
+
+// POST — create or update a campaign (id optional)
+async function handleLeadgenCampaignSave(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+
+  const fields = {
+    name: clampString(body?.name, 200),
+    subject_template: clampString(body?.subject_template, 500),
+    body_template: clampString(body?.body_template, 20000),
+    from_email: clampString(body?.from_email, 254),
+    reply_to: clampString(body?.reply_to, 254),
+    throttle_per_hour: Math.min(Math.max(Number(body?.throttle_per_hour) || 30, 1), 500),
+    daily_cap: Math.min(Math.max(Number(body?.daily_cap) || 200, 1), 5000),
+    consent_basis: ["legitimate_interest","public_record","opted_in"].includes(body?.consent_basis)
+      ? body.consent_basis : "legitimate_interest",
+    segment: body?.segment && typeof body.segment === "object" ? body.segment : {},
+  };
+  if (!fields.name || !fields.subject_template || !fields.body_template || !fields.from_email) {
+    return json(400, { ok: false, error: "missing_fields" });
+  }
+
+  if (body?.id) {
+    const id = Number(body.id);
+    await sql`
+      UPDATE lead_campaigns SET
+        name=${fields.name},
+        subject_template=${fields.subject_template},
+        body_template=${fields.body_template},
+        from_email=${fields.from_email},
+        reply_to=${fields.reply_to || null},
+        throttle_per_hour=${fields.throttle_per_hour},
+        daily_cap=${fields.daily_cap},
+        consent_basis=${fields.consent_basis},
+        segment=${JSON.stringify(fields.segment)}::jsonb,
+        updated_at=now()
+      WHERE id=${id}
+    `;
+    return json(200, { ok: true, id });
+  }
+  const r = await sql`
+    INSERT INTO lead_campaigns
+      (name, status, subject_template, body_template, from_email, reply_to,
+       throttle_per_hour, daily_cap, consent_basis, segment, created_by)
+    VALUES
+      (${fields.name}, 'draft', ${fields.subject_template}, ${fields.body_template},
+       ${fields.from_email}, ${fields.reply_to || null},
+       ${fields.throttle_per_hour}, ${fields.daily_cap},
+       ${fields.consent_basis}, ${JSON.stringify(fields.segment)}::jsonb, ${session.userId || null})
+    RETURNING id
+  `;
+  return json(200, { ok: true, id: r[0].id });
+}
+
+// POST { id, status }   id required, status in ('draft','scheduled','running','paused','done','cancelled')
+async function handleLeadgenCampaignSetStatus(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const id = Number(body?.id);
+  const status = String(body?.status || "");
+  if (!Number.isInteger(id)) return json(400, { ok: false, error: "invalid_id" });
+  if (!["draft","scheduled","running","paused","done","cancelled"].includes(status)) {
+    return json(400, { ok: false, error: "invalid_status" });
+  }
+  await sql`UPDATE lead_campaigns SET status=${status}, updated_at=now() WHERE id=${id}`;
+  return json(200, { ok: true });
+}
+
+// POST { id }
+//
+// Materializes one lead_campaign_sends row per deliverable email matching
+// the campaign's segment query, with a fresh unsubscribe_token per row.
+// Then flips campaign status to 'running' so cron can drain it.
+async function handleLeadgenCampaignStart(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const id = Number(body?.id);
+  if (!Number.isInteger(id)) return json(400, { ok: false, error: "invalid_id" });
+
+  const camp = await sql`SELECT * FROM lead_campaigns WHERE id=${id}`;
+  if (!camp.length) return json(404, { ok: false, error: "not_found" });
+  const c = camp[0];
+  if (!["draft","paused","scheduled"].includes(c.status)) {
+    return json(400, { ok: false, error: "bad_status_transition", current: c.status });
+  }
+
+  const seg = c.segment || {};
+  const zip = typeof seg.zip === "string" && /^\d{5}$/.test(seg.zip) ? seg.zip : null;
+  const minConfidence = Number(seg.min_confidence) || 0.5;
+
+  // Pull deliverable emails for this segment that aren't already queued
+  // for this campaign. We only consider 'active' businesses.
+  const candidates = await sql`
+    SELECT e.id AS email_id, e.business_id, e.email
+    FROM lead_emails e
+    JOIN lead_businesses b ON b.id = e.business_id
+    WHERE b.status = 'active'
+      AND e.opted_out_at IS NULL
+      AND e.bounced_at IS NULL
+      AND e.confidence >= ${minConfidence}
+      AND (${!zip}::bool OR b.zip = ${zip})
+      AND NOT EXISTS (
+        SELECT 1 FROM lead_campaign_sends s
+        WHERE s.campaign_id = ${id} AND s.email_id = e.id
+      )
+    LIMIT 5000
+  `;
+
+  let inserted = 0;
+  for (const row of candidates) {
+    const tok = (globalThis.crypto || (await import("node:crypto")).webcrypto)
+      .randomUUID().replace(/-/g, "");
+    await sql`
+      INSERT INTO lead_campaign_sends
+        (campaign_id, business_id, email_id, to_email, status, unsubscribe_token)
+      VALUES
+        (${id}, ${row.business_id}, ${row.email_id}, ${row.email}, 'queued', ${tok})
+      ON CONFLICT DO NOTHING
+    `;
+    inserted += 1;
+  }
+  await sql`UPDATE lead_campaigns SET status='running', updated_at=now() WHERE id=${id}`;
+  return json(200, { ok: true, queued: inserted });
+}
+
+// GET ?id=&page=&limit=
+async function handleLeadgenCampaignSends(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const id = Number(url.searchParams.get("id"));
+  if (!Number.isInteger(id)) return json(400, { ok: false, error: "invalid_id" });
+  const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
+  const limit = Math.min(500, Math.max(1, Number(url.searchParams.get("limit")) || 100));
+  const offset = (page - 1) * limit;
+
+  const rows = await sql`
+    SELECT s.id, s.to_email, s.status, s.sent_at, s.opened_at,
+           s.clicked_at, s.replied_at, s.bounced_at, s.error,
+           b.name AS business_name, b.zip
+    FROM lead_campaign_sends s
+    JOIN lead_businesses b ON b.id = s.business_id
+    WHERE s.campaign_id = ${id}
+    ORDER BY s.id DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+  return json(200, { ok: true, rows });
+}
+
+// GET — list crawl jobs (admin diagnostics)
+async function handleLeadgenJobs(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const rows = await sql`
+    SELECT id, kind, status, progress, total, payload, error,
+           created_at, started_at, finished_at
+    FROM lead_crawl_jobs
+    ORDER BY id DESC
+    LIMIT 100
+  `;
+  return json(200, { ok: true, rows });
+}
+
 // ---------- entry points ----------
 // CSRF is enforced in two layers:
 //   1. csrfCheck() — Origin must be present AND match an allowed host.
@@ -3246,6 +3842,20 @@ async function dispatch(request, method) {
   if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);
   if (action === "newsletter-count" && method === "GET")  return handleNewsletterCount(session);
   if (action === "newsletter-send"  && method === "POST") return handleNewsletterSend(session, request);
+
+  // Lead generation (admin)
+  if (action === "leadgen-status"           && method === "GET")  return handleLeadgenStatus(session);
+  if (action === "leadgen-discover"         && method === "POST") return handleLeadgenDiscover(session, request);
+  if (action === "leadgen-crawl-emails"     && method === "POST") return handleLeadgenCrawlEmails(session, request);
+  if (action === "leadgen-businesses"       && method === "GET")  return handleLeadgenBusinesses(session, url);
+  if (action === "leadgen-business"         && method === "GET")  return handleLeadgenBusinessDetail(session, url);
+  if (action === "leadgen-business-update"  && method === "POST") return handleLeadgenBusinessUpdate(session, request);
+  if (action === "leadgen-campaigns"        && method === "GET")  return handleLeadgenCampaigns(session);
+  if (action === "leadgen-campaign-save"    && method === "POST") return handleLeadgenCampaignSave(session, request);
+  if (action === "leadgen-campaign-status"  && method === "POST") return handleLeadgenCampaignSetStatus(session, request);
+  if (action === "leadgen-campaign-start"   && method === "POST") return handleLeadgenCampaignStart(session, request);
+  if (action === "leadgen-campaign-sends"   && method === "GET")  return handleLeadgenCampaignSends(session, url);
+  if (action === "leadgen-jobs"             && method === "GET")  return handleLeadgenJobs(session);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

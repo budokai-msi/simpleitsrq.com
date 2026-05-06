@@ -13,6 +13,8 @@ import { Resend } from "resend";
 import { timingSafeEqual } from "node:crypto";
 import { validateEnv } from "../_lib/env.js";
 import { runNewsletterDrip } from "../_lib/newsletter-drip.js";
+import { discoverBusinessesByZip } from "../_lib/leadgen-osm.js";
+import { crawlEmails } from "../_lib/leadgen-emailcrawler.js";
 
 // Cold-start validation. Both keys are validated as 'optional' rather than
 // 'required': the per-task code below already returns { skipped } when a
@@ -722,6 +724,155 @@ async function sendReviewRequests() {
   return summary;
 }
 
+// ========== LEAD GENERATION (every 15 min) ==========
+//
+// Drains lead_crawl_jobs:
+//   - kind='osm_zip' → run discoverBusinessesByZip(payload.zip), upsert
+//     each result into lead_businesses
+//   - kind='website_emails' → run crawlEmails(business.website), upsert
+//     each result into lead_emails
+//
+// Caps:
+//   - Process at most LEADGEN_MAX_JOBS_PER_RUN per cron tick (default 6).
+//     Keeps any single invocation well under the 60s function limit and
+//     spreads Overpass / Nominatim load across ticks.
+//   - Total elapsed budget LEADGEN_TIME_BUDGET_MS (default 45_000). If we
+//     run out of time mid-batch we leave the rest for the next tick.
+
+const LEADGEN_MAX_JOBS_PER_RUN = Number(process.env.LEADGEN_MAX_JOBS_PER_RUN) || 6;
+const LEADGEN_TIME_BUDGET_MS   = Number(process.env.LEADGEN_TIME_BUDGET_MS)   || 45_000;
+
+async function processOsmZipJob(job) {
+  const zip = job?.payload?.zip;
+  if (!zip) throw new Error("osm_zip job missing payload.zip");
+
+  const result = await discoverBusinessesByZip(zip);
+  if (!result.ok) throw new Error(result.error || "discover_failed");
+
+  // Upsert businesses by (source, source_id). Existing rows get refreshed
+  // contact info; new rows enter as 'active'.
+  let inserted = 0;
+  let updated = 0;
+  for (const b of result.businesses) {
+    const r = await sql`
+      INSERT INTO lead_businesses
+        (name, legal_name, address, city, state, zip, lat, lng,
+         website, phone, source, source_id, source_url, industry, naics, status)
+      VALUES
+        (${b.name}, ${b.legal_name}, ${b.address}, ${b.city}, ${b.state}, ${b.zip},
+         ${b.lat}, ${b.lng}, ${b.website}, ${b.phone},
+         ${b.source}, ${b.source_id}, ${b.source_url},
+         ${b.industry}, ${b.naics}, 'active')
+      ON CONFLICT (source, source_id) DO UPDATE SET
+        name      = EXCLUDED.name,
+        address   = COALESCE(EXCLUDED.address, lead_businesses.address),
+        city      = COALESCE(EXCLUDED.city, lead_businesses.city),
+        state     = COALESCE(EXCLUDED.state, lead_businesses.state),
+        zip       = COALESCE(EXCLUDED.zip, lead_businesses.zip),
+        lat       = COALESCE(EXCLUDED.lat, lead_businesses.lat),
+        lng       = COALESCE(EXCLUDED.lng, lead_businesses.lng),
+        website   = COALESCE(EXCLUDED.website, lead_businesses.website),
+        phone     = COALESCE(EXCLUDED.phone, lead_businesses.phone),
+        industry  = COALESCE(EXCLUDED.industry, lead_businesses.industry),
+        updated_at = now()
+      RETURNING (xmax = 0) AS is_new
+    `;
+    if (r[0]?.is_new) inserted += 1; else updated += 1;
+  }
+  return { discovered: result.businesses.length, inserted, updated, bbox: result.bbox };
+}
+
+async function processWebsiteEmailsJob(job) {
+  const id = Number(job?.payload?.business_id);
+  if (!Number.isInteger(id)) throw new Error("website_emails job missing business_id");
+
+  const rows = await sql`SELECT id, website FROM lead_businesses WHERE id = ${id}`;
+  if (!rows.length) throw new Error("business_not_found");
+  if (!rows[0].website) return { skipped: "no_website" };
+
+  const result = await crawlEmails(rows[0].website);
+  if (!result.ok) return { skipped: result.error || "crawl_failed" };
+
+  let inserted = 0;
+  for (const e of result.emails) {
+    const r = await sql`
+      INSERT INTO lead_emails
+        (business_id, email, source, source_url, context_snippet, confidence,
+         consent_basis)
+      VALUES
+        (${id}, ${e.email}, ${e.source}, ${e.source_url || null},
+         ${e.context_snippet || null}, ${e.confidence}, 'public_record')
+      ON CONFLICT (business_id, email) DO UPDATE SET
+        confidence      = GREATEST(lead_emails.confidence, EXCLUDED.confidence),
+        source_url      = COALESCE(EXCLUDED.source_url, lead_emails.source_url),
+        context_snippet = COALESCE(EXCLUDED.context_snippet, lead_emails.context_snippet),
+        updated_at      = now()
+      RETURNING (xmax = 0) AS is_new
+    `;
+    if (r[0]?.is_new) inserted += 1;
+  }
+  return { found: result.emails.length, inserted, host: result.host, robotsAllowed: result.robotsAllowed };
+}
+
+async function runLeadgenWorker() {
+  const summary = { picked: 0, completed: 0, failed: 0, jobs: [] };
+  const started = Date.now();
+
+  for (let i = 0; i < LEADGEN_MAX_JOBS_PER_RUN; i += 1) {
+    if (Date.now() - started > LEADGEN_TIME_BUDGET_MS) {
+      summary.budget_exhausted = true;
+      break;
+    }
+
+    // Atomically claim the next pending job. Postgres-only trick: SKIP
+    // LOCKED ensures two cron ticks running concurrently can't grab the
+    // same row. status='running' is set in the same statement.
+    const claimed = await sql`
+      UPDATE lead_crawl_jobs
+      SET status='running', started_at=now()
+      WHERE id = (
+        SELECT id FROM lead_crawl_jobs
+        WHERE status='pending'
+        ORDER BY id ASC
+        FOR UPDATE SKIP LOCKED
+        LIMIT 1
+      )
+      RETURNING id, kind, payload
+    `;
+    if (!claimed.length) break;
+    summary.picked += 1;
+
+    const job = claimed[0];
+    const jobOut = { id: job.id, kind: job.kind };
+    try {
+      const out = job.kind === "osm_zip"
+        ? await processOsmZipJob(job)
+        : job.kind === "website_emails"
+          ? await processWebsiteEmailsJob(job)
+          : (() => { throw new Error(`unknown_kind:${job.kind}`); })();
+      jobOut.result = out;
+      await sql`
+        UPDATE lead_crawl_jobs
+        SET status='done', finished_at=now(),
+            progress=COALESCE(${out?.inserted ?? null}, progress),
+            total=COALESCE(${out?.discovered ?? out?.found ?? null}, total)
+        WHERE id=${job.id}
+      `;
+      summary.completed += 1;
+    } catch (err) {
+      jobOut.error = String(err?.message || err).slice(0, 500);
+      await sql`
+        UPDATE lead_crawl_jobs
+        SET status='failed', finished_at=now(), error=${jobOut.error}
+        WHERE id=${job.id}
+      `;
+      summary.failed += 1;
+    }
+    summary.jobs.push(jobOut);
+  }
+  return summary;
+}
+
 export async function GET(request) {
   if (!verifyCron(request)) {
     return new Response("Unauthorized", { status: 401 });
@@ -746,6 +897,14 @@ export async function GET(request) {
     });
   }
 
+  if (taskParam === "leadgen") {
+    result.tasks.leadgen = await runLeadgenWorker();
+    return new Response(JSON.stringify(result, null, 2), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  }
+
   result.tasks.autoCounter = await autoCounter();
   result.tasks.threatFeeds = await ingestThreatFeeds();
   result.tasks.blogDraft = await generateBlogDraft({ force });
@@ -754,6 +913,9 @@ export async function GET(request) {
   result.tasks.healthCheck = await selfHealthCheck();
   result.tasks.reviewRequests = await sendReviewRequests();
   result.tasks.newsletterDrip = await runNewsletterDrip().catch((e) => ({
+    error: String(e.message || e).slice(0, 200),
+  }));
+  result.tasks.leadgen = await runLeadgenWorker().catch((e) => ({
     error: String(e.message || e).slice(0, 200),
   }));
 
