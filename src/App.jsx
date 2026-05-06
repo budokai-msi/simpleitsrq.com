@@ -222,9 +222,7 @@ function Navbar() {
         <nav className="nav-links" aria-label="Primary">
           <Link to="/#solutions">Services</Link>
           <Link to="/blog">Blog</Link>
-          <Link to="/support" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span className="live-dot" /> Support
-          </Link>
+          <Link to="/support">Support</Link>
         </nav>
         <div className="nav-actions">
           <ThemeToggle />
