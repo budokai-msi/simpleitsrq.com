@@ -310,7 +310,12 @@ svg { stroke-width: 1.75; }
       opacity: 0;
       animation: linear both;
       animation-timeline: view();
-      animation-range: entry 12% entry 60%;
+      /* Run the reveal during entry, then keep the element at the end
+         keyframe through the entire contain phase so it never reverts
+         while still on-screen. (Chrome view() + fill:both has edge
+         cases where the element snaps back to the static opacity:0
+         once the range ends; extending into 'contain' avoids that.) */
+      animation-range: entry 12% contain 100%;
     }
     .reveal-up    { animation-name: scroll-reveal-up;    transform: translateY(28px); }
     .reveal-down  { animation-name: scroll-reveal-down;  transform: translateY(-28px); }
@@ -330,11 +335,11 @@ svg { stroke-width: 1.75; }
        don't honor animation-delay the way time-driven ones do, so
        we shift each child's entry window further into the viewport
        by 6% per delay step to reproduce the staggered cascade. */
-    [data-reveal-delay="1"] { animation-range: entry 18% entry 64%; }
-    [data-reveal-delay="2"] { animation-range: entry 24% entry 68%; }
-    [data-reveal-delay="3"] { animation-range: entry 30% entry 72%; }
-    [data-reveal-delay="4"] { animation-range: entry 36% entry 76%; }
-    [data-reveal-delay="5"] { animation-range: entry 42% entry 80%; }
+    [data-reveal-delay="1"] { animation-range: entry 18% contain 100%; }
+    [data-reveal-delay="2"] { animation-range: entry 24% contain 100%; }
+    [data-reveal-delay="3"] { animation-range: entry 30% contain 100%; }
+    [data-reveal-delay="4"] { animation-range: entry 36% contain 100%; }
+    [data-reveal-delay="5"] { animation-range: entry 42% contain 100%; }
   }
 }
 

@@ -10,8 +10,11 @@
 //
 // All mutations go through csrfFetch (double-submit cookie) and POST to
 // /api/portal?action=leadgen-...
+//
+// Styling reuses the .admin-aff-* token-driven classes from App.css so
+// the page sits inside the same visual system as /admin/affiliates.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { csrfFetch } from "../lib/csrf";
 
@@ -41,21 +44,12 @@ function fmtTime(iso) {
   try { return new Date(iso).toLocaleString(); } catch { return iso; }
 }
 
-// Two-line stat tile.
 function Stat({ label, value, hint }) {
   return (
-    <div className="leadgen-stat" style={{
-      background: "var(--surface-1, #fff)",
-      border: "1px solid var(--border, #e5e7eb)",
-      borderRadius: 8,
-      padding: 14,
-      minWidth: 140,
-    }}>
-      <div style={{ fontSize: 11, textTransform: "uppercase", color: "#6b7280", letterSpacing: ".06em" }}>
-        {label}
-      </div>
-      <div style={{ fontSize: 24, fontWeight: 700, marginTop: 2 }}>{value ?? "—"}</div>
-      {hint ? <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{hint}</div> : null}
+    <div className="admin-aff-stat">
+      <span className="admin-aff-stat-label">{label}</span>
+      <span className="admin-aff-stat-value">{value ?? "—"}</span>
+      {hint ? <span className="admin-aff-stat-hint">{hint}</span> : null}
     </div>
   );
 }
@@ -67,8 +61,8 @@ export default function LeadgenDashboard() {
   const [status, setStatus] = useState(null);
   const [statusErr, setStatusErr] = useState(null);
 
-  // Initial status fetch + 30s refresh while the page is open. Doubles as
-  // the admin gate: a 401/403 here renders the access-denied message.
+  // Initial status fetch + 30s refresh while the page is open. Doubles
+  // as the admin gate: a 401/403 here renders the access-denied screen.
   useEffect(() => {
     let alive = true;
     let timer;
@@ -91,82 +85,79 @@ export default function LeadgenDashboard() {
 
   if (statusErr && /401|403|unauthorized|admin/i.test(statusErr)) {
     return (
-      <div style={{ maxWidth: 720, margin: "60px auto", padding: 24 }}>
-        <h1>Lead generation</h1>
-        <p>This area is restricted to administrators.</p>
-        <p><Link to="/portal">Back to portal</Link></p>
-      </div>
+      <section className="section admin-affiliates">
+        <div className="container">
+          <h1 className="title-1">Lead generation</h1>
+          <p className="admin-aff-sub">This area is restricted to administrators.</p>
+          <p><Link to="/portal" className="admin-aff-back">← Back to portal</Link></p>
+        </div>
+      </section>
     );
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: "30px auto", padding: "0 18px" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-        <div>
-          <h1 style={{ margin: 0 }}>Lead generation</h1>
-          <p style={{ margin: "4px 0 0", color: "#6b7280", fontSize: 14 }}>
-            Discover local businesses → enrich with emails → run compliant outreach.
+    <section className="section admin-affiliates admin-leadgen">
+      <div className="container">
+        <header className="admin-aff-head">
+          <Link to="/portal" className="admin-aff-back">← Portal</Link>
+          <h1 className="title-1">Lead generation</h1>
+          <p className="admin-aff-sub">
+            Discover local businesses → enrich with verified emails → run
+            CAN-SPAM-compliant outreach with throttling and one-click
+            unsubscribe.
           </p>
+        </header>
+
+        <div className="admin-aff-strip">
+          <Stat
+            label="Businesses"
+            value={status?.businesses?.total}
+            hint={`${status?.businesses?.with_website ?? 0} with website`}
+          />
+          <Stat
+            label="Deliverable emails"
+            value={status?.emails?.deliverable}
+            hint={`across ${status?.emails?.businesses_with_email ?? 0} biz`}
+          />
+          <Stat
+            label="Campaigns"
+            value={status?.campaigns?.total}
+            hint={`${status?.campaigns?.running ?? 0} running`}
+          />
+          <Stat label="Sent"    value={status?.sends?.sent} />
+          <Stat label="Opened"  value={status?.sends?.opened} />
+          <Stat label="Clicked" value={status?.sends?.clicked} />
+          <Stat label="Replied" value={status?.sends?.replied} />
         </div>
-        <Link to="/portal" style={{ fontSize: 14 }}>← Portal</Link>
-      </header>
 
-      {/* Top-line stats */}
-      <section style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 18 }}>
-        <Stat
-          label="Businesses"
-          value={status?.businesses?.total}
-          hint={`${status?.businesses?.with_website ?? 0} with website`}
-        />
-        <Stat
-          label="Deliverable emails"
-          value={status?.emails?.deliverable}
-          hint={`across ${status?.emails?.businesses_with_email ?? 0} businesses`}
-        />
-        <Stat
-          label="Campaigns"
-          value={status?.campaigns?.total}
-          hint={`${status?.campaigns?.running ?? 0} running`}
-        />
-        <Stat label="Sent"     value={status?.sends?.sent} />
-        <Stat label="Opened"   value={status?.sends?.opened} />
-        <Stat label="Clicked"  value={status?.sends?.clicked} />
-        <Stat label="Replied"  value={status?.sends?.replied} />
-      </section>
+        <nav className="admin-leadgen-tabs" aria-label="Lead-gen sections">
+          {[
+            ["discover", "Discover"],
+            ["campaigns", "Campaigns"],
+            ["jobs", "Jobs"],
+          ].map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTab(id)}
+              className={`admin-leadgen-tab${tab === id ? " is-active" : ""}`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
 
-      {/* Tabs */}
-      <nav style={{ borderBottom: "1px solid var(--border, #e5e7eb)", display: "flex", gap: 4, marginBottom: 18 }}>
-        {[
-          ["discover", "Discover"],
-          ["campaigns", "Campaigns"],
-          ["jobs", "Jobs"],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            onClick={() => setTab(id)}
-            style={{
-              background: "transparent",
-              border: "none",
-              borderBottom: tab === id ? "2px solid #0F6CBD" : "2px solid transparent",
-              padding: "10px 14px",
-              cursor: "pointer",
-              color: tab === id ? "#0F6CBD" : "inherit",
-              fontWeight: tab === id ? 600 : 400,
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
+        <div className="admin-leadgen-tab-body">
+          {tab === "discover" && <DiscoverTab />}
+          {tab === "campaigns" && <CampaignsTab />}
+          {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} />}
+        </div>
 
-      {tab === "discover" && <DiscoverTab onJobQueued={() => { /* status auto-refreshes */ }} />}
-      {tab === "campaigns" && <CampaignsTab />}
-      {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} />}
-
-      {statusErr && !/401|403/.test(statusErr) ? (
-        <p style={{ color: "#b91c1c", fontSize: 13, marginTop: 18 }}>Status: {statusErr}</p>
-      ) : null}
-    </div>
+        {statusErr && !/401|403/.test(statusErr) ? (
+          <p className="admin-leadgen-err">Status: {statusErr}</p>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
@@ -174,7 +165,7 @@ export default function LeadgenDashboard() {
 // Discover tab
 // ============================================================
 
-function DiscoverTab({ onJobQueued }) {
+function DiscoverTab() {
   const [zip, setZip] = useState("");
   const [filter, setFilter] = useState({ zip: "", status: "active", q: "" });
   const [rows, setRows] = useState([]);
@@ -204,7 +195,7 @@ function DiscoverTab({ onJobQueued }) {
     }
   };
 
-  // Re-load whenever the filter changes (page is reset by setPage(1)).
+  // Re-load whenever the filter changes.
   useEffect(() => { loadList(page); /* eslint-disable-next-line */ }, [filter, page]);
 
   const queueDiscover = async () => {
@@ -216,8 +207,6 @@ function DiscoverTab({ onJobQueued }) {
     try {
       const r = await postJson("/api/portal?action=leadgen-discover", { zip });
       setMsg(r.deduped ? `Already queued as job #${r.job_id}.` : `Queued OSM crawl for ${zip} (job #${r.job_id}).`);
-      onJobQueued?.();
-      // Auto-fill the filter so the operator sees results when they land.
       setFilter((f) => ({ ...f, zip }));
     } catch (e) {
       setErr(String(e.message || e));
@@ -235,7 +224,6 @@ function DiscoverTab({ onJobQueued }) {
     try {
       const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip: filter.zip, limit: 100 });
       setMsg(`Queued ${r.queued} email-crawl jobs for ${filter.zip}.`);
-      onJobQueued?.();
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
@@ -253,50 +241,52 @@ function DiscoverTab({ onJobQueued }) {
   };
 
   return (
-    <div>
-      <section style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 16 }}>
-        <label style={{ display: "flex", flexDirection: "column", fontSize: 12 }}>
-          <span style={{ color: "#6b7280" }}>Zip code</span>
+    <div className="admin-leadgen-discover">
+      <div className="admin-leadgen-toolbar">
+        <label className="admin-leadgen-field">
+          <span>Zip code</span>
           <input
             value={zip}
             onChange={(e) => setZip(e.target.value)}
             inputMode="numeric"
             pattern="\d{5}"
-            placeholder="34236"
-            style={{ padding: "8px 10px", border: "1px solid #d1d5db", borderRadius: 6, width: 120 }}
+            placeholder="34207"
+            className="admin-leadgen-input admin-leadgen-input--zip"
           />
         </label>
         <button
+          type="button"
           onClick={queueDiscover}
           disabled={busy}
-          style={{ padding: "10px 14px", borderRadius: 6, border: "1px solid #0F6CBD", background: "#0F6CBD", color: "#fff", cursor: "pointer" }}
+          className="btn btn-primary"
         >
           {busy ? "Queuing…" : "Discover businesses"}
         </button>
         <button
+          type="button"
           onClick={queueEmailCrawls}
           disabled={busy || !/^\d{5}$/.test(filter.zip)}
-          style={{ padding: "10px 14px", borderRadius: 6, border: "1px solid #d1d5db", background: "#fff", cursor: "pointer" }}
+          className="btn btn-secondary"
           title={!/^\d{5}$/.test(filter.zip) ? "Filter by a zip first" : ""}
         >
-          Crawl emails for filtered zip (up to 100)
+          Crawl emails for filtered zip
         </button>
-      </section>
+      </div>
 
-      {msg ? <p style={{ color: "#047857", fontSize: 13 }}>{msg}</p> : null}
-      {err ? <p style={{ color: "#b91c1c", fontSize: 13 }}>{err}</p> : null}
+      {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
+      {err ? <p className="admin-leadgen-err">{err}</p> : null}
 
-      <section style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+      <div className="admin-leadgen-filters">
         <input
           placeholder="filter zip"
           value={filter.zip}
           onChange={(e) => { setFilter((f) => ({ ...f, zip: e.target.value })); setPage(1); }}
-          style={{ padding: "6px 8px", border: "1px solid #d1d5db", borderRadius: 6, width: 100 }}
+          className="admin-leadgen-input admin-leadgen-input--zip"
         />
         <select
           value={filter.status}
           onChange={(e) => { setFilter((f) => ({ ...f, status: e.target.value })); setPage(1); }}
-          style={{ padding: "6px 8px", border: "1px solid #d1d5db", borderRadius: 6 }}
+          className="admin-leadgen-input"
         >
           <option value="">All statuses</option>
           <option value="active">Active</option>
@@ -304,45 +294,47 @@ function DiscoverTab({ onJobQueued }) {
           <option value="do_not_contact">Do not contact</option>
         </select>
         <input
-          placeholder="search name/website"
+          placeholder="search name or website"
           value={filter.q}
           onChange={(e) => { setFilter((f) => ({ ...f, q: e.target.value })); setPage(1); }}
-          style={{ padding: "6px 8px", border: "1px solid #d1d5db", borderRadius: 6, flex: 1, minWidth: 180 }}
+          className="admin-leadgen-input admin-leadgen-input--grow"
         />
-        <span style={{ color: "#6b7280", fontSize: 13, alignSelf: "center" }}>{total} matches</span>
-      </section>
+        <span className="admin-leadgen-count">{total} matches</span>
+      </div>
 
-      <div style={{ overflowX: "auto", border: "1px solid var(--border, #e5e7eb)", borderRadius: 8 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-          <thead style={{ background: "#f9fafb" }}>
+      <div className="admin-aff-card">
+        <table className="admin-aff-table">
+          <thead>
             <tr>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Name</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Industry</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Zip</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Website</th>
-              <th style={{ textAlign: "right", padding: "8px 10px" }}>Emails</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Status</th>
-              <th style={{ padding: "8px 10px" }}></th>
+              <th>Name</th>
+              <th>Industry</th>
+              <th>Zip</th>
+              <th>Website</th>
+              <th style={{ textAlign: "right" }}>Emails</th>
+              <th>Status</th>
+              <th aria-label="actions" />
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} style={{ borderTop: "1px solid var(--border, #e5e7eb)" }}>
-                <td style={{ padding: "8px 10px" }}>{r.name}</td>
-                <td style={{ padding: "8px 10px", color: "#6b7280", fontSize: 12 }}>{r.industry || "—"}</td>
-                <td style={{ padding: "8px 10px" }}>{r.zip || "—"}</td>
-                <td style={{ padding: "8px 10px" }}>
+              <tr key={r.id}>
+                <td>{r.name}</td>
+                <td className="admin-leadgen-muted">{r.industry || "—"}</td>
+                <td>{r.zip || "—"}</td>
+                <td>
                   {r.website ? (
-                    <a href={r.website} target="_blank" rel="noreferrer">{new URL(r.website).host}</a>
+                    <a href={r.website} target="_blank" rel="noreferrer">
+                      {(() => { try { return new URL(r.website).host; } catch { return r.website; } })()}
+                    </a>
                   ) : "—"}
                 </td>
-                <td style={{ padding: "8px 10px", textAlign: "right" }}>{r.deliverable_emails}</td>
-                <td style={{ padding: "8px 10px", fontSize: 12 }}>{r.status}</td>
-                <td style={{ padding: "8px 10px", textAlign: "right" }}>
+                <td style={{ textAlign: "right" }}>{r.deliverable_emails}</td>
+                <td className="admin-leadgen-muted">{r.status}</td>
+                <td style={{ textAlign: "right" }}>
                   <select
                     value={r.status}
                     onChange={(e) => setRowStatus(r.id, e.target.value)}
-                    style={{ padding: "4px 6px", border: "1px solid #d1d5db", borderRadius: 4, fontSize: 12 }}
+                    className="admin-leadgen-input admin-leadgen-input--sm"
                   >
                     <option value="active">active</option>
                     <option value="rejected">rejected</option>
@@ -352,18 +344,17 @@ function DiscoverTab({ onJobQueued }) {
               </tr>
             ))}
             {rows.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: 30, textAlign: "center", color: "#6b7280" }}>No results yet.</td></tr>
+              <tr><td colSpan={7} className="admin-leadgen-empty">No results yet. Discover a zip to get started.</td></tr>
             ) : null}
           </tbody>
         </table>
       </div>
 
-      {/* Pager */}
       {total > limit ? (
-        <div style={{ marginTop: 10, display: "flex", gap: 8, justifyContent: "flex-end", fontSize: 13 }}>
-          <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>← Prev</button>
+        <div className="admin-leadgen-pager">
+          <button type="button" className="btn btn-secondary btn-sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>← Prev</button>
           <span>Page {page} of {Math.ceil(total / limit)}</span>
-          <button disabled={page * limit >= total} onClick={() => setPage((p) => p + 1)}>Next →</button>
+          <button type="button" className="btn btn-secondary btn-sm" disabled={page * limit >= total} onClick={() => setPage((p) => p + 1)}>Next →</button>
         </div>
       ) : null}
     </div>
@@ -387,7 +378,7 @@ Simple IT SRQ | https://simpleitsrq.com`;
 
 function CampaignsTab() {
   const [list, setList] = useState([]);
-  const [editing, setEditing] = useState(null); // { id?, name, ... }
+  const [editing, setEditing] = useState(null);
   const [err, setErr] = useState(null);
   const [msg, setMsg] = useState(null);
 
@@ -454,71 +445,66 @@ function CampaignsTab() {
     } catch (e) { setErr(String(e.message || e)); }
   };
 
-  return (
-    <div>
-      {!editing ? (
-        <>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-            <h2 style={{ margin: 0, fontSize: 18 }}>Campaigns</h2>
-            <button
-              onClick={newCampaign}
-              style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #0F6CBD", background: "#0F6CBD", color: "#fff", cursor: "pointer" }}
-            >
-              + New campaign
-            </button>
-          </div>
-          {msg ? <p style={{ color: "#047857", fontSize: 13 }}>{msg}</p> : null}
-          {err ? <p style={{ color: "#b91c1c", fontSize: 13 }}>{err}</p> : null}
+  if (editing) {
+    return (
+      <CampaignEditor
+        campaign={editing}
+        onChange={setEditing}
+        onSave={save}
+        onCancel={() => setEditing(null)}
+        err={err}
+      />
+    );
+  }
 
-          <div style={{ overflowX: "auto", border: "1px solid var(--border, #e5e7eb)", borderRadius: 8 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
-              <thead style={{ background: "#f9fafb" }}>
-                <tr>
-                  <th style={{ textAlign: "left", padding: "8px 10px" }}>Name</th>
-                  <th style={{ textAlign: "left", padding: "8px 10px" }}>Status</th>
-                  <th style={{ textAlign: "right", padding: "8px 10px" }}>Total</th>
-                  <th style={{ textAlign: "right", padding: "8px 10px" }}>Sent</th>
-                  <th style={{ textAlign: "right", padding: "8px 10px" }}>Opens</th>
-                  <th style={{ textAlign: "right", padding: "8px 10px" }}>Replies</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {list.map((c) => (
-                  <tr key={c.id} style={{ borderTop: "1px solid var(--border, #e5e7eb)" }}>
-                    <td style={{ padding: "8px 10px" }}>{c.name}</td>
-                    <td style={{ padding: "8px 10px", fontSize: 12 }}>{c.status}</td>
-                    <td style={{ padding: "8px 10px", textAlign: "right" }}>{c.total_sends}</td>
-                    <td style={{ padding: "8px 10px", textAlign: "right" }}>{c.sent}</td>
-                    <td style={{ padding: "8px 10px", textAlign: "right" }}>{c.opened}</td>
-                    <td style={{ padding: "8px 10px", textAlign: "right" }}>{c.replied}</td>
-                    <td style={{ padding: "8px 10px", textAlign: "right", whiteSpace: "nowrap" }}>
-                      <button onClick={() => setEditing(c)} style={{ marginRight: 4 }}>Edit</button>
-                      <button onClick={() => sendTest(c.id)} style={{ marginRight: 4 }}>Test send</button>
-                      {["draft", "paused", "scheduled"].includes(c.status) ? (
-                        <button onClick={() => start(c.id)}>Start</button>
-                      ) : c.status === "running" ? (
-                        <button onClick={() => setStatus(c.id, "paused")}>Pause</button>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-                {list.length === 0 ? (
-                  <tr><td colSpan={7} style={{ padding: 30, textAlign: "center", color: "#6b7280" }}>No campaigns yet.</td></tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-        </>
-      ) : (
-        <CampaignEditor
-          campaign={editing}
-          onChange={setEditing}
-          onSave={save}
-          onCancel={() => setEditing(null)}
-          err={err}
-        />
-      )}
+  return (
+    <div className="admin-leadgen-campaigns">
+      <div className="admin-leadgen-section-head">
+        <h2 className="title-2">Campaigns</h2>
+        <button type="button" onClick={newCampaign} className="btn btn-primary">+ New campaign</button>
+      </div>
+      {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
+      {err ? <p className="admin-leadgen-err">{err}</p> : null}
+
+      <div className="admin-aff-card">
+        <table className="admin-aff-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th style={{ textAlign: "right" }}>Total</th>
+              <th style={{ textAlign: "right" }}>Sent</th>
+              <th style={{ textAlign: "right" }}>Opens</th>
+              <th style={{ textAlign: "right" }}>Replies</th>
+              <th aria-label="actions" />
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((c) => (
+              <tr key={c.id}>
+                <td>{c.name}</td>
+                <td className="admin-leadgen-muted">{c.status}</td>
+                <td style={{ textAlign: "right" }}>{c.total_sends}</td>
+                <td style={{ textAlign: "right" }}>{c.sent}</td>
+                <td style={{ textAlign: "right" }}>{c.opened}</td>
+                <td style={{ textAlign: "right" }}>{c.replied}</td>
+                <td className="admin-leadgen-row-actions">
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(c)}>Edit</button>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => sendTest(c.id)}>Test send</button>
+                  {["draft", "paused", "scheduled"].includes(c.status) ? (
+                    <button type="button" className="btn btn-primary btn-sm" onClick={() => start(c.id)}>Start</button>
+                  ) : c.status === "running" ? (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => setStatus(c.id, "paused")}>Pause</button>
+                  ) : null}
+                </td>
+              </tr>
+            ))}
+            {list.length === 0 ? (
+              <tr><td colSpan={7} className="admin-leadgen-empty">No campaigns yet — click <strong>+ New campaign</strong>.</td></tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -531,69 +517,66 @@ function CampaignEditor({ campaign, onChange, onSave, onCancel, err }) {
   const seg = c.segment || {};
 
   return (
-    <div>
-      <h2 style={{ marginTop: 0 }}>{c.id ? `Edit campaign #${c.id}` : "New campaign"}</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, maxWidth: 900 }}>
+    <div className="admin-leadgen-editor">
+      <h2 className="title-2">{c.id ? `Edit campaign #${c.id}` : "New campaign"}</h2>
+
+      <div className="admin-leadgen-grid">
         <Field label="Name">
-          <input value={c.name || ""} onChange={(e) => set({ name: e.target.value })} />
+          <input className="admin-leadgen-input" value={c.name || ""} onChange={(e) => set({ name: e.target.value })} />
         </Field>
         <Field label="From email">
-          <input value={c.from_email || ""} onChange={(e) => set({ from_email: e.target.value })} placeholder="outreach@simpleitsrq.com" />
+          <input className="admin-leadgen-input" value={c.from_email || ""} onChange={(e) => set({ from_email: e.target.value })} placeholder="outreach@outreach.simpleitsrq.com" />
         </Field>
         <Field label="Reply-to (optional)">
-          <input value={c.reply_to || ""} onChange={(e) => set({ reply_to: e.target.value })} />
+          <input className="admin-leadgen-input" value={c.reply_to || ""} onChange={(e) => set({ reply_to: e.target.value })} />
         </Field>
         <Field label="Consent basis">
-          <select value={c.consent_basis || "legitimate_interest"} onChange={(e) => set({ consent_basis: e.target.value })}>
+          <select className="admin-leadgen-input" value={c.consent_basis || "legitimate_interest"} onChange={(e) => set({ consent_basis: e.target.value })}>
             <option value="legitimate_interest">legitimate_interest</option>
             <option value="public_record">public_record</option>
             <option value="opted_in">opted_in</option>
           </select>
         </Field>
         <Field label="Throttle / hour">
-          <input type="number" min={1} max={500} value={c.throttle_per_hour ?? 30} onChange={(e) => set({ throttle_per_hour: e.target.value })} />
+          <input className="admin-leadgen-input" type="number" min={1} max={500} value={c.throttle_per_hour ?? 30} onChange={(e) => set({ throttle_per_hour: e.target.value })} />
         </Field>
         <Field label="Daily cap">
-          <input type="number" min={1} max={5000} value={c.daily_cap ?? 200} onChange={(e) => set({ daily_cap: e.target.value })} />
+          <input className="admin-leadgen-input" type="number" min={1} max={5000} value={c.daily_cap ?? 200} onChange={(e) => set({ daily_cap: e.target.value })} />
         </Field>
         <Field label="Segment: zip">
-          <input value={seg.zip || ""} onChange={(e) => setSegment({ zip: e.target.value })} placeholder="34236" />
+          <input className="admin-leadgen-input" value={seg.zip || ""} onChange={(e) => setSegment({ zip: e.target.value })} placeholder="34207" />
         </Field>
         <Field label="Segment: min email confidence">
-          <input type="number" step="0.1" min={0} max={1} value={seg.min_confidence ?? 0.7} onChange={(e) => setSegment({ min_confidence: Number(e.target.value) })} />
+          <input className="admin-leadgen-input" type="number" step="0.1" min={0} max={1} value={seg.min_confidence ?? 0.7} onChange={(e) => setSegment({ min_confidence: Number(e.target.value) })} />
         </Field>
       </div>
 
-      <Field label="Subject template" style={{ marginTop: 12 }}>
-        <input value={c.subject_template || ""} onChange={(e) => set({ subject_template: e.target.value })} placeholder="Quick question about IT at {{business_name}}" />
+      <Field label="Subject template" full>
+        <input className="admin-leadgen-input" value={c.subject_template || ""} onChange={(e) => set({ subject_template: e.target.value })} placeholder="Quick question about IT at {{business_name}}" />
       </Field>
-      <Field label="Body template (plain text supported; placeholders: {{business_name}} {{first_name}} {{city}} {{custom_intro}})" style={{ marginTop: 12 }}>
+      <Field label="Body template — placeholders: {{business_name}} {{first_name}} {{city}} {{custom_intro}}" full>
         <textarea
+          className="admin-leadgen-input admin-leadgen-textarea"
           rows={14}
           value={c.body_template || ""}
           onChange={(e) => set({ body_template: e.target.value })}
-          style={{ width: "100%", fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13 }}
         />
       </Field>
 
-      {err ? <p style={{ color: "#b91c1c", fontSize: 13 }}>{err}</p> : null}
+      {err ? <p className="admin-leadgen-err">{err}</p> : null}
 
-      <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
-        <button onClick={onSave} style={{ padding: "10px 14px", borderRadius: 6, border: "1px solid #0F6CBD", background: "#0F6CBD", color: "#fff", cursor: "pointer" }}>
-          Save
-        </button>
-        <button onClick={onCancel} style={{ padding: "10px 14px", borderRadius: 6, border: "1px solid #d1d5db", background: "#fff", cursor: "pointer" }}>
-          Cancel
-        </button>
+      <div className="admin-leadgen-actions">
+        <button type="button" className="btn btn-primary" onClick={onSave}>Save</button>
+        <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
       </div>
     </div>
   );
 }
 
-function Field({ label, children, style }) {
+function Field({ label, children, full }) {
   return (
-    <label style={{ display: "flex", flexDirection: "column", fontSize: 12, ...style }}>
-      <span style={{ color: "#6b7280", marginBottom: 4 }}>{label}</span>
+    <label className={`admin-leadgen-field${full ? " admin-leadgen-field--full" : ""}`}>
+      <span>{label}</span>
       {children}
     </label>
   );
@@ -616,41 +599,39 @@ function JobsTab({ recent }) {
   useEffect(() => { reload(); }, []);
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18 }}>Recent jobs</h2>
-        <button onClick={reload}>Refresh</button>
+    <div className="admin-leadgen-jobs">
+      <div className="admin-leadgen-section-head">
+        <h2 className="title-2">Recent jobs</h2>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={reload}>Refresh</button>
       </div>
-      {err ? <p style={{ color: "#b91c1c", fontSize: 13 }}>{err}</p> : null}
-      <div style={{ overflowX: "auto", border: "1px solid var(--border, #e5e7eb)", borderRadius: 8 }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead style={{ background: "#f9fafb" }}>
+      {err ? <p className="admin-leadgen-err">{err}</p> : null}
+      <div className="admin-aff-card">
+        <table className="admin-aff-table">
+          <thead>
             <tr>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>#</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Kind</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Status</th>
-              <th style={{ textAlign: "right", padding: "8px 10px" }}>Progress</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Created</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Finished</th>
-              <th style={{ textAlign: "left", padding: "8px 10px" }}>Error</th>
+              <th>#</th>
+              <th>Kind</th>
+              <th>Status</th>
+              <th style={{ textAlign: "right" }}>Progress</th>
+              <th>Created</th>
+              <th>Finished</th>
+              <th>Error</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((j) => (
-              <tr key={j.id} style={{ borderTop: "1px solid var(--border, #e5e7eb)" }}>
-                <td style={{ padding: "6px 10px" }}>{j.id}</td>
-                <td style={{ padding: "6px 10px" }}>{j.kind}</td>
-                <td style={{ padding: "6px 10px" }}>{j.status}</td>
-                <td style={{ padding: "6px 10px", textAlign: "right" }}>
-                  {j.progress ?? 0}{j.total ? ` / ${j.total}` : ""}
-                </td>
-                <td style={{ padding: "6px 10px" }}>{fmtTime(j.created_at)}</td>
-                <td style={{ padding: "6px 10px" }}>{fmtTime(j.finished_at)}</td>
-                <td style={{ padding: "6px 10px", color: "#b91c1c", fontSize: 12 }}>{j.error || ""}</td>
+              <tr key={j.id}>
+                <td>{j.id}</td>
+                <td>{j.kind}</td>
+                <td>{j.status}</td>
+                <td style={{ textAlign: "right" }}>{j.progress ?? 0}{j.total ? ` / ${j.total}` : ""}</td>
+                <td className="admin-leadgen-muted">{fmtTime(j.created_at)}</td>
+                <td className="admin-leadgen-muted">{fmtTime(j.finished_at)}</td>
+                <td className="admin-leadgen-err-cell">{j.error || ""}</td>
               </tr>
             ))}
             {rows.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: 30, textAlign: "center", color: "#6b7280" }}>No jobs yet.</td></tr>
+              <tr><td colSpan={7} className="admin-leadgen-empty">No jobs yet.</td></tr>
             ) : null}
           </tbody>
         </table>
