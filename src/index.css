@@ -27,13 +27,20 @@
 
 :root,
 :root[data-theme="light"] {
-  /* Surfaces */
-  --bg: #FAFAFA;
-  --bg-elevated: #FFFFFF;
-  --surface: #FFFFFF;
-  --surface-2: #F5F5F5;
-  --surface-3: #ECEAE9;
-  --mica: rgba(243, 242, 241, 0.78);
+  /* Surfaces — pearl white. Pure #FFF is photochemically harsh under
+   * sustained reading, especially on OLED / high-brightness displays.
+   * These values drop ~3-6% luminance and add a faint warm/cool
+   * shimmer that mimics the iridescence of an actual pearl: warm
+   * cream undertone in the page wash, slightly cooler in cards so
+   * elevation still reads. The whole alias bridge below picks these
+   * up, so 88+ inline `var(--syn-surface, #fff)` usages quietly stop
+   * being pure white without touching a single component. */
+  --bg: #F4F1EC;            /* page wash — warm pearl */
+  --bg-elevated: #FAF7F2;   /* hero / sticky chrome */
+  --surface: #FAF7F2;       /* cards, panels */
+  --surface-2: #EFEBE4;     /* recessed wells, code blocks */
+  --surface-3: #E4DFD7;     /* deepest recess */
+  --mica: rgba(250, 247, 242, 0.78);
 
   /* Brand */
   --brand: #0F6CBD;
@@ -49,8 +56,8 @@
   --text-on-accent: #FFFFFF;
 
   /* Borders */
-  --border: #E5E3E1;
-  --border-strong: #D2D0CE;
+  --border: #E0DBD3;
+  --border-strong: #CFC9BF;
 
   /* Status */
   --success: #107C10;
