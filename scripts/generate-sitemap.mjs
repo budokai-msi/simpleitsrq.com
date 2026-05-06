@@ -9,6 +9,7 @@ import { cityList, cities } from "../src/data/cities.js";
 import { products } from "../src/data/products.js";
 import { COMPARISONS } from "../src/data/comparisons.js";
 import { GLOSSARY } from "../src/data/glossary.js";
+import { WHY_VS_LIST } from "../src/data/why-vs.js";
 import { industryCityPairs } from "../src/data/industries.js";
 
 const posts = loadAllPosts();
@@ -39,6 +40,7 @@ const staticUrls = [
   { loc: "/service-area", priority: "0.85", changefreq: "monthly" },
   { loc: "/partners", priority: "0.8", changefreq: "monthly" },
   { loc: "/compare", priority: "0.8", changefreq: "monthly" },
+  { loc: "/why", priority: "0.85", changefreq: "monthly" },
   { loc: "/glossary", priority: "0.85", changefreq: "monthly" },
   { loc: "/industries", priority: "0.85", changefreq: "monthly" },
   { loc: "/exposure-scan", priority: "0.9", changefreq: "monthly" },
@@ -77,6 +79,12 @@ const compareUrls = COMPARISONS.map((c) => ({
   lastmod: c.date,
 }));
 
+const whyUrls = WHY_VS_LIST.map((w) => ({
+  loc: `/why/${w.slug}`,
+  priority: "0.85",
+  changefreq: "monthly",
+}));
+
 const glossaryUrls = GLOSSARY.map((g) => ({
   loc: `/glossary/${g.slug}`,
   priority: "0.7",
@@ -92,7 +100,7 @@ const industryUrls = [...industryCityPairs(cities)].map((p) => ({
   changefreq: "monthly",
 }));
 
-const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls, ...glossaryUrls, ...industryUrls];
+const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls, ...whyUrls, ...glossaryUrls, ...industryUrls];
 
 const body = all
   .map((u) => {

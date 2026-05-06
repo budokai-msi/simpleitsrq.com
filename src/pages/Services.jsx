@@ -206,6 +206,24 @@ export default function Services() {
             <span><MapPin size={14} /> Local Sarasota / Bradenton engineering team</span>
             <span><ShieldCheck size={14} /> Fixed scope · written deliverables · 30-day satisfaction guarantee</span>
           </div>
+          <div className="services-stat-band" role="list" aria-label="Service catalog at a glance">
+            <div role="listitem" className="services-stat">
+              <div className="services-stat__num">{services.length}</div>
+              <div className="services-stat__label">Productized SKUs</div>
+            </div>
+            <div role="listitem" className="services-stat">
+              <div className="services-stat__num">$0</div>
+              <div className="services-stat__label">Quote-and-callback</div>
+            </div>
+            <div role="listitem" className="services-stat">
+              <div className="services-stat__num">30-day</div>
+              <div className="services-stat__label">Satisfaction guarantee</div>
+            </div>
+            <div role="listitem" className="services-stat">
+              <div className="services-stat__num">5-city</div>
+              <div className="services-stat__label">SWFL service area</div>
+            </div>
+          </div>
         </div>
       </section>
 

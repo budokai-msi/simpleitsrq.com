@@ -51,6 +51,8 @@ const LiveThreats = lazy(() => import("./pages/LiveThreats"));
 const Advertise = lazy(() => import("./pages/Advertise"));
 const CompareIndex = lazy(() => import("./pages/CompareIndex"));
 const CompareDetail = lazy(() => import("./pages/CompareDetail"));
+const WhyIndex = lazy(() => import("./pages/WhyIndex"));
+const WhyVs = lazy(() => import("./pages/WhyVs"));
 
 // Exit-intent capture modal — lazy-loaded and mounted OUTSIDE the route
 // <Suspense> fallback so route transitions aren't blocked on it. Renders
@@ -547,6 +549,8 @@ export default function App() {
               <Route path="/sponsor" element={<Advertise />} />
               <Route path="/compare" element={<CompareIndex />} />
               <Route path="/compare/:slug" element={<CompareDetail />} />
+              <Route path="/why" element={<WhyIndex />} />
+              <Route path="/why/:slug" element={<WhyVs />} />
               <Route path="/glossary" element={<Glossary />} />
               <Route path="/glossary/:slug" element={<GlossaryEntry />} />
               <Route path="/exposure-scan" element={<ExposureScan />} />
