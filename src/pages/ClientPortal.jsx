@@ -2532,6 +2532,38 @@ function OpsConsole() {
         One-click admin operations. Every button hits the matching <code>/api/portal?action=...</code> endpoint under your current session. Output is shown inline — no page reload.
       </p>
 
+      {/* Admin shortcuts row — full-page admin tools that live on their
+          own routes. Surfaced here because the navbar deliberately
+          hides admin links from public users; without this strip the
+          only way to reach them was typing the URL by hand. */}
+      <div style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: 8,
+        margin: "0 0 16px",
+        padding: "12px",
+        background: tokens.colorNeutralBackground2,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        borderRadius: 8,
+      }}>
+        <span style={{
+          fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+          letterSpacing: "0.06em", color: tokens.colorNeutralForeground3,
+          alignSelf: "center", marginRight: 4,
+        }}>Admin tools</span>
+        <Link to="/portal/leadgen" style={{
+          fontSize: 13, fontWeight: 600, padding: "6px 12px",
+          borderRadius: 6, background: tokens.colorBrandBackground,
+          color: tokens.colorNeutralForegroundOnBrand, textDecoration: "none",
+        }}>Lead generator →</Link>
+        <Link to="/admin/affiliates" style={{
+          fontSize: 13, fontWeight: 600, padding: "6px 12px",
+          borderRadius: 6, background: tokens.colorNeutralBackground1,
+          border: `1px solid ${tokens.colorNeutralStroke1}`,
+          color: tokens.colorNeutralForeground1, textDecoration: "none",
+        }}>Affiliate manager →</Link>
+      </div>
+
       {/* ── Live health card ── */}
       <div style={{ ...card, background: tokens.colorNeutralBackground2 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
