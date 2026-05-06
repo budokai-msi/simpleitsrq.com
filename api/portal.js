@@ -24,6 +24,12 @@ import { aggregateScanners, identifyScanner } from "./_lib/scanner-fingerprints.
 import { json } from "./_lib/http.js";
 import { csrfValid } from "./_lib/csrf.js";
 import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
+import { runLeadgenWorker } from "./cron/agent.js";
+
+// Vercel function config: lead-gen Discover + Crawl run their workers
+// inline (Overpass + outbound HTTP fetches), so we need the higher
+// 60s budget instead of the 10s Hobby default.
+export const config = { maxDuration: 60 };
 
 const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
 // See note in api/contact.js — default goes to Gmail while simpleitsrq.com
@@ -3806,6 +3812,21 @@ async function handleLeadgenJobs(session) {
   return json(200, { ok: true, rows });
 }
 
+// Drains the lead_crawl_jobs queue inline so admin clicks (Discover,
+// Crawl emails) feel synchronous instead of waiting on the daily cron.
+// Bounded by the worker's own LEADGEN_TIME_BUDGET_MS / max-jobs guards;
+// the surrounding portal function is configured for maxDuration=60.
+async function handleLeadgenRunJobs(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  try {
+    const summary = await runLeadgenWorker();
+    return json(200, { ok: true, summary });
+  } catch (err) {
+    return json(500, { ok: false, error: String(err?.message || err).slice(0, 500) });
+  }
+}
+
 // ---------- public token-authenticated lead-gen endpoints ----------
 //
 // These three handlers serve outbound-email engagement: open pixel, click
@@ -4075,6 +4096,7 @@ async function dispatch(request, method) {
   if (action === "leadgen-campaign-test"    && method === "POST") return handleLeadgenCampaignTest(session, request);
   if (action === "leadgen-campaign-sends"   && method === "GET")  return handleLeadgenCampaignSends(session, url);
   if (action === "leadgen-jobs"             && method === "GET")  return handleLeadgenJobs(session);
+  if (action === "leadgen-run-jobs"         && method === "POST") return handleLeadgenRunJobs(session);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

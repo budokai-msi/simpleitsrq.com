@@ -61,6 +61,19 @@ export default function LeadgenDashboard() {
   const [status, setStatus] = useState(null);
   const [statusErr, setStatusErr] = useState(null);
 
+  // Refresh the top-of-page counts. Extracted so post-action handlers
+  // (queueDiscover, queueEmailCrawls) can pull fresh numbers immediately
+  // without waiting for the 30s background tick.
+  const loadStatus = async () => {
+    try {
+      const r = await getJson("/api/portal?action=leadgen-status");
+      setStatus(r);
+      setStatusErr(null);
+    } catch (e) {
+      setStatusErr(String(e.message || e));
+    }
+  };
+
   // Initial status fetch + 30s refresh while the page is open. Doubles
   // as the admin gate: a 401/403 here renders the access-denied screen.
   useEffect(() => {
@@ -206,8 +219,20 @@ function DiscoverTab() {
     setBusy(true); setErr(null); setMsg(null);
     try {
       const r = await postJson("/api/portal?action=leadgen-discover", { zip });
-      setMsg(r.deduped ? `Already queued as job #${r.job_id}.` : `Queued OSM crawl for ${zip} (job #${r.job_id}).`);
+      if (r.deduped) {
+        setMsg(`Already queued as job #${r.job_id}. Running pending jobs…`);
+      } else {
+        setMsg(`Queued OSM crawl for ${zip} (job #${r.job_id}). Running…`);
+      }
       setFilter((f) => ({ ...f, zip }));
+      // Drain the queue inline so the operator sees results immediately
+      // instead of waiting until the next 11:15 UTC cron tick.
+      const run = await postJson("/api/portal?action=leadgen-run-jobs", {});
+      const s = run.summary || {};
+      setMsg(`OSM crawl finished: ${s.completed || 0}/${s.picked || 0} jobs ok` +
+             (s.failed ? `, ${s.failed} failed` : "") + ". Refreshing list.");
+      await loadList();
+      await loadStatus();
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
@@ -223,7 +248,15 @@ function DiscoverTab() {
     setBusy(true); setErr(null); setMsg(null);
     try {
       const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip: filter.zip, limit: 100 });
-      setMsg(`Queued ${r.queued} email-crawl jobs for ${filter.zip}.`);
+      setMsg(`Queued ${r.queued} email-crawl jobs for ${filter.zip}. Running…`);
+      const run = await postJson("/api/portal?action=leadgen-run-jobs", {});
+      const s = run.summary || {};
+      setMsg(`Email crawl finished: ${s.completed || 0}/${s.picked || 0} jobs ok` +
+             (s.failed ? `, ${s.failed} failed` : "") +
+             (s.budget_exhausted ? ". Budget exhausted — click Crawl again to continue." : ".") +
+             " Refreshing list.");
+      await loadList();
+      await loadStatus();
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
