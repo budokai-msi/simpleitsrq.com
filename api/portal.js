@@ -3759,6 +3759,162 @@ async function handleLeadgenJobs(session) {
   return json(200, { ok: true, rows });
 }
 
+// ---------- public token-authenticated lead-gen endpoints ----------
+//
+// These three handlers serve outbound-email engagement: open pixel, click
+// redirect, and unsubscribe. They never touch session — the security model
+// is "if you have a valid token, you can act on the row that token belongs
+// to". Tokens are 32-hex random per send, generated server-side, and only
+// shipped inside the actual email body, so possession ≈ recipient.
+
+// 1×1 transparent GIF (43 bytes). Hard-coded base64 so we don't ship a
+// binary asset just for tracking.
+const PIXEL_GIF = Uint8Array.from(atob(
+  "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+), (c) => c.charCodeAt(0));
+
+function pixelResponse() {
+  return new Response(PIXEL_GIF, {
+    status: 200,
+    headers: {
+      "Content-Type": "image/gif",
+      "Content-Length": String(PIXEL_GIF.byteLength),
+      "Cache-Control": "private, no-store, no-cache, must-revalidate",
+      "Pragma": "no-cache",
+    },
+  });
+}
+
+async function handleLeadgenOpenPixel(url) {
+  const token = (url.searchParams.get("t") || "").slice(0, 64);
+  // Always return a pixel so the email client doesn't render a broken
+  // image icon — even if the token is bogus.
+  if (!/^[a-f0-9]{32}$/i.test(token)) return pixelResponse();
+  try {
+    await sql`
+      UPDATE lead_campaign_sends
+      SET opened_at = COALESCE(opened_at, now()),
+          open_count = open_count + 1
+      WHERE open_token = ${token}
+    `;
+  } catch (err) {
+    console.error("[leadgen-o] update failed", err?.message || err);
+  }
+  return pixelResponse();
+}
+
+async function handleLeadgenClick(url) {
+  const token = (url.searchParams.get("t") || "").slice(0, 64);
+  const dest = url.searchParams.get("u") || "";
+
+  // Validate destination — only allow http/https. Otherwise we'd be an
+  // open redirect to javascript: / data: schemes.
+  let target;
+  try {
+    const parsed = new URL(dest);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") throw new Error();
+    target = parsed.toString();
+  } catch {
+    return new Response("Invalid destination", { status: 400 });
+  }
+
+  if (/^[a-f0-9]{32}$/i.test(token)) {
+    try {
+      const rows = await sql`
+        UPDATE lead_campaign_sends
+        SET clicked_at = COALESCE(clicked_at, now()),
+            click_count = click_count + 1,
+            opened_at = COALESCE(opened_at, now())
+        WHERE open_token = ${token}
+        RETURNING campaign_id
+      `;
+      if (rows.length) {
+        // Upsert into lead_campaign_links and bump click_count. Lazily
+        // creates the row on first click — keeps the sender stateless.
+        await sql`
+          INSERT INTO lead_campaign_links (campaign_id, url, click_count)
+          VALUES (${rows[0].campaign_id}, ${target}, 1)
+          ON CONFLICT (campaign_id, url) DO UPDATE SET
+            click_count = lead_campaign_links.click_count + 1
+        `;
+      }
+    } catch (err) {
+      console.error("[leadgen-c] update failed", err?.message || err);
+    }
+  }
+  return new Response(null, {
+    status: 302,
+    headers: { Location: target, "Cache-Control": "no-store" },
+  });
+}
+
+async function handleLeadgenUnsubscribe(url, method) {
+  const token = (url.searchParams.get("t") || "").slice(0, 64);
+  if (!/^[a-f0-9]{32}$/i.test(token)) {
+    return new Response("Invalid unsubscribe link.", { status: 400 });
+  }
+
+  // Single update: flip the email row's opted_out_at, mark the send row
+  // as unsubscribed, and any future queued sends for the same email get
+  // suppressed by the queued→sending claim path (which checks opted_out_at).
+  let row;
+  try {
+    const r = await sql`
+      UPDATE lead_campaign_sends
+      SET unsubscribed_at = COALESCE(unsubscribed_at, now()),
+          status = CASE WHEN status IN ('queued','sending') THEN 'suppressed' ELSE status END
+      WHERE unsubscribe_token = ${token}
+      RETURNING email_id
+    `;
+    row = r[0];
+    if (row) {
+      await sql`UPDATE lead_emails SET opted_out_at = COALESCE(opted_out_at, now()) WHERE id = ${row.email_id}`;
+      // Suppress all queued sends to this address across all campaigns.
+      await sql`
+        UPDATE lead_campaign_sends
+        SET status='suppressed'
+        WHERE email_id = ${row.email_id}
+          AND status IN ('queued','sending')
+      `;
+    }
+  } catch (err) {
+    console.error("[leadgen-u] update failed", err?.message || err);
+    return new Response("Unsubscribe failed — please reply STOP to the original email.", { status: 500 });
+  }
+
+  // RFC 8058 one-click POST: just acknowledge. Web GET: render a small
+  // confirmation page so the recipient sees the action took effect.
+  if (method === "POST") {
+    return new Response(null, { status: 200 });
+  }
+  const html = `<!doctype html>
+<html><head><title>Unsubscribed</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:560px;margin:60px auto;padding:0 20px;color:#1a1a1a;line-height:1.55}
+h1{font-size:22px;margin:0 0 12px}
+p{font-size:15px;color:#374151}
+.box{padding:20px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb}</style>
+</head><body>
+<div class="box">
+  <h1>${row ? "You've been unsubscribed." : "Already unsubscribed."}</h1>
+  <p>${row
+    ? "We won't email you again. Sorry for the bother."
+    : "This address is already off our list. Nothing more to do."}</p>
+  <p style="font-size:13px;color:#6b7280">
+    If you didn't expect this email at all, please ignore — we won't contact you again.
+    Questions? <a href="mailto:hello@simpleitsrq.com">hello@simpleitsrq.com</a>.
+  </p>
+</div>
+</body></html>`;
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
 // ---------- entry points ----------
 // CSRF is enforced in two layers:
 //   1. csrfCheck() — Origin must be present AND match an allowed host.
@@ -3786,6 +3942,21 @@ async function dispatch(request, method) {
 
   // Health check is unauthenticated — must be before requireSession.
   if (action === "health" && method === "GET") return handleHealth();
+
+  // Public lead-gen tracking endpoints. Authenticated by per-send tokens
+  // embedded in the outgoing email, NOT a session — recipients open these
+  // from their inbox without ever visiting our site otherwise. Must run
+  // BEFORE the CSRF + session gates.
+  //
+  //   leadgen-o : 1×1 tracking pixel (GET only)
+  //   leadgen-c : click-tracking redirect (GET only, 302 to ?u=)
+  //   leadgen-u : one-click unsubscribe — accepts both GET (web link)
+  //               and POST (RFC 8058 List-Unsubscribe-Post header).
+  if (action === "leadgen-o" && method === "GET") return handleLeadgenOpenPixel(url);
+  if (action === "leadgen-c" && method === "GET") return handleLeadgenClick(url);
+  if (action === "leadgen-u" && (method === "GET" || method === "POST")) {
+    return handleLeadgenUnsubscribe(url, method);
+  }
 
   // Layer 1: Origin check (rejects cross-origin and missing-Origin
   // mutations before any DB work).
