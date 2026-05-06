@@ -31,6 +31,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Book = lazy(() => import("./pages/Book"));
 const Support = lazy(() => import("./pages/Support"));
 const ClientPortal = lazy(() => import("./pages/ClientPortal"));
+const LeadgenDashboard = lazy(() => import("./pages/LeadgenDashboard"));
 const PrivacyPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
@@ -489,6 +490,7 @@ export default function App() {
               <Route path="/live-threats" element={<LiveThreats />} />
               <Route path="/password-check" element={<PasswordCheck />} />
               <Route path="/portal" element={<ClientPortal />} />
+              <Route path="/portal/leadgen" element={<LeadgenDashboard />} />
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/accessibility" element={<AccessibilityPage />} />
