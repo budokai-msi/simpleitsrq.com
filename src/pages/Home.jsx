@@ -184,9 +184,9 @@ function Industries() {
     <section className="section section-alt" id="industries" aria-labelledby="industries-title">
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
-          <span className="eyebrow">Who We Work With</span>
-          <h2 id="industries-title" className="title-1">Who we know how to support</h2>
-          <p className="section-sub">Medical, legal, financial, construction, and real estate offices across Sarasota and Bradenton — plus residential clients, home offices, and snowbird condos that need a local tech who'll just show up.</p>
+          <span className="eyebrow">Industries</span>
+          <h2 id="industries-title" className="title-1">Regulated industries we operate in every week</h2>
+          <p className="section-sub">Healthcare, legal, financial services, construction, and real estate offices across Sarasota and Bradenton — plus residential clients, home offices, and snowbird condos. Every engagement is staffed by a tech who has shipped the controls your auditor or insurance carrier is going to ask about.</p>
         </div>
         <div className="industries-grid">
           {INDUSTRIES.map(({ Icon, name, badges }, i) => (
@@ -206,21 +206,23 @@ function Industries() {
 
 function Compliance() {
   const features = [
-    "HIPAA paperwork and risk reviews",
-    "Cyber-insurance renewal help",
-    "Off-site backups you can actually restore",
-    "A simple disaster-recovery plan for your team",
-    "Strong encryption on every laptop and phone",
+    "HIPAA risk assessments and remediation plans",
+    "Cyber-insurance renewal evidence packages",
+    "Tested off-site backups with documented RTO/RPO",
+    "Written disaster-recovery runbook for your team",
+    "Full-disk encryption on every laptop and mobile device",
   ];
   return (
     <section className="section" id="compliance" aria-labelledby="compliance-title">
       <div className="container compliance-grid reveal-up">
         <div>
-          <span className="eyebrow">Paperwork and Disaster Planning</span>
-          <h2 id="compliance-title" className="title-1">We handle the paperwork most IT guys hate</h2>
+          <span className="eyebrow">Governance, Risk & Compliance</span>
+          <h2 id="compliance-title" className="title-1">Audit-ready documentation, without the consultant invoice</h2>
           <p className="section-sub">
-            Audits, cyber-insurance renewals, HIPAA reviews, disaster-recovery plans — we do
-            the work and hand you the documents so you can focus on running your business.
+            HIPAA risk assessments, cyber-insurance renewals, disaster-recovery
+            runbooks, and the evidence trail behind them — we do the engineering
+            work and hand you the documents your auditor, carrier, or board
+            actually asked for.
           </p>
           <ul className="feature-list">
             {features.map((f) => (
@@ -228,22 +230,22 @@ function Compliance() {
             ))}
           </ul>
         </div>
-        <aside className="compliance-card" aria-label="Our track record">
+        <aside className="compliance-card" aria-label="Operational track record">
           <div className="cc-header">
             <Shield size={24} color="#0F6CBD" />
             <div>
               <span className="cc-eyebrow">HIPAA DOCUMENTED PARTNER</span>
-              <h3 className="cc-title">Our track record</h3>
+              <h3 className="cc-title">Operational track record</h3>
             </div>
           </div>
           <div className="cc-grid">
-            <div><span>0</span><small>Breaches</small></div>
-            <div><span>&lt;4h</span><small>Back up and running</small></div>
-            <div><span>Strong</span><small>Encryption</small></div>
-            <div><span>99.99%</span><small>Uptime</small></div>
+            <div><span>0</span><small>Reportable breaches</small></div>
+            <div><span>&lt;4h</span><small>Mean time to restore</small></div>
+            <div><span>AES-256</span><small>Endpoint encryption</small></div>
+            <div><span>99.99%</span><small>Service availability</small></div>
           </div>
           <div className="cc-footer">
-            <Check size={14} color="#107C10" /> Paperwork and protections in place
+            <Check size={14} color="#107C10" /> Controls implemented and evidenced
           </div>
         </aside>
       </div>
