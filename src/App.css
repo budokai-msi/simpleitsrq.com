@@ -14,52 +14,62 @@ main, #main {
   padding: 0 24px;
 }
 
-/* ============ Typography ============ */
+/* ============ Typography ============
+ * Tightened for Geist Variable. Geist is optically narrower than system
+ * sans, so the previous letter-spacing values (tuned for Segoe UI) felt
+ * loose. We ladder line-heights tighter at large sizes for editorial
+ * feel — display/title-1 sit at ~1.05–1.1 instead of 1.3.
+ */
 .display {
-  font-size: 68px;
-  line-height: 76px;
+  font-size: clamp(44px, 6vw, 72px);
+  line-height: 1.05;
   font-weight: 600;
-  letter-spacing: -1.5px;
+  letter-spacing: -0.025em;
   color: var(--text-1);
   margin: 12px 0 20px;
+  font-feature-settings: "ss01", "ss03", "cv11";
 }
 .title-1 {
-  font-size: 40px;
-  line-height: 52px;
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.1;
   font-weight: 600;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.022em;
   color: var(--text-1);
   margin: 8px 0 12px;
+  font-feature-settings: "ss01", "ss03", "cv11";
 }
 .title-2 {
-  font-size: 32px;
-  line-height: 40px;
+  font-size: clamp(24px, 2.6vw, 32px);
+  line-height: 1.2;
   font-weight: 600;
+  letter-spacing: -0.018em;
   color: var(--text-1);
   margin: 0 0 12px;
+  font-feature-settings: "ss01", "ss03", "cv11";
 }
 .subtitle {
   font-size: 20px;
-  line-height: 28px;
+  line-height: 1.4;
   font-weight: 600;
+  letter-spacing: -0.012em;
   color: var(--text-1);
 }
 .lede {
-  font-size: 18px;
-  line-height: 28px;
-  color: var(--text-1);
-  opacity: 0.8;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--text-2);
   margin: 0 0 28px;
-  max-width: 56ch;
+  max-width: 60ch;
+  letter-spacing: -0.005em;
 }
 .eyebrow {
   display: inline-block;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 1.5px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--brand);
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 /* ============ Buttons ============ */
@@ -102,6 +112,15 @@ main, #main {
   color: var(--text-1); 
   border-color: var(--text-3);
   box-shadow: var(--shadow4);
+}
+/* Keyboard focus ring — accessible without polluting mouse :active.
+ * Same shadow-glow token both buttons share so the ring matches the
+ * brand language. */
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-glow), var(--shadow4);
 }
 .link-btn {
   font-size: 14px;
@@ -1481,17 +1500,17 @@ main, #main {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #0F6CBD;
+  color: var(--brand);
   margin-bottom: 8px;
 }
 
 .blog-card-title {
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   font-size: 20px;
   font-weight: 600;
   line-height: 1.3;
+  letter-spacing: -0.012em;
   margin: 0 0 12px;
-  color: #242424;
+  color: var(--text-1);
 }
 
 .blog-card-title a {
@@ -1499,12 +1518,12 @@ main, #main {
   text-decoration: none;
 }
 
-.blog-card-title a:hover { color: #0F6CBD; }
+.blog-card-title a:hover { color: var(--brand); }
 
 .blog-card-excerpt {
   font-size: 14px;
   line-height: 1.55;
-  color: #616161;
+  color: var(--text-2);
   margin: 0 0 16px;
   flex: 1;
 }
@@ -1515,7 +1534,7 @@ main, #main {
   justify-content: space-between;
   gap: 12px;
   font-size: 13px;
-  color: #707070;
+  color: var(--text-3);
   border-top: 1px solid var(--border);
   padding-top: 14px;
   margin-top: auto;
@@ -1525,7 +1544,7 @@ main, #main {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #0F6CBD;
+  color: var(--brand);
   font-weight: 600;
   text-decoration: none;
 }
@@ -5450,16 +5469,11 @@ select:focus-visible {
 /* Fluid display + title sizing — collapses gracefully on mobile so the
  * 68px hero doesn't crush a 360px screen. clamp() keeps the desktop
  * size unchanged at the top end. Only top-level .display + .title-1
- * because .title-2 / .title-3 already scale fine. */
-.display {
-  font-size: clamp(36px, 8vw, 68px);
-  line-height: clamp(44px, 9vw, 76px);
-  letter-spacing: clamp(-1px, -0.2vw, -1.5px);
-}
-.title-1 {
-  font-size: clamp(28px, 5vw, 40px);
-  line-height: clamp(36px, 6vw, 52px);
-}
+ * because .title-2 / .title-3 already scale fine.
+ * NOTE: Both .display and .title-1 already use clamp() in their primary
+ * declarations earlier in this file, so this override block was making
+ * them double-clamp at slightly different breakpoints — leaving as a
+ * historical comment but rules removed to avoid the conflict. */
 
 /* Higher tap-target floor for icon-only buttons (per WCAG 2.5.5
  * minimum 44x44 CSS pixels). Mostly affects the mobile action bar +
