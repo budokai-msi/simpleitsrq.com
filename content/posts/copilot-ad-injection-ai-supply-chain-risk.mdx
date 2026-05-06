@@ -30,22 +30,22 @@ The relevant question for an IT decision-maker is not whether to be outraged at 
 Generative AI products are expensive to run. The unit economics on a $20/month consumer subscription are, even for the most efficient providers, a constant fight to break even. The path to a real margin runs through one of three doors:
 
 1. **Raise prices.** Politically expensive. Customers churn. Wall Street notices.
-2. **Cut quality / inference cost.** Technically possible but visible to power users — every model downgrade in the last two years has triggered a measurable user revolt.
+2. **Cut quality / inference cost.** Technically possible but visible to power users, every model downgrade in the last two years has triggered a measurable user revolt.
 3. **Monetize the output.** Affiliate links. Sponsored recommendations. Preferred-vendor placements. Every existing consumer-internet business has done this. Search engines do it. Social feeds do it. App stores do it. Maps do it. Email clients do it.
 
-Door three is the cheapest path to margin and the path that has the lowest political cost — *as long as the user doesn't notice*. The Copilot incident is interesting because someone noticed. The boring version of this incident is the version where nobody catches it.
+Door three is the cheapest path to margin and the path that has the lowest political cost, *as long as the user doesn't notice*. The Copilot incident is interesting because someone noticed. The boring version of this incident is the version where nobody catches it.
 
 ## Why "we trust the vendor" is not a defense
 
 The trap a lot of teams fall into: "We're on the enterprise plan, they wouldn't insert ads in our paid product." Look at the precedent. Microsoft injects unrequested upsell prompts into Windows 11 Pro, which is a paid product. Google injects "sponsored" results into Gmail's promotional tab, which paid Workspace customers receive. Adobe injects upsell modals into Creative Cloud, which costs $80/month. Every one of these companies has a stated commitment to "respecting paid customer experience." Every one of them ships the upsells anyway.
 
-When the AI assistant inside your IDE, your email client, or your document editor starts recommending vendors, the recommendation will be presented as a feature. "Smart suggestions." "Relevant tools." "Curated picks." Whatever it's called, the underlying mechanic — the vendor's commercial team has a list of partners and the assistant has been tuned to surface them — is the same as a Google ad with the "Ad" tag stripped off.
+When the AI assistant inside your IDE, your email client, or your document editor starts recommending vendors, the recommendation will be presented as a feature. "Smart suggestions." "Relevant tools." "Curated picks." Whatever it's called, the underlying mechanic, the vendor's commercial team has a list of partners and the assistant has been tuned to surface them, is the same as a Google ad with the "Ad" tag stripped off.
 
 You don't have to be cynical about this. You only have to be realistic about who pays whose bills.
 
 ## The supply-chain frame
 
-When Copilot, Cursor, Claude Code, or any other AI assistant suggests text or code, that suggestion is the output of a model trained on data the vendor controls and shaped by prompt-engineering choices the vendor makes. If the vendor decides to prefer a partner product, an affiliate link, or an internal recommendation, you — the user — are the last line of defense. There is no neutral middleman, the way there is between a compiler and a linker. The model *is* the vendor.
+When Copilot, Cursor, Claude Code, or any other AI assistant suggests text or code, that suggestion is the output of a model trained on data the vendor controls and shaped by prompt-engineering choices the vendor makes. If the vendor decides to prefer a partner product, an affiliate link, or an internal recommendation, you, the user, are the last line of defense. There is no neutral middleman, the way there is between a compiler and a linker. The model *is* the vendor.
 
 Most teams do not audit AI output the way they audit dependencies. They glance at it, accept it, and move on. The ad-injection scenario exploits exactly that habit.
 
@@ -54,7 +54,7 @@ Most teams do not audit AI output the way they audit dependencies. They glance a
 Concrete moves any team can make this quarter:
 
 **Treat every AI-generated artifact as draft content.**
-A human reviews before it ships externally. No exceptions for "trusted" tools. This is the single highest-leverage policy you can adopt and most teams have not.
+A human reviews before it ships externally. No exceptions for "trusted" tools. This is the single highest-uses policy you can adopt and most teams have not.
 
 **Log AI interactions where you can.**
 Microsoft 365 Copilot has admin logging via Purview. GitHub Copilot has audit logs at the org level. Anthropic and OpenAI both expose enterprise audit endpoints. Use them. The first time you need to demonstrate to a client that a particular AI-generated response was not influenced by a vendor placement, you'll need the logs.

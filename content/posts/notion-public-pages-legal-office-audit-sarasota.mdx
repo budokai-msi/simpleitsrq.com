@@ -18,27 +18,27 @@ heroAlt: "A laptop on a Sarasota law firm conference-room desk showing a Notion 
 
 ## The morning call
 
-At 9:17 this morning a Sarasota employment law firm we support forwarded me a screenshot from Twitter. A researcher had demonstrated that a Notion API endpoint — the one that renders a "Share to web" page — also returned a JSON blob containing the email addresses of every staff member who had ever edited that page. Not the public content. The editor list. For every public Notion page in the world.
+At 9:17 this morning a Sarasota employment law firm we support forwarded me a screenshot from Twitter. A researcher had demonstrated that a Notion API endpoint, the one that renders a "Share to web" page, also returned a JSON blob containing the email addresses of every staff member who had ever edited that page. Not the public content. The editor list. For every public Notion page in the world.
 
 By 9:42 we were on the phone with the firm's managing partner. By 10:15 we had a list of every "Share to web" page in the firm's Notion workspace. By noon we had a decision: the firm was moving 80% of its Notion content into access-controlled alternatives, and rotating every public link that we couldn't take down fast enough.
 
-Here's what we found and what we did, because the same steps apply to any small business using Notion the way law firms do — as a shared knowledge base with occasional client-facing pages.
+Here's what we found and what we did, because the same steps apply to any small business using Notion the way law firms do, as a shared knowledge base with occasional client-facing pages.
 
 ## The problem in concrete terms
 
 Notion lets you do two things that quietly combine into a privacy issue:
 
-1. **Share to web**, which makes a page readable without a login. This is useful. Lots of legitimate pages — a company careers page, a product announcement, a public RFP — use it. The share toggle is trivial to flip.
+1. **Share to web**, which makes a page readable without a login. This is useful. Lots of legitimate pages, a company careers page, a product announcement, a public RFP, use it. The share toggle is trivial to flip.
 
-2. **Editor attribution**, which tracks who edited what. Also useful — that's how Notion's activity log works. The editor identities include email addresses for every internal staff member who has ever touched the page.
+2. **Editor attribution**, which tracks who edited what. Also useful, that's how Notion's activity log works. The editor identities include email addresses for every internal staff member who has ever touched the page.
 
-The issue was that a backend API endpoint used to render the shared page also returned the editor list. A public page — one meant to be read by anyone — exposed its editor roster to anyone who made a direct API call. Not through the UI. Not through normal browsing. Through a specific URL that any scraper could hit in a loop.
+The issue was that a backend API endpoint used to render the shared page also returned the editor list. A public page, one meant to be read by anyone, exposed its editor roster to anyone who made a direct API call. Not through the UI. Not through normal browsing. Through a specific URL that any scraper could hit in a loop.
 
 Notion patched the endpoint within hours. But the window during which the endpoint was exposed is measured in months, and the data that leaked is now on a handful of GitHub gists and at least two dark-web forums we monitor. Nothing Notion does going forward undoes the emails that are already out.
 
 ## Why a law firm was the first call
 
-Law firms have a specific vulnerability to this kind of leak. Their staff emails are on their website (partners), in court filings (paralegals), and on sign-out sheets at county clerks' offices (investigators). But the mapping of *which staff member edits which client matter* is usually private — because the client matter itself is privileged.
+Law firms have a specific vulnerability to this kind of leak. Their staff emails are on their website (partners), in court filings (paralegals), and on sign-out sheets at county clerks' offices (investigators). But the mapping of *which staff member edits which client matter* is usually private, because the client matter itself is privileged.
 
 Our firm uses Notion for three overlapping purposes:
 - **Public-facing pages**: practice-area descriptions, attorney bios, the "careers" page
@@ -54,10 +54,10 @@ We booked a conference room and two hours. Managing partner, office administrato
 **Step 1: enumerate every Share-to-web page.** Notion doesn't give you a "list all public pages" button. We used the Notion API with the firm's integration token to walk the entire page tree and flag every page with the "public" flag set. This took 14 minutes.
 
 **Step 2: classify each one.** Each page fell into one of four buckets:
-- Legitimate public content (bios, careers, the firm's intake form's landing) — keep public
-- Pages that should have been shared-with-email only (client questionnaires, case summaries) — convert to logged-in access
-- Pages shared publicly because the staff member didn't realize there was a difference — unshare immediately
-- Orphaned pages from former staff members or old matters — archive
+- Legitimate public content (bios, careers, the firm's intake form's landing), keep public
+- Pages that should have been shared-with-email only (client questionnaires, case summaries), convert to logged-in access
+- Pages shared publicly because the staff member didn't realize there was a difference, unshare immediately
+- Orphaned pages from former staff members or old matters, archive
 
 The firm had 47 public pages when we started. After classification: 8 legitimate, 11 should-be-restricted, 23 should-be-unshared, 5 orphans. The ratio is pretty typical.
 
@@ -79,7 +79,7 @@ If your business doesn't handle privileged information but does use Notion, the 
 
 2. **For each page, ask: is the editor list safe to be indexed?** Most public pages are a careers page or product announcement where the editors are already public (marketing lead, COO). Those are fine. The ones where the editors include a paralegal, a billing specialist, or a medical assistant are the ones to restrict.
 
-3. **Disable "share to web" for everyone except the admin.** This is the setting change with the highest leverage-to-friction ratio in the whole audit. Do it by end of day.
+3. **Disable "share to web" for everyone except the admin.** This is the setting change with the highest uses-to-friction ratio in the whole audit. Do it by end of day.
 
 4. **If your staff has been using Notion for client-facing work, seriously consider a migration.** Notion is built to be a wiki, not an access-controlled client portal. Clio, Lawmatics, HubSpot, or a password-gated Microsoft 365 SharePoint site are all better-suited for anything client-facing. Notion stays for internal docs.
 
@@ -89,7 +89,7 @@ If your business doesn't handle privileged information but does use Notion, the 
 
 Independent of the Notion story, here's what we're installing or recommending more frequently this quarter. Every one of these is something that would have made this morning's cleanup faster:
 
-- <Affiliate token="amazon_search:yubikey 5c nfc hardware security key|A YubiKey 5C NFC" /> for every admin account. If the Notion admin account had been phished two months ago, the whole audit would have started from a worse place. Hardware keys are the cheapest major risk reduction in SaaS security right now — about $55 each.
+- <Affiliate token="amazon_search:yubikey 5c nfc hardware security key|A YubiKey 5C NFC" /> for every admin account. If the Notion admin account had been phished two months ago, the whole audit would have started from a worse place. Hardware keys are the cheapest major risk reduction in SaaS security right now, about $55 each.
 - <Affiliate token="amazon_search:two-drive synology nas small business|A two-bay Synology NAS" /> for the archive copy of critical docs. The law firm had their case files mirrored to Synology, which meant nothing in the Notion audit was existential. For about $400 + two 4 TB drives, every small office should have this.
 - <Affiliate token="amazon_search:fireproof waterproof document bag|A fireproof, waterproof document bag" /> ($30 on Amazon) for the paper copy of the office's emergency runbook. The firm keeps theirs in their records room; we hand it to clients on day one.
 
@@ -111,13 +111,13 @@ Two hours for a 14-person firm. Half a day for a 40-person firm. The audit is an
 
 ## The policy this is all part of
 
-All of the above — the Notion audit, the SaaS inventory, the vendor-breach response — sits inside a broader discipline we documented in the [SaaS Incident Response Playbook](/store/saas-incident-response-playbook) we published yesterday. $29. Fillable. Florida-compliance-aware. If you want the audit above as a printable version with the checklists already formatted, it's in there.
+All of the above, the Notion audit, the SaaS inventory, the vendor-breach response, sits inside a broader discipline we documented in the [SaaS Incident Response Playbook](/store/saas-incident-response-playbook) we published yesterday. $29. Fillable. Florida-compliance-aware. If you want the audit above as a printable version with the checklists already formatted, it's in there.
 
 ---
 
 If your Sarasota, Bradenton, or Venice business uses Notion for anything client-facing and wants a set of outside eyes on the public-page list, [**reach out**](/#contact). We'll spend 45 minutes walking through your workspace with you on a screen share. No charge. Just hand us the integration token and we'll produce the list.
 
-If you'd rather run the vendor piece yourself — Notion is just one vendor of many in the stack — our [**Vendor Risk Register**](/store/vendor-risk-register) ($19) is pre-populated with 40+ SaaS vendors including Notion's latest risk rating after this incident.
+If you'd rather run the vendor piece yourself. Notion is just one vendor of many in the stack, our [**Vendor Risk Register**](/store/vendor-risk-register) ($19) is pre-populated with 40+ SaaS vendors including Notion's latest risk rating after this incident.
 
 ---
 
