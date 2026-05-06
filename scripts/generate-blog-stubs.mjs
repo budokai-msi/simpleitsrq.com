@@ -194,6 +194,9 @@ function main() {
   }
 
   console.log(`generate-blog-stubs: wrote ${written} posts (skipped ${skipped} without slug/title)`);
+
+  // Sentinel for prod debug: confirms postbuild output reaches deployed dist
+  fs.writeFileSync(path.join(DIST, "blog", "_sentinel.txt"), `built ${new Date().toISOString()}\n${written} posts\n`, "utf8");
 }
 
 main();
