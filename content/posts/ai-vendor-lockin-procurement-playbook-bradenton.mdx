@@ -17,7 +17,7 @@ heroAlt: "A contract document with highlighted clauses about service availabilit
 
 ## The structural argument
 
-Earlier this week Anthropic updated the Claude Code terms of service to block third-party wrappers — including the popular OpenClaw runtime — from using paid Claude subscriptions. There was no email. No prominent blog post. Users discovered the change when their tooling stopped working.
+Earlier this week Anthropic updated the Claude Code terms of service to block third-party wrappers, including the popular OpenClaw runtime, from using paid Claude subscriptions. There was no email. No prominent blog post. Users discovered the change when their tooling stopped working.
 
 The narrow lesson is "read the terms before you build." That's true and unhelpful. The structural lesson, which is the one that actually matters: **every AI vendor with per-user subscription pricing will eventually do exactly this, and the timeline is shorter than your procurement cycle.**
 
@@ -27,8 +27,8 @@ Once you internalize the pattern, the right response stops being "audit Anthropi
 
 The economics force it. Every consumer-facing AI vendor sells two products that compete with each other:
 
-1. **A flat-rate subscription** for individual users — $20–$30/month for "all you can eat" inside the chat interface.
-2. **A pay-per-token API** for developers and businesses — typically $3–$15 per million tokens, often costing far more than the subscription if you actually use it heavily.
+1. **A flat-rate subscription** for individual users, $20–$30/month for "all you can eat" inside the chat interface.
+2. **A pay-per-token API** for developers and businesses, typically $3–$15 per million tokens, often costing far more than the subscription if you actually use it heavily.
 
 A wrapper tool routes a single subscriber's account to dozens of automated workflows that would have cost hundreds of dollars per month at API rates. The vendor is now subsidizing infrastructure they expected to bill for. The wrapper, the wrapper's customers, and the original subscriber are all winners. The vendor is the loser.
 
@@ -58,7 +58,7 @@ If you needed to leave this vendor tomorrow, what's your export path? Most AI to
 Read the API access, third-party integration, and acceptable-use sections of the ToS. If those clauses can change "with notice posted to this page," treat them as if they will change. Because they will.
 
 **4. What's the fallback?**
-Pick a second vendor or an open-source alternative for any tool that touches a critical workflow. You don't need to use it daily — you need switching to be a half-day, not a quarter. For most teams the fallback story is: Claude as primary → Microsoft Copilot or local [Ollama](/blog/ollama-local-llm-private-ai-2026) as fallback. Pick the second one *now*, not when you need it.
+Pick a second vendor or an open-source alternative for any tool that touches a critical workflow. You don't need to use it daily, you need switching to be a half-day, not a quarter. For most teams the fallback story is: Claude as primary → Microsoft Copilot or local [Ollama](/blog/ollama-local-llm-private-ai-2026) as fallback. Pick the second one *now*, not when you need it.
 
 ## Concrete steps this week
 
