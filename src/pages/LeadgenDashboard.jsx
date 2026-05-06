@@ -443,6 +443,17 @@ function CampaignsTab() {
     } catch (e) { setErr(String(e.message || e)); }
   };
 
+  const sendTest = async (id) => {
+    const to = prompt("Send a test of this template to which email?");
+    if (!to) return;
+    setMsg(""); setErr("");
+    try {
+      const r = await postJson("/api/portal?action=leadgen-campaign-test", { id, to });
+      if (r.ok) setMsg(`Test sent to ${to} (message id ${r.messageId || "?"}). Check inbox + spam.`);
+      else setErr(`Test failed: ${r.error}${r.permanent ? " (permanent)" : ""}`);
+    } catch (e) { setErr(String(e.message || e)); }
+  };
+
   return (
     <div>
       {!editing ? (
@@ -483,6 +494,7 @@ function CampaignsTab() {
                     <td style={{ padding: "8px 10px", textAlign: "right" }}>{c.replied}</td>
                     <td style={{ padding: "8px 10px", textAlign: "right", whiteSpace: "nowrap" }}>
                       <button onClick={() => setEditing(c)} style={{ marginRight: 4 }}>Edit</button>
+                      <button onClick={() => sendTest(c.id)} style={{ marginRight: 4 }}>Test send</button>
                       {["draft", "paused", "scheduled"].includes(c.status) ? (
                         <button onClick={() => start(c.id)}>Start</button>
                       ) : c.status === "running" ? (
