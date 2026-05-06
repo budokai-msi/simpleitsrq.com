@@ -25,6 +25,7 @@ import { json } from "./_lib/http.js";
 import { csrfValid } from "./_lib/csrf.js";
 import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
 import { runLeadgenWorker } from "./cron/agent.js";
+import { timingSafeEqual } from "node:crypto";
 
 // Vercel function config: lead-gen Discover + Crawl run their workers
 // inline (Overpass + outbound HTTP fetches), so we need the higher
@@ -136,6 +137,158 @@ async function resolveAdmin(session) {
   const rows = await sql`SELECT is_admin FROM users WHERE id = ${session.user.id} LIMIT 1`;
   session.__isAdmin = rows.length > 0 && rows[0].is_admin === true;
   return session.__isAdmin;
+}
+
+// ────────────────────────────────────────────────────────────
+// Admin API token (for tooling / CI / agent automation)
+// ────────────────────────────────────────────────────────────
+//
+// Lets us drive a tightly-scoped allowlist of admin actions from the
+// shell (curl / Invoke-RestMethod) without juggling browser cookies +
+// CSRF tokens. Required env: ADMIN_API_TOKEN (≥ 32 chars).
+//
+// Compared with timing-safe equal. Token is checked BEFORE CSRF
+// because the whole point is non-browser automation, but the
+// allowlist (ADMIN_TOKEN_ACTIONS below) keeps blast radius small —
+// no user impersonation, no Stripe writes, no payouts, no audit-log
+// tampering.
+const ADMIN_TOKEN_ACTIONS = new Set([
+  // read-only / observability
+  "admin-status",
+  "leadgen-businesses",
+  "leadgen-campaigns",
+  "leadgen-jobs",
+  "leadgen-status",
+  "leadgen-export",
+  // self-serve maintenance
+  "run-audit-migration",
+  "leadgen-reclassify",
+  "leadgen-run-jobs",
+  "leadgen-discover",
+  "leadgen-crawl-emails",
+  "leadgen-business-update",
+  "leadgen-ai",
+]);
+
+function verifyAdminToken(request) {
+  const expected = process.env.ADMIN_API_TOKEN;
+  if (!expected || expected.length < 32) return false;
+  const got = request.headers.get("x-admin-token") || "";
+  if (!got || got.length !== expected.length) return false;
+  try {
+    return timingSafeEqual(Buffer.from(got, "utf8"), Buffer.from(expected, "utf8"));
+  } catch {
+    return false;
+  }
+}
+
+// Synthetic session used when ADMIN_API_TOKEN auth succeeds. Looks
+// just like a real admin session to the rest of the dispatcher so
+// every existing requireAdmin() / resolveAdmin() check passes.
+function adminTokenSession() {
+  return {
+    user: {
+      id: 0,
+      email: process.env.ADMIN_EMAIL || "admin@simpleitsrq.com",
+      name: "Admin (token)",
+      is_admin: true,
+    },
+    __isAdmin: true,
+    __viaToken: true,
+  };
+}
+
+// ----------- handler: admin-status (token + admin only) -----------
+//
+// Read-only health snapshot. Designed for the CLI / agent to "see
+// what's going on" without needing to hit the browser dashboard.
+// Returns: env presence flags, table row counts, queue depths, recent
+// errors, and the last-applied audit chain head.
+async function handleAdminStatus(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const env = {
+    ADMIN_API_TOKEN: !!process.env.ADMIN_API_TOKEN,
+    GROQ_API_KEY:    !!process.env.GROQ_API_KEY,
+    BREVO_API_KEY:   !!process.env.BREVO_API_KEY,
+    SMTP_HOST:       !!process.env.SMTP_HOST,
+    SMTP_USER:       !!process.env.SMTP_USER,
+    RESEND_API_KEY:  !!process.env.RESEND_API_KEY,
+    STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+    NEON_API_KEY:    !!process.env.NEON_API_KEY,
+  };
+
+  // Run all probe queries in parallel; wrap each in a defensive try
+  // so a single missing-table doesn't 500 the whole snapshot.
+  const safe = async (label, q) => {
+    try { return { [label]: (await q)[0] }; }
+    catch (e) { return { [label]: { error: String(e.message || e) } }; }
+  };
+
+  const [
+    leadBiz, leadEmails, leadCampaigns, leadSends, leadJobs,
+    users, tickets, sec, eng, threats,
+  ] = await Promise.all([
+    safe("lead_businesses",      sql`SELECT count(*)::int AS n, count(*) FILTER (WHERE status='active')::int AS active FROM lead_businesses`),
+    safe("lead_emails",          sql`SELECT count(*)::int AS n, count(*) FILTER (WHERE status='deliverable')::int AS deliverable FROM lead_emails`),
+    safe("lead_campaigns",       sql`SELECT count(*)::int AS n FROM lead_campaigns`),
+    safe("lead_campaign_sends",  sql`SELECT count(*)::int AS n FROM lead_campaign_sends`),
+    safe("lead_crawl_jobs",      sql`SELECT count(*)::int AS n,
+                                            count(*) FILTER (WHERE status='queued')::int     AS queued,
+                                            count(*) FILTER (WHERE status='running')::int    AS running,
+                                            count(*) FILTER (WHERE status='failed')::int     AS failed
+                                       FROM lead_crawl_jobs`),
+    safe("users",                sql`SELECT count(*)::int AS n FROM users`),
+    safe("tickets",              sql`SELECT count(*)::int AS n, count(*) FILTER (WHERE status IN ('open','in_progress','waiting'))::int AS open FROM tickets`),
+    safe("security_events",      sql`SELECT count(*)::int AS n FROM security_events`),
+    safe("engagement_events",    sql`SELECT count(*)::int AS n FROM engagement_events`),
+    safe("threat_feeds",         sql`SELECT count(*)::int AS n FROM threat_feeds`),
+  ]);
+  const counts = { ...leadBiz, ...leadEmails, ...leadCampaigns, ...leadSends, ...leadJobs, ...users, ...tickets, ...sec, ...eng, ...threats };
+
+  // Most recent jobs and security events — fingerprint of "what just
+  // happened" without dumping the full table.
+  const recentJobs = await sql`
+    SELECT id, kind, status, progress, total, error, created_at, finished_at
+    FROM lead_crawl_jobs
+    ORDER BY id DESC
+    LIMIT 25
+  `.catch((e) => [{ error: String(e.message || e) }]);
+
+  const recentSecurity = await sql`
+    SELECT id, event_type, detail, ip, ts
+    FROM security_events
+    WHERE event_type LIKE '%error%' OR event_type LIKE '%fail%' OR event_type LIKE '%blocked%'
+    ORDER BY id DESC
+    LIMIT 25
+  `.catch((e) => [{ error: String(e.message || e) }]);
+
+  // Detect schema state of migration 014 columns (informational so the
+  // agent can decide whether to run run-audit-migration).
+  let schema014 = null;
+  try {
+    const r = await sql`
+      SELECT
+        EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='lead_businesses' AND column_name='industry_group')  AS has_industry_group,
+        EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='lead_businesses' AND column_name='sub_industry')    AS has_sub_industry,
+        EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='lead_businesses' AND column_name='tags')            AS has_tags
+    `;
+    schema014 = r[0];
+  } catch (e) {
+    schema014 = { error: String(e.message || e) };
+  }
+
+  return json(200, {
+    ok: true,
+    via: session.__viaToken ? "admin_token" : "session",
+    env,
+    counts,
+    schema014,
+    recent_jobs: recentJobs,
+    recent_security_errors: recentSecurity,
+    server_time: new Date().toISOString(),
+  });
 }
 
 // ---------- action handlers ----------
@@ -4371,6 +4524,20 @@ async function dispatch(request, method) {
     return handleLeadgenUnsubscribe(url, method);
   }
 
+  // ─── Admin API token bypass ─────────────────────────────────
+  // Tightly scoped: only actions in ADMIN_TOKEN_ACTIONS are reachable
+  // via token, the token must be ≥32 chars set in env, and the
+  // x-admin-token header must match in constant time. Skips CSRF
+  // (which only matters for browsers) but everything else is identical
+  // to a real admin session.
+  if (verifyAdminToken(request)) {
+    if (!ADMIN_TOKEN_ACTIONS.has(action)) {
+      return json(403, { ok: false, error: "admin_token_action_not_allowed", action });
+    }
+    const session = adminTokenSession();
+    return dispatchAuthed(request, method, url, action, session);
+  }
+
   // Layer 1: Origin check (rejects cross-origin and missing-Origin
   // mutations before any DB work).
   if (!csrfCheck(request, method)) {
@@ -4384,6 +4551,14 @@ async function dispatch(request, method) {
   const { session, error } = await requireSession(request);
   if (error) return error;
 
+  return dispatchAuthed(request, method, url, action, session);
+}
+
+// Routes that need an authenticated admin/user session. Split out so
+// the admin-token path and the cookie-session path share one routing
+// table. Anything reachable without auth must remain in dispatch()
+// above the auth gates.
+async function dispatchAuthed(request, method, url, action, session) {
   if (action === "me"              && method === "GET")   return handleMeGet(session);
   if (action === "me"              && method === "PATCH") return handleMePatch(session, request);
   if (action === "export-data"     && method === "GET")   return handleExportData(session);
@@ -4446,6 +4621,11 @@ async function dispatch(request, method) {
   if (action === "leadgen-export"           && method === "GET")  return handleLeadgenExport(session, url);
   if (action === "leadgen-ai"               && method === "POST") return handleLeadgenAi(session, request);
   if (action === "leadgen-brevo-sync"       && method === "POST") return handleLeadgenBrevoSync(session, request);
+
+  // Read-only admin observability — used by the agent CLI to diagnose
+  // env config, queue depth, schema state, and recent errors without
+  // touching the dashboard.
+  if (action === "admin-status"             && method === "GET")  return handleAdminStatus(session);
 
   return json(404, { ok: false, error: "unknown_action" });
 }
