@@ -194,18 +194,17 @@ export default function Services() {
     <main id="main" className="services-main">
       <section className="section services-hero">
         <div className="container">
-          <span className="eyebrow">Services · Fixed Fee · No Quotes</span>
-          <h1 className="display">Buy a service. No phone tag, no "I'll think about it."</h1>
+          <span className="eyebrow">Service Catalog · Fixed Fee · Public Pricing</span>
+          <h1 className="display">Productized IT services. Public pricing. Online checkout.</h1>
           <p className="lede">
-            Productized fixed-fee IT services for Sarasota, Bradenton, Venice,
-            Lakewood Ranch, and Nokomis. Pick what you need, pay online,
-            schedule. Most local IT shops can't do this — we wrote the
-            checkout so you wouldn't have to wait on a callback to spend
-            your money.
+            A fixed-fee service catalog for Sarasota, Bradenton, Venice, Lakewood
+            Ranch, and Nokomis. Each engagement has a defined scope, a written
+            statement of work, and a posted price — no quote-and-callback dance,
+            no hourly surprises. Select an SKU, complete checkout, schedule.
           </p>
           <div className="services-trust-row">
-            <span><MapPin size={14} /> Local Sarasota / Bradenton team</span>
-            <span><ShieldCheck size={14} /> Flat fees · written what's-included list · 30-day satisfaction guarantee</span>
+            <span><MapPin size={14} /> Local Sarasota / Bradenton engineering team</span>
+            <span><ShieldCheck size={14} /> Fixed scope · written deliverables · 30-day satisfaction guarantee</span>
           </div>
         </div>
       </section>

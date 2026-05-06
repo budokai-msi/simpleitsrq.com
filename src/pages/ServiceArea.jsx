@@ -129,12 +129,13 @@ export default function ServiceArea() {
     <main id="main" className="service-area-main">
       <section className="section service-area-hero">
         <div className="container">
-          <span className="eyebrow">Where We Work</span>
-          <h1 className="display">Serving Southwest Florida — businesses and homes.</h1>
+          <span className="eyebrow">Coverage Area</span>
+          <h1 className="display">Field operations across Southwest Florida.</h1>
           <p className="lede">
-            From Bradenton through Lakewood Ranch, down to Sarasota and
-            south to Venice and Nokomis. Local techs across the region —
-            for offices, retail, residential, and snowbird condos alike.
+            On-site engineering coverage from Bradenton through Lakewood Ranch,
+            down to Sarasota, Venice, and Nokomis. One operations team across
+            the region — same engineers, same SLAs, same response times for
+            commercial offices, retail, residential, and seasonal condos.
           </p>
           <div className="service-area-meta">
             <span><MapPin size={14} /> 5 covered markets</span>

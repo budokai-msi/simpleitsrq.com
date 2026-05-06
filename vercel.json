@@ -4,6 +4,9 @@
   "outputDirectory": "dist",
   "trailingSlash": false,
   "cleanUrls": true,
+  "redirects": [
+    { "source": "/pricing", "destination": "/services", "permanent": true }
+  ],
   "crons": [
     {
       "path": "/api/cron/report",
