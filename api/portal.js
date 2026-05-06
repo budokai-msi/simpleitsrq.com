@@ -3753,7 +3753,7 @@ async function handleLeadgenCampaignTest(session, request) {
     state: "FL",
   };
   const subject = renderTemplate(c.subject_template || "(no subject)", vars);
-  const text    = renderTemplate(c.body_text_template || "", vars);
+  const text    = renderTemplate(c.body_template || "", vars);
 
   const result = await sendCampaignEmail({
     to,
