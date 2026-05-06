@@ -3722,6 +3722,53 @@ async function handleLeadgenCampaignStart(session, request) {
   return json(200, { ok: true, queued: inserted });
 }
 
+// POST { id, to } — send the campaign template to an arbitrary address right
+// now (no queue, no segment match). Used to preview deliverability before
+// flipping the campaign to running.
+async function handleLeadgenCampaignTest(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const id = Number(body?.id);
+  const to = String(body?.to || "").trim().toLowerCase();
+  if (!Number.isInteger(id)) return json(400, { ok: false, error: "invalid_id" });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return json(400, { ok: false, error: "invalid_email" });
+
+  const camp = await sql`SELECT * FROM lead_campaigns WHERE id=${id}`;
+  if (!camp.length) return json(404, { ok: false, error: "not_found" });
+  const c = camp[0];
+
+  const { sendCampaignEmail, renderTemplate } = await import("./_lib/leadgen-smtp.js");
+  const crypto = globalThis.crypto || (await import("node:crypto")).webcrypto;
+  const tok = () => crypto.randomUUID().replace(/-/g, "");
+  const openToken = tok();
+  const unsubToken = tok();
+
+  // Render with sane preview vars; real sends pull these from the lead row.
+  const vars = {
+    first_name: "there",
+    business_name: "(test)",
+    city: "Sarasota",
+    state: "FL",
+  };
+  const subject = renderTemplate(c.subject_template || "(no subject)", vars);
+  const text    = renderTemplate(c.body_text_template || "", vars);
+
+  const result = await sendCampaignEmail({
+    to,
+    subject: `[TEST] ${subject}`,
+    textBody: text,
+    from: c.from_email || undefined,
+    replyTo: c.reply_to || undefined,
+    openToken,
+    unsubscribeToken: unsubToken,
+    campaignId: c.id,
+    sendId: 0,
+  });
+  return json(result.ok ? 200 : 500, result);
+}
+
 // GET ?id=&page=&limit=
 async function handleLeadgenCampaignSends(session, url) {
   const gate = await requireAdmin(session);
@@ -4025,6 +4072,7 @@ async function dispatch(request, method) {
   if (action === "leadgen-campaign-save"    && method === "POST") return handleLeadgenCampaignSave(session, request);
   if (action === "leadgen-campaign-status"  && method === "POST") return handleLeadgenCampaignSetStatus(session, request);
   if (action === "leadgen-campaign-start"   && method === "POST") return handleLeadgenCampaignStart(session, request);
+  if (action === "leadgen-campaign-test"    && method === "POST") return handleLeadgenCampaignTest(session, request);
   if (action === "leadgen-campaign-sends"   && method === "GET")  return handleLeadgenCampaignSends(session, url);
   if (action === "leadgen-jobs"             && method === "GET")  return handleLeadgenJobs(session);
 
