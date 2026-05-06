@@ -20,6 +20,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { csrfFetch } from "../lib/csrf";
+import EmptyState from "../components/EmptyState";
 
 async function getJson(url) {
   const r = await fetch(url, { credentials: "same-origin" });
@@ -193,7 +194,11 @@ function ThreatsTab({ data }) {
         <code>/api/cron/report</code>.
       </p>
       {feeds.length === 0 ? (
-        <p>No threat feeds cached yet. Run the daily report cron to populate.</p>
+        <EmptyState
+          icon="shield"
+          title="No threat feeds cached yet"
+          body={<>Run the daily report cron (<code>/api/cron/report</code>) to populate Spamhaus DROP/EDROP and ET compromised-IP feeds.</>}
+        />
       ) : (
         <table className="table-polish" style={{ marginTop: "1rem" }}>
           <thead>
@@ -263,7 +268,11 @@ function DomainsTab({ domains, onChange }) {
       </form>
       {err && <p className="chip chip-error">{err}</p>}
       {domains.length === 0 ? (
-        <p>No domains being watched yet.</p>
+        <EmptyState
+          icon="globe"
+          title="No domains being watched"
+          body="Add a domain above to start tracking WHOIS changes, DNS drift, and certificate transparency events."
+        />
       ) : (
         <table className="table-polish">
           <thead>
@@ -353,7 +362,11 @@ function IocsTab({ iocs, onChange }) {
       </form>
       {err && <p className="chip chip-error">{err}</p>}
       {iocs.length === 0 ? (
-        <p>No IOCs tracked yet.</p>
+        <EmptyState
+          icon="shield"
+          title="No IOCs tracked"
+          body="Indicators of compromise (IPs, domains, hashes, URLs) you add here are flagged in future scans and reports."
+        />
       ) : (
         <table className="table-polish">
           <thead>
@@ -457,7 +470,11 @@ function NotesTab({ notes, onChange }) {
       </form>
       {err && <p className="chip chip-error">{err}</p>}
       {notes.length === 0 ? (
-        <p>No notes yet.</p>
+        <EmptyState
+          icon="notes"
+          title="No notes yet"
+          body="Defender notes — incident timelines, vendor escalation contacts, runbook fragments. Stored encrypted at rest."
+        />
       ) : (
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: "0.75rem" }}>
           {notes.map((n) => (
