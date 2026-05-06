@@ -46,7 +46,6 @@
     { "source": "/phpinfo.php",                "destination": "/api/hp?canary=1&orig=phpinfo.php" },
     { "source": "/_ignition/:path*",           "destination": "/api/hp?canary=1&orig=ignition" },
 
-    { "source": "/blog/:slug([a-z0-9][a-z0-9-]*)", "destination": "/blog/:slug.html" },
     { "source": "/((?!api/)(?!_vercel/)(?!assets/)(?!fonts/)(?!blog/)(?!site\\.webmanifest$).*)", "destination": "/index.html" }
   ],
   "headers": [
