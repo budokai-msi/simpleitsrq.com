@@ -489,3 +489,259 @@ body:has(dialog[open][data-blocking-modal]) {
   background: var(--brand);
   color: var(--text-on-accent);
 }
+
+/* ============================================================
+   POLISH LAYER — Linear/Obsidian/AI-Studio aesthetic
+   Append-only section. Adds:
+     - Accent palette (teal + violet) alongside the brand blue
+     - Hero gradient mesh + grain overlay (.hero-mesh, .grain)
+     - Display type scale (.display-1, .display-2, .display-3, .eyebrow)
+     - Button variants (.btn-tonal, .btn-ghost) extending existing .btn
+     - Table polish (.table-polish — sticky header, zebra, row hover)
+     - Numeric chip + kbd styles (.chip, kbd)
+     - Soft glow utility for hero copy
+   None of these names existed before, so this section can't collide.
+   ============================================================ */
+
+:root,
+:root[data-theme="light"] {
+  /* Accent palette — used for callouts, badges, sparklines, charts.
+   * Tuned to sit next to --brand (#0F6CBD) without fighting it. */
+  --accent-teal:   #0E9C95;
+  --accent-teal-bg: #DFF5F2;
+  --accent-violet: #7C5CD8;
+  --accent-violet-bg: #EEE9FB;
+  --accent-amber:  #C77B0B;
+  --accent-amber-bg: #FBF1DC;
+
+  /* Iridescent mesh stops — pearl-derived, low chroma so the mesh
+   * reads as a soft glow rather than a poster background. */
+  --mesh-1: rgba(124, 92, 216, 0.18);   /* violet */
+  --mesh-2: rgba(15, 108, 189, 0.14);   /* brand blue */
+  --mesh-3: rgba(14, 156, 149, 0.14);   /* teal */
+  --mesh-4: rgba(244, 232, 220, 0.85);  /* warm pearl base */
+}
+:root[data-theme="dark"] {
+  --accent-teal:   #5BD2C9;
+  --accent-teal-bg: rgba(91, 210, 201, 0.12);
+  --accent-violet: #B19BF0;
+  --accent-violet-bg: rgba(177, 155, 240, 0.12);
+  --accent-amber:  #F0B05E;
+  --accent-amber-bg: rgba(240, 176, 94, 0.12);
+
+  --mesh-1: rgba(177, 155, 240, 0.20);
+  --mesh-2: rgba(77, 163, 232, 0.18);
+  --mesh-3: rgba(91, 210, 201, 0.14);
+  --mesh-4: rgba(20, 23, 28, 0.85);
+}
+
+/* Hero mesh — pure-CSS iridescent backdrop. Layer four radial
+ * gradients with offset centers so the colour fields overlap
+ * irregularly (the "mesh" effect). Runs on the GPU as a paint
+ * layer; no images, no JS. Pair with .grain for texture.
+ * Apply by adding both classes to the hero <section>. */
+.hero-mesh {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 80% 60% at 18% 22%, var(--mesh-1), transparent 60%),
+    radial-gradient(ellipse 70% 55% at 82% 28%, var(--mesh-2), transparent 60%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, var(--mesh-3), transparent 65%),
+    var(--bg);
+}
+.hero-mesh::before {
+  /* Slow drift — 60s loop, GPU-only transform. Honors reduced motion. */
+  content: "";
+  position: absolute;
+  inset: -10%;
+  z-index: -1;
+  background: inherit;
+  filter: blur(40px) saturate(1.05);
+  opacity: 0.85;
+  animation: hero-mesh-drift 60s var(--ease-in-out) infinite alternate;
+  pointer-events: none;
+}
+/* When .hero-mesh wraps a hero that uses the legacy .hero-bg overlay
+ * (Home.jsx pattern), make .hero-bg transparent so the mesh shines
+ * through. The grid SVG inside (.hero-grid-bg) keeps rendering on top
+ * so we don't lose that pattern — just remove the solid colour fill. */
+.hero-mesh .hero-bg { background-color: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-mesh::before { animation: none; }
+}
+@keyframes hero-mesh-drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(2%, -1%) scale(1.04); }
+}
+
+/* Grain — SVG noise dataURI. Very low alpha so it only shows
+ * up at scale to break the gradient banding without adding visual
+ * weight. Stack on top of .hero-mesh for the AI-Studio feel. */
+.grain {
+  position: relative;
+}
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+:root[data-theme="dark"] .grain::after { opacity: 0.07; mix-blend-mode: soft-light; }
+
+/* Display type scale — separate from regular h1/h2 so existing
+ * blog post headings keep their vertical rhythm. Use .display-* on
+ * marketing/hero copy only. Geist's variable axis goes 100..900;
+ * 700-800 at large sizes reads tight without feeling overweight. */
+.display-1 {
+  font-size: clamp(2.25rem, 5vw + 1rem, 4.25rem);
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  font-weight: 720;
+  font-feature-settings: "ss01", "ss03", "cv11";
+}
+.display-2 {
+  font-size: clamp(1.75rem, 3vw + 0.75rem, 3rem);
+  line-height: 1.10;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+.display-3 {
+  font-size: clamp(1.375rem, 1.5vw + 0.6rem, 1.875rem);
+  line-height: 1.20;
+  letter-spacing: -0.02em;
+  font-weight: 660;
+}
+.eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.eyebrow-brand { color: var(--brand); }
+
+/* Soft glow — applies a faint accent halo to display copy.
+ * AI Studio uses this on hero headings; restraint matters,
+ * so the spread is small and the alpha is low. */
+.text-glow {
+  text-shadow: 0 0 32px color-mix(in srgb, var(--brand) 18%, transparent);
+}
+
+/* Tonal button — soft brand background, mid-strength.
+ * Sits between primary (filled) and secondary (outlined). */
+.btn-tonal {
+  background: var(--brand-subtle);
+  color: var(--brand);
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
+  box-shadow: none;
+  transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+.btn-tonal:hover {
+  background: color-mix(in srgb, var(--brand) 14%, var(--brand-subtle));
+  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+  color: var(--brand-hover);
+  transform: translateY(-1px);
+}
+.btn-tonal:active { transform: scale(0.98); }
+
+/* Ghost button — flat, hover-reveal. Use in dense toolbars
+ * where filled/outlined would be visually heavy. */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-1);
+  border: 1px solid transparent;
+  box-shadow: none;
+  transition: background 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+.btn-ghost:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.btn-ghost:active { background: var(--surface-3); }
+
+/* Table polish — opt in by adding .table-polish to the wrapper. */
+.table-polish {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+.table-polish thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  background: var(--surface-2);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.table-polish tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-1);
+  vertical-align: middle;
+}
+.table-polish tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
+.table-polish tbody tr { transition: background-color 140ms var(--ease-out); }
+.table-polish tbody tr:hover { background: var(--brand-subtle); }
+.table-polish tbody tr:last-child td { border-bottom: 0; }
+
+/* Inline data chip — for IDs, statuses, counts. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  line-height: 1.6;
+}
+.chip-brand   { background: var(--brand-subtle);       color: var(--brand);          border-color: color-mix(in srgb, var(--brand) 22%, transparent); }
+.chip-teal    { background: var(--accent-teal-bg);     color: var(--accent-teal);    border-color: color-mix(in srgb, var(--accent-teal) 22%, transparent); }
+.chip-violet  { background: var(--accent-violet-bg);   color: var(--accent-violet);  border-color: color-mix(in srgb, var(--accent-violet) 22%, transparent); }
+.chip-amber   { background: var(--accent-amber-bg);    color: var(--accent-amber);   border-color: color-mix(in srgb, var(--accent-amber) 22%, transparent); }
+.chip-success { background: var(--success-bg);         color: var(--success);        border-color: color-mix(in srgb, var(--success) 22%, transparent); }
+.chip-error   { background: var(--error-bg);           color: var(--error);          border-color: color-mix(in srgb, var(--error) 22%, transparent); }
+
+/* Inline keyboard hint — for shortcuts, command palette */
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  font: 600 11px/1.4 var(--font-mono);
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+/* Divider — subtle horizontal rule between sections */
+.hr-soft {
+  height: 1px;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 32px 0;
+}
+
+/* Section heading kit — pairs nicely with .display-3
+ * Use as: <div class="sec-head"><span class="eyebrow eyebrow-brand">Section</span><h2 class="display-2">…</h2><p>…</p></div> */
+.sec-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+.sec-head p { color: var(--text-2); font-size: 16px; line-height: 1.55; max-width: 60ch; margin: 0; }
+
