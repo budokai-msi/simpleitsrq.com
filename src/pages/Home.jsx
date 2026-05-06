@@ -82,32 +82,32 @@ function LogosBar() {
 const SOLUTIONS = [
   {
     Icon: Headphones,
-    title: "Helpdesk and Everyday IT Support",
+    title: "Managed Service Desk",
     desc: "Unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and we triage critical issues first."
   },
   {
     Icon: Wrench,
-    title: "Computer Repair (Business and Residential)",
+    title: "Endpoint Repair & Lifecycle",
     desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade that's been sitting on the desk for a year. We work on home machines too — no contract, no minimum, just an honest diagnosis and a quote."
   },
   {
     Icon: Camera,
-    title: "Security Camera Installation",
+    title: "Physical Security & Surveillance",
     desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording. We pick the gear, run the cable, mount it, and show you how to use it."
   },
   {
     Icon: Network,
-    title: "Enterprise Domain Environments (Entra ID)",
+    title: "Identity & Access (Entra ID)",
     desc: "Microsoft Entra ID, Active Directory, Group Policy, and the user/computer setup that lets a 20-person office act like one. New cloud-native build-outs and rescues of legacy on-premise servers."
   },
   {
     Icon: RefreshCw,
-    title: "Migrations and AI Readiness",
+    title: "Cloud Migration & AI Readiness",
     desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, and Copilot/Gemini AI readiness audits. We plan the cutover, do the work over a weekend, and stay on-site the morning after."
   },
   {
     Icon: Lock,
-    title: "Cybersecurity and Zero Trust",
+    title: "Cybersecurity & Zero Trust",
     desc: "Modern antivirus, email scam filtering, and 24/7 monitoring. We turn on phishing-resistant MFA and passkeys for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
   },
   {
@@ -117,27 +117,27 @@ const SOLUTIONS = [
   },
   {
     Icon: Server,
-    title: "Backups and Disaster Recovery",
+    title: "Backup & Business Continuity",
     desc: "Automatic backups of every computer and server, with a second copy stored off-site so a fire, a hurricane, or a ransomware attack can't wipe you out. We test the backups every quarter."
   },
   {
     Icon: Phone,
-    title: "Business Phone Systems",
+    title: "Unified Communications",
     desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email. We move your existing numbers and set up after-hours routing."
   },
   {
     Icon: Wifi,
-    title: "Networking, Wi-Fi, and Cabling",
+    title: "Network, Wi-Fi & Cabling",
     desc: "Business-grade firewalls and Wi-Fi that actually reach every corner of your office or home. We run new network cables, label every jack, and guest-separate the Wi-Fi."
   },
   {
     Icon: FileCheck,
-    title: "HIPAA and Cyber-Insurance Paperwork",
+    title: "Compliance & Audit Readiness",
     desc: "Made for medical and dental practices, law firms, and any business renewing their cyber-insurance policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor."
   },
   {
     Icon: Briefcase,
-    title: "IT Planning and Budgeting",
+    title: "Strategic IT Advisory",
     desc: "Sit down with a senior tech once a quarter to look at what's working, what's about to break, and what should be in next year's budget. No corporate speak — just a straight answer on where to spend and where to wait."
   },
 ];
@@ -147,9 +147,9 @@ function Solutions() {
     <section className="section" id="solutions" aria-labelledby="solutions-title">
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
-          <span className="eyebrow">What We Do</span>
-          <h2 id="solutions-title" className="title-1">Everything you'd hire a local IT shop for — under one roof</h2>
-          <p className="section-sub">Helpdesk, computer repair, security cameras, networking, enterprise domains, migrations and upgrades. For Sarasota and Bradenton businesses and homes — so you don't have to call five different people when something breaks.</p>
+          <span className="eyebrow">Capabilities</span>
+          <h2 id="solutions-title" className="title-1">One operations team for every layer of your IT stack</h2>
+          <p className="section-sub">End-user support, identity, security, network, cloud, and continuity — operated as a single service by a Sarasota-based team. One number to call. One invoice. One roadmap. No tickets routed to a vendor of a vendor.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
