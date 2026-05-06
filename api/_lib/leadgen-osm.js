@@ -20,6 +20,8 @@
 const NOMINATIM = "https://nominatim.openstreetmap.org";
 const OVERPASS  = "https://overpass-api.de/api/interpreter";
 
+import { classifyIndustry } from "./leadgen-classify.js";
+
 function ua() {
   return process.env.LEADGEN_USER_AGENT
     || "simpleitsrq-leadgen/1.0 (+https://simpleitsrq.com; contact: hello@simpleitsrq.com)";
@@ -153,6 +155,9 @@ export function normalizeOsmElement(el) {
   const lat = el.lat ?? el.center?.lat ?? null;
   const lng = el.lon ?? el.center?.lon ?? null;
 
+  const industry = pickIndustry(tags);
+  const { industry: industry_group, sub_industry } = classifyIndustry(industry);
+
   return {
     name,
     legal_name: tags.operator || null,
@@ -167,7 +172,9 @@ export function normalizeOsmElement(el) {
     source: "osm",
     source_id: `${el.type}/${el.id}`,
     source_url: `https://www.openstreetmap.org/${el.type}/${el.id}`,
-    industry: pickIndustry(tags),
+    industry,
+    industry_group,
+    sub_industry,
     naics: null,
   };
 }

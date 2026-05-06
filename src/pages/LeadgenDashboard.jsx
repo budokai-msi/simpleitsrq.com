@@ -180,9 +180,14 @@ export default function LeadgenDashboard() {
 
 function DiscoverTab({ onStatusChange }) {
   const [zip, setZip] = useState("");
-  const [filter, setFilter] = useState({ zip: "", status: "active", q: "" });
+  const [filter, setFilter] = useState({
+    zip: "", status: "active", q: "",
+    industry_group: "", sub_industry: "",
+    has_website: false, has_email: false,
+  });
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
+  const [facets, setFacets] = useState({ groups: [], subs: [] });
   const [page, setPage] = useState(1);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -190,19 +195,32 @@ function DiscoverTab({ onStatusChange }) {
 
   const limit = 50;
 
+  // Build the query string used for both list-load and export so the
+  // download always matches the current view exactly.
+  const buildQuery = (extra = {}) => {
+    const url = new URL("/api/portal", window.location.origin);
+    url.searchParams.set("action", extra.action || "leadgen-businesses");
+    if (filter.zip)            url.searchParams.set("zip", filter.zip);
+    if (filter.status)         url.searchParams.set("status", filter.status);
+    if (filter.q)              url.searchParams.set("q", filter.q);
+    if (filter.industry_group) url.searchParams.set("industry_group", filter.industry_group);
+    if (filter.sub_industry)   url.searchParams.set("sub_industry", filter.sub_industry);
+    if (filter.has_website)    url.searchParams.set("has_website", "1");
+    if (filter.has_email)      url.searchParams.set("has_email", "1");
+    if (extra.format)          url.searchParams.set("format", extra.format);
+    return url;
+  };
+
   const loadList = async (overridePage) => {
     const p = overridePage ?? page;
-    const url = new URL("/api/portal", window.location.origin);
-    url.searchParams.set("action", "leadgen-businesses");
-    if (filter.zip)    url.searchParams.set("zip", filter.zip);
-    if (filter.status) url.searchParams.set("status", filter.status);
-    if (filter.q)      url.searchParams.set("q", filter.q);
+    const url = buildQuery();
     url.searchParams.set("page", String(p));
     url.searchParams.set("limit", String(limit));
     try {
       const r = await getJson(url.pathname + url.search);
       setRows(r.rows || []);
       setTotal(r.total || 0);
+      setFacets(r.facets || { groups: [], subs: [] });
     } catch (e) {
       setErr(String(e.message || e));
     }
@@ -273,6 +291,37 @@ function DiscoverTab({ onStatusChange }) {
     }
   };
 
+  // Free-form tags: prompt() is intentionally low-fi here; full editor
+  // would need a per-row inline form. Comma-separated input → text[].
+  const editRowTags = async (row) => {
+    const next = prompt(`Tags for "${row.name}" (comma separated, lowercase):`, (row.tags || []).join(", "));
+    if (next === null) return;
+    try {
+      await postJson("/api/portal?action=leadgen-business-update", { id: row.id, tags: next });
+      await loadList();
+    } catch (e) {
+      setErr(String(e.message || e));
+    }
+  };
+
+  const reclassify = async () => {
+    setBusy(true); setErr(null); setMsg(null);
+    try {
+      const r = await postJson("/api/portal?action=leadgen-reclassify", {});
+      setMsg(`Reclassified ${r.updated} businesses with the latest taxonomy.`);
+      await loadList();
+    } catch (e) {
+      setErr(String(e.message || e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const exportData = (format) => {
+    const url = buildQuery({ action: "leadgen-export", format });
+    window.location.href = url.pathname + url.search;
+  };
+
   return (
     <div className="admin-leadgen-discover">
       <div className="admin-leadgen-toolbar">
@@ -317,6 +366,28 @@ function DiscoverTab({ onStatusChange }) {
           className="admin-leadgen-input admin-leadgen-input--zip"
         />
         <select
+          value={filter.industry_group}
+          onChange={(e) => { setFilter((f) => ({ ...f, industry_group: e.target.value, sub_industry: "" })); setPage(1); }}
+          className="admin-leadgen-input"
+        >
+          <option value="">All industries</option>
+          {(facets.groups || []).map((g) => (
+            <option key={g.industry_group} value={g.industry_group}>{g.industry_group} ({g.n})</option>
+          ))}
+        </select>
+        <select
+          value={filter.sub_industry}
+          onChange={(e) => { setFilter((f) => ({ ...f, sub_industry: e.target.value })); setPage(1); }}
+          className="admin-leadgen-input"
+          disabled={!filter.industry_group}
+          title={!filter.industry_group ? "Pick an industry first" : ""}
+        >
+          <option value="">All sub-industries</option>
+          {(facets.subs || []).map((s) => (
+            <option key={s.sub_industry} value={s.sub_industry}>{s.sub_industry} ({s.n})</option>
+          ))}
+        </select>
+        <select
           value={filter.status}
           onChange={(e) => { setFilter((f) => ({ ...f, status: e.target.value })); setPage(1); }}
           className="admin-leadgen-input"
@@ -326,6 +397,16 @@ function DiscoverTab({ onStatusChange }) {
           <option value="rejected">Rejected</option>
           <option value="do_not_contact">Do not contact</option>
         </select>
+        <label className="admin-leadgen-check">
+          <input type="checkbox" checked={filter.has_website}
+            onChange={(e) => { setFilter((f) => ({ ...f, has_website: e.target.checked })); setPage(1); }} />
+          Has website
+        </label>
+        <label className="admin-leadgen-check">
+          <input type="checkbox" checked={filter.has_email}
+            onChange={(e) => { setFilter((f) => ({ ...f, has_email: e.target.checked })); setPage(1); }} />
+          Has email
+        </label>
         <input
           placeholder="search name or website"
           value={filter.q}
@@ -333,6 +414,11 @@ function DiscoverTab({ onStatusChange }) {
           className="admin-leadgen-input admin-leadgen-input--grow"
         />
         <span className="admin-leadgen-count">{total} matches</span>
+        <div className="admin-leadgen-export-group">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("csv")} disabled={total === 0}>Export CSV</button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("json")} disabled={total === 0}>Export JSON</button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={reclassify} disabled={busy} title="Backfill industry_group + sub_industry from raw OSM tags">Reclassify</button>
+        </div>
       </div>
 
       <div className="admin-aff-card">
@@ -344,6 +430,7 @@ function DiscoverTab({ onStatusChange }) {
               <th>Zip</th>
               <th>Website</th>
               <th style={{ textAlign: "right" }}>Emails</th>
+              <th>Tags</th>
               <th>Status</th>
               <th aria-label="actions" />
             </tr>
@@ -352,7 +439,10 @@ function DiscoverTab({ onStatusChange }) {
             {rows.map((r) => (
               <tr key={r.id}>
                 <td>{r.name}</td>
-                <td className="admin-leadgen-muted">{r.industry || "—"}</td>
+                <td className="admin-leadgen-muted">
+                  {r.industry_group ? <strong>{r.industry_group}</strong> : (r.industry || "—")}
+                  {r.sub_industry ? <><br /><span style={{ fontSize: 11 }}>{r.sub_industry}</span></> : null}
+                </td>
                 <td>{r.zip || "—"}</td>
                 <td>
                   {r.website ? (
@@ -362,6 +452,11 @@ function DiscoverTab({ onStatusChange }) {
                   ) : "—"}
                 </td>
                 <td style={{ textAlign: "right" }}>{r.deliverable_emails}</td>
+                <td>
+                  <button type="button" className="admin-leadgen-tag-btn" onClick={() => editRowTags(r)} title="Edit tags">
+                    {(r.tags && r.tags.length) ? r.tags.map((t) => <span key={t} className="admin-leadgen-tag">{t}</span>) : <em style={{ fontSize: 11, opacity: 0.6 }}>+ tag</em>}
+                  </button>
+                </td>
                 <td className="admin-leadgen-muted">{r.status}</td>
                 <td style={{ textAlign: "right" }}>
                   <select
@@ -377,7 +472,7 @@ function DiscoverTab({ onStatusChange }) {
               </tr>
             ))}
             {rows.length === 0 ? (
-              <tr><td colSpan={7} className="admin-leadgen-empty">No results yet. Discover a zip to get started.</td></tr>
+              <tr><td colSpan={8} className="admin-leadgen-empty">No results yet. Discover a zip to get started.</td></tr>
             ) : null}
           </tbody>
         </table>
@@ -549,9 +644,69 @@ function CampaignEditor({ campaign, onChange, onSave, onCancel, err }) {
 
   const seg = c.segment || {};
 
+  // ── AI panel state ──────────────────────────────────────────
+  // Calls /api/portal?action=leadgen-ai which proxies Groq's free
+  // Llama 3.3 70B endpoint. Three modes: write fresh, rewrite draft,
+  // generate per-business opener (handled in Discover tab — this one
+  // only does campaign + rewrite).
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiErr, setAiErr] = useState(null);
+  const [aiNote, setAiNote] = useState(null);
+
+  const aiCall = async (mode) => {
+    setAiBusy(true); setAiErr(null); setAiNote(null);
+    try {
+      const r = await postJson("/api/portal?action=leadgen-ai", {
+        mode,
+        prompt: aiPrompt,
+        draft_subject: c.subject_template || "",
+        draft_body: c.body_template || "",
+      });
+      const out = r.result || {};
+      if (out.subject) set({ subject_template: out.subject, body_template: out.body || c.body_template });
+      else if (out.body) set({ body_template: out.body });
+      setAiNote(`Updated by AI (${mode}). Tokens: ${r.usage?.total_tokens || "?"}`);
+    } catch (e) {
+      const m = String(e.message || e);
+      if (m.includes("groq_not_configured")) {
+        setAiErr("GROQ_API_KEY isn't set in Vercel. Get a free key from console.groq.com and run: vercel env add GROQ_API_KEY production");
+      } else {
+        setAiErr(m);
+      }
+    } finally {
+      setAiBusy(false);
+    }
+  };
+
   return (
     <div className="admin-leadgen-editor">
       <h2 className="title-2">{c.id ? `Edit campaign #${c.id}` : "New campaign"}</h2>
+
+      {/* AI assistant — collapsible-feeling card above the form */}
+      <div className="admin-leadgen-ai-panel">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+          <strong>AI assistant (free, via Groq)</strong>
+          <span style={{ fontSize: 11, opacity: 0.7 }}>Llama 3.3 70B · keeps placeholders intact</span>
+        </div>
+        <textarea
+          className="admin-leadgen-input admin-leadgen-textarea"
+          rows={3}
+          placeholder="Describe the campaign. e.g. 'Write a 120-word cold email to Sarasota auto-repair shops about our flat-rate IT helpdesk and security camera install. Friendly, mention storm-season backups.'"
+          value={aiPrompt}
+          onChange={(e) => setAiPrompt(e.target.value)}
+        />
+        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          <button type="button" className="btn btn-primary btn-sm" disabled={aiBusy || aiPrompt.trim().length < 10} onClick={() => aiCall("campaign")}>
+            {aiBusy ? "Writing…" : "Write subject + body from prompt"}
+          </button>
+          <button type="button" className="btn btn-secondary btn-sm" disabled={aiBusy || !c.body_template} onClick={() => aiCall("rewrite")}>
+            {aiBusy ? "Rewriting…" : "Rewrite my current draft"}
+          </button>
+        </div>
+        {aiNote ? <p className="admin-leadgen-ok" style={{ marginTop: 8 }}>{aiNote}</p> : null}
+        {aiErr ? <p className="admin-leadgen-err" style={{ marginTop: 8 }}>{aiErr}</p> : null}
+      </div>
 
       <div className="admin-leadgen-grid">
         <Field label="Name">
