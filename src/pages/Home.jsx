@@ -18,7 +18,7 @@ import { csrfFetch } from "../lib/csrf";
 
 function Hero() {
   return (
-    <section className="hero hero-clean" aria-labelledby="hero-title">
+    <section className="hero hero-clean hero-mesh grain" aria-labelledby="hero-title">
       <div className="hero-bg" aria-hidden="true">
         <img
           src={heroGrid}
