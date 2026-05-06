@@ -1865,6 +1865,24 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "create lead_crawl_jobs table", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 014 — better lead-gen taxonomy. Adds:
+  //   - industry_group: friendly top-level (e.g. "Healthcare")
+  //   - sub_industry:   specific human label (e.g. "Dentist")
+  //   - tags:           free-form text[] for manual operator notes
+  // Backfill of industry_group + sub_industry happens lazily on the next
+  // Discover/upsert via classifyIndustry(); existing rows can be backfilled
+  // by calling /api/portal?action=leadgen-reclassify (admin).
+  try {
+    await sql`ALTER TABLE lead_businesses ADD COLUMN IF NOT EXISTS industry_group text`;
+    await sql`ALTER TABLE lead_businesses ADD COLUMN IF NOT EXISTS sub_industry   text`;
+    await sql`ALTER TABLE lead_businesses ADD COLUMN IF NOT EXISTS tags           text[] NOT NULL DEFAULT '{}'`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_businesses_group_idx ON lead_businesses (industry_group, status)`;
+    await sql`CREATE INDEX IF NOT EXISTS lead_businesses_tags_gin  ON lead_businesses USING gin (tags)`;
+    results.push({ step: "lead-gen taxonomy columns (014)", ok: true });
+  } catch (e) {
+    results.push({ step: "lead-gen taxonomy columns (014)", ok: false, error: String(e.message || e) });
+  }
+
   const allOk = results.every((r) => r.ok);
   const failedSteps = results.filter((r) => !r.ok).map((r) => ({ step: r.step, error: r.error }));
   if (failedSteps.length > 0) {
@@ -3502,6 +3520,10 @@ async function handleLeadgenBusinesses(session, url) {
   const zip = (url.searchParams.get("zip") || "").trim();
   const status = (url.searchParams.get("status") || "").trim();
   const q = (url.searchParams.get("q") || "").trim();
+  const industryGroup = (url.searchParams.get("industry_group") || "").trim();
+  const subIndustry = (url.searchParams.get("sub_industry") || "").trim();
+  const hasWebsite = url.searchParams.get("has_website") === "1";
+  const hasEmail = url.searchParams.get("has_email") === "1";
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit")) || 50));
   const offset = (page - 1) * limit;
@@ -3511,11 +3533,14 @@ async function handleLeadgenBusinesses(session, url) {
   const wantsZip = /^\d{5}$/.test(zip);
   const wantsStatus = ["active", "rejected", "do_not_contact"].includes(status);
   const wantsQ = q.length >= 2;
+  const wantsGroup = industryGroup.length > 0;
+  const wantsSub = subIndustry.length > 0;
   const like = `%${q.toLowerCase()}%`;
 
   const rows = await sql`
     SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.website,
-           b.phone, b.industry, b.status, b.created_at,
+           b.phone, b.industry, b.industry_group, b.sub_industry, b.tags,
+           b.status, b.created_at,
            (SELECT COUNT(*)::int FROM lead_emails e
               WHERE e.business_id = b.id
                 AND e.opted_out_at IS NULL
@@ -3524,6 +3549,14 @@ async function handleLeadgenBusinesses(session, url) {
     WHERE (${!wantsZip}::bool OR b.zip = ${zip})
       AND (${!wantsStatus}::bool OR b.status = ${status})
       AND (${!wantsQ}::bool OR lower(b.name) LIKE ${like} OR lower(coalesce(b.website,'')) LIKE ${like})
+      AND (${!wantsGroup}::bool OR b.industry_group = ${industryGroup})
+      AND (${!wantsSub}::bool OR b.sub_industry = ${subIndustry})
+      AND (${!hasWebsite}::bool OR b.website IS NOT NULL)
+      AND (${!hasEmail}::bool OR EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
     ORDER BY b.id DESC
     LIMIT ${limit} OFFSET ${offset}
   `;
@@ -3534,13 +3567,41 @@ async function handleLeadgenBusinesses(session, url) {
     WHERE (${!wantsZip}::bool OR b.zip = ${zip})
       AND (${!wantsStatus}::bool OR b.status = ${status})
       AND (${!wantsQ}::bool OR lower(b.name) LIKE ${like} OR lower(coalesce(b.website,'')) LIKE ${like})
+      AND (${!wantsGroup}::bool OR b.industry_group = ${industryGroup})
+      AND (${!wantsSub}::bool OR b.sub_industry = ${subIndustry})
+      AND (${!hasWebsite}::bool OR b.website IS NOT NULL)
+      AND (${!hasEmail}::bool OR EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
   `;
+
+  // Distinct industry_group + sub_industry options for the filter UI,
+  // scoped to the current zip when one is set so the dropdown isn't
+  // polluted with categories that have zero matches.
+  const groups = await sql`
+    SELECT industry_group, COUNT(*)::int AS n
+    FROM lead_businesses
+    WHERE industry_group IS NOT NULL
+      AND (${!wantsZip}::bool OR zip = ${zip})
+    GROUP BY industry_group ORDER BY n DESC
+  `;
+  const subs = wantsGroup ? await sql`
+    SELECT sub_industry, COUNT(*)::int AS n
+    FROM lead_businesses
+    WHERE industry_group = ${industryGroup}
+      AND sub_industry IS NOT NULL
+      AND (${!wantsZip}::bool OR zip = ${zip})
+    GROUP BY sub_industry ORDER BY n DESC
+  ` : [];
 
   return json(200, {
     ok: true,
     page, limit,
     total: totalRow[0]?.total || 0,
     rows,
+    facets: { groups, subs },
   });
 }
 
@@ -3561,20 +3622,304 @@ async function handleLeadgenBusinessDetail(session, url) {
   return json(200, { ok: true, business: biz[0], emails });
 }
 
-// POST { id, status }   id required, status in ('active','rejected','do_not_contact')
+// POST { id, status?, tags?, sub_industry?, industry_group? }
+//   id required. Any of the optional fields may be passed; nulls/undefined
+//   leave the existing value untouched.
 async function handleLeadgenBusinessUpdate(session, request) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
   let body;
   try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
   const id = Number(body?.id);
-  const status = String(body?.status || "");
   if (!Number.isInteger(id)) return json(400, { ok: false, error: "invalid_id" });
-  if (!["active","rejected","do_not_contact"].includes(status)) {
+
+  const status = body?.status !== undefined ? String(body.status) : null;
+  if (status !== null && !["active","rejected","do_not_contact"].includes(status)) {
     return json(400, { ok: false, error: "invalid_status" });
   }
-  await sql`UPDATE lead_businesses SET status=${status}, updated_at=now() WHERE id=${id}`;
+
+  // Tags arrive as either an array of strings or a comma-separated string;
+  // normalize to a deduped lowercased array (PG text[]).
+  let tags = undefined;
+  if (Array.isArray(body?.tags)) {
+    tags = body.tags;
+  } else if (typeof body?.tags === "string") {
+    tags = body.tags.split(",");
+  }
+  if (tags !== undefined) {
+    tags = Array.from(new Set(tags
+      .map((t) => String(t || "").trim().toLowerCase())
+      .filter((t) => t.length > 0 && t.length <= 32)));
+  }
+
+  const subIndustry = body?.sub_industry !== undefined ? String(body.sub_industry || "").slice(0, 64) : null;
+  const industryGroup = body?.industry_group !== undefined ? String(body.industry_group || "").slice(0, 64) : null;
+
+  await sql`
+    UPDATE lead_businesses SET
+      status         = COALESCE(${status}, status),
+      sub_industry   = COALESCE(${subIndustry}, sub_industry),
+      industry_group = COALESCE(${industryGroup}, industry_group),
+      tags           = COALESCE(${tags}::text[], tags),
+      updated_at     = now()
+    WHERE id = ${id}
+  `;
   return json(200, { ok: true });
+}
+
+// POST — backfill industry_group + sub_industry on every lead_businesses
+// row from the raw OSM tag in `industry`. Idempotent. Useful after rolling
+// out new entries in api/_lib/leadgen-classify.js.
+async function handleLeadgenReclassify(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const { classifyIndustry } = await import("./_lib/leadgen-classify.js");
+  const rows = await sql`
+    SELECT id, industry FROM lead_businesses
+    WHERE industry IS NOT NULL
+      AND (industry_group IS NULL OR sub_industry IS NULL)
+  `;
+  let updated = 0;
+  for (const r of rows) {
+    const { industry, sub_industry } = classifyIndustry(r.industry);
+    await sql`
+      UPDATE lead_businesses
+      SET industry_group = ${industry}, sub_industry = ${sub_industry}, updated_at = now()
+      WHERE id = ${r.id}
+    `;
+    updated += 1;
+  }
+  return json(200, { ok: true, updated });
+}
+
+// GET ?format=csv|json + same filter params as handleLeadgenBusinesses.
+// Streams up to 10,000 rows of the current filter view as a download.
+async function handleLeadgenExport(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const format = (url.searchParams.get("format") || "csv").toLowerCase();
+  const zip = (url.searchParams.get("zip") || "").trim();
+  const status = (url.searchParams.get("status") || "").trim();
+  const industryGroup = (url.searchParams.get("industry_group") || "").trim();
+  const subIndustry = (url.searchParams.get("sub_industry") || "").trim();
+  const hasWebsite = url.searchParams.get("has_website") === "1";
+  const hasEmail = url.searchParams.get("has_email") === "1";
+
+  const wantsZip = /^\d{5}$/.test(zip);
+  const wantsStatus = ["active", "rejected", "do_not_contact"].includes(status);
+  const wantsGroup = industryGroup.length > 0;
+  const wantsSub = subIndustry.length > 0;
+
+  const rows = await sql`
+    SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.website,
+           b.phone, b.industry, b.industry_group, b.sub_industry, b.tags, b.status,
+           b.created_at,
+           (SELECT string_agg(e.email, ';') FROM lead_emails e
+              WHERE e.business_id = b.id AND e.opted_out_at IS NULL AND e.bounced_at IS NULL) AS emails
+    FROM lead_businesses b
+    WHERE (${!wantsZip}::bool OR b.zip = ${zip})
+      AND (${!wantsStatus}::bool OR b.status = ${status})
+      AND (${!wantsGroup}::bool OR b.industry_group = ${industryGroup})
+      AND (${!wantsSub}::bool OR b.sub_industry = ${subIndustry})
+      AND (${!hasWebsite}::bool OR b.website IS NOT NULL)
+      AND (${!hasEmail}::bool OR EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+    ORDER BY b.id DESC
+    LIMIT 10000
+  `;
+
+  const stamp = new Date().toISOString().slice(0, 10);
+  if (format === "json") {
+    return new Response(JSON.stringify({ exported_at: new Date().toISOString(), count: rows.length, rows }, null, 2), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Disposition": `attachment; filename="leads-${stamp}.json"`,
+      },
+    });
+  }
+  // CSV — RFC 4180-ish quoting: wrap every field in quotes, escape internal
+  // quotes by doubling. Keeps cells with commas/newlines/semicolons safe.
+  const cols = ["id","name","industry_group","sub_industry","industry","address","city","state","zip","phone","website","emails","tags","status","created_at"];
+  const esc = (v) => {
+    if (v === null || v === undefined) return "";
+    const s = Array.isArray(v) ? v.join(";") : String(v);
+    return `"${s.replace(/"/g, '""')}"`;
+  };
+  const lines = [cols.join(",")];
+  for (const r of rows) {
+    lines.push(cols.map((c) => esc(r[c])).join(","));
+  }
+  return new Response(lines.join("\r\n"), {
+    status: 200,
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="leads-${stamp}.csv"`,
+    },
+  });
+}
+
+// POST { mode, prompt?, draft_subject?, draft_body?, business_id?, business_name?, industry?, website? }
+//   mode: "campaign"     → write a fresh subject+body from a brief
+//         "rewrite"      → improve a draft (keeps placeholders intact)
+//         "personalize"  → 1–2 sentence opener tailored to a single biz
+// Calls Groq's free Llama 3.3 70B endpoint. Requires GROQ_API_KEY env var.
+async function handleLeadgenAi(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return json(503, { ok: false, error: "groq_not_configured", hint: "Set GROQ_API_KEY in Vercel env vars." });
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const mode = String(body?.mode || "campaign");
+  const prompt = String(body?.prompt || "").slice(0, 2000);
+  const draftSubject = String(body?.draft_subject || "").slice(0, 500);
+  const draftBody = String(body?.draft_body || "").slice(0, 8000);
+
+  // Hand-tuned system prompts. The "no em-dashes / no AI tells" rule
+  // is enforced because Groq's Llama loves those and they scream "AI".
+  const systemBase =
+    "You write cold-outreach business emails for Simple IT SRQ, a Sarasota Florida " +
+    "IT services company (helpdesk, computer repair, security cameras, Microsoft 365, " +
+    "cybersecurity for small businesses). " +
+    "Style rules: plain conversational English. Short sentences. No em-dashes. " +
+    "No emojis. No corporate buzzwords (synergy, leverage, robust, cutting-edge). " +
+    "No hedging language (just wanted to, hope this finds you well). " +
+    "Sound like a local human wrote it. " +
+    "Always preserve {{first_name}}, {{business_name}}, {{city}}, {{unsubscribe_url}} placeholders if present.";
+
+  let systemPrompt = systemBase;
+  let userPrompt = prompt;
+  if (mode === "campaign") {
+    systemPrompt += " Output a JSON object with exactly two keys: \"subject\" (one short line, under 70 characters, no spam triggers like 'free', 'urgent', '!') and \"body\" (plain text, 80-180 words, includes {{first_name}} once near the top and a soft CTA at the bottom). No markdown. No code fences. Output ONLY the JSON object.";
+  } else if (mode === "rewrite") {
+    userPrompt = `Rewrite this email to sound more human and direct. Keep all {{placeholder}} tokens intact. Same goal, better words.\n\nSubject: ${draftSubject}\n\nBody:\n${draftBody}`;
+    systemPrompt += " Output a JSON object with \"subject\" and \"body\". No markdown. No code fences. Output ONLY the JSON object.";
+  } else if (mode === "personalize") {
+    const bn = String(body?.business_name || "").slice(0, 200);
+    const ind = String(body?.industry || "").slice(0, 100);
+    const site = String(body?.website || "").slice(0, 300);
+    userPrompt = `Write 1-2 sentences (max 40 words) that opens a cold email to this business. Make it specific enough that it could not have been sent to anyone else. Do not flatter. Do not use the words "love", "amazing", or "great". Mention the industry naturally.\n\nBusiness: ${bn}\nIndustry: ${ind}\nWebsite: ${site}\n\nReturn JSON: {"opener": "..."}`;
+    systemPrompt = systemBase + " Output ONLY a JSON object with one key \"opener\". No markdown.";
+  } else {
+    return json(400, { ok: false, error: "invalid_mode" });
+  }
+
+  let groqResp;
+  try {
+    groqResp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        temperature: 0.7,
+        max_tokens: 1200,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+      }),
+    });
+  } catch (e) {
+    return json(502, { ok: false, error: "groq_network", detail: String(e?.message || e) });
+  }
+  if (!groqResp.ok) {
+    const text = await groqResp.text().catch(() => "");
+    return json(502, { ok: false, error: "groq_http_" + groqResp.status, detail: text.slice(0, 500) });
+  }
+  const out = await groqResp.json().catch(() => ({}));
+  const content = out?.choices?.[0]?.message?.content;
+  if (!content) return json(502, { ok: false, error: "groq_no_content" });
+
+  let parsed;
+  try { parsed = JSON.parse(content); }
+  catch { return json(502, { ok: false, error: "groq_bad_json", raw: content.slice(0, 500) }); }
+
+  return json(200, { ok: true, mode, result: parsed, usage: out.usage || null });
+}
+
+// POST { ids?: number[], industry_group?: string, zip?: string, list_id: number }
+//   Pushes filtered businesses' first deliverable email into a Brevo
+//   contact list. Reuses the same SMTP_USER as the API key holder; you
+//   need a separate BREVO_API_KEY (v3) set in Vercel because SMTP creds
+//   don't authenticate the contacts API.
+async function handleLeadgenBrevoSync(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) return json(503, { ok: false, error: "brevo_not_configured", hint: "Set BREVO_API_KEY (v3 key from app.brevo.com → SMTP & API → API keys) in Vercel env." });
+
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const listId = Number(body?.list_id);
+  if (!Number.isInteger(listId) || listId <= 0) return json(400, { ok: false, error: "invalid_list_id" });
+
+  const ids = Array.isArray(body?.ids) ? body.ids.filter(Number.isInteger).slice(0, 1000) : [];
+  const zip = String(body?.zip || "").trim();
+  const group = String(body?.industry_group || "").trim();
+  const wantsZip = /^\d{5}$/.test(zip);
+  const wantsGroup = group.length > 0;
+
+  const rows = ids.length
+    ? await sql`
+        SELECT b.id, b.name, b.industry_group, b.sub_industry, b.city, b.state,
+               (SELECT e.email FROM lead_emails e
+                  WHERE e.business_id = b.id AND e.opted_out_at IS NULL AND e.bounced_at IS NULL
+                  ORDER BY e.confidence DESC, e.id ASC LIMIT 1) AS email
+        FROM lead_businesses b
+        WHERE b.id = ANY(${ids}) AND b.status = 'active'
+      `
+    : await sql`
+        SELECT b.id, b.name, b.industry_group, b.sub_industry, b.city, b.state,
+               (SELECT e.email FROM lead_emails e
+                  WHERE e.business_id = b.id AND e.opted_out_at IS NULL AND e.bounced_at IS NULL
+                  ORDER BY e.confidence DESC, e.id ASC LIMIT 1) AS email
+        FROM lead_businesses b
+        WHERE b.status = 'active'
+          AND (${!wantsZip}::bool OR b.zip = ${zip})
+          AND (${!wantsGroup}::bool OR b.industry_group = ${group})
+        LIMIT 1000
+      `;
+
+  const eligible = rows.filter((r) => r.email);
+  let pushed = 0, failed = 0;
+  const errors = [];
+  // Brevo /contacts has no batch upsert endpoint that also assigns to a
+  // list, so we loop. For larger pushes, use /contacts/import (CSV file
+  // body) — out of scope here.
+  for (const r of eligible) {
+    try {
+      const resp = await fetch("https://api.brevo.com/v3/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "api-key": apiKey, accept: "application/json" },
+        body: JSON.stringify({
+          email: r.email,
+          listIds: [listId],
+          attributes: {
+            BUSINESS_NAME: r.name,
+            INDUSTRY: r.industry_group || null,
+            SUB_INDUSTRY: r.sub_industry || null,
+            CITY: r.city || null,
+            STATE: r.state || null,
+          },
+          updateEnabled: true,
+        }),
+      });
+      if (resp.ok || resp.status === 204) pushed += 1;
+      else { failed += 1; errors.push(`${r.email}: HTTP ${resp.status}`); }
+    } catch (e) {
+      failed += 1; errors.push(`${r.email}: ${String(e?.message || e).slice(0, 100)}`);
+    }
+  }
+  return json(200, { ok: true, considered: rows.length, eligible: eligible.length, pushed, failed, errors: errors.slice(0, 20) });
 }
 
 // GET — list campaigns
@@ -4097,6 +4442,10 @@ async function dispatch(request, method) {
   if (action === "leadgen-campaign-sends"   && method === "GET")  return handleLeadgenCampaignSends(session, url);
   if (action === "leadgen-jobs"             && method === "GET")  return handleLeadgenJobs(session);
   if (action === "leadgen-run-jobs"         && method === "POST") return handleLeadgenRunJobs(session);
+  if (action === "leadgen-reclassify"       && method === "POST") return handleLeadgenReclassify(session);
+  if (action === "leadgen-export"           && method === "GET")  return handleLeadgenExport(session, url);
+  if (action === "leadgen-ai"               && method === "POST") return handleLeadgenAi(session, request);
+  if (action === "leadgen-brevo-sync"       && method === "POST") return handleLeadgenBrevoSync(session, request);
 
   return json(404, { ok: false, error: "unknown_action" });
 }

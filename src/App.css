@@ -6689,3 +6689,59 @@ select:focus-visible {
   gap: 8px;
   margin-top: 18px;
 }
+
+/* Tag chips inside the businesses table — render as clickable button so
+ * the whole cell area is hit-targetable for prompt() editing. */
+.admin-leadgen-tag-btn {
+  background: transparent;
+  border: 1px dashed transparent;
+  padding: 2px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 60px;
+  text-align: left;
+}
+.admin-leadgen-tag-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+}
+.admin-leadgen-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--brand-subtle);
+  color: var(--brand);
+  font-weight: 500;
+}
+
+/* Inline checkbox label inside the filter strip */
+.admin-leadgen-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.admin-leadgen-check input { margin: 0; }
+
+/* Export buttons cluster on the right of the filter row */
+.admin-leadgen-export-group {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* AI assistant card on the campaign editor */
+.admin-leadgen-ai-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}

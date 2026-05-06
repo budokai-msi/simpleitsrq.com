@@ -758,24 +758,28 @@ async function processOsmZipJob(job) {
     const r = await sql`
       INSERT INTO lead_businesses
         (name, legal_name, address, city, state, zip, lat, lng,
-         website, phone, source, source_id, source_url, industry, naics, status)
+         website, phone, source, source_id, source_url,
+         industry, industry_group, sub_industry, naics, status)
       VALUES
         (${b.name}, ${b.legal_name}, ${b.address}, ${b.city}, ${b.state}, ${b.zip},
          ${b.lat}, ${b.lng}, ${b.website}, ${b.phone},
          ${b.source}, ${b.source_id}, ${b.source_url},
-         ${b.industry}, ${b.naics}, 'active')
+         ${b.industry}, ${b.industry_group}, ${b.sub_industry},
+         ${b.naics}, 'active')
       ON CONFLICT (source, source_id) DO UPDATE SET
-        name      = EXCLUDED.name,
-        address   = COALESCE(EXCLUDED.address, lead_businesses.address),
-        city      = COALESCE(EXCLUDED.city, lead_businesses.city),
-        state     = COALESCE(EXCLUDED.state, lead_businesses.state),
-        zip       = COALESCE(EXCLUDED.zip, lead_businesses.zip),
-        lat       = COALESCE(EXCLUDED.lat, lead_businesses.lat),
-        lng       = COALESCE(EXCLUDED.lng, lead_businesses.lng),
-        website   = COALESCE(EXCLUDED.website, lead_businesses.website),
-        phone     = COALESCE(EXCLUDED.phone, lead_businesses.phone),
-        industry  = COALESCE(EXCLUDED.industry, lead_businesses.industry),
-        updated_at = now()
+        name           = EXCLUDED.name,
+        address        = COALESCE(EXCLUDED.address, lead_businesses.address),
+        city           = COALESCE(EXCLUDED.city, lead_businesses.city),
+        state          = COALESCE(EXCLUDED.state, lead_businesses.state),
+        zip            = COALESCE(EXCLUDED.zip, lead_businesses.zip),
+        lat            = COALESCE(EXCLUDED.lat, lead_businesses.lat),
+        lng            = COALESCE(EXCLUDED.lng, lead_businesses.lng),
+        website        = COALESCE(EXCLUDED.website, lead_businesses.website),
+        phone          = COALESCE(EXCLUDED.phone, lead_businesses.phone),
+        industry       = COALESCE(EXCLUDED.industry, lead_businesses.industry),
+        industry_group = COALESCE(EXCLUDED.industry_group, lead_businesses.industry_group),
+        sub_industry   = COALESCE(EXCLUDED.sub_industry, lead_businesses.sub_industry),
+        updated_at     = now()
       RETURNING (xmax = 0) AS is_new
     `;
     if (r[0]?.is_new) inserted += 1; else updated += 1;
