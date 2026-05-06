@@ -54,6 +54,55 @@ function severityChip(sev) {
   return <span className={cls}>{sev}</span>;
 }
 
+// Decorative radar/sweep indicator for the OpSec dashboard hero.
+// Pure SVG + CSS animation; respects prefers-reduced-motion via .opsec-radar.
+// No data wiring — purely a visual signal that the dashboard is live.
+function OpsecRadar() {
+  return (
+    <div className="opsec-radar" aria-hidden="true">
+      <svg viewBox="0 0 200 200" width="180" height="180" role="img">
+        <defs>
+          <radialGradient id="opsec-radar-bg" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0"   stop-color="#0F6CBD" stop-opacity="0.30"/>
+            <stop offset="0.6" stop-color="#0A4A82" stop-opacity="0.18"/>
+            <stop offset="1"   stop-color="#072E54" stop-opacity="0.45"/>
+          </radialGradient>
+          <linearGradient id="opsec-radar-sweep" x1="0" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0"    stop-color="#0E9C95" stop-opacity="0"/>
+            <stop offset="0.7"  stop-color="#0E9C95" stop-opacity="0.05"/>
+            <stop offset="1"    stop-color="#0E9C95" stop-opacity="0.55"/>
+          </linearGradient>
+        </defs>
+        {/* Backdrop disc */}
+        <circle cx="100" cy="100" r="92" fill="url(#opsec-radar-bg)" stroke="#0E9C95" strokeOpacity="0.35" strokeWidth="1"/>
+        {/* Concentric rings */}
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#0E9C95" strokeOpacity="0.22" strokeWidth="1"/>
+        <circle cx="100" cy="100" r="46" fill="none" stroke="#0E9C95" strokeOpacity="0.22" strokeWidth="1"/>
+        <circle cx="100" cy="100" r="22" fill="none" stroke="#0E9C95" strokeOpacity="0.30" strokeWidth="1"/>
+        {/* Cross-hairs */}
+        <line x1="100" y1="8"  x2="100" y2="192" stroke="#0E9C95" strokeOpacity="0.18" strokeWidth="1"/>
+        <line x1="8"   y1="100" x2="192" y2="100" stroke="#0E9C95" strokeOpacity="0.18" strokeWidth="1"/>
+        {/* Static blips */}
+        <circle cx="138" cy="62"  r="2.5" fill="#F0B429"/>
+        <circle cx="72"  cy="118" r="2"   fill="#7C5CD8"/>
+        <circle cx="118" cy="142" r="2"   fill="#0E9C95"/>
+        <circle cx="56"  cy="74"  r="1.8" fill="#F0B429" opacity="0.7"/>
+        {/* Sweep arm — rotates via CSS */}
+        <g className="opsec-radar__sweep">
+          <path d="M 100 100 L 192 100 A 92 92 0 0 0 175 50 Z" fill="url(#opsec-radar-sweep)"/>
+          <line x1="100" y1="100" x2="192" y2="100" stroke="#0E9C95" strokeWidth="1.5" strokeOpacity="0.85"/>
+        </g>
+        {/* Center pip */}
+        <circle cx="100" cy="100" r="3" fill="#F4E8DC"/>
+        <circle cx="100" cy="100" r="6" fill="none" stroke="#F4E8DC" strokeOpacity="0.35" strokeWidth="1"/>
+      </svg>
+      <div className="opsec-radar__caption">
+        <span className="opsec-radar__pulse" /> Active sweep
+      </div>
+    </div>
+  );
+}
+
 export default function OpsecPortal() {
   const [tab, setTab] = useState("threats");
   const [data, setData] = useState(null);
@@ -86,12 +135,15 @@ export default function OpsecPortal() {
   return (
     <section className="section admin-affiliates">
       <div className="container">
-        <header className="admin-aff-head">
+        <header className="admin-aff-head opsec-hero">
           <Link to="/portal" className="admin-aff-back">← Portal</Link>
-          <div className="sec-head" style={{ marginTop: "0.5rem" }}>
-            <span className="eyebrow eyebrow-brand">Defensive Ops</span>
-            <h1 className="display-2">OpSec dashboard</h1>
-            <p>Threat watch, domain monitoring, IOC notebook, and defender notes — all in one place.</p>
+          <div className="opsec-hero__row">
+            <div className="sec-head" style={{ marginTop: "0.5rem" }}>
+              <span className="eyebrow eyebrow-brand">Defensive Ops</span>
+              <h1 className="display-2">OpSec dashboard</h1>
+              <p>Threat watch, domain monitoring, IOC notebook, and defender notes — all in one place.</p>
+            </div>
+            <OpsecRadar />
           </div>
         </header>
 
