@@ -1,27 +1,55 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Simple IT SRQ">
   <defs>
-    <!-- Brand-blue vertical gradient gives depth at every render size. -->
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#2B88D8"/>
-      <stop offset="100%" stop-color="#0A4E8F"/>
+    <!-- Tile background — diagonal brand → deeper brand for depth at every size. -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#2B88D8"/>
+      <stop offset="55%"  stop-color="#0A4E8F"/>
+      <stop offset="100%" stop-color="#062A4D"/>
     </linearGradient>
-    <!-- Subtle inner highlight for the top edge — dimensional without heavy shadow. -->
+    <!-- Specular highlight along the top — dimensional without heavy shadow. -->
     <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.18"/>
-      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.28"/>
+      <stop offset="55%" stop-color="#FFFFFF" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
     </linearGradient>
+    <!-- "S" gradient — pearl white → faint cool so the letterform reads sculpted. -->
+    <linearGradient id="sgrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E6EDF6"/>
+    </linearGradient>
+    <!-- Status dot — amber accent w/ inner glow. Matches in-app Logo. -->
+    <radialGradient id="dot" cx="35%" cy="35%" r="70%">
+      <stop offset="0%"   stop-color="#FFE9A8"/>
+      <stop offset="55%"  stop-color="#FFD66B"/>
+      <stop offset="100%" stop-color="#E0A92E"/>
+    </radialGradient>
+    <!-- Faint grid behind the S — "terminal / systems" cue, not noisy. -->
+    <pattern id="grid" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
+      <path d="M 5 0 L 0 0 0 5" fill="none" stroke="#FFFFFF" stroke-opacity="0.07" stroke-width="0.5"/>
+    </pattern>
   </defs>
 
-  <!-- Rounded-square brand background -->
+  <!-- Base tile + 1px inner stroke for crispness on light bg. -->
   <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="6.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.10"/>
+  <rect width="32" height="32" rx="7" fill="url(#grid)"/>
   <rect width="32" height="32" rx="7" fill="url(#shine)"/>
 
-  <!-- Bold "S" wordmark, slightly tighter letter-spacing for a custom feel. -->
+  <!-- Corner brackets — IT/terminal cue, very subtle. -->
+  <g stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="0.9" stroke-linecap="round" fill="none">
+    <path d="M 3.5 5 L 3.5 3.5 L 5 3.5"/>
+    <path d="M 28.5 3.5 L 27 3.5"/>
+    <path d="M 3.5 27 L 3.5 28.5 L 5 28.5"/>
+    <path d="M 28.5 27 L 28.5 28.5 L 27 28.5"/>
+  </g>
+
+  <!-- Bold "S" wordmark, sculpted with gradient. -->
   <text x="16" y="23" text-anchor="middle"
         font-family="-apple-system, Segoe UI, system-ui, Roboto, sans-serif"
-        font-weight="800" font-size="20" fill="#FFFFFF" letter-spacing="-0.8">S</text>
+        font-weight="800" font-size="20" fill="url(#sgrad)" letter-spacing="-0.8">S</text>
 
-  <!-- Active-defense status dot — green pulse in the corner. Reads as
-       "live / monitored" in browser tabs and on mobile home screens. -->
-  <circle cx="25" cy="7" r="3" fill="#10B981" stroke="#0A4E8F" stroke-width="1"/>
+  <!-- Active-defense status dot — amber, glowing ring. Reads as "live / monitored". -->
+  <circle cx="25" cy="7" r="3.6" fill="#FFD66B" fill-opacity="0.20"/>
+  <circle cx="25" cy="7" r="2.8" fill="url(#dot)" stroke="#0A4E8F" stroke-width="0.6"/>
+  <circle cx="24.2" cy="6.2" r="0.8" fill="#FFFFFF" fill-opacity="0.85"/>
 </svg>

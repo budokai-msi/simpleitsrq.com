@@ -516,9 +516,9 @@ body:has(dialog[open][data-blocking-modal]) {
 
   /* Iridescent mesh stops — pearl-derived, low chroma so the mesh
    * reads as a soft glow rather than a poster background. */
-  --mesh-1: rgba(124, 92, 216, 0.18);   /* violet */
-  --mesh-2: rgba(15, 108, 189, 0.14);   /* brand blue */
-  --mesh-3: rgba(14, 156, 149, 0.14);   /* teal */
+  --mesh-1: rgba(124, 92, 216, 0.32);   /* violet */
+  --mesh-2: rgba(15, 108, 189, 0.26);   /* brand blue */
+  --mesh-3: rgba(14, 156, 149, 0.26);   /* teal */
   --mesh-4: rgba(244, 232, 220, 0.85);  /* warm pearl base */
 }
 :root[data-theme="dark"] {
@@ -529,9 +529,9 @@ body:has(dialog[open][data-blocking-modal]) {
   --accent-amber:  #F0B05E;
   --accent-amber-bg: rgba(240, 176, 94, 0.12);
 
-  --mesh-1: rgba(177, 155, 240, 0.20);
-  --mesh-2: rgba(77, 163, 232, 0.18);
-  --mesh-3: rgba(91, 210, 201, 0.14);
+  --mesh-1: rgba(177, 155, 240, 0.34);
+  --mesh-2: rgba(77, 163, 232, 0.30);
+  --mesh-3: rgba(91, 210, 201, 0.24);
   --mesh-4: rgba(20, 23, 28, 0.85);
 }
 
@@ -564,8 +564,11 @@ body:has(dialog[open][data-blocking-modal]) {
 /* When .hero-mesh wraps a hero that uses the legacy .hero-bg overlay
  * (Home.jsx pattern), make .hero-bg transparent so the mesh shines
  * through. The grid SVG inside (.hero-grid-bg) keeps rendering on top
- * so we don't lose that pattern — just remove the solid colour fill. */
-.hero-mesh .hero-bg { background-color: transparent; }
+ * so we don't lose that pattern — just remove the solid colour fill.
+ * Specificity bump (.hero.hero-mesh → 0,3,0) needed to beat
+ * App.css's `.hero-clean .hero-bg` rule which loads after index.css. */
+.hero.hero-mesh .hero-bg,
+.hero-mesh.hero-clean .hero-bg { background-color: transparent !important; }
 @media (prefers-reduced-motion: reduce) {
   .hero-mesh::before { animation: none; }
 }
@@ -586,7 +589,7 @@ body:has(dialog[open][data-blocking-modal]) {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.05;
+  opacity: 0.09;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   background-size: 160px 160px;
