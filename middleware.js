@@ -405,6 +405,15 @@ function isSpaRoute(pathname) {
   if (pathname.startsWith("/_next/")) return false;
   if (pathname.startsWith("/assets/")) return false;
   if (pathname.startsWith("/fonts/")) return false;
+  // Blog post URLs are served as pre-rendered static stubs from
+  // dist/blog/<slug>.html so search-engine crawlers see proper canonical,
+  // og:*, and JSON-LD without waiting for React hydration. Letting the
+  // middleware intercept these would replace the stub with the SPA shell
+  // (whose canonical points at "/") and erase the per-post metadata.
+  // The static stubs do NOT carry the CSP nonce, so they fall under the
+  // looser "no inline scripts" CSP applied by the headers block in
+  // vercel.json — acceptable since the stubs ship no inline JS at all.
+  if (pathname.startsWith("/blog/") && pathname !== "/blog/") return false;
   if (SKIP_EXTENSIONS.test(pathname)) return false;
   return true;
 }

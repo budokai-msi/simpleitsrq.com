@@ -1702,8 +1702,10 @@ main, #main {
   border: 0;
 }
 
-/* Single blog post */
-.blog-post-main { background: #ffffff; }
+/* Single blog post — track theme via the bridged token rather than
+   hardcoding pure white (which fights the pearl-white light theme
+   and looks burned-in next to the page wash). */
+.blog-post-main { background: var(--bg-elevated); }
 
 .blog-post-container {
   max-width: 720px;
