@@ -31,13 +31,6 @@ const REOLINK_REF   = env.VITE_AFF_REOLINK_REF   || "";
 const BH_REF        = env.VITE_AFF_BH_REF        || "";
 const BACKBLAZE_REF = env.VITE_AFF_BACKBLAZE_REF || "";
 
-// Cyber-insurance broker referral partner (Coalition / Cowbell / At-Bay /
-// Resilience). Typical per-bound-policy payout is $300-$2,000. The
-// CyberInsuranceCTA component also reads VITE_CYBER_INSURANCE_PARTNER_NAME
-// for display.
-const CYBER_INS_REF = env.VITE_CYBER_INSURANCE_PARTNER_URL || "";
-const CYBER_INS_NAME = env.VITE_CYBER_INSURANCE_PARTNER_NAME || "our insurance partner";
-
 // Compliance-audit referral partners — SOC 2, HIPAA, PCI, FTC Safeguards.
 // Typical per-referred-engagement payout is $500-$2,000. Per-type env vars
 // so different specialists can be plugged in for each audit class. Generic
@@ -159,20 +152,6 @@ export const AFFILIATES = {
         label: "Backblaze unlimited cloud backup",
         href: BACKBLAZE_REF,
         blurb: "Affiliate link — we earn a commission on Backblaze signups.",
-      }
-    : null,
-
-  // === Cyber-insurance broker - $300-$2,000 per bound policy ===
-  // Only resolves to an affiliate once a partner URL is set. Without the
-  // env var, [[cyber-insurance]] tokens render as plain-text "cyber
-  // insurance" and the dedicated CyberInsuranceCTA component falls back
-  // to the internal /cyber-insurance-quote lead-capture form.
-  "cyber-insurance": CYBER_INS_REF
-    ? {
-        vendor: CYBER_INS_NAME,
-        label: "Get a cyber-insurance quote",
-        href: CYBER_INS_REF,
-        blurb: `Referral link — we earn a fee when a policy binds through ${CYBER_INS_NAME}.`,
       }
     : null,
 

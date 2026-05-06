@@ -45,7 +45,6 @@ const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
 const ServiceArea = lazy(() => import("./pages/ServiceArea"));
 const Partners = lazy(() => import("./pages/Partners"));
-const CyberInsuranceQuote = lazy(() => import("./pages/CyberInsuranceQuote"));
 const Stack = lazy(() => import("./pages/Stack"));
 const ComplianceAuditReferral = lazy(() => import("./pages/ComplianceAuditReferral"));
 const Glossary = lazy(() => import("./pages/Glossary"));
@@ -70,7 +69,6 @@ function shouldShowExitIntent(pathname) {
   if (pathname.startsWith("/portal")) return false;
   const skip = new Set([
     "/book",
-    "/cyber-insurance-quote",
     "/compliance-audit-referral",
     "/support",
   ]);
@@ -493,7 +491,6 @@ export default function App() {
               <Route path="/admin/affiliates" element={<AdminAffiliates />} />
               <Route path="/store/:slug" element={<ProductDetail />} />
               <Route path="/security-academy" element={<SecurityAcademy />} />
-              <Route path="/cyber-insurance-quote" element={<CyberInsuranceQuote />} />
               <Route path="/stack" element={<Stack />} />
               <Route path="/tools-we-use" element={<Stack />} />
               <Route path="/compliance-audit-referral" element={<ComplianceAuditReferral />} />

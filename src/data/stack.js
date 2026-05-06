@@ -242,16 +242,6 @@ export const STACK = [
         goodFor: "Any Florida business whose cyber-insurance carrier requires annual training — which is all of them in 2026.",
         calculatorDefault: true,
       },
-      {
-        id: "cyber-insurance-broker",
-        name: "Cyber-Insurance Broker Intro",
-        tagline: "Free intro to a broker who quotes Florida small businesses daily.",
-        whyThis:
-          "Most Sarasota owners renew with their incumbent carrier without shopping the market. The brokers we work with run the 2026 questionnaire, return 2-3 quotes within 3-7 days, and the competing quote is worth 15-30% off your current rate even if you don't switch. Free, no obligation.",
-        priceHint: "Free",
-        fallbackUrl: "/cyber-insurance-quote",
-        goodFor: "Any Florida business with a cyber-insurance renewal in the next 120 days.",
-      },
     ],
   },
 ];
