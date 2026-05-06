@@ -114,17 +114,69 @@ function Logo() {
     <Link to="/" className="brand" aria-label="Simple IT SRQ home">
       <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
         <defs>
+          {/* Tile background — diagonal brand → deeper brand. */}
           <linearGradient id="logo-bg" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="var(--brand)" />
-            <stop offset="100%" stopColor="var(--brand-hover, #0A4F8A)" />
+            <stop offset="55%" stopColor="var(--brand-hover, #0A4F8A)" />
+            <stop offset="100%" stopColor="#072E54" />
           </linearGradient>
+          {/* Specular highlight along the top-left edge for depth. */}
+          <linearGradient id="logo-shine" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"  stopColor="#FFFFFF" stopOpacity="0.30" />
+            <stop offset="55%" stopColor="#FFFFFF" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+          </linearGradient>
+          {/* "S" gradient — pearl white → very subtle warm so the
+              letterform reads sculpted, not flat-printed. */}
+          <linearGradient id="logo-s" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stopColor="#FFFFFF" />
+            <stop offset="100%" stopColor="#E8EEF6" />
+          </linearGradient>
+          {/* Status dot — amber accent w/ inner glow. */}
+          <radialGradient id="logo-dot" cx="0.35" cy="0.35" r="0.7">
+            <stop offset="0%"   stopColor="#FFE9A8" />
+            <stop offset="55%"  stopColor="#FFD66B" />
+            <stop offset="100%" stopColor="#E0A92E" />
+          </radialGradient>
+          {/* Subtle drop shadow under the S — reads as "lit from above". */}
+          <filter id="logo-s-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="0.6" />
+            <feOffset dy="0.6" result="off" />
+            <feComponentTransfer><feFuncA type="linear" slope="0.45" /></feComponentTransfer>
+            <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          {/* Faint corner-bracket pattern that sits behind the S to
+              suggest "terminal / systems" without being noisy. */}
+          <pattern id="logo-grid" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+            <path d="M 6 0 L 0 0 0 6" fill="none" stroke="#FFFFFF" strokeOpacity="0.07" strokeWidth="0.5" />
+          </pattern>
         </defs>
+
+        {/* Base tile + 1px inner stroke for crispness on light bg. */}
         <rect x="0" y="0" width="36" height="36" rx="9" fill="url(#logo-bg)" />
+        <rect x="0.5" y="0.5" width="35" height="35" rx="8.5" fill="none" stroke="#FFFFFF" strokeOpacity="0.10" />
+        <rect x="0" y="0" width="36" height="36" rx="9" fill="url(#logo-grid)" />
+        <rect x="0" y="0" width="36" height="36" rx="9" fill="url(#logo-shine)" />
+
+        {/* Corner brackets — IT/terminal cue, very subtle. */}
+        <g stroke="#FFFFFF" strokeOpacity="0.22" strokeWidth="1" strokeLinecap="round" fill="none">
+          <path d="M 4 6 L 4 4 L 6 4" />
+          <path d="M 32 4 L 30 4" />
+          <path d="M 4 30 L 4 32 L 6 32" />
+          <path d="M 32 30 L 32 32 L 30 32" />
+        </g>
+
+        {/* The S — same path as before, now sculpted with gradient + shadow. */}
         <path
+          filter="url(#logo-s-shadow)"
           d="M23.5 12.4c-1.2-1.4-3.1-2.2-5.3-2.2-3.7 0-6.4 2.1-6.4 5.1 0 2.7 1.9 4.1 5.2 4.8l1.7.4c1.9.4 2.7 1 2.7 2 0 1.2-1.2 2-3.2 2-1.9 0-3.4-.7-4.6-1.9l-1.9 2.3c1.6 1.7 3.9 2.7 6.4 2.7 4 0 6.6-2.1 6.6-5.3 0-2.7-1.7-4.1-5.2-4.8l-1.8-.4c-1.7-.4-2.5-.9-2.5-1.9 0-1.1 1.1-1.9 2.9-1.9 1.6 0 2.9.6 3.9 1.6l1.5-2.1z"
-          fill="#FFFFFF"
+          fill="url(#logo-s)"
         />
-        <circle cx="27.5" cy="9.5" r="2" fill="#FFD66B" />
+
+        {/* Status dot — now glowing + ringed for "system online" vibe. */}
+        <circle cx="27.5" cy="9.5" r="2.6" fill="#FFD66B" fillOpacity="0.18" />
+        <circle cx="27.5" cy="9.5" r="2"   fill="url(#logo-dot)" />
+        <circle cx="26.9" cy="8.9" r="0.55" fill="#FFFFFF" fillOpacity="0.85" />
       </svg>
       <span className="brand-text">Simple IT <span className="brand-accent">SRQ</span></span>
     </Link>
