@@ -35,13 +35,8 @@ const PrivacyPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m
 const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
 const Tools = lazy(() => import("./pages/Tools"));
-const Store = lazy(() => import("./pages/Store"));
 const Services = lazy(() => import("./pages/Services"));
-const WispStarter = lazy(() => import("./pages/WispStarter"));
-const Pricing = lazy(() => import("./pages/Pricing"));
 const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
-const ProductDetail = lazy(() => import("./pages/ProductDetail"));
-const SecurityAcademy = lazy(() => import("./pages/SecurityAcademy"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
 const ServiceArea = lazy(() => import("./pages/ServiceArea"));
 const Partners = lazy(() => import("./pages/Partners"));
@@ -73,8 +68,7 @@ function shouldShowExitIntent(pathname) {
     "/support",
   ]);
   if (skip.has(pathname)) return false;
-  // /store index is fine; /store/:slug product detail pages have their own buy CTA.
-  if (/^\/store\/[^/]+/.test(pathname)) return false;
+  // /store paths removed; nothing else to skip beyond the static set above.
   return true;
 }
 
@@ -161,7 +155,6 @@ function Navbar() {
         <Logo />
         <nav className="nav-links" aria-label="Primary">
           <Link to="/#solutions">Services</Link>
-          <Link to="/pricing">Pricing</Link>
           <Link to="/blog">Blog</Link>
           <Link to="/support" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className="live-dot" /> Support
@@ -184,7 +177,6 @@ function Navbar() {
           <div className="mobile-nav-header">Services</div>
           <Link to="/#solutions" onClick={() => setOpen(false)}><LayoutGrid size={16} /> All Services</Link>
           <Link to="/services" onClick={() => setOpen(false)}><ShoppingBag size={16} /> Buy a Service</Link>
-          <Link to="/pricing" onClick={() => setOpen(false)}><Tag size={16} /> Pricing</Link>
           <Link to="/industries" onClick={() => setOpen(false)}><Briefcase size={16} /> Industries we serve</Link>
           <Link to="/stack" onClick={() => setOpen(false)}><Shield size={16} /> Vendor Stack</Link>
           
@@ -193,7 +185,6 @@ function Navbar() {
           <Link to="/blog" onClick={() => setOpen(false)}><BookOpen size={16} /> Blog</Link>
           <Link to="/exposure-scan" onClick={() => setOpen(false)}><ShieldAlert size={16} /> Free Exposure Scan</Link>
           <Link to="/tools" onClick={() => setOpen(false)}><Wrench size={16} /> Recommended Tools</Link>
-          <Link to="/store" onClick={() => setOpen(false)}><FileText size={16} /> Templates & Playbooks</Link>
           <Link to="/glossary" onClick={() => setOpen(false)}><Info size={16} /> Glossary</Link>
           
           <div className="mobile-nav-divider" />
@@ -245,7 +236,6 @@ function Footer() {
             <li><Link to="/glossary">Glossary</Link></li>
             <li><Link to="/exposure-scan">Free Exposure Scan</Link></li>
             <li><Link to="/tools">Recommended Tools</Link></li>
-            <li><Link to="/store">Templates &amp; Playbooks</Link></li>
             {/* Vendor Stack is /stack (the page with the cost calculator).
                 /partners is the partner-program page — different surface,
                 kept as a separate link below to avoid the previous semantic
@@ -484,13 +474,8 @@ export default function App() {
               <Route path="/book" element={<Book />} />
               <Route path="/support" element={<Support />} />
               <Route path="/tools" element={<Tools />} />
-              <Route path="/store" element={<Store />} />
               <Route path="/services" element={<Services />} />
-              <Route path="/wisp-starter" element={<WispStarter />} />
-              <Route path="/pricing" element={<Pricing />} />
               <Route path="/admin/affiliates" element={<AdminAffiliates />} />
-              <Route path="/store/:slug" element={<ProductDetail />} />
-              <Route path="/security-academy" element={<SecurityAcademy />} />
               <Route path="/stack" element={<Stack />} />
               <Route path="/tools-we-use" element={<Stack />} />
               <Route path="/compliance-audit-referral" element={<ComplianceAuditReferral />} />
