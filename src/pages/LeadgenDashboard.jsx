@@ -161,7 +161,7 @@ export default function LeadgenDashboard() {
         </nav>
 
         <div className="admin-leadgen-tab-body">
-          {tab === "discover" && <DiscoverTab />}
+          {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
           {tab === "campaigns" && <CampaignsTab />}
           {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} />}
         </div>
@@ -178,7 +178,7 @@ export default function LeadgenDashboard() {
 // Discover tab
 // ============================================================
 
-function DiscoverTab() {
+function DiscoverTab({ onStatusChange }) {
   const [zip, setZip] = useState("");
   const [filter, setFilter] = useState({ zip: "", status: "active", q: "" });
   const [rows, setRows] = useState([]);
@@ -232,7 +232,7 @@ function DiscoverTab() {
       setMsg(`OSM crawl finished: ${s.completed || 0}/${s.picked || 0} jobs ok` +
              (s.failed ? `, ${s.failed} failed` : "") + ". Refreshing list.");
       await loadList();
-      await loadStatus();
+      if (onStatusChange) await onStatusChange();
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
@@ -256,7 +256,7 @@ function DiscoverTab() {
              (s.budget_exhausted ? ". Budget exhausted — click Crawl again to continue." : ".") +
              " Refreshing list.");
       await loadList();
-      await loadStatus();
+      if (onStatusChange) await onStatusChange();
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
