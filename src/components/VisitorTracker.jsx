@@ -18,6 +18,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { readConsent, CONSENT_EVENT } from "../lib/consent.js";
+import { installBehaviorBeacon, startPageview } from "../lib/behaviorBeacon.js";
 
 function getAnonId() {
   try {
@@ -118,6 +119,12 @@ export default function VisitorTracker() {
   const location = useLocation();
   const lastSent = useRef(null);
 
+  // One-time install of the behavior-beacon listeners (scroll, click,
+  // visibilitychange, pagehide). Idempotent — safe under StrictMode.
+  useEffect(() => {
+    installBehaviorBeacon();
+  }, []);
+
   useEffect(() => {
     // React to consent changes: if the visitor revokes analytics we drop
     // the anon cookie. If they accept we mint one on the next track call.
@@ -135,6 +142,11 @@ export default function VisitorTracker() {
     lastSent.current = path;
 
     if (typeof navigator !== "undefined" && navigator.doNotTrack === "1") return;
+
+    // Notify the behavior-beacon of the new pageview so it can close out
+    // the previous one (pageview_exit with dwell + max scroll) and start
+    // a fresh dwell timer + section observer for this route.
+    startPageview(path);
 
     const consent = readConsent();
     const analyticsOk = !!(consent && consent.categories && consent.categories.analytics);

@@ -151,6 +151,122 @@ export async function POST(request) {
     return noContent();
   }
 
+  // Engagement-event batch — Phase 1 of the on-site recommender data
+  // pipeline. The client (src/lib/engagement.js) buffers events and
+  // POSTs them in batches of up to 50 on a 5-second timer or pagehide.
+  // We accept a single event or an array of events under body.events.
+  // Every event is validated, clamped, and written to engagement_events.
+  // The pageview_exit kind also rolls up dwell/scroll/engaged into the
+  // matching web_sessions row so the recommender can read one row per
+  // session instead of aggregating on every query.
+  if (body.kind === "engagement") {
+    // High-volume endpoint — visitors emit dozens of events per page.
+    // 600/min = up to 10 batches/sec from a single IP, generous enough
+    // for legitimate use while still capping a runaway script.
+    const engRl = await rateLimit({ ip, bucket: "track:eng", windowSeconds: 60, max: 600 });
+    if (!engRl.ok) return noContent();
+
+    const ALLOWED_KINDS = new Set([
+      "pageview_enter", "pageview_exit", "scroll_milestone", "dwell_tick",
+      "click", "search", "share", "copy", "media_play", "section_view",
+    ]);
+
+    const UUID_RE_ENG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const rawSidEng = body.sessionId ? String(body.sessionId) : null;
+    const sessionId = rawSidEng && UUID_RE_ENG.test(rawSidEng) ? rawSidEng.toLowerCase() : null;
+    const anonId    = body.anonId ? String(body.anonId).slice(0, 64) : null;
+    let userId = null;
+    try {
+      const session = await getSession(request);
+      if (session) userId = session.user.id;
+    } catch { /* unauthenticated is fine */ }
+
+    // Accept events as an array; tolerate a single event for one-off beacons
+    // (e.g. ErrorBoundary-style reporters).
+    const rawEvents = Array.isArray(body.events) ? body.events : [body];
+    // Hard cap so a malformed client cannot dump 10k events in one POST.
+    const events = rawEvents.slice(0, 50);
+
+    let exitDwellMs = 0;
+    let exitMaxScroll = 0;
+    let exitClicks = 0;
+    let exitSawPageviewExit = false;
+
+    for (const ev of events) {
+      const kind = String(ev.kind || "").slice(0, 32);
+      if (!ALLOWED_KINDS.has(kind)) continue;
+
+      const path = ev.path ? String(ev.path).slice(0, 500) : null;
+      const slug = ev.slug ? String(ev.slug).slice(0, 200) : null;
+      // Numeric value: clamp to a sensible range so a malicious client
+      // cannot overflow the column or skew aggregates with absurd numbers.
+      let valueNum = null;
+      if (ev.valueNum !== undefined && ev.valueNum !== null) {
+        const n = Number(ev.valueNum);
+        if (Number.isFinite(n)) valueNum = Math.max(-1e12, Math.min(1e12, n));
+      }
+      const valueText = ev.valueText ? String(ev.valueText).slice(0, 500) : null;
+      // Cap meta to ~4 KB serialized so a runaway client cannot bloat the row.
+      let metaJson = null;
+      if (ev.meta && typeof ev.meta === "object") {
+        try {
+          const s = JSON.stringify(ev.meta);
+          if (s.length <= 4000) metaJson = s;
+        } catch { /* drop unserializable meta */ }
+      }
+
+      try {
+        await sql`
+          INSERT INTO engagement_events (
+            session_id, anon_id, user_id, path, slug, kind, value_num, value_text, meta
+          ) VALUES (
+            ${sessionId ? sessionId : null}::uuid,
+            ${anonId}, ${userId}, ${path}, ${slug}, ${kind}, ${valueNum}, ${valueText},
+            ${metaJson}::jsonb
+          )
+        `;
+      } catch (err) {
+        console.error("[track] engagement insert failed", err);
+      }
+
+      // Collect stats for the session rollup. pageview_exit carries the
+      // canonical dwell + max-scroll for the just-finished pageview; click
+      // events bump the click counter for engaged-session detection.
+      if (kind === "pageview_exit") {
+        exitSawPageviewExit = true;
+        const dwell = Number(ev.valueNum) || 0;
+        if (dwell > 0 && dwell < 6 * 60 * 60 * 1000) exitDwellMs += dwell; // ignore > 6h junk
+        const scrollPct = Number(ev.meta?.maxScrollPct) || 0;
+        if (scrollPct > exitMaxScroll) exitMaxScroll = Math.min(100, Math.round(scrollPct));
+      }
+      if (kind === "click") exitClicks++;
+    }
+
+    // Roll up to web_sessions on every batch that contained a pageview_exit.
+    // The "engaged" flag flips true once dwell >= 30 s OR scroll >= 50 %
+    // OR any click — matches the heuristic documented in the migration.
+    if (sessionId && exitSawPageviewExit) {
+      try {
+        await sql`
+          UPDATE web_sessions
+             SET total_dwell_ms = total_dwell_ms + ${exitDwellMs}::bigint,
+                 max_scroll_pct = GREATEST(max_scroll_pct, ${exitMaxScroll}::int),
+                 event_count    = event_count + ${events.length}::int,
+                 engaged        = engaged
+                                  OR (total_dwell_ms + ${exitDwellMs}::bigint) >= 30000
+                                  OR GREATEST(max_scroll_pct, ${exitMaxScroll}::int) >= 50
+                                  OR ${exitClicks}::int > 0,
+                 last_activity  = now()
+           WHERE id = ${sessionId}::uuid
+        `;
+      } catch (err) {
+        console.error("[track] web_sessions engagement rollup failed", err);
+      }
+    }
+
+    return noContent();
+  }
+
   const path       = String(body.path || "/").slice(0, 500);
   const referrer   = body.referrer ? String(body.referrer).slice(0, 1000) : null;
   const anonIdIn   = body.anonId ? String(body.anonId).slice(0, 64) : null;

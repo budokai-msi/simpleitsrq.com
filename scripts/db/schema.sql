@@ -411,3 +411,38 @@ CREATE INDEX IF NOT EXISTS web_sessions_user_idx     ON web_sessions (user_id, s
 CREATE INDEX IF NOT EXISTS web_sessions_ip_idx       ON web_sessions (ip, started_at DESC);
 CREATE INDEX IF NOT EXISTS web_sessions_last_act_idx ON web_sessions (last_activity DESC);
 CREATE INDEX IF NOT EXISTS web_sessions_device_idx   ON web_sessions (device_hash);
+
+-- Engagement rollups (added in migration 011). Denormalized so the admin
+-- dashboard and the recommender can read a single row per session instead
+-- of aggregating engagement_events on every query.
+ALTER TABLE web_sessions ADD COLUMN IF NOT EXISTS total_dwell_ms bigint NOT NULL DEFAULT 0;
+ALTER TABLE web_sessions ADD COLUMN IF NOT EXISTS max_scroll_pct integer NOT NULL DEFAULT 0;
+ALTER TABLE web_sessions ADD COLUMN IF NOT EXISTS event_count    integer NOT NULL DEFAULT 0;
+ALTER TABLE web_sessions ADD COLUMN IF NOT EXISTS engaged        boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS web_sessions_engaged_idx ON web_sessions (engaged, started_at DESC);
+
+-- ---------- engagement_events ----------
+-- Fine-grained per-session time-series of visitor behavior (added in
+-- migration 011). Inputs to the on-site recommender / behavior-ML stack.
+CREATE TABLE IF NOT EXISTS engagement_events (
+  id          bigserial PRIMARY KEY,
+  ts          timestamptz NOT NULL DEFAULT now(),
+  session_id  uuid,
+  anon_id     text,
+  user_id     uuid REFERENCES users(id) ON DELETE SET NULL,
+  path        text,
+  slug        text,
+  kind        text NOT NULL CHECK (kind IN (
+    'pageview_enter', 'pageview_exit', 'scroll_milestone', 'dwell_tick',
+    'click', 'search', 'share', 'copy', 'media_play', 'section_view'
+  )),
+  value_num   double precision,
+  value_text  text,
+  meta        jsonb
+);
+
+CREATE INDEX IF NOT EXISTS engagement_events_session_idx ON engagement_events (session_id, ts);
+CREATE INDEX IF NOT EXISTS engagement_events_slug_idx    ON engagement_events (slug, ts DESC) WHERE slug IS NOT NULL;
+CREATE INDEX IF NOT EXISTS engagement_events_anon_idx    ON engagement_events (anon_id, ts DESC) WHERE anon_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS engagement_events_kind_idx    ON engagement_events (kind, ts DESC);
+CREATE INDEX IF NOT EXISTS engagement_events_ts_idx      ON engagement_events (ts DESC);
