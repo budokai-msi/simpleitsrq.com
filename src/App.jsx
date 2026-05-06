@@ -166,12 +166,24 @@ function Logo() {
           <path d="M 32 30 L 32 32 L 30 32" />
         </g>
 
-        {/* The S — same path as before, now sculpted with gradient + shadow. */}
+        {/* Geometric "S" — three rigid bars + alternating connectors,
+            same path as public/favicon.svg shifted +2 to center inside
+            the 36×36 viewBox. Built from straight 90° segments only so
+            it stays crisp at any render size and reads architectural
+            (Linear / Vercel mark vibe) instead of typeset. */}
         <path
           filter="url(#logo-s-shadow)"
-          d="M23.5 12.4c-1.2-1.4-3.1-2.2-5.3-2.2-3.7 0-6.4 2.1-6.4 5.1 0 2.7 1.9 4.1 5.2 4.8l1.7.4c1.9.4 2.7 1 2.7 2 0 1.2-1.2 2-3.2 2-1.9 0-3.4-.7-4.6-1.9l-1.9 2.3c1.6 1.7 3.9 2.7 6.4 2.7 4 0 6.6-2.1 6.6-5.3 0-2.7-1.7-4.1-5.2-4.8l-1.8-.4c-1.7-.4-2.5-.9-2.5-1.9 0-1.1 1.1-1.9 2.9-1.9 1.6 0 2.9.6 3.9 1.6l1.5-2.1z"
           fill="url(#logo-s)"
+          d="M 8 10 L 24 10 L 24 14 L 12 14 L 12 16 L 24 16 L 24 26 L 8 26 L 8 22 L 20 22 L 20 20 L 8 20 Z"
         />
+        {/* Inner top-edge highlight on each bar — 0.6px white-translucent
+            line for a hint of extrusion. Skip on the smallest renders
+            via stroke-width fractional rounding. */}
+        <g stroke="#FFFFFF" strokeOpacity="0.35" strokeWidth="0.6" fill="none">
+          <path d="M 8.4 10.5 L 23.6 10.5" />
+          <path d="M 12.4 16.5 L 23.6 16.5" />
+          <path d="M 8.4 22.5 L 19.6 22.5" />
+        </g>
 
         {/* Status dot — now glowing + ringed for "system online" vibe. */}
         <circle cx="27.5" cy="9.5" r="2.6" fill="#FFD66B" fillOpacity="0.18" />

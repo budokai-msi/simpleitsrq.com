@@ -43,10 +43,24 @@
     <path d="M 28.5 27 L 28.5 28.5 L 27 28.5"/>
   </g>
 
-  <!-- Bold "S" wordmark, sculpted with gradient. -->
-  <text x="16" y="23" text-anchor="middle"
-        font-family="-apple-system, Segoe UI, system-ui, Roboto, sans-serif"
-        font-weight="800" font-size="20" fill="url(#sgrad)" letter-spacing="-0.8">S</text>
+  <!-- Geometric "S" — three rigid bars + alternating connectors.
+       Built from straight 90° segments only so it stays crisp at every
+       render size, including 16×16. The path is one continuous outline:
+         top bar (y=8..12)  + left connector  + middle bar (y=14..18)
+         + right connector  + bottom bar (y=20..24).
+       All bars 4px tall, both gaps 2px — a 2:1 ratio that reads
+       confidently rigid without becoming slotted. -->
+  <path
+    fill="url(#sgrad)"
+    d="M 6 8 L 22 8 L 22 12 L 10 12 L 10 14 L 22 14 L 22 24 L 6 24 L 6 20 L 18 20 L 18 18 L 6 18 Z"
+  />
+  <!-- Inner top-edge highlight on each bar — 1px white-translucent line
+       gives a hint of extrusion without a full bevel. -->
+  <g stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="0.6" fill="none">
+    <path d="M 6.4 8.5 L 21.6 8.5" />
+    <path d="M 10.4 14.5 L 21.6 14.5" />
+    <path d="M 6.4 20.5 L 17.6 20.5" />
+  </g>
 
   <!-- Active-defense status dot — amber, glowing ring. Reads as "live / monitored". -->
   <circle cx="25" cy="7" r="3.6" fill="#FFD66B" fill-opacity="0.20"/>
