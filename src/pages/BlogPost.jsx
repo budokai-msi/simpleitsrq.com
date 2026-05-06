@@ -12,7 +12,6 @@ import AffiliateDisclosure from "../components/AffiliateDisclosure";
 import AdUnit from "../components/AdSense";
 import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
 import ToolsUsedFooter from "../components/ToolsUsedFooter";
-import StoreCrossSell from "../components/StoreCrossSell";
 import Affiliate from "../components/Affiliate";
 import StackToolInline from "../components/StackToolInline";
 import RelatedPosts from "../components/RelatedPosts";
@@ -368,7 +367,6 @@ export default function BlogPost() {
             <Tag size={14} />
             {(post.tags || []).map((t) => <span key={t} className="blog-tag">{t}</span>)}
           </div>
-          <StoreCrossSell post={post} />
           <ToolsUsedFooter content={rawBody} slug={post.slug} />
           <LeadCaptureCTA />
           <Newsletter />
