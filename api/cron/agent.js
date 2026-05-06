@@ -815,7 +815,7 @@ async function processWebsiteEmailsJob(job) {
   return { found: result.emails.length, inserted, host: result.host, robotsAllowed: result.robotsAllowed };
 }
 
-async function runLeadgenWorker() {
+export async function runLeadgenWorker() {
   const summary = { picked: 0, completed: 0, failed: 0, jobs: [] };
   const started = Date.now();
 
