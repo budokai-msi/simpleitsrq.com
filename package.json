@@ -22,7 +22,6 @@
     "db:push": "node --env-file=.env.local scripts/db/push.mjs"
   },
   "dependencies": {
-    "@aws-sdk/client-sesv2": "^3.1043.0",
     "@fluentui/react-components": "9.73.8",
     "@fluentui/react-icons": "2.0.325",
     "@neondatabase/serverless": "1.1.0",
@@ -32,6 +31,7 @@
     "botid": "1.5.11",
     "jose": "6.2.3",
     "lucide-react": "1.11.0",
+    "nodemailer": "^8.0.7",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "react-router-dom": "7.14.2",

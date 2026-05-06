@@ -15,7 +15,7 @@ import { validateEnv } from "../_lib/env.js";
 import { runNewsletterDrip } from "../_lib/newsletter-drip.js";
 import { discoverBusinessesByZip } from "../_lib/leadgen-osm.js";
 import { crawlEmails } from "../_lib/leadgen-emailcrawler.js";
-import { sendCampaignEmail, renderTemplate } from "../_lib/leadgen-ses.js";
+import { sendCampaignEmail, renderTemplate } from "../_lib/leadgen-smtp.js";
 
 // Cold-start validation. Both keys are validated as 'optional' rather than
 // 'required': the per-task code below already returns { skipped } when a
@@ -999,7 +999,7 @@ async function runLeadgenSender() {
       await sql`
         UPDATE lead_campaign_sends
         SET status='sent', sent_at=now(),
-            provider='ses', provider_message_id=${result.messageId},
+            provider='smtp', provider_message_id=${result.messageId},
             open_token=${openToken},
             rendered_subject=${subject}, rendered_body=${textBody}
         WHERE id=${s.id}
