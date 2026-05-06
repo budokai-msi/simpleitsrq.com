@@ -15,6 +15,7 @@ import { validateEnv } from "../_lib/env.js";
 import { runNewsletterDrip } from "../_lib/newsletter-drip.js";
 import { discoverBusinessesByZip } from "../_lib/leadgen-osm.js";
 import { crawlEmails } from "../_lib/leadgen-emailcrawler.js";
+import { sendCampaignEmail, renderTemplate } from "../_lib/leadgen-ses.js";
 
 // Cold-start validation. Both keys are validated as 'optional' rather than
 // 'required': the per-task code below already returns { skipped } when a
@@ -873,6 +874,168 @@ async function runLeadgenWorker() {
   return summary;
 }
 
+// ========== LEAD GENERATION SENDER (every 15 min) ==========
+//
+// Drains lead_campaign_sends rows in 'queued' state, respecting per-campaign
+// throttle_per_hour and daily_cap. Renders subject/body templates against
+// the recipient business profile, calls SES, records provider_message_id
+// or error.
+//
+// Throttle enforcement is approximate (per-cron-tick budget = throttle/4
+// since cron fires every 15 min) and is also bounded by an overall
+// LEADGEN_SEND_BUDGET ceiling to prevent a misconfigured campaign from
+// blowing through SES quota in one tick.
+
+const LEADGEN_SEND_BUDGET     = Number(process.env.LEADGEN_SEND_BUDGET) || 50;
+const LEADGEN_SEND_TIME_BUDGET_MS = Number(process.env.LEADGEN_SEND_TIME_BUDGET_MS) || 30_000;
+
+function deriveFirstName(name) {
+  if (!name) return "there";
+  // OSM business names rarely have a person; fall back to a friendly default.
+  // Heuristic: if the name looks like "Firstname Lastname" (two capitalized
+  // words, no &/comma/Inc/LLC), use the first word.
+  const trimmed = name.trim();
+  if (/[,&]|\b(LLC|Inc|Corp|Co|Ltd|PLLC|PA)\b/i.test(trimmed)) return "there";
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 2 && /^[A-Z][a-z]+$/.test(parts[0]) && /^[A-Z][a-z]+$/.test(parts[1])) {
+    return parts[0];
+  }
+  return "there";
+}
+
+async function runLeadgenSender() {
+  const summary = { sent: 0, failed: 0, throttled: 0, sends: [] };
+  const started = Date.now();
+
+  // Fetch a batch of queued sends with the campaign + business joined in.
+  // We sort by campaign so we can apply per-campaign throttle accounting
+  // in one pass. Cap the read at LEADGEN_SEND_BUDGET so we never hold a
+  // huge result in memory.
+  const candidates = await sql`
+    SELECT s.id, s.campaign_id, s.business_id, s.email_id, s.to_email,
+           s.unsubscribe_token,
+           c.subject_template, c.body_template, c.from_email, c.reply_to,
+           c.throttle_per_hour, c.daily_cap, c.status AS campaign_status,
+           b.name AS business_name, b.city, b.state, b.zip
+    FROM lead_campaign_sends s
+    JOIN lead_campaigns  c ON c.id = s.campaign_id
+    JOIN lead_businesses b ON b.id = s.business_id
+    WHERE s.status = 'queued'
+      AND c.status = 'running'
+    ORDER BY s.campaign_id, s.id
+    LIMIT ${LEADGEN_SEND_BUDGET}
+  `;
+
+  if (!candidates.length) return { ...summary, picked: 0 };
+
+  // Per-campaign send accounting for this tick. Each campaign gets at most
+  // ceil(throttle_per_hour / 4) sends per 15-min tick. Daily cap is
+  // enforced via a DB count over the last 24h.
+  const tickQuotaUsed = new Map(); // campaignId -> sends emitted this run
+
+  for (const s of candidates) {
+    if (Date.now() - started > LEADGEN_SEND_TIME_BUDGET_MS) {
+      summary.budget_exhausted = true;
+      break;
+    }
+
+    const tickCap = Math.max(1, Math.ceil(s.throttle_per_hour / 4));
+    if ((tickQuotaUsed.get(s.campaign_id) || 0) >= tickCap) {
+      summary.throttled += 1;
+      continue;
+    }
+
+    // Daily cap: count how many sends from this campaign already left in
+    // the last rolling 24h. One query per row is fine — the candidate
+    // batch is capped at 50.
+    const sentCountRow = await sql`
+      SELECT COUNT(*)::int AS cnt FROM lead_campaign_sends
+      WHERE campaign_id = ${s.campaign_id}
+        AND sent_at IS NOT NULL
+        AND sent_at > now() - interval '24 hours'
+    `;
+    if ((sentCountRow[0]?.cnt || 0) >= s.daily_cap) {
+      summary.throttled += 1;
+      continue;
+    }
+
+    // Atomic claim: flip queued → sending so a parallel cron tick can't
+    // double-send the same row.
+    const claimed = await sql`
+      UPDATE lead_campaign_sends
+      SET status='sending'
+      WHERE id=${s.id} AND status='queued'
+      RETURNING id
+    `;
+    if (!claimed.length) continue;
+
+    const vars = {
+      business_name: s.business_name || "",
+      first_name:    deriveFirstName(s.business_name),
+      city:          s.city || "",
+      state:         s.state || "",
+      zip:           s.zip || "",
+      // {{custom_intro}} is reserved for a future Claude pre-render step.
+      custom_intro:  "",
+    };
+    const subject = renderTemplate(s.subject_template, vars);
+    const textBody = renderTemplate(s.body_template, vars);
+    const openToken = (globalThis.crypto || (await import("node:crypto")).webcrypto)
+      .randomUUID().replace(/-/g, "");
+
+    const result = await sendCampaignEmail({
+      to: s.to_email,
+      subject,
+      textBody,
+      from: s.from_email,
+      replyTo: s.reply_to || null,
+      openToken,
+      unsubscribeToken: s.unsubscribe_token,
+      campaignId: s.campaign_id,
+      sendId: s.id,
+    });
+
+    if (result.ok) {
+      await sql`
+        UPDATE lead_campaign_sends
+        SET status='sent', sent_at=now(),
+            provider='ses', provider_message_id=${result.messageId},
+            open_token=${openToken},
+            rendered_subject=${subject}, rendered_body=${textBody}
+        WHERE id=${s.id}
+      `;
+      await sql`UPDATE lead_emails SET last_sent_at=now() WHERE id=${s.email_id}`;
+      tickQuotaUsed.set(s.campaign_id, (tickQuotaUsed.get(s.campaign_id) || 0) + 1);
+      summary.sent += 1;
+      summary.sends.push({ id: s.id, status: "sent" });
+    } else {
+      await sql`
+        UPDATE lead_campaign_sends
+        SET status=${result.permanent ? "failed" : "queued"},
+            error=${result.error}
+        WHERE id=${s.id}
+      `;
+      summary.failed += 1;
+      summary.sends.push({ id: s.id, status: "failed", error: result.error });
+    }
+  }
+
+  // Mark campaigns as 'done' if no queued or sending rows remain.
+  const exhausted = await sql`
+    UPDATE lead_campaigns SET status='done', completed_at=now(), updated_at=now()
+    WHERE status='running'
+      AND NOT EXISTS (
+        SELECT 1 FROM lead_campaign_sends
+        WHERE campaign_id = lead_campaigns.id
+          AND status IN ('queued','sending')
+      )
+    RETURNING id
+  `;
+  if (exhausted.length) summary.completed_campaigns = exhausted.map((r) => r.id);
+
+  return { ...summary, picked: candidates.length };
+}
+
 export async function GET(request) {
   if (!verifyCron(request)) {
     return new Response("Unauthorized", { status: 401 });
@@ -905,6 +1068,14 @@ export async function GET(request) {
     });
   }
 
+  if (taskParam === "leadgen-send") {
+    result.tasks.leadgenSender = await runLeadgenSender();
+    return new Response(JSON.stringify(result, null, 2), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  }
+
   result.tasks.autoCounter = await autoCounter();
   result.tasks.threatFeeds = await ingestThreatFeeds();
   result.tasks.blogDraft = await generateBlogDraft({ force });
@@ -916,6 +1087,9 @@ export async function GET(request) {
     error: String(e.message || e).slice(0, 200),
   }));
   result.tasks.leadgen = await runLeadgenWorker().catch((e) => ({
+    error: String(e.message || e).slice(0, 200),
+  }));
+  result.tasks.leadgenSender = await runLeadgenSender().catch((e) => ({
     error: String(e.message || e).slice(0, 200),
   }));
 
