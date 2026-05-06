@@ -14,17 +14,23 @@ import { timingSafeEqual } from "node:crypto";
 import { validateEnv } from "../_lib/env.js";
 import { runNewsletterDrip } from "../_lib/newsletter-drip.js";
 
-// Cold-start validation. The agent cron is useless without Claude + Resend —
-// throw loudly in production so a missing key surfaces on the first run
-// instead of silently skipping tasks every 15 minutes.
+// Cold-start validation. Both keys are validated as 'optional' rather than
+// 'required': the per-task code below already returns { skipped } when a
+// key is missing, and a strict gate here used to crash the entire cron at
+// import time the moment either secret was rotated — silently killing
+// auto-block, threat-feed ingest, security analysis, AND blog drafts. The
+// 'optional' mode still logs a warning at boot for diagnosability.
 validateEnv({
-  ANTHROPIC_API_KEY: "required",
-  RESEND_API_KEY: "required",
+  ANTHROPIC_API_KEY: "optional",
+  RESEND_API_KEY: "optional",
 });
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
 const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
+// Env-overridable model so a deprecated snapshot id (Anthropic rotates them
+// every few months) can be fixed via Vercel env without a redeploy.
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5";
 const FROM = "Simple IT SRQ Agent <agent@simpleitsrq.com>";
 
 function verifyCron(request) {
@@ -240,14 +246,64 @@ async function ingestThreatFeeds() {
 
 // ========== AI BLOG AGENT (daily) ==========
 
-async function generateBlogDraft() {
-  if (!ANTHROPIC_API_KEY) return { skipped: true, reason: "ANTHROPIC_API_KEY not set" };
+// Fold a slug down to its kebab-case canonical form, in case the model
+// returns an UpperCase or apostrophe-rich version.
+function normalizeSlug(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120);
+}
 
-  // Check if we already generated today
-  const todayCheck = await sql`
-    SELECT 1 FROM draft_posts WHERE ts::date = now()::date LIMIT 1
-  `;
-  if (todayCheck.length > 0) return { skipped: true, reason: "already generated today" };
+// Pick a non-colliding slug. The slug column is UNIQUE across draft_posts,
+// so a model that picks a slug we have already used (in any status —
+// draft / approved / rejected / published) makes INSERT throw and used to
+// kill the whole run silently. We try the model's slug first, then -2, -3…
+// up to -9 before giving up.
+async function pickFreeSlug(base) {
+  const root = normalizeSlug(base) || `post-${Date.now()}`;
+  for (let i = 0; i < 10; i++) {
+    const candidate = i === 0 ? root : `${root}-${i + 1}`;
+    const collision = await sql`SELECT 1 FROM draft_posts WHERE slug = ${candidate} LIMIT 1`.catch(() => []);
+    if (collision.length === 0) return candidate;
+  }
+  return null;
+}
+
+// Write a row to auto_actions so the admin can confirm the agent ran and
+// see why it skipped or failed without grepping serverless logs. Best-effort.
+async function logBlogOutcome(outcome) {
+  await sql`
+    INSERT INTO auto_actions (action, target, reason, detail)
+    VALUES (${'blog_draft'}, ${outcome.slug || outcome.title || null},
+            ${outcome.error || outcome.reason || (outcome.generated ? 'generated' : 'unknown')},
+            ${JSON.stringify(outcome)}::jsonb)
+  `.catch(() => {});
+}
+
+async function generateBlogDraft({ force = false } = {}) {
+  if (!ANTHROPIC_API_KEY) {
+    const out = { skipped: true, reason: "ANTHROPIC_API_KEY not set" };
+    await logBlogOutcome(out);
+    return out;
+  }
+
+  // "Already generated today" — anchored to America/New_York so a cron
+  // that fires at 11:15 UTC (≈07:15 ET) doesn't race the UTC date rollover.
+  if (!force) {
+    const todayCheck = await sql`
+      SELECT 1 FROM draft_posts
+      WHERE (ts AT TIME ZONE 'America/New_York')::date
+          = (now() AT TIME ZONE 'America/New_York')::date
+      LIMIT 1
+    `.catch(() => []);
+    if (todayCheck.length > 0) {
+      const out = { skipped: true, reason: "already generated today" };
+      await logBlogOutcome(out);
+      return out;
+    }
+  }
 
   // Fetch trending IT/security topics via a simple approach:
   // use the Claude model to pick a topic and write the post.
@@ -294,7 +350,7 @@ Respond with ONLY a JSON object (no markdown fencing):
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
+        model: ANTHROPIC_MODEL,
         max_tokens: 4096,
         messages: [
           { role: "user", content: "Write today's blog post for Simple IT SRQ. Pick a timely topic that a Sarasota small business owner would care about this week." },
@@ -305,7 +361,9 @@ Respond with ONLY a JSON object (no markdown fencing):
 
     if (!res.ok) {
       const err = await res.text().catch(() => "");
-      return { error: `API ${res.status}: ${err.slice(0, 200)}` };
+      const out = { error: `API ${res.status}: ${err.slice(0, 200)}`, model: ANTHROPIC_MODEL };
+      await logBlogOutcome(out);
+      return out;
     }
 
     const data = await res.json();
@@ -318,21 +376,41 @@ Respond with ONLY a JSON object (no markdown fencing):
       const cleaned = text.replace(/```json\s*/, "").replace(/```\s*$/, "").trim();
       post = JSON.parse(cleaned);
     } catch {
-      return { error: "Failed to parse model response", raw: text.slice(0, 500) };
+      const out = { error: "Failed to parse model response", raw: text.slice(0, 500) };
+      await logBlogOutcome(out);
+      return out;
     }
 
     if (!post.title || !post.slug || !post.body) {
-      return { error: "Incomplete post", raw: text.slice(0, 500) };
+      const out = { error: "Incomplete post", raw: text.slice(0, 500) };
+      await logBlogOutcome(out);
+      return out;
+    }
+
+    // Pick a non-colliding slug; bail with a logged error if even -2..-10
+    // are all taken (effectively impossible, but never throw).
+    const finalSlug = await pickFreeSlug(post.slug);
+    if (!finalSlug) {
+      const out = { error: "slug_collision_unresolvable", originalSlug: post.slug };
+      await logBlogOutcome(out);
+      return out;
     }
 
     // Save to DB and capture the new row's id for the review link.
-    const inserted = await sql`
-      INSERT INTO draft_posts (title, slug, category, excerpt, body, meta_desc, model)
-      VALUES (${post.title}, ${post.slug}, ${post.category || "Business Tech"},
-              ${post.excerpt || ""}, ${post.body}, ${post.metaDescription || ""},
-              'claude-haiku-4-5')
-      RETURNING id
-    `;
+    let inserted;
+    try {
+      inserted = await sql`
+        INSERT INTO draft_posts (title, slug, category, excerpt, body, meta_desc, model)
+        VALUES (${post.title}, ${finalSlug}, ${post.category || "Business Tech"},
+                ${post.excerpt || ""}, ${post.body}, ${post.metaDescription || ""},
+                ${ANTHROPIC_MODEL})
+        RETURNING id
+      `;
+    } catch (dbErr) {
+      const out = { error: `db_insert_failed: ${String(dbErr.message || dbErr).slice(0, 200)}`, slug: finalSlug };
+      await logBlogOutcome(out);
+      return out;
+    }
     const draftId = inserted[0]?.id;
     const reviewUrl = `https://simpleitsrq.com/portal?tab=drafts${draftId ? `&id=${draftId}` : ""}`;
 
@@ -347,7 +425,7 @@ Respond with ONLY a JSON object (no markdown fencing):
           text:
             `New draft generated by AI agent.\n\n` +
             `Title: ${post.title}\n` +
-            `Slug: ${post.slug}\n` +
+            `Slug: ${finalSlug}\n` +
             `Category: ${post.category}\n\n` +
             `Review + publish: ${reviewUrl}\n\n` +
             `---\n\n${post.body}\n\n---\n` +
@@ -356,9 +434,13 @@ Respond with ONLY a JSON object (no markdown fencing):
       } catch { /* best effort */ }
     }
 
-    return { generated: true, title: post.title, slug: post.slug, draftId, reviewUrl };
+    const out = { generated: true, title: post.title, slug: finalSlug, draftId, reviewUrl };
+    await logBlogOutcome(out);
+    return out;
   } catch (err) {
-    return { error: String(err.message || err) };
+    const out = { error: String(err.message || err) };
+    await logBlogOutcome(out);
+    return out;
   }
 }
 
@@ -502,7 +584,7 @@ async function selfHealthCheck() {
     { path: "/", expect: 200 },
     { path: "/blog", expect: 200 },
     { path: "/api/portal?action=me", expect: 401 },
-    { path: "/api/portal?action=health", expect: 200 },
+    { path: "/api/health", expect: 200 },
   ];
 
   const results = [];
@@ -645,12 +727,28 @@ export async function GET(request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  const url = new URL(request.url);
+  const taskParam = url.searchParams.get("task");
+  const force = url.searchParams.get("force") === "1";
+
   const now = new Date();
   const result = { ts: now.toISOString(), tasks: {} };
 
+  // Single-task manual trigger. Lets the admin (or a curl with CRON_SECRET)
+  // run JUST the blog draft on demand without waiting for the daily cron and
+  // without firing the other tasks. Pass ?task=blog&force=1 to bypass the
+  // "already generated today" guard.
+  if (taskParam === "blog") {
+    result.tasks.blogDraft = await generateBlogDraft({ force });
+    return new Response(JSON.stringify(result, null, 2), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  }
+
   result.tasks.autoCounter = await autoCounter();
   result.tasks.threatFeeds = await ingestThreatFeeds();
-  result.tasks.blogDraft = await generateBlogDraft();
+  result.tasks.blogDraft = await generateBlogDraft({ force });
   result.tasks.securityAnalysis = await securityAnalysis();
   result.tasks.supplyChain = await supplyChainAudit();
   result.tasks.healthCheck = await selfHealthCheck();
