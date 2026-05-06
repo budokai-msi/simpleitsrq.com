@@ -1673,9 +1673,17 @@ async function handleRunAuditMigration(session) {
   }
 
   const allOk = results.every((r) => r.ok);
+  const failedSteps = results.filter((r) => !r.ok).map((r) => ({ step: r.step, error: r.error }));
+  if (failedSteps.length > 0) {
+    // Surface details in Vercel runtime logs for post-hoc debugging since
+    // the admin UI's pre-block can be hard to read on small screens.
+    // eslint-disable-next-line no-console
+    console.error("[run-audit-migration] failed steps:", JSON.stringify(failedSteps));
+  }
   return json(allOk ? 200 : 500, {
     ok: allOk,
     migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers", "007_testimonials"],
+    failedSteps,
     results,
   });
 }
