@@ -1,0 +1,311 @@
+/* =====================================================================
+   LEADGEN — promo modal, sticky promo bar, testimonials
+   ===================================================================== */
+
+/* Promo bar (top of page) */
+.leadgen-promobar {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #0F6CBD 0%, #7C5CD8 100%);
+  color: #fff;
+  font-size: 0.88rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.leadgen-promobar__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #F0B429;
+  box-shadow: 0 0 0 0 rgba(240, 180, 41, 0.8);
+  animation: lg-pulse 1.8s ease-out infinite;
+}
+@keyframes lg-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(240,180,41, 0.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(240,180,41, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(240,180,41, 0); }
+}
+.leadgen-promobar__code {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  padding: 1px 8px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.leadgen-promobar__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #F0B429;
+  color: #072E54;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.leadgen-promobar__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(240, 180, 41, 0.40);
+}
+.leadgen-promobar__close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.80);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+.leadgen-promobar__close:hover { color: #fff; background: rgba(255, 255, 255, 0.10); }
+@media (prefers-reduced-motion: reduce) {
+  .leadgen-promobar__pulse { animation: none; }
+}
+
+/* Promo modal */
+.lg-promo {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 18, 38, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 20px;
+  animation: lg-promo-fade 220ms ease-out;
+}
+@keyframes lg-promo-fade { from { opacity: 0; } to { opacity: 1; } }
+.lg-promo__card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  width: 100%;
+  max-width: 640px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--syn-surface, #fff);
+  box-shadow: 0 30px 80px -10px rgba(7, 46, 84, 0.45), 0 12px 30px rgba(15, 108, 189, 0.20);
+  outline: none;
+  animation: lg-promo-rise 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes lg-promo-rise {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lg-promo__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  color: #072E54;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.10);
+  transition: background 120ms ease;
+}
+.lg-promo__close:hover { background: #fff; }
+.lg-promo__art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0F6CBD 0%, #7C5CD8 100%);
+  padding: 24px;
+}
+.lg-promo__body { padding: 32px 28px; }
+.lg-promo__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #0E9C95;
+  background: rgba(14, 156, 149, 0.12);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+.lg-promo__title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+  color: var(--text-1, #111827);
+  line-height: 1.2;
+}
+.lg-promo__lede {
+  font-size: 0.92rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+.lg-promo__lede strong { color: var(--text-1, #111827); }
+.lg-promo__code {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px dashed #0F6CBD;
+  background: rgba(15, 108, 189, 0.04);
+  border-radius: 10px;
+  margin-bottom: 18px;
+}
+.lg-promo__code-val {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #0F6CBD;
+}
+.lg-promo__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  background: var(--syn-surface, #fff);
+  color: var(--text-1, #111827);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.lg-promo__copy:hover { border-color: #0F6CBD; color: #0F6CBD; }
+.lg-promo__actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.lg-promo__cta { flex: 1; justify-content: center; }
+.lg-promo__skip {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 4px;
+}
+.lg-promo__skip:hover { color: var(--text-1, #111827); }
+.lg-promo__fine {
+  font-size: 0.74rem;
+  color: var(--text-muted, #6b7280);
+  margin: 0;
+  line-height: 1.5;
+}
+@media (max-width: 600px) {
+  .lg-promo__card { grid-template-columns: 1fr; max-width: 420px; }
+  .lg-promo__art  { padding: 18px; }
+  .lg-promo__art svg { width: 180px; height: 120px; }
+  .lg-promo__body { padding: 22px 22px 26px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-promo, .lg-promo__card { animation: none; }
+}
+[data-theme="dark"] .lg-promo__card { background: #0F1623; }
+[data-theme="dark"] .lg-promo__title { color: #E8EEF6; }
+[data-theme="dark"] .lg-promo__close { background: rgba(255,255,255,0.12); color: #E8EEF6; }
+[data-theme="dark"] .lg-promo__close:hover { background: rgba(255,255,255,0.20); }
+[data-theme="dark"] .lg-promo__copy { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.10); color: #E8EEF6; }
+
+/* Testimonials */
+.leadgen-testimonials {
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 108, 189, 0.03) 100%);
+}
+.leadgen-testimonials__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+.leadgen-testimonial {
+  position: relative;
+  padding: 28px 24px;
+  background: var(--syn-surface, #fff);
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 14px;
+  margin: 0;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.leadgen-testimonial:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px -8px rgba(15, 108, 189, 0.15);
+  border-color: rgba(15, 108, 189, 0.30);
+}
+.leadgen-testimonial__mark {
+  color: #0F6CBD;
+  opacity: 0.30;
+  margin-bottom: 12px;
+}
+.leadgen-testimonial__quote {
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-1, #111827);
+  font-style: normal;
+  quotes: none;
+}
+.leadgen-testimonial__quote::before,
+.leadgen-testimonial__quote::after { content: none; }
+.leadgen-testimonial__cap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--syn-border, #e5e7eb);
+  padding-top: 16px;
+}
+.leadgen-testimonial__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.leadgen-testimonial__name {
+  display: block;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-1, #111827);
+}
+.leadgen-testimonial__role {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted, #6b7280);
+  margin-top: 2px;
+}
+@media (max-width: 960px) { .leadgen-testimonials__grid { grid-template-columns: 1fr; } }
+[data-theme="dark"] .leadgen-testimonial {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+[data-theme="dark"] .leadgen-testimonial__quote,
+[data-theme="dark"] .leadgen-testimonial__name { color: #E8EEF6; }
+[data-theme="dark"] .leadgen-testimonial__cap { border-top-color: rgba(255, 255, 255, 0.08); }

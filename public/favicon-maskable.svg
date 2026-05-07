@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Simple IT SRQ">
+  <!--
+    Maskable variant — Android home-screen launchers crop installable
+    icons to a circle / squircle / rounded-square. The "safe zone" is
+    a centered circle of diameter ~80% of the canvas. Anything outside
+    that ring may be cropped on different OEM launchers.
+
+    Therefore this variant:
+      • Full-bleed background gradient (no inner stroke that would look
+        clipped on circular masks).
+      • Mark is uniformly scaled inward by ~30% so every glyph element
+        sits comfortably inside the 80% safe circle.
+      • Status dot moved closer to center so it isn't shaved off when
+        a launcher applies aggressive circular masking.
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#3A9CF0"/>
+      <stop offset="55%"  stop-color="#0F6CBD"/>
+      <stop offset="100%" stop-color="#0A3D6E"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.30"/>
+      <stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="innerglow" cx="0.5" cy="0.5" r="0.62">
+      <stop offset="55%"  stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="92%"  stop-color="#FFFFFF" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sgrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#DCE6F2"/>
+    </linearGradient>
+    <radialGradient id="dot" cx="35%" cy="30%" r="75%">
+      <stop offset="0%"   stop-color="#FFF1C2"/>
+      <stop offset="55%"  stop-color="#FFD66B"/>
+      <stop offset="100%" stop-color="#D69314"/>
+    </radialGradient>
+    <filter id="sshadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="0.45"/>
+      <feOffset dy="0.4"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.40"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Full-bleed background. No corner radius — the launcher applies its own mask. -->
+  <rect width="32" height="32" fill="url(#bg)"/>
+  <rect width="32" height="32" fill="url(#innerglow)"/>
+  <rect width="32" height="32" fill="url(#shine)"/>
+
+  <!-- Mark scaled to 70% of canvas, centered. The "S" + status dot
+       together fit comfortably inside the 80% maskable safe zone. -->
+  <g transform="translate(16 16) scale(0.70) translate(-16 -16)">
+    <path
+      filter="url(#sshadow)"
+      fill="url(#sgrad)"
+      d="M 5 8 L 23 8 L 23 12 L 9 12 L 9 14 L 23 14 L 23 24 L 5 24 L 5 20 L 19 20 L 19 18 L 5 18 Z"
+    />
+    <g stroke="#FFFFFF" stroke-opacity="0.40" stroke-width="0.6" fill="none">
+      <path d="M 5.4 8.5 L 22.6 8.5"/>
+      <path d="M 9.4 14.5 L 22.6 14.5"/>
+      <path d="M 5.4 20.5 L 18.6 20.5"/>
+    </g>
+    <circle cx="24.6" cy="7.4" r="3.0" fill="#FFD66B" fill-opacity="0.18"/>
+    <circle cx="24.6" cy="7.4" r="2.2" fill="url(#dot)"/>
+    <circle cx="24.05" cy="6.85" r="0.65" fill="#FFFFFF" fill-opacity="0.85"/>
+  </g>
+</svg>

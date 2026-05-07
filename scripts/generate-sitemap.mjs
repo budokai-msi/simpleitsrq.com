@@ -41,6 +41,7 @@ const staticUrls = [
   { loc: "/partners", priority: "0.8", changefreq: "monthly" },
   { loc: "/compare", priority: "0.8", changefreq: "monthly" },
   { loc: "/why", priority: "0.85", changefreq: "monthly" },
+  { loc: "/leadgen", priority: "0.95", changefreq: "weekly" },
   { loc: "/glossary", priority: "0.85", changefreq: "monthly" },
   { loc: "/industries", priority: "0.85", changefreq: "monthly" },
   { loc: "/exposure-scan", priority: "0.9", changefreq: "monthly" },
