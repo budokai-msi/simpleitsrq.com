@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
+  <defs>
+    <radialGradient id="compliance-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#22C55E" stop-opacity="0.18" />
+    </radialGradient>
+    <linearGradient id="compliance-main" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22C55E" />
+      <stop offset="1" stop-color="#14532D" />
+    </linearGradient>
+    <filter id="compliance-shadow" x="-10" y="-10" width="116" height="116" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#22C55E" flood-opacity="0.18" />
+    </filter>
+  </defs>
+  <circle cx="48" cy="48" r="44" fill="url(#compliance-glow)">
+    <animate attributeName="r" values="44;48;44" dur="2.3s" repeatCount="indefinite" />
+  </circle>
+  <g filter="url(#compliance-shadow)">
+    <rect x="34" y="36" width="28" height="36" rx="6" fill="url(#compliance-main)"/>
+    <rect x="40" y="44" width="16" height="4" rx="2" fill="#fff" fill-opacity="0.18">
+      <animate attributeName="width" values="16;22;16" dur="2.1s" repeatCount="indefinite" />
+      <animate attributeName="x" values="40;37;40" dur="2.1s" repeatCount="indefinite" />
+    </rect>
+    <rect x="40" y="52" width="16" height="4" rx="2" fill="#fff" fill-opacity="0.12">
+      <animate attributeName="width" values="16;20;16" dur="2.2s" repeatCount="indefinite" />
+      <animate attributeName="x" values="40;39;40" dur="2.2s" repeatCount="indefinite" />
+    </rect>
+    <rect x="40" y="60" width="16" height="4" rx="2" fill="#fff" fill-opacity="0.10">
+      <animate attributeName="width" values="16;18;16" dur="2.3s" repeatCount="indefinite" />
+      <animate attributeName="x" values="40;41;40" dur="2.3s" repeatCount="indefinite" />
+    </rect>
+  </g>
+</svg>

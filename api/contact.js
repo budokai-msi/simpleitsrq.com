@@ -459,6 +459,308 @@ async function sendDripDay7Email(email, unsubscribeToken) {
 
 export { sendWelcomeEmail, sendDripDay3Email, sendDripDay7Email };
 
+// ---------- AI Chat (Groq Llama 3.3 70B) ----------
+//
+// Lives on /api/contact rather than its own route to stay under the Hobby
+// plan's 12-function ceiling. The contact endpoint is already the lead-
+// capture surface, so a chat that captures emails when it can't close is
+// a natural fit.
+//
+// Pipeline:
+//   1. CSRF + Origin (already enforced by POST handler)
+//   2. Per-IP rate limit (chat bucket: 30 turns / hour)
+//   3. Validate messages (length-cap each turn, max 12 turns)
+//   4. Call Groq with a system prompt grounded in our pricing + skills
+//   5. If body.captureEmail is set, also create a newsletter row so the
+//      conversation transcript has somewhere to land in our CRM.
+//
+// Env: GROQ_API_KEY (required). Falls back to a canned reply if absent
+// so local dev without keys still renders the widget.
+
+const CHAT_SYSTEM_PROMPT = `You are the AI assistant for Simple IT SRQ, a Sarasota / SWFL IT and lead-generation provider. Be brief (2-4 sentences typical), direct, and honest. Never invent customer testimonials, logos, or compliance claims we don't have.
+
+Service area: Sarasota, Bradenton, Lakewood Ranch, Venice, Nokomis only. If asked about other areas, say we're SWFL-only.
+
+Surfaces you can recommend with confidence:
+- /leadgen — B2B lead generation. Tiers: Starter $169/mo annual or $199 monthly (2,500 records/mo); Growth $419/mo annual or $499 monthly (15,000 records/mo, dedicated outreach); Enterprise custom (sales-led).
+- LAUNCH20 promo code = 20% off first 3 months. Auto-applied at checkout via prefilled link.
+- Stripe Payment Links (recommend these only after asking which tier + cadence fits):
+  Starter monthly: https://buy.stripe.com/14AeV64czgd278c8Mdak01i?prefilled_promo_code=LAUNCH20
+  Starter annual:  https://buy.stripe.com/00w4gs24r6Cs1NSaUlak01j?prefilled_promo_code=LAUNCH20
+  Growth monthly:  https://buy.stripe.com/7sY9AM7oLe4U5040fHak01k?prefilled_promo_code=LAUNCH20
+  Growth annual:   https://buy.stripe.com/dRm5kw5gDgd28cg0fHak01l?prefilled_promo_code=LAUNCH20
+- /book — for demos, enterprise pricing, or anything sales-led.
+- /services — IT support, security cameras, UPS, hurricane prep, HIPAA kits.
+- /blog — long-form articles. Search by topic.
+
+Rules:
+- If you don't know something, say "I'm not sure — let me get a human" and suggest /book or capturing their email.
+- Never quote SLAs, response times, or compliance certifications we haven't published.
+- Do not provide legal, tax, or medical advice. Recommend professionals.
+- If the user asks for pricing of leadgen, walk them through Starter vs Growth in 2 sentences and link the matching Stripe URL.
+- If the user wants to talk to a human, point them to /book.
+- Markdown links are OK. Use them sparingly.`;
+
+async function handleChat(request, body, ip) {
+  const rl = await rateLimit({ ip, bucket: "chat", windowSeconds: 3600, max: 30 });
+  if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
+
+  const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
+  const cleaned = messages
+    .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+    .map((m) => ({ role: m.role, content: stripHeaderCtrl(m.content.slice(0, 2000)) }));
+
+  if (cleaned.length === 0) return json(400, { ok: false, error: "no_messages" });
+  const last = cleaned[cleaned.length - 1];
+  if (last.role !== "user") return json(400, { ok: false, error: "last_must_be_user" });
+
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    return json(200, {
+      ok: true,
+      reply: "I'm offline right now (the AI key isn't set in this environment). Please email hello@simpleitsrq.com or book at /book and we'll respond same business day.",
+      degraded: true,
+    });
+  }
+
+  try {
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [{ role: "system", content: CHAT_SYSTEM_PROMPT }, ...cleaned],
+        temperature: 0.4,
+        max_tokens: 400,
+        stream: false,
+      }),
+    });
+    if (!groqRes.ok) {
+      const errText = await groqRes.text().catch(() => "");
+      console.warn("[chat] groq non-2xx", groqRes.status, errText.slice(0, 200));
+      return json(502, { ok: false, error: "ai_unavailable" });
+    }
+    const data = await groqRes.json();
+    const reply = data?.choices?.[0]?.message?.content?.trim() || "Sorry — I couldn't generate a reply. Try /book or email hello@simpleitsrq.com.";
+    return json(200, { ok: true, reply });
+  } catch (err) {
+    console.error("[chat] groq error", err);
+    return json(502, { ok: false, error: "ai_error" });
+  }
+}
+
+// Capture an email mid-chat so transcripts have a name to attach to.
+// Reuses the newsletter-subscribers table with source=chat for CRM
+// continuity. Does NOT trigger the welcome / drip emails.
+async function handleChatCapture(request, body, ip) {
+  const rl = await rateLimit({ ip, bucket: "chat", windowSeconds: 3600, max: 30 });
+  if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
+  const email = stripHeaderCtrl(String(body.email || "").slice(0, 320)).toLowerCase();
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return json(400, { ok: false, error: "invalid_email" });
+  }
+  const note = stripHeaderCtrl(String(body.note || "").slice(0, 500));
+  try {
+    const existing = await sql`
+      SELECT id FROM newsletter_subscribers WHERE lower(email) = ${email} LIMIT 1
+    `;
+    if (existing.length === 0) {
+      const confirmToken = crypto.randomUUID();
+      const unsubToken = crypto.randomUUID();
+      await sql`
+        INSERT INTO newsletter_subscribers (email, confirm_token, unsubscribe_token, source, ip)
+        VALUES (${email}, ${confirmToken}, ${unsubToken}, ${"chat"}, ${ip})
+      `;
+    }
+    // Note is intentionally not persisted (no column on newsletter_subscribers).
+    // It still arrives in our logs so we can grep transcripts if needed.
+    if (note) console.log("[chat] capture note", { email, note: note.slice(0, 200) });
+    return json(200, { ok: true });
+  } catch (err) {
+    console.error("[chat] capture error", err);
+    // Soft-fail — chat shouldn't break if the DB write fails.
+    return json(200, { ok: true, degraded: true });
+  }
+}
+
+// ---------- Stripe Webhook ----------
+//
+// Verifies the `stripe-signature` header against STRIPE_WEBHOOK_SECRET
+// using Stripe's canonical scheme: HMAC-SHA256 over `${timestamp}.${rawBody}`.
+// Replays > 5 minutes old are rejected.
+//
+// On checkout.session.completed we:
+//   1. Pull customer_email + amount_total from the session.
+//   2. Upsert the buyer into newsletter_subscribers (source=stripe) so they
+//      enter the same CRM funnel as a chat-capture or form submission.
+//   3. Email a heads-up to ADMIN_EMAIL so the human sees the sale.
+//
+// Other event types are acknowledged but not acted on yet — they're logged
+// to console so future automation has audit context. Adding the
+// stripe_events DB table later (see db/migrations/016_stripe_events.sql)
+// will give us idempotent dedupe.
+
+const STRIPE_WEBHOOK_TOLERANCE_S = 300; // 5 minutes
+
+function timingSafeEqualHex(aHex, bHex) {
+  if (typeof aHex !== "string" || typeof bHex !== "string") return false;
+  if (aHex.length !== bHex.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < aHex.length; i++) mismatch |= aHex.charCodeAt(i) ^ bHex.charCodeAt(i);
+  return mismatch === 0;
+}
+
+async function verifyStripeSignature(rawBody, sigHeader, secret) {
+  if (!sigHeader || !secret) return { ok: false, reason: "missing" };
+  // Header format: t=1492774577,v1=hex,v1=hex,v0=hex
+  const parts = Object.fromEntries(
+    sigHeader.split(",").map((p) => {
+      const idx = p.indexOf("=");
+      return [p.slice(0, idx).trim(), p.slice(idx + 1).trim()];
+    })
+  );
+  const t = Number(parts.t);
+  const v1List = sigHeader
+    .split(",")
+    .filter((p) => p.startsWith("v1="))
+    .map((p) => p.slice(3).trim());
+  if (!t || v1List.length === 0) return { ok: false, reason: "malformed" };
+
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (Math.abs(nowSec - t) > STRIPE_WEBHOOK_TOLERANCE_S) {
+    return { ok: false, reason: "stale" };
+  }
+
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const mac = await crypto.subtle.sign("HMAC", key, enc.encode(`${t}.${rawBody}`));
+  const expected = Array.from(new Uint8Array(mac))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  if (!v1List.some((sig) => timingSafeEqualHex(sig, expected))) {
+    return { ok: false, reason: "bad_signature" };
+  }
+  return { ok: true };
+}
+
+async function handleStripeWebhook(request) {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const sig = request.headers.get("stripe-signature");
+  if (!secret) {
+    console.error("[stripe-webhook] STRIPE_WEBHOOK_SECRET missing");
+    return json(500, { ok: false, error: "not_configured" });
+  }
+  let rawBody;
+  try {
+    rawBody = await request.text();
+  } catch {
+    return json(400, { ok: false, error: "no_body" });
+  }
+  const verify = await verifyStripeSignature(rawBody, sig, secret);
+  if (!verify.ok) {
+    console.warn("[stripe-webhook] signature rejected", { reason: verify.reason });
+    return json(400, { ok: false, error: "bad_signature" });
+  }
+
+  let event;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return json(400, { ok: false, error: "invalid_json" });
+  }
+  const type = event?.type || "unknown";
+  const id = event?.id || "evt_unknown";
+  console.log("[stripe-webhook] verified", { id, type, livemode: event.livemode });
+
+  // Persist every verified event to stripe_events for audit + idempotency.
+  // ON CONFLICT DO NOTHING means a Stripe redelivery is a no-op.
+  try {
+    const obj = event.data?.object || {};
+    const evtEmail = (obj.customer_details?.email || obj.customer_email || obj.receipt_email || "").toLowerCase() || null;
+    const evtCustomer = typeof obj.customer === "string" ? obj.customer : (obj.customer?.id || null);
+    const evtAmount = obj.amount_total ?? obj.amount_paid ?? obj.amount_due ?? null;
+    const evtCurrency = obj.currency || null;
+    const occurredAt = event.created ? new Date(event.created * 1000) : new Date();
+    await sql`
+      INSERT INTO stripe_events (id, type, livemode, api_version, occurred_at, customer_email, customer_id, amount_total, currency, data)
+      VALUES (${id}, ${type}, ${!!event.livemode}, ${event.api_version || null}, ${occurredAt}, ${evtEmail}, ${evtCustomer}, ${evtAmount}, ${evtCurrency}, ${JSON.stringify(event)}::jsonb)
+      ON CONFLICT (id) DO NOTHING
+    `;
+  } catch (auditErr) {
+    console.error("[stripe-webhook] audit insert failed", auditErr);
+  }
+
+  try {
+    if (type === "checkout.session.completed" || type === "checkout.session.async_payment_succeeded") {
+      const s = event.data?.object || {};
+      const email = (s.customer_details?.email || s.customer_email || "").toLowerCase();
+      const amount = s.amount_total ?? null;
+      const currency = s.currency || "usd";
+      const customerId = typeof s.customer === "string" ? s.customer : (s.customer?.id || null);
+      const tier = s.metadata?.tier || null;
+      const cadence = s.metadata?.cadence || null;
+      console.log("[stripe-webhook] checkout completed", { email, amount, currency, tier, cadence, customerId });
+
+      // Upsert into newsletter_subscribers so the buyer lands in our
+      // existing CRM. We mark them confirmed since they just transacted.
+      if (email) {
+        try {
+          const existing = await sql`SELECT id FROM newsletter_subscribers WHERE lower(email) = ${email} LIMIT 1`;
+          if (existing.length === 0) {
+            const confirmToken = crypto.randomUUID();
+            const unsubToken = crypto.randomUUID();
+            await sql`
+              INSERT INTO newsletter_subscribers (email, confirm_token, unsubscribe_token, source, ip, confirmed_at)
+              VALUES (${email}, ${confirmToken}, ${unsubToken}, ${"stripe"}, ${"webhook"}, now())
+            `;
+          } else {
+            await sql`
+              UPDATE newsletter_subscribers
+              SET confirmed_at = COALESCE(confirmed_at, now())
+              WHERE id = ${existing[0].id}
+            `;
+          }
+        } catch (dbErr) {
+          console.error("[stripe-webhook] db upsert failed", dbErr);
+        }
+      }
+
+      // Notify admin via Resend if configured. Best-effort.
+      const adminEmail = process.env.ADMIN_EMAIL;
+      const resendKey = process.env.RESEND_API_KEY;
+      if (adminEmail && resendKey && email) {
+        try {
+          const resend = new Resend(resendKey);
+          const dollars = amount != null ? `$${(amount / 100).toFixed(2)} ${currency.toUpperCase()}` : "amount n/a";
+          const tierLabel = tier ? `${tier}${cadence ? ` (${cadence})` : ""}` : "Stripe checkout";
+          await resend.emails.send({
+            from: "Simple IT SRQ <hello@simpleitsrq.com>",
+            to: adminEmail,
+            subject: `New Stripe sale: ${tierLabel} — ${dollars}`,
+            text: `Customer: ${email}\nTier: ${tierLabel}\nAmount: ${dollars}\nStripe customer: ${customerId || "n/a"}\nEvent: ${id}\n\nDashboard: https://dashboard.stripe.com/customers/${customerId || ""}`,
+          });
+        } catch (mailErr) {
+          console.warn("[stripe-webhook] admin notify failed", mailErr);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[stripe-webhook] handler error", err);
+    // Always 200 so Stripe doesn't retry storm us — we logged the failure.
+  }
+
+  return json(200, { ok: true, received: type });
+}
+
 // Double-opt-in newsletter subscribe. Creates or refreshes a row in
 // newsletter_subscribers, emails a confirmation link. Does NOT add
 // the subscriber to the list until they click the link. Re-subscribing
@@ -733,6 +1035,14 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  // -1. Stripe webhook short-circuit. Stripe POSTs JSON with a
+  //     `stripe-signature` header; CSRF / Turnstile / Origin don't apply
+  //     because the request originates from Stripe's edge, not a browser.
+  //     Authenticity is enforced via HMAC-SHA256 over the raw body.
+  if (request.headers.get("stripe-signature")) {
+    return handleStripeWebhook(request);
+  }
+
   // 0. CSRF — double-submit cookie + Origin check. Layered ON TOP of
   //    Turnstile/BotID/rate-limit below; this only rejects cross-origin
   //    attempts from a page the user didn't intend to submit from.
@@ -783,6 +1093,16 @@ export async function POST(request) {
     const rl = await rateLimit({ ip, bucket: "scan", windowSeconds: 3600, max: 12 });
     if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
     return handleExposureScan(request, body, ip);
+  }
+
+  // Short-circuit: AI chat. Rate-limited under "chat" bucket. CSRF + Origin
+  // already validated above. Skips Turnstile (chat needs to be frictionless;
+  // rate limit + CSRF are the guardrails).
+  if (body.kind === "chat") {
+    return handleChat(request, body, ip);
+  }
+  if (body.kind === "chat_capture") {
+    return handleChatCapture(request, body, ip);
   }
 
   // 3. Cloudflare Turnstile

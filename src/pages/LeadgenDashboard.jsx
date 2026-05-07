@@ -44,12 +44,12 @@ function fmtTime(iso) {
   try { return new Date(iso).toLocaleString(); } catch { return iso; }
 }
 
-function Stat({ label, value, hint }) {
+function Stat({ label, value, hint, accent }) {
   return (
-    <div className="admin-aff-stat">
-      <span className="admin-aff-stat-label">{label}</span>
-      <span className="admin-aff-stat-value">{value ?? "—"}</span>
-      {hint ? <span className="admin-aff-stat-hint">{hint}</span> : null}
+    <div className={`leadgen-kpi${accent ? ` leadgen-kpi--${accent}` : ""}`}>
+      <span className="leadgen-kpi__label">{label}</span>
+      <span className="leadgen-kpi__value">{value ?? "—"}</span>
+      {hint ? <span className="leadgen-kpi__hint">{hint}</span> : null}
     </div>
   );
 }
@@ -111,36 +111,49 @@ export default function LeadgenDashboard() {
   return (
     <section className="section admin-affiliates admin-leadgen">
       <div className="container">
-        <header className="admin-aff-head">
+        <header className="admin-aff-head leadgen-admin-hero">
           <Link to="/portal" className="admin-aff-back">← Portal</Link>
-          <h1 className="title-1">Lead generation</h1>
-          <p className="admin-aff-sub">
-            Discover local businesses → enrich with verified emails → run
-            CAN-SPAM-compliant outreach with throttling and one-click
-            unsubscribe.
-          </p>
+          <div className="leadgen-admin-hero__row">
+            <div>
+              <span className="eyebrow">Sales Operations</span>
+              <h1 className="display-2">Lead generation</h1>
+              <p className="leadgen-admin-hero__sub">
+                Discover local businesses → enrich with verified emails → run
+                CAN-SPAM-compliant outreach with throttling and one-click
+                unsubscribe.
+              </p>
+            </div>
+            <div className="leadgen-admin-hero__actions">
+              <Link to="/leadgen" className="btn btn-secondary btn-sm" target="_blank" rel="noopener">
+                View public product page ↗
+              </Link>
+            </div>
+          </div>
         </header>
 
-        <div className="admin-aff-strip">
+        <div className="leadgen-kpi-grid">
           <Stat
+            accent="blue"
             label="Businesses"
-            value={status?.businesses?.total}
-            hint={`${status?.businesses?.with_website ?? 0} with website`}
+            value={status?.businesses?.total?.toLocaleString?.() ?? status?.businesses?.total}
+            hint={`${(status?.businesses?.with_website ?? 0).toLocaleString?.() ?? 0} with website`}
           />
           <Stat
+            accent="teal"
             label="Deliverable emails"
-            value={status?.emails?.deliverable}
-            hint={`across ${status?.emails?.businesses_with_email ?? 0} biz`}
+            value={status?.emails?.deliverable?.toLocaleString?.() ?? status?.emails?.deliverable}
+            hint={`across ${(status?.emails?.businesses_with_email ?? 0).toLocaleString?.() ?? 0} biz`}
           />
           <Stat
+            accent="violet"
             label="Campaigns"
             value={status?.campaigns?.total}
             hint={`${status?.campaigns?.running ?? 0} running`}
           />
-          <Stat label="Sent"    value={status?.sends?.sent} />
-          <Stat label="Opened"  value={status?.sends?.opened} />
-          <Stat label="Clicked" value={status?.sends?.clicked} />
-          <Stat label="Replied" value={status?.sends?.replied} />
+          <Stat label="Sent"    value={status?.sends?.sent?.toLocaleString?.() ?? status?.sends?.sent} />
+          <Stat label="Opened"  value={status?.sends?.opened?.toLocaleString?.() ?? status?.sends?.opened} />
+          <Stat label="Clicked" value={status?.sends?.clicked?.toLocaleString?.() ?? status?.sends?.clicked} />
+          <Stat accent="amber" label="Replied" value={status?.sends?.replied?.toLocaleString?.() ?? status?.sends?.replied} />
         </div>
 
         <nav className="admin-leadgen-tabs" aria-label="Lead-gen sections">
@@ -226,8 +239,10 @@ function DiscoverTab({ onStatusChange }) {
     }
   };
 
-  // Re-load whenever the filter changes.
-  useEffect(() => { loadList(page); /* eslint-disable-next-line */ }, [filter, page]);
+  // Re-load whenever the filter changes. Fetch-on-mount is a legitimate
+  // effect use; the lint rule is overly strict here.
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+  useEffect(() => { loadList(page); }, [filter, page]);
 
   const queueDiscover = async () => {
     if (!/^\d{5}$/.test(zip)) {
@@ -516,6 +531,7 @@ function CampaignsTab() {
       setList(r.rows || []);
     } catch (e) { setErr(String(e.message || e)); }
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { reload(); }, []);
 
   const newCampaign = () => setEditing({
@@ -784,6 +800,7 @@ function JobsTab({ recent }) {
       setRows(r.rows || []);
     } catch (e) { setErr(String(e.message || e)); }
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { reload(); }, []);
 
   return (

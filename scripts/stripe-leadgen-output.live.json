@@ -1,0 +1,24 @@
+﻿{
+    "mode":  "live",
+    "products":  {
+                     "growth":  "prod_UTBJMhnzuXAOfc",
+                     "starter":  "prod_UTBJlJ0M0fOA0o"
+                 },
+    "prices":  {
+                   "growth_annual":  "price_1TUEwh6TSSBTYuQrdd81Pqqr",
+                   "starter_monthly":  "price_1TUEwg6TSSBTYuQrCmwFgXi4",
+                   "starter_annual":  "price_1TUEwg6TSSBTYuQrav062nUW",
+                   "growth_monthly":  "price_1TUEwh6TSSBTYuQrQzUfkb2v"
+               },
+    "coupon":  "0Qnks9u4",
+    "promotion_code":  {
+                           "id":  null,
+                           "code":  null
+                       },
+    "payment_links":  {
+                          "growth_annual":  "https://buy.stripe.com/dRm5kw5gDgd28cg0fHak01l",
+                          "starter_monthly":  "https://buy.stripe.com/14AeV64czgd278c8Mdak01i",
+                          "starter_annual":  "https://buy.stripe.com/00w4gs24r6Cs1NSaUlak01j",
+                          "growth_monthly":  "https://buy.stripe.com/7sY9AM7oLe4U5040fHak01k"
+                      }
+}

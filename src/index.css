@@ -219,6 +219,10 @@ html, body {
   background: var(--bg);
   color: var(--text-1);
   transition: background-color 280ms var(--ease-out), color 280ms var(--ease-out);
+  /* Prevent the page from horizontally scrolling out from under the
+   * sticky navbar on iOS pinch-zoom. Without this the navbar looks
+   * "not flush" because users can drag the body horizontally past it. */
+  overflow-x: clip;
 }
 img { display: block; max-width: 100%; }
 /* Only apply display:block to svgs outside Fluent UI — Fluent's inline

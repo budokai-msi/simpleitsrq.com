@@ -8,7 +8,7 @@ import {
 import { Link } from "../lib/Link";
 import { useState } from "react";
 import { useSEO } from "../lib/seo";
-import heroGrid from "../assets/hero-grid.svg";
+import heroGrid from "../assets/hero-custom.svg";
 import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
 import GoogleReviews from "../components/GoogleReviews";
@@ -30,17 +30,14 @@ function Hero() {
       </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">Managed IT · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display hero-aura-title">Enterprise IT operations, delivered locally.</h1>
+          <span className="eyebrow">Local IT · Sarasota · Bradenton · Venice</span>
+          <h1 id="hero-title" className="display hero-aura-title">Local IT support, done right.</h1>
           <p className="lede">
-            Service desk, identity, security, network, cloud, and continuity — operated
-            as a single managed service for Sarasota and Bradenton businesses. Flat
-            monthly contract, named engineers, documented controls, and a phone number
-            that’s answered on the first ring when something breaks.
+            Get fast, friendly help for your computers, network, and security—right here in Sarasota and Bradenton. No confusing contracts, no hidden fees, just real people who answer the phone and solve your problems.
           </p>
           <div className="hero-ctas">
-            <a href="#contact" className="btn btn-primary btn-lg">Request an IT assessment</a>
-            <a href="#solutions" className="btn btn-secondary btn-lg">See capabilities</a>
+            <a href="#contact" className="btn btn-primary btn-lg">Get your free IT checkup</a>
+            <a href="#solutions" className="btn btn-secondary btn-lg">See what we do</a>
           </div>
           <ul className="trust-row" aria-label="Why clients work with us">
             <li><MapPin size={14} strokeWidth={2.25} /> On-site coverage across Sarasota, Bradenton, and Venice</li>
