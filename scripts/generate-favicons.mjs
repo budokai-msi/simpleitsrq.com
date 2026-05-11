@@ -24,6 +24,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const PUBLIC_DIR = join(ROOT, "public");
 const SOURCE = join(PUBLIC_DIR, "favicon.svg");
+const SOURCE_MASKABLE = join(PUBLIC_DIR, "favicon-maskable.svg");
 
 const TARGETS = [
   { size: 16,  name: "favicon-16x16.png" },
@@ -32,6 +33,16 @@ const TARGETS = [
   { size: 192, name: "favicon-192x192.png" },
   { size: 512, name: "icon-512.png" },
   { size: 512, name: "logo.png" }, // also serves as the schema.org org image
+];
+
+// Maskable PNGs are emitted from a separate SVG that has full-bleed
+// background and an inset mark — Android home-screen launchers crop to
+// a circle / squircle, so an icon with rounded-corner padding gets a
+// hole around it. The maskable variant fills the entire canvas and
+// keeps the mark inside the safe-zone circle (~80% of canvas).
+const MASKABLE_TARGETS = [
+  { size: 192, name: "icon-192-maskable.png" },
+  { size: 512, name: "icon-512-maskable.png" },
 ];
 
 async function main() {
@@ -44,7 +55,18 @@ async function main() {
       .toFile(out);
     console.log(`  ✓ ${name.padEnd(28)} ${size}×${size}`);
   }
-  console.log(`\nRendered ${TARGETS.length} favicons from ${SOURCE.replace(ROOT + "/", "")}`);
+
+  const svgMaskable = readFileSync(SOURCE_MASKABLE);
+  for (const { size, name } of MASKABLE_TARGETS) {
+    const out = join(PUBLIC_DIR, name);
+    await sharp(svgMaskable, { density: 384 })
+      .resize(size, size, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png({ compressionLevel: 9, palette: false })
+      .toFile(out);
+    console.log(`  ✓ ${name.padEnd(28)} ${size}×${size} (maskable)`);
+  }
+
+  console.log(`\nRendered ${TARGETS.length + MASKABLE_TARGETS.length} favicons from favicon.svg + favicon-maskable.svg`);
 }
 
 main().catch((err) => {

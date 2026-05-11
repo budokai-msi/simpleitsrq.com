@@ -1,3 +1,4 @@
+import { detectPreferredContact } from "./lib/detectPreferredContact";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Link } from "./lib/Link";
 import { useEffect, useState, useMemo, lazy, Suspense } from "react";
@@ -16,9 +17,13 @@ import { useClarity } from "./lib/clarity.js";
 import { useEngagementTracking } from "./lib/engagement.js";
 import { AutoAds } from "./components/AdSense.jsx";
 import LiveChat from "./components/LiveChat.jsx";
+import AIChat from "./components/AIChat.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import "./App.css";
+import "./styles/leadgen.css";
+import "./styles/leadgen-promo.css";
+import "./styles/leadgen-extras.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
 // small. The homepage is the most-visited route and stays eager.
@@ -53,6 +58,7 @@ const CompareIndex = lazy(() => import("./pages/CompareIndex"));
 const CompareDetail = lazy(() => import("./pages/CompareDetail"));
 const WhyIndex = lazy(() => import("./pages/WhyIndex"));
 const WhyVs = lazy(() => import("./pages/WhyVs"));
+const Leadgen = lazy(() => import("./pages/Leadgen"));
 
 // Exit-intent capture modal — lazy-loaded and mounted OUTSIDE the route
 // <Suspense> fallback so route transitions aren't blocked on it. Renders
@@ -111,88 +117,11 @@ function ThemeToggle() {
   );
 }
 
+import logoCustom from './assets/logo-custom.svg';
 function Logo() {
   return (
     <Link to="/" className="brand" aria-label="Simple IT SRQ home">
-      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
-        <defs>
-          {/* Tile background — diagonal brand → deeper brand. */}
-          <linearGradient id="logo-bg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="var(--brand)" />
-            <stop offset="55%" stopColor="var(--brand-hover, #0A4F8A)" />
-            <stop offset="100%" stopColor="#072E54" />
-          </linearGradient>
-          {/* Specular highlight along the top-left edge for depth. */}
-          <linearGradient id="logo-shine" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"  stopColor="#FFFFFF" stopOpacity="0.30" />
-            <stop offset="55%" stopColor="#FFFFFF" stopOpacity="0.05" />
-            <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-          </linearGradient>
-          {/* "S" gradient — pearl white → very subtle warm so the
-              letterform reads sculpted, not flat-printed. */}
-          <linearGradient id="logo-s" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="#FFFFFF" />
-            <stop offset="100%" stopColor="#E8EEF6" />
-          </linearGradient>
-          {/* Status dot — amber accent w/ inner glow. */}
-          <radialGradient id="logo-dot" cx="0.35" cy="0.35" r="0.7">
-            <stop offset="0%"   stopColor="#FFE9A8" />
-            <stop offset="55%"  stopColor="#FFD66B" />
-            <stop offset="100%" stopColor="#E0A92E" />
-          </radialGradient>
-          {/* Subtle drop shadow under the S — reads as "lit from above". */}
-          <filter id="logo-s-shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="0.6" />
-            <feOffset dy="0.6" result="off" />
-            <feComponentTransfer><feFuncA type="linear" slope="0.45" /></feComponentTransfer>
-            <feMerge><feMergeNode /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-          {/* Faint corner-bracket pattern that sits behind the S to
-              suggest "terminal / systems" without being noisy. */}
-          <pattern id="logo-grid" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
-            <path d="M 6 0 L 0 0 0 6" fill="none" stroke="#FFFFFF" strokeOpacity="0.07" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-
-        {/* Base tile + 1px inner stroke for crispness on light bg. */}
-        <rect x="0" y="0" width="36" height="36" rx="9" fill="url(#logo-bg)" />
-        <rect x="0.5" y="0.5" width="35" height="35" rx="8.5" fill="none" stroke="#FFFFFF" strokeOpacity="0.10" />
-        <rect x="0" y="0" width="36" height="36" rx="9" fill="url(#logo-grid)" />
-        <rect x="0" y="0" width="36" height="36" rx="9" fill="url(#logo-shine)" />
-
-        {/* Corner brackets — IT/terminal cue, very subtle. */}
-        <g stroke="#FFFFFF" strokeOpacity="0.22" strokeWidth="1" strokeLinecap="round" fill="none">
-          <path d="M 4 6 L 4 4 L 6 4" />
-          <path d="M 32 4 L 30 4" />
-          <path d="M 4 30 L 4 32 L 6 32" />
-          <path d="M 32 30 L 32 32 L 30 32" />
-        </g>
-
-        {/* Geometric "S" — three rigid bars + alternating connectors,
-            same path as public/favicon.svg shifted +2 to center inside
-            the 36×36 viewBox. Built from straight 90° segments only so
-            it stays crisp at any render size and reads architectural
-            (Linear / Vercel mark vibe) instead of typeset. */}
-        <path
-          filter="url(#logo-s-shadow)"
-          fill="url(#logo-s)"
-          d="M 8 10 L 24 10 L 24 14 L 12 14 L 12 16 L 24 16 L 24 26 L 8 26 L 8 22 L 20 22 L 20 20 L 8 20 Z"
-        />
-        {/* Inner top-edge highlight on each bar — 0.6px white-translucent
-            line for a hint of extrusion. Skip on the smallest renders
-            via stroke-width fractional rounding. */}
-        <g stroke="#FFFFFF" strokeOpacity="0.35" strokeWidth="0.6" fill="none">
-          <path d="M 8.4 10.5 L 23.6 10.5" />
-          <path d="M 12.4 16.5 L 23.6 16.5" />
-          <path d="M 8.4 22.5 L 19.6 22.5" />
-        </g>
-
-        {/* Status dot — now glowing + ringed for "system online" vibe. */}
-        <circle cx="27.5" cy="9.5" r="2.6" fill="#FFD66B" fillOpacity="0.18" />
-        <circle cx="27.5" cy="9.5" r="2"   fill="url(#logo-dot)" />
-        <circle cx="26.9" cy="8.9" r="0.55" fill="#FFFFFF" fillOpacity="0.85" />
-      </svg>
-      <span className="brand-text">Simple IT <span className="brand-accent">SRQ</span></span>
+      <img src={logoCustom} alt="Simple IT SRQ logo" width="120" height="40" style={{ display: 'block' }} />
     </Link>
   );
 }
@@ -223,6 +152,7 @@ function Navbar() {
         <Logo />
         <nav className="nav-links" aria-label="Primary">
           <Link to="/#solutions">Services</Link>
+          <Link to="/leadgen">Leadgen</Link>
           <Link to="/blog">Blog</Link>
           <Link to="/support">Support</Link>
         </nav>
@@ -233,6 +163,32 @@ function Navbar() {
         </div>
         <div className="nav-mobile-actions">
           <ThemeToggle />
+          {/* Mobile-visible portal CTA — Safari user-test feedback was that
+              "Sign In" was buried at the bottom of the hamburger menu and
+              effectively invisible. Surfacing a compact pill here ensures
+              the auth path is one tap away on every mobile viewport. */}
+          {!loading && (
+            user ? (
+              <Link
+                to="/portal"
+                className="nav-mobile-cta nav-mobile-cta--user"
+                aria-label={`Open portal — signed in as ${user.email}`}
+              >
+                {user.avatarUrl
+                  ? <img src={user.avatarUrl} alt="" className="nav-avatar" />
+                  : <UserIcon size={16} />}
+              </Link>
+            ) : (
+              <Link
+                to="/portal"
+                className="nav-mobile-cta"
+                aria-label="Sign in"
+              >
+                <LogIn size={14} />
+                <span>Sign in</span>
+              </Link>
+            )
+          )}
           <button className="menu-btn" aria-label="Open menu" onClick={() => setOpen(!open)}>
             <Menu size={20} />
           </button>
@@ -376,6 +332,14 @@ function ScrollToHash() {
 }
 
 function MobileStickyCTA() {
+    // On first mount, detect and store preferred contact method for analytics
+    useEffect(() => {
+      const pref = detectPreferredContact();
+      // Store in cookie for analytics (expires in 30 days)
+      document.cookie = `preferred_contact=${pref}; path=/; max-age=2592000; SameSite=Lax`;
+      // Optionally, fire analytics event
+      trackEvent("preferred_contact_detected", { method: pref });
+    }, []);
   const { pathname } = useLocation();
   // Hide where the CTA would be redundant (already-booking page) or
   // disruptive (signed-in portal area doesn't need a marketing CTA).
@@ -455,6 +419,7 @@ function Layout({ children }) {
       <CookieConsent />
       <AutoAds />
       <LiveChat />
+      <AIChat />
       <Analytics />
       <SpeedInsights />
     </>
@@ -551,6 +516,7 @@ export default function App() {
               <Route path="/compare/:slug" element={<CompareDetail />} />
               <Route path="/why" element={<WhyIndex />} />
               <Route path="/why/:slug" element={<WhyVs />} />
+              <Route path="/leadgen" element={<Leadgen />} />
               <Route path="/glossary" element={<Glossary />} />
               <Route path="/glossary/:slug" element={<GlossaryEntry />} />
               <Route path="/exposure-scan" element={<ExposureScan />} />

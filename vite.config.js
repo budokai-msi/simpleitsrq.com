@@ -61,8 +61,23 @@ export default defineConfig({
         chunkFileNames: 'assets/c-[hash].js',
         entryFileNames: 'assets/e-[hash].js',
         assetFileNames: 'assets/a-[hash][extname]',
+        // Split heavy / stable vendors so route bundles stay tiny and
+        // the browser cache survives feature deploys. Hash-rotation
+        // only happens when the underlying lib version changes.
+        manualChunks: (id) => {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('react-router')) return 'v-router';
+          if (id.includes('lucide-react')) return 'v-icons';
+          if (id.includes('framer-motion')) return 'v-motion';
+          if (id.includes('react-dom')) return 'v-react-dom';
+          if (id.match(/[\\/]react[\\/]/)) return 'v-react';
+          if (id.includes('@mdx-js') || id.includes('mdx')) return 'v-mdx';
+          if (id.includes('recharts') || id.includes('d3-')) return 'v-charts';
+          return 'v-vendor';
+        },
       },
     },
+    chunkSizeWarningLimit: 600,
   },
   esbuild: {
     drop: ['debugger'],

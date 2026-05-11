@@ -139,6 +139,18 @@ main, #main {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
+  /* Mobile pinch-zoom + iOS safe-area handling. Without these, when a
+   * user pinch-zooms on iOS Safari the navbar visually detaches from the
+   * top edge of the (now smaller) visual viewport and looks "not flush"
+   * — there's also a sub-pixel hairline gap on devices with notch /
+   * dynamic island when display=standalone. Forcing 100vw + box-sizing
+   * eliminates the hairline; the safe-area padding pushes the inner row
+   * past the notch when the site is installed as a PWA. */
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 .reading-progress {
   position: absolute;
@@ -216,8 +228,56 @@ main, #main {
   font-weight: 600;
   color: var(--text-1);
   letter-spacing: -0.2px;
+  /* ASCII-art-inspired flourish: the wordmark gets a subtle animated
+     aura that drifts between the brand blue (#0F6CBD) and accent
+     violet (#7C5CD8) via a gradient mask, plus a faint pulse glow.
+     Keeps the existing wordmark as the source of truth — the effect
+     is layered on top so the text stays selectable / accessible /
+     SEO-readable. Mobile-safe: animation is GPU-cheap (background-
+     position + filter), and we cut it under prefers-reduced-motion
+     and on the narrow 9:16 portrait viewport so it never distracts
+     from the new mobile Sign-in CTA next to it. */
+  background-image: linear-gradient(
+    100deg,
+    var(--text-1) 0%,
+    var(--text-1) 35%,
+    #0F6CBD 50%,
+    #7C5CD8 60%,
+    var(--text-1) 75%,
+    var(--text-1) 100%
+  );
+  background-size: 220% 100%;
+  background-position: 0% 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: brand-aura-drift 9s ease-in-out infinite;
+  text-shadow: 0 0 18px rgba(124, 92, 216, 0.0);
+  transition: text-shadow 240ms var(--ease-out);
 }
-.brand-accent { color: var(--brand); }
+.brand:hover .brand-text {
+  text-shadow:
+    0 0 6px rgba(15, 108, 189, 0.25),
+    0 0 14px rgba(124, 92, 216, 0.20);
+}
+.brand-accent {
+  /* Keep a hard color fallback for browsers that ignore background-clip
+     on inline children (and for the no-animation breakpoints below). */
+  color: var(--brand);
+}
+@keyframes brand-aura-drift {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-text {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--text-1);
+  }
+}
 .nav-links {
   display: flex;
   gap: 4px;
@@ -1364,9 +1424,9 @@ main, #main {
 @media (max-width: 1024px) {
   .display { font-size: 52px; line-height: 60px; }
   .hero-grid { grid-template-columns: 1fr; gap: 48px; }
-  .cards-grid { grid-template-columns: repeat(2, 1fr); }
-  .industries-grid { grid-template-columns: repeat(3, 1fr); }
-  .compliance-grid { grid-template-columns: 1fr; gap: 40px; }
+  .cards-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
+  .industries-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
+  .compliance-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
   .steps { grid-template-columns: repeat(2, 1fr); gap: 40px 24px; }
   .steps::before { display: none; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
@@ -1407,10 +1467,11 @@ main, #main {
    Blog Styles - Fluent / Segoe-aligned
    ============================================================ */
 
+
 .blog-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
   margin-top: 32px;
 }
 
@@ -1424,17 +1485,20 @@ main, #main {
 
 .blog-card {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 18px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 120ms ease, box-shadow 160ms ease;
+  box-shadow: 0 4px 32px rgba(16, 44, 80, 0.10);
+  padding: 28px 24px 20px 24px;
+  transition: border-color 120ms ease, box-shadow 160ms ease, transform 120ms cubic-bezier(.4,1.2,.6,1);
 }
 
 .blog-card:hover {
-  border-color: var(--accent, var(--border-strong));
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border-color: var(--brand);
+  box-shadow: 0 8px 40px rgba(16, 44, 80, 0.16);
+  transform: translateY(-2px) scale(1.012);
 }
 
 .blog-card-img {
@@ -1981,6 +2045,85 @@ main, #main {
   display: none;
   align-items: center;
   gap: 8px;
+}
+/* Compact "Sign in" pill that lives in the mobile top bar next to the
+ * hamburger. Safari user-test surfaced that the auth path was buried
+ * inside the hamburger menu and effectively invisible — putting a
+ * thumb-reach pill here brings sign-in to first-view without crowding
+ * the brand at 9:16 portrait widths.
+ *
+ * Sizing rules:
+ *   • Default form (icon + word) on phones ≥ 380px CSS px wide.
+ *   • Below 380px (small portrait Androids, iPhone SE-class) the label
+ *     hides via the @media block further down so we never collide with
+ *     the brand wordmark.
+ *   • Signed-in variant (.nav-mobile-cta--user) is icon-only — no need
+ *     for a label once the user has a session.
+ */
+.nav-mobile-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-on-accent);
+  background: var(--brand);
+  border: 1px solid var(--brand);
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(15, 108, 189, 0.25);
+  transition:
+    background-color 160ms var(--ease-out),
+    transform 120ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+.nav-mobile-cta:hover,
+.nav-mobile-cta:focus-visible {
+  background: var(--brand-hover, #0A4F8A);
+  box-shadow: 0 2px 6px rgba(15, 108, 189, 0.35);
+  transform: translateY(-1px);
+}
+.nav-mobile-cta:active { transform: translateY(0); }
+.nav-mobile-cta--user {
+  padding: 6px;
+  background: transparent;
+  color: var(--text-1);
+  border-color: var(--border);
+  box-shadow: none;
+}
+.nav-mobile-cta--user:hover,
+.nav-mobile-cta--user:focus-visible {
+  background: rgba(15, 108, 189, 0.08);
+  color: var(--brand);
+  border-color: var(--brand);
+  box-shadow: none;
+  transform: none;
+}
+.nav-mobile-cta--user .nav-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: block;
+}
+/* iPhone SE / small-Android safety: drop the "Sign in" label so the
+ * pill collapses to an icon-only chip and never wraps the brand. */
+@media (max-width: 379px) {
+  .nav-mobile-cta:not(.nav-mobile-cta--user) {
+    padding: 7px;
+  }
+  .nav-mobile-cta:not(.nav-mobile-cta--user) span { display: none; }
+  /* Kill the wordmark aura on tiny portrait viewports — at this width
+   * the brand text is already cropped, and the moving gradient draws
+   * the eye away from the new sign-in CTA. */
+  .brand-text {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--text-1);
+  }
 }
 
 /* ----- Buttons: micro-interactions ----- */
@@ -2840,7 +2983,14 @@ main, #main {
   .newsletter { flex-direction: column; }
 }
 @media (max-width: 520px) {
-  .faq-item { padding: 14px 16px; }
+  .blog-card, .dash-card, .industry-card, .compliance-card, .service-area-card, .partner-card {
+    padding: 16px 10px 12px 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(16,44,80,0.07);
+  }
+  .cards-grid, .blog-grid, .industries-grid, .compliance-grid {
+    gap: 16px;
+  }
   .faq-item summary { font-size: 15px; }
   .lead-capture { padding: 20px; }
 }
@@ -6820,3 +6970,137 @@ select:focus-visible {
   radial-gradient(circle at 12% 18%, rgba(124, 92, 216, 0.14), transparent 45%),
   radial-gradient(circle at 88% 82%, rgba(14, 156, 149, 0.12), transparent 45%),
   url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2740%27 height=%2740%27><path d=%27M40 0H0V40%27 fill=%27none%27 stroke=%27%23ffffff%27 stroke-opacity=%270.04%27 stroke-width=%271%27/></svg>"); }
+
+/* =====================================================================
+   LEADGEN PRODUCT — public marketing surface (/leadgen)
+   ===================================================================== */
+
+.leadgen-public { --lg-blue: #0F6CBD; --lg-blue-deep: #0A4A82; --lg-amber: #F0B429; --lg-teal: #0E9C95; --lg-violet: #7C5CD8; }
+
+/* Hero */
+.leadgen-hero__inner { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+.leadgen-hero__copy { max-width: 560px; }
+.leadgen-hero__trust { display: flex; flex-wrap: wrap; gap: 1.25rem; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted, #6b7280); }
+.leadgen-hero__trust span { display: inline-flex; align-items: center; gap: 6px; }
+.leadgen-hero__trust svg { color: var(--lg-teal); }
+@media (max-width: 960px) { .leadgen-hero__inner { grid-template-columns: 1fr; } }
+
+/* Dashboard mock card */
+.leadgen-mock { width: 100%; max-width: 520px; margin: 0 auto; border-radius: 14px; overflow: hidden; background: var(--syn-surface, #fff); border: 1px solid var(--syn-border, #e5e7eb); box-shadow: 0 24px 60px -20px rgba(15, 108, 189, 0.35), 0 8px 20px rgba(15, 108, 189, 0.10); }
+.leadgen-mock__chrome { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: linear-gradient(180deg, #F4F6FA 0%, #ECEFF5 100%); border-bottom: 1px solid var(--syn-border, #e5e7eb); }
+.leadgen-mock__dot { width: 10px; height: 10px; border-radius: 50%; }
+.leadgen-mock__dot--r { background: #ef4444; }
+.leadgen-mock__dot--y { background: #f59e0b; }
+.leadgen-mock__dot--g { background: #10b981; }
+.leadgen-mock__title { margin-left: 12px; font-size: 0.78rem; color: #6b7280; font-weight: 600; }
+.leadgen-mock__body { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.leadgen-mock__kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.leadgen-mock__kpi { padding: 12px; border-radius: 10px; background: #F8FAFC; border: 1px solid var(--syn-border, #e5e7eb); }
+.leadgen-mock__kpi-label { display: inline-flex; align-items: center; gap: 4px; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; font-weight: 700; }
+.leadgen-mock__kpi-num { font-size: 1.25rem; font-weight: 700; color: #111827; line-height: 1.1; margin-top: 6px; letter-spacing: -0.01em; }
+.leadgen-mock__kpi-delta { font-size: 0.68rem; color: #6b7280; margin-top: 2px; }
+.leadgen-mock__kpi-delta--up { color: #059669; font-weight: 600; }
+.leadgen-mock__chart { background: linear-gradient(180deg, rgba(15,108,189,0.04) 0%, transparent 100%); border-radius: 10px; padding: 6px 8px 0; border: 1px solid var(--syn-border, #e5e7eb); }
+.leadgen-mock__rows { display: flex; flex-direction: column; gap: 6px; }
+.leadgen-mock__row { display: grid; grid-template-columns: 12px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; background: #F8FAFC; font-size: 0.8rem; }
+.leadgen-mock__row-dot { width: 8px; height: 8px; border-radius: 50%; }
+.leadgen-mock__row-name { color: #111827; font-weight: 600; }
+.leadgen-mock__row-val { color: #6b7280; font-variant-numeric: tabular-nums; }
+
+[data-theme="dark"] .leadgen-mock { background: #0F1623; border-color: rgba(255,255,255,0.10); }
+[data-theme="dark"] .leadgen-mock__chrome { background: linear-gradient(180deg, #1A2230 0%, #131A26 100%); border-bottom-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .leadgen-mock__title { color: #94a3b8; }
+[data-theme="dark"] .leadgen-mock__kpi, [data-theme="dark"] .leadgen-mock__row { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .leadgen-mock__kpi-num, [data-theme="dark"] .leadgen-mock__row-name { color: #E8EEF6; }
+[data-theme="dark"] .leadgen-mock__chart { background: linear-gradient(180deg, rgba(15,108,189,0.10) 0%, transparent 100%); border-color: rgba(255,255,255,0.06); }
+
+/* Stat band */
+.leadgen-statband-section { padding: 2rem 0; }
+.leadgen-statband { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--syn-border, #e5e7eb); background: var(--syn-surface, #fff); }
+.leadgen-statband__cell { padding: 24px; border-right: 1px solid var(--syn-border, #e5e7eb); }
+.leadgen-statband__cell:last-child { border-right: none; }
+.leadgen-statband__num { font-size: 2rem; font-weight: 800; color: var(--lg-blue); letter-spacing: -0.02em; line-height: 1; }
+.leadgen-statband__label { font-size: 0.85rem; color: var(--text-muted, #6b7280); margin-top: 6px; font-weight: 500; }
+@media (max-width: 720px) { .leadgen-statband { grid-template-columns: repeat(2, 1fr); } .leadgen-statband__cell:nth-child(2) { border-right: none; } .leadgen-statband__cell:nth-child(1), .leadgen-statband__cell:nth-child(2) { border-bottom: 1px solid var(--syn-border, #e5e7eb); } }
+[data-theme="dark"] .leadgen-statband__num { color: #7DB7E6; }
+
+/* Steps */
+.leadgen-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
+.leadgen-step { padding: 24px; border: 1px solid var(--syn-border, #e5e7eb); border-radius: 12px; background: var(--syn-surface, #fff); }
+.leadgen-step__icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(15,108,189,0.08); color: var(--lg-blue); margin-bottom: 12px; }
+.leadgen-step__title { font-size: 0.95rem; font-weight: 700; margin: 0 0 6px; }
+.leadgen-step__body { font-size: 0.88rem; color: var(--text-muted, #6b7280); margin: 0; line-height: 1.55; }
+@media (max-width: 960px) { .leadgen-steps { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .leadgen-steps { grid-template-columns: 1fr; } }
+
+/* Features */
+.leadgen-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 2rem; }
+.leadgen-feature { padding: 24px; border: 1px solid var(--syn-border, #e5e7eb); border-radius: 12px; background: var(--syn-surface, #fff); transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease; }
+.leadgen-feature:hover { border-color: var(--lg-blue); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15,108,189,0.08); }
+.leadgen-feature__icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(15,108,189,0.08); color: var(--lg-blue); margin-bottom: 14px; }
+.leadgen-feature__title { font-size: 1rem; font-weight: 700; margin: 0 0 8px; }
+.leadgen-feature__body { font-size: 0.92rem; color: var(--text-muted, #6b7280); margin: 0; line-height: 1.6; }
+@media (max-width: 960px) { .leadgen-features { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .leadgen-features { grid-template-columns: 1fr; } }
+
+/* Compliance */
+.leadgen-compliance-list { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+.leadgen-compliance-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.92rem; line-height: 1.55; color: var(--text-1, #111827); }
+.leadgen-compliance-list svg { flex-shrink: 0; margin-top: 3px; color: var(--lg-teal); }
+@media (max-width: 720px) { .leadgen-compliance-list { grid-template-columns: 1fr; } }
+
+/* Pricing */
+.leadgen-billing-toggle { display: inline-flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--syn-surface-muted, #f3f4f6); border: 1px solid var(--syn-border, #e5e7eb); margin: 1.5rem 0; }
+.leadgen-billing-btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px; border: none; background: transparent; color: var(--text-muted, #6b7280); font-weight: 600; font-size: 0.88rem; cursor: pointer; transition: background 120ms ease, color 120ms ease; }
+.leadgen-billing-btn.is-active { background: var(--syn-surface, #fff); color: var(--text-1, #111827); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.leadgen-billing-save { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: rgba(14, 156, 149, 0.12); color: var(--lg-teal); font-weight: 700; }
+
+.leadgen-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 2rem; align-items: stretch; }
+.leadgen-tier { position: relative; display: flex; flex-direction: column; padding: 28px; border: 1px solid var(--syn-border, #e5e7eb); border-radius: 16px; background: var(--syn-surface, #fff); transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease; }
+.leadgen-tier:hover { border-color: var(--lg-blue); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(15,108,189,0.10); }
+.leadgen-tier--highlight { border-color: var(--lg-blue); border-width: 2px; box-shadow: 0 16px 40px rgba(15,108,189,0.15); transform: translateY(-4px); }
+.leadgen-tier__badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); padding: 4px 14px; border-radius: 999px; background: var(--lg-blue); color: #fff; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; box-shadow: 0 4px 10px rgba(15,108,189,0.30); }
+.leadgen-tier__name { font-size: 1.15rem; font-weight: 700; margin: 0 0 12px; }
+.leadgen-tier__price { display: flex; align-items: baseline; gap: 2px; line-height: 1; }
+.leadgen-tier__price-currency { font-size: 1.2rem; font-weight: 600; color: var(--text-muted, #6b7280); }
+.leadgen-tier__price-num { font-size: 3rem; font-weight: 800; color: var(--text-1, #111827); letter-spacing: -0.02em; }
+.leadgen-tier__price-suffix { font-size: 0.95rem; color: var(--text-muted, #6b7280); margin-left: 4px; }
+.leadgen-tier__price-custom { font-size: 2rem; font-weight: 800; color: var(--text-1, #111827); letter-spacing: -0.02em; }
+.leadgen-tier__blurb { font-size: 0.88rem; color: var(--text-muted, #6b7280); margin: 12px 0 18px; line-height: 1.55; min-height: 2.7em; }
+.leadgen-tier__cta { width: 100%; justify-content: center; margin-bottom: 18px; }
+.leadgen-tier__features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--syn-border, #e5e7eb); padding-top: 18px; }
+.leadgen-tier__features li { display: flex; align-items: flex-start; gap: 8px; font-size: 0.88rem; line-height: 1.5; color: var(--text-1, #111827); }
+.leadgen-tier__features svg { flex-shrink: 0; margin-top: 3px; color: var(--lg-teal); }
+.leadgen-tier__fineprint { margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted, #6b7280); text-align: center; }
+@media (max-width: 960px) { .leadgen-tiers { grid-template-columns: 1fr; gap: 2rem; } .leadgen-tier--highlight { transform: none; } }
+
+[data-theme="dark"] .leadgen-tier { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); }
+[data-theme="dark"] .leadgen-tier__price-num, [data-theme="dark"] .leadgen-tier__price-custom { color: #E8EEF6; }
+[data-theme="dark"] .leadgen-step, [data-theme="dark"] .leadgen-feature, [data-theme="dark"] .leadgen-statband { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); }
+[data-theme="dark"] .leadgen-statband__cell { border-right-color: rgba(255,255,255,0.08); }
+
+/* Final CTA */
+.leadgen-final-cta { background: linear-gradient(135deg, rgba(15,108,189,0.06) 0%, rgba(124,92,216,0.06) 100%); }
+[data-theme="dark"] .leadgen-final-cta { background: linear-gradient(135deg, rgba(15,108,189,0.12) 0%, rgba(124,92,216,0.12) 100%); }
+
+/* =====================================================================
+   LEADGEN ADMIN — internal /portal/leadgen polish
+   ===================================================================== */
+.leadgen-admin-hero__row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.leadgen-admin-hero__sub { color: var(--text-muted, #6b7280); margin-top: 6px; max-width: 620px; line-height: 1.55; }
+.leadgen-admin-hero__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.leadgen-kpi-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin: 1.5rem 0; }
+.leadgen-kpi { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border-radius: 12px; background: var(--syn-surface, #fff); border: 1px solid var(--syn-border, #e5e7eb); border-top: 3px solid var(--syn-border, #e5e7eb); transition: transform 120ms ease, box-shadow 120ms ease; }
+.leadgen-kpi:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,0,0,0.05); }
+.leadgen-kpi--blue   { border-top-color: #0F6CBD; }
+.leadgen-kpi--teal   { border-top-color: #0E9C95; }
+.leadgen-kpi--violet { border-top-color: #7C5CD8; }
+.leadgen-kpi--amber  { border-top-color: #F0B429; }
+.leadgen-kpi__label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted, #6b7280); font-weight: 700; }
+.leadgen-kpi__value { font-size: 1.5rem; font-weight: 800; color: var(--text-1, #111827); letter-spacing: -0.01em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.leadgen-kpi__hint { font-size: 0.75rem; color: var(--text-muted, #6b7280); }
+@media (max-width: 1100px) { .leadgen-kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 720px)  { .leadgen-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+[data-theme="dark"] .leadgen-kpi { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); }
+[data-theme="dark"] .leadgen-kpi__value { color: #E8EEF6; }
