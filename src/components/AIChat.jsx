@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Sparkles, ArrowUp, X, Mail, RotateCcw, CornerDownLeft } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 
@@ -294,12 +294,12 @@ export default function AIChat() {
     try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
   }
 
-  const onKeyDown = useCallback((e) => {
+  const onKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       send();
     }
-  }, [input, busy, messages]);
+  };
 
   // Pre-compute rendered HTML for assistant messages so we don't re-parse on
   // every keystroke (typing in the composer triggers a re-render).
