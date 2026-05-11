@@ -293,7 +293,7 @@ export default function BlogPost() {
     return () => { cancelled = true; };
   }, [slug, isMdx]);
 
-  const seo = useSEO(
+  useSEO(
     post
       ? {
           title: `${post.title} | Simple IT SRQ`,

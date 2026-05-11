@@ -274,7 +274,7 @@ async function handleAdminStatus(session) {
 
   // Detect schema state of migration 014 columns (informational so the
   // agent can decide whether to run run-audit-migration).
-  let schema014 = null;
+  let schema014;
   try {
     const r = await sql`
       SELECT
@@ -2049,7 +2049,7 @@ async function handleRunAuditMigration(session) {
   if (failedSteps.length > 0) {
     // Surface details in Vercel runtime logs for post-hoc debugging since
     // the admin UI's pre-block can be hard to read on small screens.
-    // eslint-disable-next-line no-console
+     
     console.error("[run-audit-migration] failed steps:", JSON.stringify(failedSteps));
   }
   return json(allOk ? 200 : 500, {

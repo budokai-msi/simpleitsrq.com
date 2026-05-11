@@ -384,7 +384,6 @@ function BookPromoBanner() {
 
   if (!params.promo && !params.topic.startsWith("leadgen")) return null;
 
-  const isLeadgen = params.topic.startsWith("leadgen");
   const tier =
     params.topic === "leadgen-starter"     ? "Starter" :
     params.topic === "leadgen-growth"      ? "Growth" :
