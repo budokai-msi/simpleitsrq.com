@@ -168,6 +168,15 @@ export default function AIChat() {
   const panelRef = useRef(null);
   const bubbleRef = useRef(null);
 
+  // CSP nonce from the meta tag so our injected <style> is allowed by
+  // style-src-elem when the directive contains both 'unsafe-inline' and
+  // a nonce (browsers ignore 'unsafe-inline' if a nonce is present).
+  const styleNonce = useMemo(() => {
+    if (typeof document === "undefined") return null;
+    const raw = document.querySelector('meta[name="csp-nonce"]')?.content || "";
+    return raw && raw !== "__CSP_NONCE__" ? raw : null;
+  }, []);
+
   useEffect(() => { saveHistory(messages); }, [messages]);
 
   useEffect(() => {
@@ -315,7 +324,7 @@ export default function AIChat() {
 
   return (
     <>
-      <style>{AIC_CSS}</style>
+      <style nonce={styleNonce || undefined}>{AIC_CSS}</style>
 
       {!open && (
         <button
