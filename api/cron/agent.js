@@ -447,6 +447,227 @@ Respond with ONLY a JSON object (no markdown fencing):
   }
 }
 
+// ========== HACKERNEWS DAILY DRAFT (free — Groq) ==========
+
+const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
+const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+
+// HN story relevance keywords for IT / security / business audience.
+const HN_RELEVANT = /security|cyber|hack|breach|password|backup|cloud|aws|azure|vpn|firewall|malware|ransomware|phishing|compliance|hipaa|gdpr|privacy|encryption|network|server|infrastructure|devops|saas|startup|business|pricing|ai|llm|openai|chatgpt|microsoft|google|apple|linux|windows|update|patch|vulnerability|cve|zero.day|exploit|incident|response|disaster|recovery|continuity|insurance|legal|finance|healthcare|construction|real.estate|remote|work|wifi|router|switch|camera|surveillance|ups|battery|power/i;
+
+async function fetchHNTopStory() {
+  try {
+    const topRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json", { signal: AbortSignal.timeout(8000) });
+    if (!topRes.ok) return null;
+    const topIds = await topRes.json();
+    if (!Array.isArray(topIds)) return null;
+
+    // Fetch details for the top 30 stories in parallel.
+    const candidates = await Promise.all(
+      topIds.slice(0, 30).map(async (id) => {
+        try {
+          const r = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { signal: AbortSignal.timeout(5000) });
+          if (!r.ok) return null;
+          return await r.json();
+        } catch { return null; }
+      })
+    );
+
+    // Filter: must be a story (not job/poll), score > 80, and relevant to our audience.
+    const scored = candidates
+      .filter((s) => s && s.type === "story" && s.score > 80 && s.title && s.url)
+      .map((s) => {
+        const relevance = HN_RELEVANT.test(s.title) ? 2 : 1;
+        return { ...s, weight: s.score * relevance };
+      })
+      .sort((a, b) => b.weight - a.weight);
+
+    return scored[0] || null;
+  } catch (err) {
+    console.error("[hn] fetch error", err);
+    return null;
+  }
+}
+
+async function generateHNDraft({ force = false } = {}) {
+  if (!GROQ_API_KEY) {
+    const out = { skipped: true, reason: "GROQ_API_KEY not set" };
+    await logBlogOutcome(out);
+    return out;
+  }
+
+  if (!force) {
+    const todayCheck = await sql`
+      SELECT 1 FROM draft_posts
+      WHERE (ts AT TIME ZONE 'America/New_York')::date
+          = (now() AT TIME ZONE 'America/New_York')::date
+        AND model LIKE 'groq%'
+      LIMIT 1
+    `.catch(() => []);
+    if (todayCheck.length > 0) {
+      const out = { skipped: true, reason: "already generated HN draft today" };
+      await logBlogOutcome(out);
+      return out;
+    }
+  }
+
+  const story = await fetchHNTopStory();
+  if (!story) {
+    const out = { skipped: true, reason: "no relevant HN story found" };
+    await logBlogOutcome(out);
+    return out;
+  }
+
+  const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
+
+  const systemPrompt = `You are Dancho Ivanov, founder of Simple IT SRQ — a managed IT services company in Sarasota, Bradenton, and Venice, Florida. You write practical, opinionated blog posts for small business owners (5-80 employees) in healthcare, legal, finance, construction, and real estate.
+
+VOICE AND STYLE:
+- Write like you're talking to a smart business owner over coffee — direct, honest, no fluff
+- One-sentence paragraphs are fine. Break up walls of text.
+- Always explain WHY something matters to a small business in Florida
+- Include a "what to do about it" section with concrete next steps
+- End with a soft CTA mentioning Simple IT SRQ and linking to /#contact or /#solutions
+- Use Markdown formatting: headers, bold, lists, blockquotes
+- 600-1000 words
+- Include a meta description (under 160 chars)
+- Category must be one of: Cybersecurity, AI & Productivity, Cloud, Compliance, Privacy, Business Tech, Industry News
+- Include a short excerpt (1-2 sentences)
+- Slug must be lowercase-kebab-case and include "sarasota" or "bradenton" for SEO
+
+AFFILIATE SHORTCODES:
+When recommending a product or service that matches one of these, include the shortcode exactly as shown (double brackets):
+- Password managers → [[affiliate:1password]]
+- Payroll / HR → [[affiliate:gusto]]
+- Backup / disaster recovery → [[affiliate:acronis]] or [[affiliate:backblaze]]
+- Security cameras / networking → [[affiliate:ubiquiti]] or [[affiliate:reolink]]
+- Business CRM → [[affiliate:honeybook]]
+- Amazon product → [[affiliate:amazon:ASIN|label]]  (replace ASIN and label)
+
+Only include affiliate links when they genuinely fit the recommendation. Do NOT force them.
+
+Respond with ONLY a JSON object (no markdown fencing):
+{
+  "title": "...",
+  "slug": "...",
+  "category": "...",
+  "excerpt": "...",
+  "metaDescription": "...",
+  "body": "..."
+}`;
+
+  const userPrompt = `Rewrite this HackerNews story for the Simple IT SRQ blog.
+
+Original title: ${story.title}
+Original URL: ${story.url}
+HN discussion: ${hnUrl}
+Score: ${story.score} points | Comments: ${story.descendants || 0}
+
+Take the core insight from the story and explain what it means for a small business owner in Sarasota or Bradenton. If the original is highly technical, translate it. If it's about a security issue, explain the real-world risk. If it's about a new tool, evaluate whether a 20-person company should care.
+
+Mention the HN source casually (e.g., "This blew up on HackerNews this week...") but make the post stand on its own.`;
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.55,
+        max_tokens: 4096,
+        stream: false,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text().catch(() => "");
+      const out = { error: `Groq ${res.status}: ${err.slice(0, 200)}`, model: GROQ_MODEL };
+      await logBlogOutcome(out);
+      return out;
+    }
+
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+
+    let post;
+    try {
+      const cleaned = text.replace(/```json\s*/, "").replace(/```\s*$/, "").trim();
+      post = JSON.parse(cleaned);
+    } catch {
+      const out = { error: "Failed to parse Groq response", raw: text.slice(0, 500) };
+      await logBlogOutcome(out);
+      return out;
+    }
+
+    if (!post.title || !post.slug || !post.body) {
+      const out = { error: "Incomplete HN post", raw: text.slice(0, 500) };
+      await logBlogOutcome(out);
+      return out;
+    }
+
+    const finalSlug = await pickFreeSlug(post.slug);
+    if (!finalSlug) {
+      const out = { error: "slug_collision_unresolvable", originalSlug: post.slug };
+      await logBlogOutcome(out);
+      return out;
+    }
+
+    let inserted;
+    try {
+      inserted = await sql`
+        INSERT INTO draft_posts (title, slug, category, excerpt, body, meta_desc, model)
+        VALUES (${post.title}, ${finalSlug}, ${post.category || "Business Tech"},
+                ${post.excerpt || ""}, ${post.body}, ${post.metaDescription || ""},
+                ${GROQ_MODEL})
+        RETURNING id
+      `;
+    } catch (dbErr) {
+      const out = { error: `db_insert_failed: ${String(dbErr.message || dbErr).slice(0, 200)}`, slug: finalSlug };
+      await logBlogOutcome(out);
+      return out;
+    }
+
+    const draftId = inserted[0]?.id;
+    const reviewUrl = `https://simpleitsrq.com/portal?tab=drafts${draftId ? `&id=${draftId}` : ""}`;
+
+    const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+    if (resend && REPORT_TO) {
+      try {
+        await resend.emails.send({
+          from: FROM,
+          to: [REPORT_TO],
+          subject: `[HN Draft] ${post.title}`,
+          text:
+            `New HackerNews draft generated by Groq agent.\n\n` +
+            `Title: ${post.title}\n` +
+            `Slug: ${finalSlug}\n` +
+            `Category: ${post.category}\n` +
+            `HN Source: ${story.title}\n` +
+            `HN URL: ${story.url}\n` +
+            `HN Discussion: ${hnUrl}\n\n` +
+            `Review + publish: ${reviewUrl}\n\n` +
+            `---\n\n${post.body}\n\n---\n`,
+        });
+      } catch { /* best effort */ }
+    }
+
+    const out = { generated: true, title: post.title, slug: finalSlug, draftId, reviewUrl, source: "hn", hnTitle: story.title, hnUrl: story.url };
+    await logBlogOutcome(out);
+    return out;
+  } catch (err) {
+    const out = { error: String(err.message || err) };
+    await logBlogOutcome(out);
+    return out;
+  }
+}
+
 // ========== SECURITY ANALYSIS AGENT (daily) ==========
 
 async function securityAnalysis() {
@@ -1064,6 +1285,14 @@ export async function GET(request) {
     });
   }
 
+  if (taskParam === "hn") {
+    result.tasks.hnDraft = await generateHNDraft({ force });
+    return new Response(JSON.stringify(result, null, 2), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  }
+
   if (taskParam === "leadgen") {
     result.tasks.leadgen = await runLeadgenWorker();
     return new Response(JSON.stringify(result, null, 2), {
@@ -1083,6 +1312,7 @@ export async function GET(request) {
   result.tasks.autoCounter = await autoCounter();
   result.tasks.threatFeeds = await ingestThreatFeeds();
   result.tasks.blogDraft = await generateBlogDraft({ force });
+  result.tasks.hnDraft = await generateHNDraft({ force });
   result.tasks.securityAnalysis = await securityAnalysis();
   result.tasks.supplyChain = await supplyChainAudit();
   result.tasks.healthCheck = await selfHealthCheck();
