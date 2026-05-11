@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Sparkles, ArrowUp, X, Mail, RotateCcw, CornerDownLeft } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 
@@ -165,6 +165,8 @@ export default function AIChat() {
   const [emailValue, setEmailValue] = useState("");
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
+  const panelRef = useRef(null);
+  const bubbleRef = useRef(null);
 
   useEffect(() => { saveHistory(messages); }, [messages]);
 
@@ -181,6 +183,37 @@ export default function AIChat() {
     }
   }, [open, emailMode]);
 
+  // Keyboard / click-outside handlers.
+  useEffect(() => {
+    if (!open) return;
+
+    function onKeyDown(e) {
+      if (e.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    function onPointerDown(e) {
+      if (panelRef.current && !panelRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open]);
+
+  // Return focus to bubble when closing.
+  useEffect(() => {
+    if (!open && bubbleRef.current) {
+      bubbleRef.current.focus();
+    }
+  }, [open]);
+
   // Auto-grow textarea up to ~6 lines (144px).
   useEffect(() => {
     const el = inputRef.current;
@@ -196,6 +229,12 @@ export default function AIChat() {
     setMessages(next);
     setInput("");
     setBusy(true);
+
+    // Reset textarea height.
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
+
     try {
       const res = await csrfFetch("/api/contact", {
         method: "POST",
@@ -255,12 +294,12 @@ export default function AIChat() {
     try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
   }
 
-  const onKeyDown = (e) => {
+  const onKeyDown = useCallback((e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       send();
     }
-  };
+  }, [input, busy, messages]);
 
   // Pre-compute rendered HTML for assistant messages so we don't re-parse on
   // every keystroke (typing in the composer triggers a re-render).
@@ -280,6 +319,7 @@ export default function AIChat() {
 
       {!open && (
         <button
+          ref={bubbleRef}
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Open AI assistant"
@@ -290,7 +330,7 @@ export default function AIChat() {
       )}
 
       {open && (
-        <div role="dialog" aria-label="AI assistant" className="aic-panel">
+        <div ref={panelRef} role="dialog" aria-label="AI assistant" className="aic-panel">
           <header className="aic-header">
             <div className="aic-title">
               <span className="aic-dot" aria-hidden="true" />
@@ -453,6 +493,11 @@ const AIC_CSS = `
   transition: transform .15s ease, box-shadow .15s ease;
 }
 .aic-bubble:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.22); }
+[data-theme="dark"] .aic-bubble {
+  background: var(--surface-2, #1C1F26); color: var(--text-1, #F4F5F7); border-color: var(--border, #2A2F38);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.20);
+}
+[data-theme="dark"] .aic-bubble:hover { box-shadow: 0 12px 28px rgba(0,0,0,0.45); }
 
 .aic-panel {
   position: fixed; left: 20px; bottom: var(--aic-bottom-offset); z-index: 999998;
@@ -466,6 +511,12 @@ const AIC_CSS = `
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
   color: #2f3437;
 }
+[data-theme="dark"] .aic-panel {
+  background: var(--surface, #14171C);
+  border-color: var(--border, #2A2F38);
+  color: var(--text-2, #9AA0A6);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.25);
+}
 
 .aic-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -474,6 +525,11 @@ const AIC_CSS = `
   background: rgba(250,249,246,0.85);
   backdrop-filter: saturate(180%) blur(6px);
 }
+[data-theme="dark"] .aic-header {
+  background: rgba(20,23,28,0.85);
+  border-color: var(--border, #2A2F38);
+}
+
 .aic-title { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; }
 .aic-dot {
   width: 7px; height: 7px; border-radius: 50%;
@@ -481,7 +537,9 @@ const AIC_CSS = `
   box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
 }
 .aic-title-text { font-weight: 600; color: #1f2328; letter-spacing: -0.01em; }
+[data-theme="dark"] .aic-title-text { color: var(--text-1, #F4F5F7); }
 .aic-subtitle { color: #8a8f98; font-size: 0.78rem; font-weight: 400; }
+[data-theme="dark"] .aic-subtitle { color: var(--text-3, #6B7280); }
 .aic-actions { display: flex; gap: 2px; }
 .aic-icon-btn {
   width: 28px; height: 28px; border-radius: 6px;
@@ -489,13 +547,17 @@ const AIC_CSS = `
   display: grid; place-items: center; transition: background .12s ease, color .12s ease;
 }
 .aic-icon-btn:hover { background: rgba(15,15,15,0.06); color: #1f2328; }
+[data-theme="dark"] .aic-icon-btn { color: var(--text-3, #6B7280); }
+[data-theme="dark"] .aic-icon-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-1, #F4F5F7); }
 
 .aic-doc {
   flex: 1; overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(15,15,15,0.18) transparent;
 }
+[data-theme="dark"] .aic-doc { scrollbar-color: rgba(255,255,255,0.12) transparent; }
 .aic-doc::-webkit-scrollbar { width: 8px; }
 .aic-doc::-webkit-scrollbar-thumb { background: rgba(15,15,15,0.18); border-radius: 4px; }
+[data-theme="dark"] .aic-doc::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
 .aic-doc-inner { padding: 6px 0 14px; }
 
 .aic-block {
@@ -504,6 +566,7 @@ const AIC_CSS = `
 }
 .aic-block:last-child { border-bottom: none; }
 .aic-block-user { background: rgba(15,15,15,0.025); }
+[data-theme="dark"] .aic-block-user { background: rgba(255,255,255,0.03); }
 .aic-block-asst { background: transparent; }
 
 .aic-role {
@@ -511,11 +574,14 @@ const AIC_CSS = `
   text-transform: uppercase; letter-spacing: 0.08em;
   color: #8a8f98; margin-bottom: 4px;
 }
+[data-theme="dark"] .aic-role { color: var(--text-3, #6B7280); }
 .aic-user-content {
   font-size: 0.92rem; line-height: 1.55; color: #1f2328;
   white-space: pre-wrap; word-break: break-word;
 }
+[data-theme="dark"] .aic-user-content { color: var(--text-1, #F4F5F7); }
 .aic-asst-content { font-size: 0.92rem; line-height: 1.6; color: #2f3437; }
+[data-theme="dark"] .aic-asst-content { color: var(--text-2, #9AA0A6); }
 .aic-asst-content > *:first-child { margin-top: 0; }
 .aic-asst-content > *:last-child { margin-bottom: 0; }
 
@@ -527,12 +593,21 @@ const AIC_CSS = `
   border-left: 3px solid #c9c4b8; color: #4b5057; font-style: italic;
   background: rgba(15,15,15,0.02);
 }
+[data-theme="dark"] .aic-quote {
+  border-left-color: var(--border-strong, #3A404A);
+  color: var(--text-2, #9AA0A6);
+  background: rgba(255,255,255,0.03);
+}
 .aic-code {
   font-family: "SF Mono", "JetBrains Mono", ui-monospace, "Cascadia Code", Menlo, monospace;
   font-size: 0.85em;
   background: rgba(135, 131, 120, 0.15);
   color: #b03d4d;
   padding: 1px 5px; border-radius: 4px;
+}
+[data-theme="dark"] .aic-code {
+  background: rgba(255,255,255,0.10);
+  color: #ff8a98;
 }
 .aic-pre {
   font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -544,6 +619,8 @@ const AIC_CSS = `
 .aic-pre code { background: transparent; color: inherit; padding: 0; }
 .aic-link { color: #2f3437; text-decoration: underline; text-decoration-color: rgba(47,52,55,0.35); text-underline-offset: 2px; }
 .aic-link:hover { text-decoration-color: #2f3437; }
+[data-theme="dark"] .aic-link { color: var(--brand, #4DA3E8); text-decoration-color: rgba(77,163,232,0.45); }
+[data-theme="dark"] .aic-link:hover { text-decoration-color: var(--brand-hover, #6FB6F0); }
 
 .aic-callout {
   display: flex; align-items: center; gap: 12px;
@@ -555,11 +632,22 @@ const AIC_CSS = `
   transition: background .12s ease, border-color .12s ease;
 }
 .aic-callout:hover { background: #fff5e0; border-color: rgba(203, 145, 47, 0.45); }
+[data-theme="dark"] .aic-callout {
+  background: rgba(203, 145, 47, 0.10);
+  border-color: rgba(203, 145, 47, 0.30);
+}
+[data-theme="dark"] .aic-callout:hover {
+  background: rgba(203, 145, 47, 0.15);
+  border-color: rgba(203, 145, 47, 0.45);
+}
 .aic-callout-emoji { font-size: 1.1rem; }
 .aic-callout-body { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .aic-callout-title { font-weight: 600; font-size: 0.88rem; color: #1f2328; }
+[data-theme="dark"] .aic-callout-title { color: var(--text-1, #F4F5F7); }
 .aic-callout-sub { font-size: 0.74rem; color: #8a8f98; }
+[data-theme="dark"] .aic-callout-sub { color: var(--text-3, #6B7280); }
 .aic-callout-arrow { color: #8a8f98; font-size: 1rem; }
+[data-theme="dark"] .aic-callout-arrow { color: var(--text-3, #6B7280); }
 
 .aic-typing { display: inline-flex; gap: 4px; padding: 4px 0; }
 .aic-typing span {
@@ -572,6 +660,10 @@ const AIC_CSS = `
   0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
   40% { opacity: 1; transform: translateY(-2px); }
 }
+@media (prefers-reduced-motion: reduce) {
+  .aic-typing span { animation: none; opacity: 0.6; }
+  .aic-bubble { transition: none; }
+}
 
 .aic-email-row {
   display: flex; align-items: center; gap: 6px;
@@ -579,30 +671,51 @@ const AIC_CSS = `
   border-top: 1px solid rgba(15,15,15,0.06);
   background: #fffaf0;
 }
+[data-theme="dark"] .aic-email-row {
+  background: rgba(203, 145, 47, 0.08);
+  border-color: var(--border, #2A2F38);
+}
 .aic-email-icon { color: #8a8f98; flex-shrink: 0; }
+[data-theme="dark"] .aic-email-icon { color: var(--text-3, #6B7280); }
 .aic-email-input {
   flex: 1; padding: 6px 8px; border: 1px solid rgba(15,15,15,0.10);
   border-radius: 6px; font-size: 0.86rem; background: #fff;
   font-family: inherit; outline: none; color: #1f2328;
 }
 .aic-email-input:focus { border-color: #1f2328; }
+[data-theme="dark"] .aic-email-input {
+  background: var(--surface-2, #1C1F26);
+  border-color: var(--border, #2A2F38);
+  color: var(--text-1, #F4F5F7);
+}
+[data-theme="dark"] .aic-email-input:focus { border-color: var(--brand, #4DA3E8); }
 .aic-email-send {
   padding: 6px 12px; border: none; border-radius: 6px;
   background: #1f1f1f; color: #faf9f6; font-size: 0.82rem; font-weight: 500;
   cursor: pointer; font-family: inherit;
 }
 .aic-email-send:hover { background: #000; }
+[data-theme="dark"] .aic-email-send {
+  background: var(--brand, #4DA3E8); color: #fff;
+}
+[data-theme="dark"] .aic-email-send:hover { background: var(--brand-hover, #6FB6F0); }
 .aic-email-cancel {
   width: 26px; height: 26px; border: none; background: transparent;
   color: #8a8f98; cursor: pointer; border-radius: 4px;
   display: grid; place-items: center;
 }
 .aic-email-cancel:hover { background: rgba(15,15,15,0.06); color: #1f2328; }
+[data-theme="dark"] .aic-email-cancel { color: var(--text-3, #6B7280); }
+[data-theme="dark"] .aic-email-cancel:hover { background: rgba(255,255,255,0.06); color: var(--text-1, #F4F5F7); }
 
 .aic-composer {
   border-top: 1px solid rgba(15,15,15,0.06);
   background: #faf9f6;
   padding: 8px 12px 10px;
+}
+[data-theme="dark"] .aic-composer {
+  background: var(--surface, #14171C);
+  border-color: var(--border, #2A2F38);
 }
 .aic-textarea {
   width: 100%; resize: none;
@@ -614,11 +727,14 @@ const AIC_CSS = `
   overflow-y: auto;
 }
 .aic-textarea::placeholder { color: #b1b5bc; }
+[data-theme="dark"] .aic-textarea { color: var(--text-1, #F4F5F7); }
+[data-theme="dark"] .aic-textarea::placeholder { color: var(--text-3, #6B7280); }
 .aic-composer-bar {
   display: flex; align-items: center; justify-content: space-between;
   margin-top: 4px;
 }
 .aic-hint { font-size: 0.7rem; color: #9aa0a6; }
+[data-theme="dark"] .aic-hint { color: var(--text-3, #6B7280); }
 .aic-hint kbd {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
   font-size: 0.68rem;
@@ -626,6 +742,11 @@ const AIC_CSS = `
   border: 1px solid rgba(15,15,15,0.08);
   border-radius: 3px; padding: 0 4px; margin: 0 1px;
   color: #4b5057;
+}
+[data-theme="dark"] .aic-hint kbd {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.08);
+  color: var(--text-2, #9AA0A6);
 }
 .aic-send {
   width: 30px; height: 30px; border-radius: 8px;
@@ -636,6 +757,11 @@ const AIC_CSS = `
 .aic-send:hover:not(:disabled) { background: #000; }
 .aic-send:active:not(:disabled) { transform: scale(0.96); }
 .aic-send:disabled { background: #d6d3cc; cursor: not-allowed; }
+[data-theme="dark"] .aic-send {
+  background: var(--brand, #4DA3E8); color: #fff;
+}
+[data-theme="dark"] .aic-send:hover:not(:disabled) { background: var(--brand-hover, #6FB6F0); }
+[data-theme="dark"] .aic-send:disabled { background: var(--surface-3, #232830); cursor: not-allowed; }
 
 @media (max-width: 520px) {
   /* High-density mobile mode: smaller bubble + panel, tighter padding,

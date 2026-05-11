@@ -108,7 +108,7 @@ function buildCsp(nonce) {
     // index.html can ship without falling back to dynamic JS injection.
     "script-src 'self' 'inline-speculation-rules' 'sha256-s73Ww6tYLJKgSSJJXa6U6kUJkLc849Yhy8mrH2QxT8I=' https://va.vercel-scripts.com https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://embed.cal.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googleadservices.com https://tpc.googlesyndication.com https://googleads.g.doubleclick.net https://embed.tawk.to https://*.tawk.to https://www.clarity.ms https://www.google.com https://*.adtrafficquality.google",
     `style-src 'self' 'unsafe-inline' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com`,
-    `style-src-elem 'self' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com https://fonts.googleapis.com`,
+    `style-src-elem 'self' 'unsafe-inline' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com https://fonts.googleapis.com`,
     "style-src-attr 'unsafe-inline'",
     "font-src 'self' data: https://vercel.live https://assets.vercel.com https://fonts.gstatic.com",
     "img-src 'self' data: https://vercel.live https://vercel.com https://cal.com https://app.cal.com https://www.google-analytics.com https://www.googletagmanager.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com https://tpc.googlesyndication.com https://*.tawk.to https://*.googleusercontent.com https://*.adtrafficquality.google https://c.clarity.ms",
