@@ -3,11 +3,15 @@
 // renders a gradient background + a large centered icon + a category label.
 // No external photos, no third-party image hosts.
 
+import aiBrainAnimated from "../assets/ai-brain-animated.svg";
+import cyberAnimated from "../assets/cybersecurity-animated.svg";
+import cloudAnimated from "../assets/cloud-animated.svg";
+import complianceAnimated from "../assets/compliance-animated.svg";
 const ICON_SRC = {
-  "Cybersecurity":     "/icons/synapse/swords.png",
-  "AI & Productivity": "/icons/synapse/brain.png",
-  "Cloud":             "/icons/synapse/globe.png",
-  "Compliance":        "/icons/synapse/clipboardlist.png",
+  "Cybersecurity":     cyberAnimated,
+  "AI & Productivity": aiBrainAnimated,
+  "Cloud":             cloudAnimated,
+  "Compliance":        complianceAnimated,
   "Privacy":           "/icons/synapse/scale.png",
   "Business Tech":     "/icons/synapse/barchart3.png",
   "Industry News":     "/icons/synapse/bookopen.png",

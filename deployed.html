@@ -1,7 +1,16 @@
-﻿<!doctype html>
+<!doctype html>
 <!--
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    SEO HEAD CONVENTION — read before editing anything inside the document head
+    SEO HEAD CONVENTION — read before editing anything between <head>...  <script type="module" crossorigin src="/assets/e-C-40x9At.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/c-HFHNR5xM.js">
+  <link rel="modulepreload" crossorigin href="/assets/c-HLlpR9q1.js">
+  <link rel="modulepreload" crossorigin href="/assets/c-B_bPMDwS.js">
+  <link rel="modulepreload" crossorigin href="/assets/c-D-yRksGp.js">
+  <link rel="modulepreload" crossorigin href="/assets/c-Dq9V1GMp.js">
+  <link rel="modulepreload" crossorigin href="/assets/c-DGlsAh_2.js">
+  <link rel="modulepreload" crossorigin href="/assets/c-DfWL1sUe.js">
+  <link rel="stylesheet" crossorigin href="/assets/a-BpRX4kBF.css">
+</head>
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     Per-route Open Graph, Twitter Card, JSON-LD, <title>, and canonical tags
@@ -14,7 +23,7 @@
          (Middleware deliberately does NOT intercept /blog/<slug> for that
           reason — see middleware.js → isSpaRoute.)
 
-      Plus: middleware.js substitutes __CSP_NONCE__ on every HTML response
+      Plus: middleware.js substitutes B57rKqqm1ATIxxV_F7xh0Q on every HTML response
       with a per-request base64url nonce. Anything that breaks that token
       breaks the strict style-src CSP.
 
@@ -47,12 +56,12 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
 
-    <!-- Per-request CSP nonce. Middleware substitutes __CSP_NONCE__ with a
+    <!-- Per-request CSP nonce. Middleware substitutes B57rKqqm1ATIxxV_F7xh0Q with a
          base64url random value on every HTML response, and the `style-src`
          directive in the response CSP header allows `'nonce-<that value>'`
          so Fluent UI's Griffel renderer can attach the same nonce to every
          runtime-injected <style> tag. See src/main.jsx for the Griffel wiring. -->
-    <meta name="csp-nonce" content="__CSP_NONCE__" />
+    <meta name="csp-nonce" content="B57rKqqm1ATIxxV_F7xh0Q" />
 
     <!-- Preload self-hosted variable fonts so the browser fetches them in
          parallel with the CSS rather than waiting to discover the @font-face
@@ -196,7 +205,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
 

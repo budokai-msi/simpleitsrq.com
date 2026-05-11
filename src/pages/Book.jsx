@@ -322,6 +322,7 @@ export default function Book() {
 
   return (
     <main id="main">
+      <BookPromoBanner />
       <section className="section" aria-labelledby="book-title">
         <div className="container">
           <div className="section-head">
@@ -353,5 +354,65 @@ export default function Book() {
         </div>
       </section>
     </main>
+  );
+}
+
+// Reads ?promo=CODE and ?topic= from the URL and surfaces a confirmation
+// banner so leads arriving from /leadgen know the discount is locked in.
+function BookPromoBanner() {
+  const [params, setParams] = useState(() => {
+    if (typeof window === "undefined") return { promo: "", topic: "" };
+    const u = new URL(window.location.href);
+    return {
+      promo: (u.searchParams.get("promo") || "").trim().toUpperCase(),
+      topic: (u.searchParams.get("topic") || "").trim().toLowerCase(),
+    };
+  });
+
+  // Re-read on hash/query change in SPA nav.
+  useEffect(() => {
+    const onPop = () => {
+      const u = new URL(window.location.href);
+      setParams({
+        promo: (u.searchParams.get("promo") || "").trim().toUpperCase(),
+        topic: (u.searchParams.get("topic") || "").trim().toLowerCase(),
+      });
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  if (!params.promo && !params.topic.startsWith("leadgen")) return null;
+
+  const isLeadgen = params.topic.startsWith("leadgen");
+  const tier =
+    params.topic === "leadgen-starter"     ? "Starter" :
+    params.topic === "leadgen-growth"      ? "Growth" :
+    params.topic === "leadgen-enterprise"  ? "Enterprise" :
+    params.topic === "leadgen-demo"        ? "demo" :
+    params.topic === "leadgen-trial"       ? "14-day trial" : "";
+
+  return (
+    <div className="book-promo-banner" role="status" aria-live="polite">
+      <div className="container book-promo-banner__inner">
+        <span className="book-promo-banner__check" aria-hidden="true">
+          <Check size={16} />
+        </span>
+        <div className="book-promo-banner__copy">
+          {params.promo ? (
+            <>
+              <strong>Promo applied:</strong>{" "}
+              <code className="book-promo-banner__code">{params.promo}</code>{" "}
+              — 20% off your first 3 months on any Leadgen plan.
+            </>
+          ) : (
+            <>
+              You&rsquo;re booking a <strong>Leadgen{tier ? ` ${tier}` : ""}</strong>{" "}
+              consultation. We&rsquo;ll have your zip code and target industry pulled up before the call.
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
