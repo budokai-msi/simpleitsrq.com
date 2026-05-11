@@ -2439,6 +2439,107 @@ main, #main {
 }
 
 /* ============================================================
+   Page transitions, skeleton loading, navbar elevation
+   ============================================================ */
+
+/* ----- Page fade transition ----- */
+.page-transition {
+  animation: pageFadeIn 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.page-transition.fadeOut {
+  animation: pageFadeOut 180ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pageFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+
+/* ----- Skeleton loading state ----- */
+.route-fallback {
+  min-height: 70vh;
+  padding: 24px 0 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.skeleton-header {
+  height: 64px;
+  margin-bottom: 24px;
+  border-radius: var(--r-md, 8px);
+  background: linear-gradient(90deg, var(--surface-2, #EFEBE4) 25%, var(--surface, #FAF7F2) 50%, var(--surface-2, #EFEBE4) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+.skeleton-hero {
+  padding: 48px 24px;
+  margin-bottom: 40px;
+  border-radius: var(--r-lg, 12px);
+  background: var(--surface, #FAF7F2);
+  border: 1px solid var(--border);
+}
+.skeleton-line {
+  height: 16px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+  background: linear-gradient(90deg, var(--surface-2, #EFEBE4) 25%, var(--surface-3, #E4DFD7) 50%, var(--surface-2, #EFEBE4) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+.skeleton-line-lg { width: 70%; height: 36px; margin-bottom: 20px; }
+.skeleton-line-md { width: 55%; height: 20px; }
+.skeleton-line-sm { width: 80%; height: 16px; }
+.skeleton-ctas { display: flex; gap: 12px; margin-top: 28px; }
+.skeleton-btn {
+  width: 180px;
+  height: 44px;
+  border-radius: var(--r-md, 8px);
+  background: linear-gradient(90deg, var(--surface-2, #EFEBE4) 25%, var(--surface-3, #E4DFD7) 50%, var(--surface-2, #EFEBE4) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+.skeleton-btn-ghost { width: 160px; background: transparent; border: 1px solid var(--border); }
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.skeleton-card {
+  height: 200px;
+  border-radius: var(--r-md, 8px);
+  background: linear-gradient(90deg, var(--surface-2, #EFEBE4) 25%, var(--surface-3, #E4DFD7) 50%, var(--surface-2, #EFEBE4) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+[data-theme="dark"] .skeleton-header,
+[data-theme="dark"] .skeleton-line,
+[data-theme="dark"] .skeleton-btn,
+[data-theme="dark"] .skeleton-card {
+  background: linear-gradient(90deg, var(--surface-2, #1C1F26) 25%, var(--surface-3, #232830) 50%, var(--surface-2, #1C1F26) 75%);
+  background-size: 200% 100%;
+}
+
+/* ----- Navbar scroll shadow ----- */
+.navbar {
+  transition: box-shadow 200ms var(--ease-out), background 200ms var(--ease-out);
+}
+.navbar--scrolled {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+  background: rgba(250, 247, 242, 0.92);
+  backdrop-filter: saturate(180%) blur(8px);
+}
+[data-theme="dark"] .navbar--scrolled {
+  background: rgba(11, 13, 16, 0.92);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 16px rgba(0,0,0,0.25);
+}
+
+/* ============================================================
    v4 — Font shadows, animated hero bg, card tilt, icon polish
    ============================================================ */
 
@@ -6554,6 +6655,12 @@ select:focus-visible {
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   box-shadow: var(--shadow2);
+  transition: border-color 120ms ease, box-shadow 160ms ease, transform 120ms cubic-bezier(.4,1.2,.6,1);
+}
+.review-card:hover {
+  border-color: var(--brand-subtle);
+  box-shadow: var(--shadow4);
+  transform: translateY(-2px);
 }
 .review-card-head {
   display: flex;

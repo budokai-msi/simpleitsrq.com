@@ -95,8 +95,22 @@ function ExitIntentMount() {
 
 function RouteFallback() {
   return (
-    <div style={{ minHeight: "60vh", display: "grid", placeItems: "center" }}>
-      <div className="route-spinner" aria-label="Loading" />
+    <div className="route-fallback" role="status" aria-live="polite">
+      <div className="skeleton-header" />
+      <div className="skeleton-hero">
+        <div className="skeleton-line skeleton-line-lg" />
+        <div className="skeleton-line skeleton-line-md" />
+        <div className="skeleton-line skeleton-line-sm" />
+        <div className="skeleton-ctas">
+          <div className="skeleton-btn" />
+          <div className="skeleton-btn skeleton-btn-ghost" />
+        </div>
+      </div>
+      <div className="skeleton-grid">
+        <div className="skeleton-card" />
+        <div className="skeleton-card" />
+        <div className="skeleton-card" />
+      </div>
     </div>
   );
 }
@@ -205,7 +219,15 @@ function Logo() {
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    function onScroll() { setScrolled(window.scrollY > 8); }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Signed-in pill (avatar + first name) or a "Sign In" button.
   const portalCta = loading ? null : user ? (
@@ -223,7 +245,7 @@ function Navbar() {
   );
 
   return (
-    <header className="navbar" role="banner">
+    <header className={`navbar${scrolled ? " navbar--scrolled" : ""}`} role="banner">
       <div className="container nav-inner">
         <ReadingProgress />
         <Logo />
@@ -553,6 +575,76 @@ function ReadingProgress() {
   return <div className="reading-progress" style={{ width: `${progress}%` }} />;
 }
 
+function AnimatedRoutes() {
+  const location = useLocation();
+  const [displayLocation, setDisplayLocation] = useState(location);
+  const [transitionStage, setTransitionStage] = useState("fadeIn");
+
+  useEffect(() => {
+    if (location.pathname !== displayLocation.pathname) {
+      setTransitionStage("fadeOut");
+      const t = setTimeout(() => {
+        setDisplayLocation(location);
+        setTransitionStage("fadeIn");
+        window.scrollTo(0, 0);
+      }, 180);
+      return () => clearTimeout(t);
+    }
+  }, [location, displayLocation]);
+
+  return (
+    <div className={`page-transition ${transitionStage}`}>
+      <Routes location={displayLocation}>
+        <Route path="/" element={<main id="main"><Home /></main>} />
+        <Route path="/blog" element={<BlogIndex />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/sarasota-it-support" element={<LocalLanding />} />
+        <Route path="/bradenton-it-support" element={<LocalLanding />} />
+        <Route path="/lakewood-ranch-it-support" element={<LocalLanding />} />
+        <Route path="/nokomis-it-support" element={<LocalLanding />} />
+        <Route path="/venice-it-support" element={<LocalLanding />} />
+        <Route path="/bradenton-34207-it-support" element={<LocalLanding />} />
+        {/* Industry-vertical landing pages use one-segment URLs such as
+            /medical-it-sarasota and /construction-it-bradenton. React
+            Router params cannot match partial path segments reliably, so
+            the resolver route lives just before the final 404 catch-all
+            and validates the slug inside IndustryLanding. */}
+        <Route path="/industries" element={<IndustriesHub />} />
+        <Route path="/service-area" element={<ServiceArea />} />
+        <Route path="/partners" element={<Partners />} />
+        <Route path="/book" element={<Book />} />
+        <Route path="/support" element={<Support />} />
+        <Route path="/tools" element={<Tools />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/admin/affiliates" element={<AdminAffiliates />} />
+        <Route path="/stack" element={<Stack />} />
+        <Route path="/tools-we-use" element={<Stack />} />
+        <Route path="/compliance-audit-referral" element={<ComplianceAuditReferral />} />
+        <Route path="/advertise" element={<Advertise />} />
+        <Route path="/sponsor" element={<Advertise />} />
+        <Route path="/compare" element={<CompareIndex />} />
+        <Route path="/compare/:slug" element={<CompareDetail />} />
+        <Route path="/why" element={<WhyIndex />} />
+        <Route path="/why/:slug" element={<WhyVs />} />
+        <Route path="/leadgen" element={<Leadgen />} />
+        <Route path="/glossary" element={<Glossary />} />
+        <Route path="/glossary/:slug" element={<GlossaryEntry />} />
+        <Route path="/exposure-scan" element={<ExposureScan />} />
+        <Route path="/live-threats" element={<LiveThreats />} />
+        <Route path="/password-check" element={<PasswordCheck />} />
+        <Route path="/portal" element={<ClientPortal />} />
+        <Route path="/portal/leadgen" element={<LeadgenDashboard />} />
+        <Route path="/portal/opsec"   element={<OpsecPortal />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/accessibility" element={<AccessibilityPage />} />
+        <Route path="/:slug" element={<IndustryLanding />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <ThemeProvider>
@@ -561,53 +653,7 @@ export default function App() {
         <Layout>
           <ErrorBoundary>
           <Suspense fallback={<RouteFallback />}>
-            <Routes>
-              <Route path="/" element={<main id="main"><Home /></main>} />
-              <Route path="/blog" element={<BlogIndex />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/sarasota-it-support" element={<LocalLanding />} />
-              <Route path="/bradenton-it-support" element={<LocalLanding />} />
-              <Route path="/lakewood-ranch-it-support" element={<LocalLanding />} />
-              <Route path="/nokomis-it-support" element={<LocalLanding />} />
-              <Route path="/venice-it-support" element={<LocalLanding />} />
-              <Route path="/bradenton-34207-it-support" element={<LocalLanding />} />
-              {/* Industry-vertical landing pages use one-segment URLs such as
-                  /medical-it-sarasota and /construction-it-bradenton. React
-                  Router params cannot match partial path segments reliably, so
-                  the resolver route lives just before the final 404 catch-all
-                  and validates the slug inside IndustryLanding. */}
-              <Route path="/industries" element={<IndustriesHub />} />
-              <Route path="/service-area" element={<ServiceArea />} />
-              <Route path="/partners" element={<Partners />} />
-              <Route path="/book" element={<Book />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/tools" element={<Tools />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/admin/affiliates" element={<AdminAffiliates />} />
-              <Route path="/stack" element={<Stack />} />
-              <Route path="/tools-we-use" element={<Stack />} />
-              <Route path="/compliance-audit-referral" element={<ComplianceAuditReferral />} />
-              <Route path="/advertise" element={<Advertise />} />
-              <Route path="/sponsor" element={<Advertise />} />
-              <Route path="/compare" element={<CompareIndex />} />
-              <Route path="/compare/:slug" element={<CompareDetail />} />
-              <Route path="/why" element={<WhyIndex />} />
-              <Route path="/why/:slug" element={<WhyVs />} />
-              <Route path="/leadgen" element={<Leadgen />} />
-              <Route path="/glossary" element={<Glossary />} />
-              <Route path="/glossary/:slug" element={<GlossaryEntry />} />
-              <Route path="/exposure-scan" element={<ExposureScan />} />
-              <Route path="/live-threats" element={<LiveThreats />} />
-              <Route path="/password-check" element={<PasswordCheck />} />
-              <Route path="/portal" element={<ClientPortal />} />
-              <Route path="/portal/leadgen" element={<LeadgenDashboard />} />
-              <Route path="/portal/opsec"   element={<OpsecPortal />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/accessibility" element={<AccessibilityPage />} />
-              <Route path="/:slug" element={<IndustryLanding />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </Suspense>
           </ErrorBoundary>
         </Layout>
