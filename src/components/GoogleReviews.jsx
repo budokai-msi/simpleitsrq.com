@@ -36,7 +36,7 @@ export default function GoogleReviews() {
       .then(async (r) => {
         const body = await r.json().catch(() => null);
         if (cancelled) return;
-        if (r.status === 503 && body?.configured === false) {
+        if (body?.configured === false) {
           setStatus("unconfigured");
           return;
         }
