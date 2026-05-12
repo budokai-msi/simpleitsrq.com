@@ -426,7 +426,7 @@ function LeadgenDashboardMock() {
           </div>
         </div>
         <div className="leadgen-mock__chart">
-          <svg viewBox="0 0 320 120" width="100%" height="120" preserveAspectRatio="none">
+          <svg viewBox="0 0 320 120" width="100%" style={{ height: 'auto', aspectRatio: '320/120' }} preserveAspectRatio="xMidYMid meet">
             <defs>
               <linearGradient id="lg-mock-fill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" stopColor="#0F6CBD" stopOpacity="0.40" />
