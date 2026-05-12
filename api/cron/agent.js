@@ -16,6 +16,7 @@ import { runNewsletterDrip } from "../_lib/newsletter-drip.js";
 import { discoverBusinessesByZip } from "../_lib/leadgen-osm.js";
 import { crawlEmails } from "../_lib/leadgen-emailcrawler.js";
 import { sendCampaignEmail, renderTemplate } from "../_lib/leadgen-smtp.js";
+import { publishDraftToGitHub } from "../_lib/publish-draft.js";
 
 // Cold-start validation. Both keys are validated as 'optional' rather than
 // 'required': the per-task code below already returns { skipped } when a
@@ -637,6 +638,30 @@ Mention the HN source casually (e.g., "This blew up on HackerNews this week...")
     const draftId = inserted[0]?.id;
     const reviewUrl = `https://simpleitsrq.com/portal?tab=drafts${draftId ? `&id=${draftId}` : ""}`;
 
+    // Auto-publish draft to GitHub immediately
+    let publishResult = null;
+    try {
+      publishResult = await publishDraftToGitHub({
+        title: post.title,
+        slug: finalSlug,
+        category: post.category || "Business Tech",
+        excerpt: post.excerpt || "",
+        body: post.body,
+        meta_desc: post.metaDescription || "",
+      });
+      if (publishResult.ok) {
+        await sql`
+          UPDATE draft_posts
+          SET status = 'published',
+              reviewed_at = now(),
+              published_at = now()
+          WHERE id = ${draftId}
+        `;
+      }
+    } catch (pubErr) {
+      publishResult = { ok: false, error: String(pubErr.message || pubErr) };
+    }
+
     const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
     if (resend && REPORT_TO) {
       try {
@@ -652,13 +677,26 @@ Mention the HN source casually (e.g., "This blew up on HackerNews this week...")
             `HN Source: ${story.title}\n` +
             `HN URL: ${story.url}\n` +
             `HN Discussion: ${hnUrl}\n\n` +
+            `Auto-publish: ${publishResult?.ok ? (publishResult.alreadyInFile ? "already in posts.js" : "published") : `failed (${publishResult?.error})`}\n` +
             `Review + publish: ${reviewUrl}\n\n` +
             `---\n\n${post.body}\n\n---\n`,
         });
       } catch { /* best effort */ }
     }
 
-    const out = { generated: true, title: post.title, slug: finalSlug, draftId, reviewUrl, source: "hn", hnTitle: story.title, hnUrl: story.url };
+    const out = {
+      generated: true,
+      title: post.title,
+      slug: finalSlug,
+      draftId,
+      reviewUrl,
+      source: "hn",
+      hnTitle: story.title,
+      hnUrl: story.url,
+      published: publishResult?.ok === true,
+      alreadyInFile: publishResult?.alreadyInFile === true,
+      publishError: publishResult?.ok === false ? publishResult.error : undefined,
+    };
     await logBlogOutcome(out);
     return out;
   } catch (err) {

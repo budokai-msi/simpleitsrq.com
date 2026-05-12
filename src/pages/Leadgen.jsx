@@ -159,7 +159,7 @@ function Currency({ value }) {
 }
 
 export default function Leadgen() {
-  const [billing, setBilling] = useState("annual");
+  const [billing, setBilling] = useState("monthly");
 
   useSEO({
     title: "Leadgen by Simple IT SRQ â€” Compliant local-business outreach for SMB sales teams",
@@ -324,7 +324,7 @@ export default function Leadgen() {
               className={`leadgen-billing-btn${billing === "annual" ? " is-active" : ""}`}
               onClick={() => setBilling("annual")}
             >
-              Annual <span className="leadgen-billing-save">Save 15%</span>
+              Annual <span className="leadgen-billing-save">Save up to {Math.max(...TIERS.filter(t => t.monthly > 0).map(t => Math.round((1 - t.annual / t.monthly) * 100)))}%</span>
             </button>
           </div>
 
