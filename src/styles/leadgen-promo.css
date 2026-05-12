@@ -35,7 +35,7 @@
   padding: 1px 8px;
   border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.8rem;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -43,7 +43,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
   background: #F0B429;
   color: #072E54;
@@ -51,6 +51,7 @@
   font-size: 0.82rem;
   text-decoration: none;
   transition: transform 120ms ease, box-shadow 120ms ease;
+  min-height: 44px;
 }
 .leadgen-promobar__cta:hover {
   transform: translateY(-1px);
@@ -65,6 +66,9 @@
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  justify-content: center;
 }
 .leadgen-promobar__close:hover { color: #fff; background: rgba(255, 255, 255, 0.10); }
 @media (prefers-reduced-motion: reduce) {
@@ -190,6 +194,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: border-color 120ms ease, color 120ms ease;
+  min-height: 44px;
 }
 .lg-promo__copy:hover { border-color: #0F6CBD; color: #0F6CBD; }
 .lg-promo__actions {
@@ -206,11 +211,11 @@
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
-  padding: 8px 4px;
+  padding: 12px 4px;
 }
 .lg-promo__skip:hover { color: var(--text-1, #111827); }
 .lg-promo__fine {
-  font-size: 0.74rem;
+  font-size: 12px;
   color: var(--text-muted, #6b7280);
   margin: 0;
   line-height: 1.5;

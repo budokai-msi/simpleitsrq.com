@@ -32,13 +32,13 @@
 }
 .leadgen-ticker__head svg { color: var(--lg-blue, #0F6CBD); }
 .leadgen-ticker__head-title {
-  font-size: 0.78rem; font-weight: 700;
+  font-size: 12px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-1, #111827);
 }
 .leadgen-ticker__head-meta {
   margin-left: auto;
-  font-size: 0.74rem;
+  font-size: 12px;
   color: var(--text-muted, #6b7280);
 }
 .leadgen-ticker__list {
@@ -78,7 +78,7 @@
 }
 .leadgen-ticker__text { color: var(--text-1, #111827); }
 .leadgen-ticker__time {
-  font-size: 0.76rem;
+  font-size: 12px;
   color: var(--text-muted, #6b7280);
   font-variant-numeric: tabular-nums;
 }
@@ -137,7 +137,7 @@
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
+  height: 28px;
   border-radius: 999px;
   background: linear-gradient(90deg, #0F6CBD 0%, #7C5CD8 100%);
   outline: none;
@@ -146,7 +146,7 @@
 .leadgen-roi__field input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px; height: 20px;
+  width: 28px; height: 28px;
   border-radius: 50%;
   background: #fff;
   border: 2px solid #0F6CBD;
@@ -156,7 +156,7 @@
 }
 .leadgen-roi__field input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.12); }
 .leadgen-roi__field input[type="range"]::-moz-range-thumb {
-  width: 20px; height: 20px;
+  width: 28px; height: 28px;
   border-radius: 50%;
   background: #fff;
   border: 2px solid #0F6CBD;
@@ -166,13 +166,13 @@
 .leadgen-roi__field-scale {
   display: flex;
   justify-content: space-between;
-  font-size: 0.72rem;
+  font-size: 12px;
   color: var(--text-muted, #6b7280);
   font-variant-numeric: tabular-nums;
 }
 .leadgen-roi__note {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 12px;
   color: var(--text-muted, #6b7280);
   line-height: 1.5;
   padding-top: 8px;
@@ -206,7 +206,7 @@
   color: var(--text-1, #111827);
 }
 .leadgen-roi__card-roi {
-  font-size: 0.78rem;
+  font-size: 12px;
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
@@ -226,7 +226,7 @@
   gap: 4px;
 }
 .leadgen-roi__card-stats span {
-  font-size: 0.72rem;
+  font-size: 12px;
   color: var(--text-muted, #6b7280);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -261,6 +261,7 @@
 .book-promo-banner__inner {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
   font-size: 0.92rem;
   color: var(--text-1, #111827);
@@ -295,7 +296,7 @@
 [data-theme="dark"] .book-promo-banner__copy { color: #E8EEF6; }
 [data-theme="dark"] .book-promo-banner__code { background: rgba(255,255,255,0.06); }
 
-.btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+.btn-sm { padding: 6px 12px; font-size: 0.82rem; min-height: 44px; }
 
 
 .leadgen-objection__title { font-size: 1rem; font-weight: 700; margin: 8px 0 10px; color: var(--text-1, #111827); line-height: 1.35; }
