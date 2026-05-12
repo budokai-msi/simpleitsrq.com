@@ -385,8 +385,9 @@ function BookPromoBanner() {
   if (!params.promo && !params.topic.startsWith("leadgen")) return null;
 
   const tier =
-    params.topic === "leadgen-starter"     ? "Starter" :
+    params.topic === "leadgen-free"        ? "Free" :
     params.topic === "leadgen-growth"      ? "Growth" :
+    params.topic === "leadgen-pro"         ? "Pro" :
     params.topic === "leadgen-enterprise"  ? "Enterprise" :
     params.topic === "leadgen-demo"        ? "demo" :
     params.topic === "leadgen-trial"       ? "14-day trial" : "";

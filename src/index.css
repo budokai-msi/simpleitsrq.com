@@ -27,58 +27,54 @@
 
 :root,
 :root[data-theme="light"] {
-  /* Surfaces — pearl white. Pure #FFF is photochemically harsh under
-   * sustained reading, especially on OLED / high-brightness displays.
-   * These values drop ~3-6% luminance and add a faint warm/cool
-   * shimmer that mimics the iridescence of an actual pearl: warm
-   * cream undertone in the page wash, slightly cooler in cards so
-   * elevation still reads. The whole alias bridge below picks these
-   * up, so 88+ inline `var(--syn-surface, #fff)` usages quietly stop
-   * being pure white without touching a single component. */
-  --bg: #F4F1EC;            /* page wash — warm pearl */
-  --bg-elevated: #FAF7F2;   /* hero / sticky chrome */
-  --surface: #FAF7F2;       /* cards, panels */
-  --surface-2: #EFEBE4;     /* recessed wells, code blocks */
-  --surface-3: #E4DFD7;     /* deepest recess */
-  --mica: rgba(250, 247, 242, 0.78);
+  /* Surfaces — warm pearl with proper hierarchy. Previous palette had
+   * cards (#FAF7F2) LIGHTER than the page (#F4F1EC), so everything
+   * blended into one off-white blob with invisible borders. Now the
+   * page is darker, cards are brighter, and borders are visible. */
+  --bg: #C8C0B0;            /* page wash — darker warm beige so cards pop */
+  --bg-elevated: #D5CFC3;   /* hero / sticky chrome — lighter than bg */
+  --surface: #FAF7F2;       /* cards, panels — bright warm white */
+  --surface-2: #F0EBE2;     /* recessed wells, code blocks */
+  --surface-3: #E2DCD2;     /* deepest recess */
+  --mica: rgba(213, 207, 195, 0.88);
 
-  /* Brand */
-  --brand: #0F6CBD;
-  --brand-hover: #115EA3;
-  --brand-pressed: #0C3B5E;
-  --brand-subtle: #EBF3FC;
-  --brand-glow: rgba(15, 108, 189, 0.18);
+  /* Brand — slightly deeper for better contrast on lighter surfaces */
+  --brand: #0D5FA8;
+  --brand-hover: #0E6BBD;
+  --brand-pressed: #094070;
+  --brand-subtle: #E0ECF8;
+  --brand-glow: rgba(13, 95, 168, 0.22);
 
-  /* Text */
-  --text-1: #1B1B1B;
-  --text-2: #5C5C5C;
-  --text-3: #8A8A8A;
+  /* Text — darker for more punch against warm backgrounds */
+  --text-1: #141414;
+  --text-2: #2A2A2A;
+  --text-3: #555555;
   --text-on-accent: #FFFFFF;
 
-  /* Borders */
-  --border: #E0DBD3;
-  --border-strong: #CFC9BF;
+  /* Borders — visible. Previous values were invisible on warm bg. */
+  --border: #A89F8F;
+  --border-strong: #8A806F;
 
   /* Status */
-  --success: #107C10;
-  --success-bg: #DFF6DD;
-  --warning: #F7630C;
-  --error: #C50F1F;
-  --error-bg: #FDE7E9;
+  --success: #0E700E;
+  --success-bg: #D4EDDA;
+  --warning: #E55A00;
+  --error: #B50D1A;
+  --error-bg: #F8D7DA;
 
-  /* Shadows — Geist-style: hairline border + soft cushion + ambient lift */
-  --shadow2:  0 0 0 1px rgba(15, 23, 42, 0.04),
-              0 1px 2px -1px rgba(15, 23, 42, 0.06);
-  --shadow4:  0 0 0 1px rgba(15, 23, 42, 0.04),
-              0 1px 2px -1px rgba(15, 23, 42, 0.06),
-              0 4px 8px -2px rgba(15, 23, 42, 0.06);
-  --shadow8:  0 0 0 1px rgba(15, 23, 42, 0.04),
-              0 2px 4px -2px rgba(15, 23, 42, 0.06),
-              0 8px 16px -4px rgba(15, 23, 42, 0.10);
-  --shadow16: 0 0 0 1px rgba(15, 23, 42, 0.06),
-              0 4px 8px -2px rgba(15, 23, 42, 0.06),
-              0 16px 32px -8px rgba(15, 23, 42, 0.12),
-              0 32px 64px -16px rgba(15, 23, 42, 0.10);
+  /* Shadows — much stronger in light mode so cards actually lift */
+  --shadow2:  0 0 0 1px rgba(15, 23, 42, 0.12),
+              0 1px 3px -1px rgba(15, 23, 42, 0.12);
+  --shadow4:  0 0 0 1px rgba(15, 23, 42, 0.12),
+              0 1px 3px -1px rgba(15, 23, 42, 0.12),
+              0 4px 10px -2px rgba(15, 23, 42, 0.12);
+  --shadow8:  0 0 0 1px rgba(15, 23, 42, 0.12),
+              0 2px 6px -2px rgba(15, 23, 42, 0.12),
+              0 8px 20px -4px rgba(15, 23, 42, 0.16);
+  --shadow16: 0 0 0 1px rgba(15, 23, 42, 0.14),
+              0 4px 10px -2px rgba(15, 23, 42, 0.12),
+              0 16px 40px -8px rgba(15, 23, 42, 0.18),
+              0 32px 64px -16px rgba(15, 23, 42, 0.16);
   --shadow-glow: 0 0 0 4px var(--brand-glow);
 
   color-scheme: light;
@@ -520,10 +516,10 @@ body:has(dialog[open][data-blocking-modal]) {
 
   /* Iridescent mesh stops — pearl-derived, low chroma so the mesh
    * reads as a soft glow rather than a poster background. */
-  --mesh-1: rgba(124, 92, 216, 0.32);   /* violet */
-  --mesh-2: rgba(15, 108, 189, 0.26);   /* brand blue */
-  --mesh-3: rgba(14, 156, 149, 0.26);   /* teal */
-  --mesh-4: rgba(244, 232, 220, 0.85);  /* warm pearl base */
+  --mesh-1: rgba(124, 92, 216, 0.38);   /* violet — stronger on darker bg */
+  --mesh-2: rgba(15, 108, 189, 0.32);   /* brand blue */
+  --mesh-3: rgba(14, 156, 149, 0.32);   /* teal */
+  --mesh-4: rgba(232, 220, 208, 0.90);  /* warm pearl base */
 }
 :root[data-theme="dark"] {
   --accent-teal:   #5BD2C9;

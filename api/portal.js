@@ -160,6 +160,7 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "leadgen-jobs",
   "leadgen-status",
   "leadgen-export",
+  "leadgen-insights",
   // self-serve maintenance
   "run-audit-migration",
   "leadgen-reclassify",
@@ -3598,6 +3599,101 @@ async function handleLeadgenStatus(session) {
   });
 }
 
+// GET — aggregated insights for the Insights tab
+async function handleLeadgenInsights(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const [
+    totalRow,
+    withWebsiteRow,
+    withEmailRow,
+    avgEmailsRow,
+    geography,
+    industries,
+    emailHealth,
+    discoveryVelocity,
+    campaignStats,
+    topSegments,
+  ] = await Promise.all([
+    sql`SELECT COUNT(*)::int AS n FROM lead_businesses`,
+    sql`SELECT COUNT(*)::int AS n FROM lead_businesses WHERE website IS NOT NULL`,
+    sql`SELECT COUNT(DISTINCT business_id)::int AS n FROM lead_emails WHERE opted_out_at IS NULL AND bounced_at IS NULL`,
+    sql`SELECT AVG(cnt)::numeric(4,2) AS avg FROM (SELECT COUNT(*)::int AS cnt FROM lead_emails WHERE opted_out_at IS NULL AND bounced_at IS NULL GROUP BY business_id) t`,
+    sql`SELECT b.zip, b.city, COUNT(*)::int AS count,
+               COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM lead_emails e WHERE e.business_id = b.id AND e.opted_out_at IS NULL AND e.bounced_at IS NULL))::int AS with_email
+        FROM lead_businesses b
+        GROUP BY b.zip, b.city
+        ORDER BY count DESC
+        LIMIT 10`,
+    sql`SELECT industry_group, COUNT(*)::int AS count,
+               ROUND(COUNT(*) * 100.0 / NULLIF(SUM(COUNT(*)) OVER (), 0), 1)::text AS pct
+        FROM lead_businesses
+        WHERE industry_group IS NOT NULL
+        GROUP BY industry_group
+        ORDER BY count DESC
+        LIMIT 10`,
+    sql`SELECT b.industry_group,
+               COUNT(e.id)::int AS total_emails,
+               COUNT(*) FILTER (WHERE e.opted_out_at IS NULL AND e.bounced_at IS NULL)::int AS deliverable,
+               ROUND(COUNT(*) FILTER (WHERE e.opted_out_at IS NULL AND e.bounced_at IS NULL) * 100.0
+                     / NULLIF(COUNT(e.id), 0), 1)::text AS rate
+        FROM lead_businesses b
+        LEFT JOIN lead_emails e ON e.business_id = b.id
+        WHERE b.industry_group IS NOT NULL
+        GROUP BY b.industry_group
+        HAVING COUNT(e.id) > 0
+        ORDER BY deliverable DESC
+        LIMIT 10`,
+    sql`SELECT TO_CHAR(DATE_TRUNC('week', created_at), 'YYYY-MM-DD') AS period,
+               COUNT(*)::int AS count,
+               COUNT(*) FILTER (WHERE website IS NOT NULL)::int AS with_website
+        FROM lead_businesses
+        WHERE created_at > now() - interval '12 weeks'
+        GROUP BY DATE_TRUNC('week', created_at)
+        ORDER BY period DESC
+        LIMIT 12`,
+    sql`SELECT c.id, c.name,
+               COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL)::int AS sent,
+               ROUND(COUNT(*) FILTER (WHERE cs.opened_at IS NOT NULL) * 100.0
+                     / NULLIF(COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL), 0), 1)::text AS open_rate,
+               ROUND(COUNT(*) FILTER (WHERE cs.replied_at IS NOT NULL) * 100.0
+                     / NULLIF(COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL), 0), 1)::text AS reply_rate
+        FROM lead_campaigns c
+        LEFT JOIN lead_campaign_sends cs ON cs.campaign_id = c.id
+        GROUP BY c.id, c.name
+        ORDER BY sent DESC
+        LIMIT 10`,
+    sql`SELECT b.zip, b.industry_group, COUNT(*)::int AS count,
+               COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM lead_emails e WHERE e.business_id = b.id AND e.opted_out_at IS NULL AND e.bounced_at IS NULL))::int AS with_email
+        FROM lead_businesses b
+        WHERE b.zip IS NOT NULL AND b.industry_group IS NOT NULL
+        GROUP BY b.zip, b.industry_group
+        ORDER BY count DESC
+        LIMIT 10`,
+  ]);
+
+  const total = totalRow[0]?.n || 0;
+  const withWebsite = withWebsiteRow[0]?.n || 0;
+  const withEmail = withEmailRow[0]?.n || 0;
+
+  return json(200, {
+    ok: true,
+    totalBusinesses: total,
+    withWebsite,
+    withEmail,
+    websiteRate: total > 0 ? Math.round((withWebsite / total) * 100) : 0,
+    emailRate: total > 0 ? Math.round((withEmail / total) * 100) : 0,
+    avgEmailsPerBiz: Number(avgEmailsRow[0]?.avg || 0),
+    geography: geography || [],
+    industries: industries || [],
+    emailHealth: emailHealth || [],
+    discoveryVelocity: discoveryVelocity || [],
+    campaignStats: campaignStats || [],
+    topSegments: topSegments || [],
+  });
+}
+
 // POST { zip }
 async function handleLeadgenDiscover(session, request) {
   const gate = await requireAdmin(session);
@@ -3673,7 +3769,7 @@ async function handleLeadgenCrawlEmails(session, request) {
   return json(200, { ok: true, queued: inserted.length, ids: inserted });
 }
 
-// GET ?zip=&status=&q=&page=&limit=
+// GET ?zip=&status=&q=&page=&limit=&tag=&min_emails=&max_emails=&created_after=&created_before=
 async function handleLeadgenBusinesses(session, url) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
@@ -3685,17 +3781,25 @@ async function handleLeadgenBusinesses(session, url) {
   const subIndustry = (url.searchParams.get("sub_industry") || "").trim();
   const hasWebsite = url.searchParams.get("has_website") === "1";
   const hasEmail = url.searchParams.get("has_email") === "1";
+  const tag = (url.searchParams.get("tag") || "").trim().toLowerCase();
+  const minEmails = Math.max(0, Number(url.searchParams.get("min_emails")) || 0);
+  const maxEmails = Math.max(0, Number(url.searchParams.get("max_emails")) || 0);
+  const createdAfter = (url.searchParams.get("created_after") || "").trim();
+  const createdBefore = (url.searchParams.get("created_before") || "").trim();
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const limit = Math.min(200, Math.max(1, Number(url.searchParams.get("limit")) || 50));
   const offset = (page - 1) * limit;
 
-  // Build dynamic WHERE in a way that works with neon's tagged template:
-  // each predicate is its own SQL fragment we conditionally compose.
   const wantsZip = /^\d{5}$/.test(zip);
   const wantsStatus = ["active", "rejected", "do_not_contact"].includes(status);
   const wantsQ = q.length >= 2;
   const wantsGroup = industryGroup.length > 0;
   const wantsSub = subIndustry.length > 0;
+  const wantsTag = tag.length > 0;
+  const wantsMinEmails = minEmails > 0;
+  const wantsMaxEmails = maxEmails > 0;
+  const wantsCreatedAfter = /^\d{4}-\d{2}-\d{2}$/.test(createdAfter);
+  const wantsCreatedBefore = /^\d{4}-\d{2}-\d{2}$/.test(createdBefore);
   const like = `%${q.toLowerCase()}%`;
 
   const rows = await sql`
@@ -3718,9 +3822,21 @@ async function handleLeadgenBusinesses(session, url) {
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
+      AND (${!wantsTag}::bool OR EXISTS (SELECT 1 FROM unnest(b.tags) t WHERE lower(t) LIKE ${'%' + tag + '%'}))
+      AND (${!wantsCreatedAfter}::bool OR b.created_at >= ${createdAfter + 'T00:00:00Z'})
+      AND (${!wantsCreatedBefore}::bool OR b.created_at <= ${createdBefore + 'T23:59:59Z'})
     ORDER BY b.id DESC
     LIMIT ${limit} OFFSET ${offset}
   `;
+
+  // Apply min/max email filters in JS because the subquery makes SQL
+  // composition with neon tagged templates fragile for HAVING.
+  const filteredRows = rows.filter((r) => {
+    const de = r.deliverable_emails || 0;
+    if (wantsMinEmails && de < minEmails) return false;
+    if (wantsMaxEmails && de > maxEmails) return false;
+    return true;
+  });
 
   const totalRow = await sql`
     SELECT COUNT(*)::int AS total
@@ -3736,11 +3852,11 @@ async function handleLeadgenBusinesses(session, url) {
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
+      AND (${!wantsTag}::bool OR EXISTS (SELECT 1 FROM unnest(b.tags) t WHERE lower(t) LIKE ${'%' + tag + '%'}))
+      AND (${!wantsCreatedAfter}::bool OR b.created_at >= ${createdAfter + 'T00:00:00Z'})
+      AND (${!wantsCreatedBefore}::bool OR b.created_at <= ${createdBefore + 'T23:59:59Z'})
   `;
 
-  // Distinct industry_group + sub_industry options for the filter UI,
-  // scoped to the current zip when one is set so the dropdown isn't
-  // polluted with categories that have zero matches.
   const groups = await sql`
     SELECT industry_group, COUNT(*)::int AS n
     FROM lead_businesses
@@ -3761,7 +3877,7 @@ async function handleLeadgenBusinesses(session, url) {
     ok: true,
     page, limit,
     total: totalRow[0]?.total || 0,
-    rows,
+    rows: filteredRows,
     facets: { groups, subs },
   });
 }
@@ -4785,6 +4901,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "leadgen-discover"         && method === "POST") return handleLeadgenDiscover(session, request);
   if (action === "leadgen-crawl-emails"     && method === "POST") return handleLeadgenCrawlEmails(session, request);
   if (action === "leadgen-businesses"       && method === "GET")  return handleLeadgenBusinesses(session, url);
+  if (action === "leadgen-insights"         && method === "GET")  return handleLeadgenInsights(session);
   if (action === "leadgen-business"         && method === "GET")  return handleLeadgenBusinessDetail(session, url);
   if (action === "leadgen-business-update"  && method === "POST") return handleLeadgenBusinessUpdate(session, request);
   if (action === "leadgen-campaigns"        && method === "GET")  return handleLeadgenCampaigns(session);

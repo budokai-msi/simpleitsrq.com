@@ -131,3 +131,8 @@
 @media (max-width: 720px)  { .leadgen-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
 [data-theme="dark"] .leadgen-kpi { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); }
 [data-theme="dark"] .leadgen-kpi__value { color: #E8EEF6; }
+
+/* Insights grid */
+.admin-leadgen-insights-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 1rem; }
+.admin-leadgen-insights-grid .admin-aff-card { margin: 0; }
+@media (max-width: 900px) { .admin-leadgen-insights-grid { grid-template-columns: 1fr; } }

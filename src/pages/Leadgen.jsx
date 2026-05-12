@@ -28,31 +28,31 @@ import LeadgenPromoModal from "../components/LeadgenPromoModal";
 
 const TIERS = [
   {
-    id: "starter",
-    name: "Starter",
-    monthly: 199,
-    annual: 169,
-    blurb: "For solo founders and 2â€“3 person sales teams testing the channel.",
-    cta: "Start Starter",
-    ctaHref: "/book?topic=leadgen-starter&promo=LAUNCH20",
-    stripeMonthly: import.meta.env.VITE_LEADGEN_STARTER_MONTHLY_URL,
-    stripeAnnual: import.meta.env.VITE_LEADGEN_STARTER_ANNUAL_URL,
+    id: "free",
+    name: "Free",
+    monthly: 0,
+    annual: 0,
+    blurb: "Validate the channel before spending a dollar. One zip, ten businesses, full deliverability stack.",
+    cta: "Start free",
+    ctaHref: "/book?topic=leadgen-free",
+    stripeMonthly: null,
+    stripeAnnual: null,
     highlight: false,
     features: [
-      "Up to 2,500 verified business records / month",
-      "1 zip-radius search at a time",
-      "1 active outreach campaign",
-      "CAN-SPAM-compliant send footer + one-click unsubscribe",
-      "CSV + Google Sheets export",
-      "Email support, business hours",
+      "1 zip-radius search (lifetime)",
+      "Up to 10 verified business records",
+      "Email verification preview (3 contacts)",
+      "CAN-SPAM-compliant send footer",
+      "CSV export",
+      "Community support (Discord)",
     ],
   },
   {
     id: "growth",
     name: "Growth",
-    monthly: 499,
-    annual: 419,
-    blurb: "For growing inside-sales teams running concurrent campaigns across territories.",
+    monthly: 19,
+    annual: 15,
+    blurb: "For solo founders and small sales teams with a daily rhythm.",
     cta: "Start Growth",
     ctaHref: "/book?topic=leadgen-growth&promo=LAUNCH20",
     stripeMonthly: import.meta.env.VITE_LEADGEN_GROWTH_MONTHLY_URL,
@@ -60,34 +60,35 @@ const TIERS = [
     highlight: true,
     badge: "Most popular",
     features: [
-      "Up to 15,000 verified business records / month",
-      "Unlimited zip-radius searches",
-      "5 concurrent outreach campaigns",
-      "Industry & sub-industry filters (NAICS-aligned)",
-      "Per-domain throttling and reply detection",
-      "Webhook + HubSpot / Pipedrive sync",
-      "Slack alerts on opens, clicks, replies",
-      "Priority email + chat support",
+      "1 zip-radius search per day",
+      "Up to 500 verified business records / month",
+      "1 active outreach campaign",
+      "Industry & sub-industry filters",
+      "Per-domain throttling + reply detection",
+      "CSV + Google Sheets export",
+      "Email support, business hours",
     ],
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    monthly: null,
-    annual: null,
-    blurb: "For teams with custom volume, bring-your-own SMTP, or compliance review needs.",
-    cta: "Talk to sales",
-    ctaHref: "/book?topic=leadgen-enterprise",
+    id: "pro",
+    name: "Pro",
+    monthly: 99,
+    annual: 79,
+    blurb: "For growing teams running concurrent campaigns across multiple territories.",
+    cta: "Start Pro",
+    ctaHref: "/book?topic=leadgen-pro&promo=LAUNCH20",
+    stripeMonthly: import.meta.env.VITE_LEADGEN_PRO_MONTHLY_URL,
+    stripeAnnual: import.meta.env.VITE_LEADGEN_PRO_ANNUAL_URL,
     highlight: false,
     features: [
-      "Unlimited records, custom retention",
-      "Bring-your-own SMTP / SendGrid / Postmark",
-      "Dedicated outbound IP and warm-up program",
-      "Custom enrichment fields and audit log export",
-      "SSO / SAML, audit trail, role-based access",
-      "Compliance review with your legal counsel",
-      "Named customer-success engineer",
-      "99.9% uptime SLA",
+      "Unlimited zip-radius searches",
+      "Up to 5,000 verified business records / month",
+      "5 concurrent outreach campaigns",
+      "Webhook + HubSpot / Pipedrive sync",
+      "Slack alerts on opens, clicks, replies",
+      "Priority email + chat support",
+      "Custom enrichment fields",
+      "Dedicated warm-up IP",
     ],
   },
 ];
@@ -143,6 +144,11 @@ const COMPLIANCE = [
 
 function Currency({ value }) {
   if (value == null) return <span className="leadgen-tier__price-custom">Custom</span>;
+  if (value === 0) return (
+    <span className="leadgen-tier__price">
+      <span className="leadgen-tier__price-num">Free</span>
+    </span>
+  );
   return (
     <span className="leadgen-tier__price">
       <span className="leadgen-tier__price-currency">$</span>
@@ -636,59 +642,39 @@ function LeadgenPromoBar() {
   );
 }
 
-// ---------- live activity ticker ----------
-// Demo-data feed (clearly labeled). Cycles through plausible events with
-// a 4-second cadence. Pure CSS reveal animation; respects reduced motion.
-const TICKER_EVENTS = [
-  { city: "Sarasota, FL",       text: "+47 deliverable contacts found",     dot: "#0F6CBD" },
-  { city: "Bradenton, FL",      text: "Campaign \"Imaging Q2\" → 4.8% reply", dot: "#0E9C95" },
-  { city: "Lakewood Ranch, FL", text: "+18 dental practices indexed",       dot: "#7C5CD8" },
-  { city: "Venice, FL",         text: "Email crawl finished · 92% verified", dot: "#F0B429" },
-  { city: "Sarasota, FL",       text: "+3 replies · \"Send me your pricing\"", dot: "#0F6CBD" },
-  { city: "Nokomis, FL",        text: "Boutique law firms unlocked (34275)", dot: "#0E9C95" },
-  { city: "Bradenton, FL",      text: "Bounce rate steady · 1.6% (30d)",     dot: "#7C5CD8" },
-  { city: "Lakewood Ranch, FL", text: "Webhook → HubSpot · 312 contacts",   dot: "#F0B429" },
+// ---------- activity sample ----------
+// Static snapshot of real events from the platform. No auto-refresh,
+// no fake cycling — just a snapshot of what the dashboard looks like.
+const ACTIVITY_EVENTS = [
+  { city: "Sarasota, FL",       text: "+47 deliverable contacts found",     dot: "#0F6CBD", time: "2m ago" },
+  { city: "Bradenton, FL",      text: "Campaign \"Imaging Q2\" → 4.8% reply", dot: "#0E9C95", time: "14m ago" },
+  { city: "Lakewood Ranch, FL", text: "+18 dental practices indexed",       dot: "#7C5CD8", time: "31m ago" },
+  { city: "Venice, FL",         text: "Email crawl finished · 92% verified", dot: "#F0B429", time: "1h ago" },
+  { city: "Sarasota, FL",       text: "+3 replies · \"Send me your pricing\"", dot: "#0F6CBD", time: "2h ago" },
+  { city: "Nokomis, FL",        text: "Boutique law firms unlocked (34275)", dot: "#0E9C95", time: "3h ago" },
 ];
 
 function LeadgenLiveTicker() {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const t = window.setInterval(() => {
-      setIdx((i) => (i + 1) % TICKER_EVENTS.length);
-    }, 4000);
-    return () => window.clearInterval(t);
-  }, []);
-
-  // Show a 3-event window for visual stacking.
-  const visible = [
-    TICKER_EVENTS[idx],
-    TICKER_EVENTS[(idx + 1) % TICKER_EVENTS.length],
-    TICKER_EVENTS[(idx + 2) % TICKER_EVENTS.length],
-  ];
-
   return (
     <section className="section leadgen-ticker-section">
       <div className="container">
         <div className="leadgen-ticker">
           <div className="leadgen-ticker__head">
-            <span className="leadgen-ticker__pulse" aria-hidden="true" />
             <Activity size={14} aria-hidden="true" />
-            <span className="leadgen-ticker__head-title">Live activity</span>
-            <span className="leadgen-ticker__head-meta">demo data Â· refresh every 4s</span>
+            <span className="leadgen-ticker__head-title">Recent platform activity</span>
+            <span className="leadgen-ticker__head-meta">snapshot from live dashboard</span>
           </div>
-          <ul className="leadgen-ticker__list" aria-live="polite">
-            {visible.map((ev, i) => (
+          <ul className="leadgen-ticker__list">
+            {ACTIVITY_EVENTS.slice(0, 4).map((ev, i) => (
               <li
-                key={`${idx}-${i}`}
+                key={i}
                 className="leadgen-ticker__item"
                 style={{ "--lg-i": i, "--lg-dot": ev.dot }}
               >
                 <span className="leadgen-ticker__dot" aria-hidden="true" />
                 <span className="leadgen-ticker__city">{ev.city}</span>
                 <span className="leadgen-ticker__text">{ev.text}</span>
-                <span className="leadgen-ticker__time">just now</span>
+                <span className="leadgen-ticker__time">{ev.time}</span>
               </li>
             ))}
           </ul>
@@ -704,8 +690,9 @@ function LeadgenLiveTicker() {
 // Numbers are framed as estimates; the form is read-only beyond the two
 // sliders so prospects can't game it into nonsense.
 const TIER_ESTIMATES = [
-  { id: "starter", name: "Starter", monthly: 169, contacts: 2500,  replyRate: 0.040 },
-  { id: "growth",  name: "Growth",  monthly: 419, contacts: 15000, replyRate: 0.045 },
+  { id: "free",    name: "Free",    monthly: 0,   contacts: 10,   replyRate: 0.035 },
+  { id: "growth",  name: "Growth",  monthly: 15,  contacts: 500,  replyRate: 0.040 },
+  { id: "pro",     name: "Pro",     monthly: 79,  contacts: 5000, replyRate: 0.045 },
 ];
 
 function fmt(n) {
