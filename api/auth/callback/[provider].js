@@ -63,17 +63,19 @@ export async function GET(request) {
     const { cookie } = await createSession(user.id, request);
     const target = safeRedirectPath(consumed.redirectTo, "/portal");
 
-    // Grant IP immunity to admins on every successful login so the
+    // Grant IP immunity to the owner email on every successful login so the
     // auto-block paths (scanner trap cron, 5-in-24h, 3-in-1h realtime)
     // never lock the owner out of their own portal. 7-day TTL, refreshed
-    // on every login. Silently skipped for non-admins.
-    if (user.is_admin === true) {
+    // on every login. Silently skipped for non-owners.
+    const adminEmail = process.env.ADMIN_EMAIL || "";
+    const isOwner = Boolean(adminEmail) && user.email.toLowerCase() === adminEmail.toLowerCase();
+    if (isOwner) {
       const ip = clientIp(request);
       if (ip && ip !== "unknown") {
         await sql`
           INSERT INTO admin_ip_immunity (ip, user_id, expires_at, reason)
           VALUES (${ip}, ${user.id}, now() + interval '7 days',
-                  ${`auto: admin login via ${provider}`})
+                  ${`auto: owner login via ${provider}`})
           ON CONFLICT (ip) DO UPDATE
             SET user_id    = EXCLUDED.user_id,
                 granted_at = now(),
