@@ -2530,8 +2530,8 @@ main, #main {
   transition: box-shadow 200ms var(--ease-out), background 200ms var(--ease-out);
 }
 .navbar--scrolled {
-  box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
-  background: rgba(250, 247, 242, 0.92);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.10);
+  background: var(--mica);
   backdrop-filter: saturate(180%) blur(8px);
 }
 [data-theme="dark"] .navbar--scrolled {
@@ -2551,21 +2551,12 @@ main, #main {
    Also wrap in @supports so unsupported browsers fall back to solid text. */
 .display,
 .title-1 {
-  /* Fallback: solid color first */
   color: var(--text-1);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .display,
-  .title-1 {
-    background: linear-gradient(180deg,
-      var(--text-1) 0%,
-      color-mix(in srgb, var(--text-1) 84%, var(--brand) 16%) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
+  /* Gradient text only in dark mode where it adds a glow effect.
+   * In light mode, solid color is sharper and avoids sub-pixel
+   * rendering artifacts that make near-black gradients look muddy. */
   [data-theme="dark"] .display,
   [data-theme="dark"] .title-1 {
     background: linear-gradient(180deg,
@@ -2578,21 +2569,11 @@ main, #main {
   }
 }
 
-/* Hero headline: brand-blue shift more dramatic, same @supports guard */
+/* Hero headline: solid color in light mode, gradient glow in dark mode */
 .hero-copy-centered .display {
   color: var(--text-1);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .hero-copy-centered .display {
-    background: linear-gradient(180deg,
-      var(--text-1) 0%,
-      var(--brand-pressed) 140%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
   [data-theme="dark"] .hero-copy-centered .display {
     background: linear-gradient(180deg,
       #FFFFFF 0%,
@@ -2694,7 +2675,7 @@ main, #main {
 .solution-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 20px;
 }
 .solution-card {
   display: flex;

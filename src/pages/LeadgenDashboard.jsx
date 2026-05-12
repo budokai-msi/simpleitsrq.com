@@ -159,6 +159,7 @@ export default function LeadgenDashboard() {
         <nav className="admin-leadgen-tabs" aria-label="Lead-gen sections">
           {[
             ["discover", "Discover"],
+            ["insights", "Insights"],
             ["campaigns", "Campaigns"],
             ["jobs", "Jobs"],
           ].map(([id, label]) => (
@@ -175,6 +176,7 @@ export default function LeadgenDashboard() {
 
         <div className="admin-leadgen-tab-body">
           {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
+          {tab === "insights" && <InsightsTab />}
           {tab === "campaigns" && <CampaignsTab />}
           {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} />}
         </div>
@@ -188,6 +190,170 @@ export default function LeadgenDashboard() {
 }
 
 // ============================================================
+// Insights tab
+// ============================================================
+
+function InsightsTab() {
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    setBusy(true); setErr(null);
+    try {
+      const r = await getJson("/api/portal?action=leadgen-insights");
+      setData(r);
+    } catch (e) { setErr(String(e.message || e)); }
+    finally { setBusy(false); }
+  };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, []);
+
+  if (busy && !data) return <p className="admin-leadgen-ok">Loading insights…</p>;
+  if (err) return <p className="admin-leadgen-err">{err}</p>;
+  if (!data) return null;
+
+  const { geography, industries, emailHealth, discoveryVelocity, campaignStats, topSegments } = data;
+
+  return (
+    <div className="admin-leadgen-insights">
+      <div className="admin-leadgen-section-head">
+        <h2 className="title-2">Insights</h2>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={load} disabled={busy}>
+          {busy ? "Refreshing…" : "Refresh"}
+        </button>
+      </div>
+
+      <div className="leadgen-kpi-grid">
+        <Stat label="Total businesses" value={data.totalBusinesses?.toLocaleString?.()} accent="blue" />
+        <Stat label="With website" value={`${data.websiteRate ?? 0}%`} hint={`${data.withWebsite ?? 0} records`} accent="teal" />
+        <Stat label="With email" value={`${data.emailRate ?? 0}%`} hint={`${data.withEmail ?? 0} records`} accent="violet" />
+        <Stat label="Avg emails / biz" value={data.avgEmailsPerBiz?.toFixed?.(1)} accent="amber" />
+      </div>
+
+      <div className="admin-leadgen-insights-grid">
+        {/* Geography */}
+        <div className="admin-aff-card">
+          <h3 className="title-3" style={{ margin: "0 0 12px" }}>Top zip codes</h3>
+          {geography?.length ? (
+            <table className="admin-aff-table">
+              <thead><tr><th>Zip</th><th>City</th><th style={{ textAlign: "right" }}>Businesses</th><th style={{ textAlign: "right" }}>With email</th></tr></thead>
+              <tbody>
+                {geography.map((g) => (
+                  <tr key={g.zip}>
+                    <td><strong>{g.zip}</strong></td>
+                    <td>{g.city || "—"}</td>
+                    <td style={{ textAlign: "right" }}>{g.count}</td>
+                    <td style={{ textAlign: "right" }}>{g.with_email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p className="admin-leadgen-empty">No data yet.</p>}
+        </div>
+
+        {/* Industries */}
+        <div className="admin-aff-card">
+          <h3 className="title-3" style={{ margin: "0 0 12px" }}>Industry breakdown</h3>
+          {industries?.length ? (
+            <table className="admin-aff-table">
+              <thead><tr><th>Industry</th><th style={{ textAlign: "right" }}>Businesses</th><th style={{ textAlign: "right" }}>% of total</th></tr></thead>
+              <tbody>
+                {industries.map((ind) => (
+                  <tr key={ind.industry_group}>
+                    <td>{ind.industry_group}</td>
+                    <td style={{ textAlign: "right" }}>{ind.count}</td>
+                    <td style={{ textAlign: "right" }}>{ind.pct}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p className="admin-leadgen-empty">No data yet.</p>}
+        </div>
+
+        {/* Email health */}
+        <div className="admin-aff-card">
+          <h3 className="title-3" style={{ margin: "0 0 12px" }}>Email health by industry</h3>
+          {emailHealth?.length ? (
+            <table className="admin-aff-table">
+              <thead><tr><th>Industry</th><th style={{ textAlign: "right" }}>Emails</th><th style={{ textAlign: "right" }}>Deliverable</th><th style={{ textAlign: "right" }}>Rate</th></tr></thead>
+              <tbody>
+                {emailHealth.map((h) => (
+                  <tr key={h.industry_group}>
+                    <td>{h.industry_group}</td>
+                    <td style={{ textAlign: "right" }}>{h.total_emails}</td>
+                    <td style={{ textAlign: "right" }}>{h.deliverable}</td>
+                    <td style={{ textAlign: "right" }}><strong>{h.rate}%</strong></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p className="admin-leadgen-empty">No data yet.</p>}
+        </div>
+
+        {/* Discovery velocity */}
+        <div className="admin-aff-card">
+          <h3 className="title-3" style={{ margin: "0 0 12px" }}>Discovery velocity</h3>
+          {discoveryVelocity?.length ? (
+            <table className="admin-aff-table">
+              <thead><tr><th>Period</th><th style={{ textAlign: "right" }}>Discovered</th><th style={{ textAlign: "right" }}>With email</th></tr></thead>
+              <tbody>
+                {discoveryVelocity.map((d) => (
+                  <tr key={d.period}>
+                    <td>{d.period}</td>
+                    <td style={{ textAlign: "right" }}>{d.count}</td>
+                    <td style={{ textAlign: "right" }}>{d.with_email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p className="admin-leadgen-empty">No data yet.</p>}
+        </div>
+
+        {/* Campaign stats */}
+        <div className="admin-aff-card">
+          <h3 className="title-3" style={{ margin: "0 0 12px" }}>Campaign performance</h3>
+          {campaignStats?.length ? (
+            <table className="admin-aff-table">
+              <thead><tr><th>Campaign</th><th style={{ textAlign: "right" }}>Sent</th><th style={{ textAlign: "right" }}>Open</th><th style={{ textAlign: "right" }}>Reply</th></tr></thead>
+              <tbody>
+                {campaignStats.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.name}</td>
+                    <td style={{ textAlign: "right" }}>{c.sent}</td>
+                    <td style={{ textAlign: "right" }}>{c.open_rate}%</td>
+                    <td style={{ textAlign: "right" }}>{c.reply_rate}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p className="admin-leadgen-empty">No campaigns yet.</p>}
+        </div>
+
+        {/* Top segments */}
+        <div className="admin-aff-card">
+          <h3 className="title-3" style={{ margin: "0 0 12px" }}>Top segments (zip + industry)</h3>
+          {topSegments?.length ? (
+            <table className="admin-aff-table">
+              <thead><tr><th>Segment</th><th style={{ textAlign: "right" }}>Businesses</th><th style={{ textAlign: "right" }}>With email</th></tr></thead>
+              <tbody>
+                {topSegments.map((s) => (
+                  <tr key={`${s.zip}-${s.industry_group}`}>
+                    <td>{s.zip} · {s.industry_group}</td>
+                    <td style={{ textAlign: "right" }}>{s.count}</td>
+                    <td style={{ textAlign: "right" }}>{s.with_email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : <p className="admin-leadgen-empty">No data yet.</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // Discover tab
 // ============================================================
 
@@ -197,6 +363,8 @@ function DiscoverTab({ onStatusChange }) {
     zip: "", status: "active", q: "",
     industry_group: "", sub_industry: "",
     has_website: false, has_email: false,
+    tag: "", min_emails: "", max_emails: "",
+    created_after: "", created_before: "",
   });
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
@@ -220,6 +388,11 @@ function DiscoverTab({ onStatusChange }) {
     if (filter.sub_industry)   url.searchParams.set("sub_industry", filter.sub_industry);
     if (filter.has_website)    url.searchParams.set("has_website", "1");
     if (filter.has_email)      url.searchParams.set("has_email", "1");
+    if (filter.tag)            url.searchParams.set("tag", filter.tag);
+    if (filter.min_emails)     url.searchParams.set("min_emails", filter.min_emails);
+    if (filter.max_emails)     url.searchParams.set("max_emails", filter.max_emails);
+    if (filter.created_after)  url.searchParams.set("created_after", filter.created_after);
+    if (filter.created_before) url.searchParams.set("created_before", filter.created_before);
     if (extra.format)          url.searchParams.set("format", extra.format);
     return url;
   };
@@ -422,6 +595,45 @@ function DiscoverTab({ onStatusChange }) {
             onChange={(e) => { setFilter((f) => ({ ...f, has_email: e.target.checked })); setPage(1); }} />
           Has email
         </label>
+        <input
+          placeholder="tag"
+          value={filter.tag}
+          onChange={(e) => { setFilter((f) => ({ ...f, tag: e.target.value })); setPage(1); }}
+          className="admin-leadgen-input admin-leadgen-input--zip"
+          title="Filter by tag"
+        />
+        <input
+          placeholder="min emails"
+          type="number"
+          min={0}
+          value={filter.min_emails}
+          onChange={(e) => { setFilter((f) => ({ ...f, min_emails: e.target.value })); setPage(1); }}
+          className="admin-leadgen-input admin-leadgen-input--zip"
+          title="Minimum deliverable emails"
+        />
+        <input
+          placeholder="max emails"
+          type="number"
+          min={0}
+          value={filter.max_emails}
+          onChange={(e) => { setFilter((f) => ({ ...f, max_emails: e.target.value })); setPage(1); }}
+          className="admin-leadgen-input admin-leadgen-input--zip"
+          title="Maximum deliverable emails"
+        />
+        <input
+          type="date"
+          value={filter.created_after}
+          onChange={(e) => { setFilter((f) => ({ ...f, created_after: e.target.value })); setPage(1); }}
+          className="admin-leadgen-input"
+          title="Created after"
+        />
+        <input
+          type="date"
+          value={filter.created_before}
+          onChange={(e) => { setFilter((f) => ({ ...f, created_before: e.target.value })); setPage(1); }}
+          className="admin-leadgen-input"
+          title="Created before"
+        />
         <input
           placeholder="search name or website"
           value={filter.q}
