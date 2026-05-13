@@ -14,11 +14,12 @@ export function formatDraftAsPostEntry(draft, overrides = {}) {
   const excerpt  = strikeApostrophes(overrides.excerpt  ?? draft.excerpt);
   const category = overrides.category ?? draft.category;
   const body     = strikeApostrophes(overrides.body     ?? draft.body);
+  const draftTags = Array.isArray(draft.tags) && draft.tags.length ? draft.tags : null;
   const tags     = Array.isArray(overrides.tags) && overrides.tags.length
     ? overrides.tags
-    : ["ai", "smb"];
+    : draftTags || ["ai", "smb"];
   const heroAlt  = overrides.heroAlt  ?? `An illustration accompanying ${title}.`;
-  const sourceUrl = overrides.sourceUrl ?? "https://simpleitsrq.com/blog";
+  const sourceUrl = overrides.sourceUrl ?? draft.sourceUrl ?? "https://simpleitsrq.com/blog";
   const today = new Date().toISOString().slice(0, 10);
 
   const esc = (s) => String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');

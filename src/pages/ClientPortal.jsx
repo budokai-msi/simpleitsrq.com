@@ -136,12 +136,12 @@ const useStyles = makeStyles({
     // Force the primary provider button (Continue with Google) to the brand
     // blue so it reads as the primary action. Without this the default Fluent
     // primary button can render as a muted gray on some platforms.
-    backgroundColor: "#0F6CBD",
+    backgroundColor: "#111827",
     color: "#ffffff",
-    borderTopColor: "#0F6CBD",
-    borderRightColor: "#0F6CBD",
-    borderBottomColor: "#0F6CBD",
-    borderLeftColor: "#0F6CBD",
+    borderTopColor: "#111827",
+    borderRightColor: "#111827",
+    borderBottomColor: "#111827",
+    borderLeftColor: "#111827",
     "&:hover": {
       backgroundColor: "#0C5AA6",
       borderTopColor: "#0C5AA6",
@@ -190,7 +190,7 @@ const useStyles = makeStyles({
     justifyContent: "center",
     borderRadius: tokens.borderRadiusMedium,
     backgroundColor: "#EAF3FB",
-    color: "#0F6CBD",
+    color: "#111827",
     "& svg": { width: "22px", height: "22px" },
   },
 
@@ -3353,7 +3353,7 @@ function SecurityPanel({
                   const sev = {
                     critical: { color: "#DC2626", label: "Critical" },
                     warning:  { color: "#D97706", label: "Heads up" },
-                    info:     { color: "#0F6CBD", label: "FYI" },
+                    info:     { color: "#111827", label: "FYI" },
                   }[inc.severity] || { color: "#6b7280", label: "Info" };
                   return (
                     <div key={i} style={{

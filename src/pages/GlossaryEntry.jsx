@@ -94,11 +94,11 @@ export default function GlossaryEntry() {
                 borderRadius: 12,
                 background: "var(--syn-surface, #f9fafb)",
                 border: "1px solid var(--syn-border, #e5e7eb)",
-                borderLeft: "4px solid #0F6CBD",
+                borderLeft: "4px solid #111827",
               }}
             >
               <h3 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "1.05rem", marginTop: 0 }}>
-                <ShieldCheck size={18} color="#0F6CBD" /> Why it matters for Florida small business
+                <ShieldCheck size={18} color="#111827" /> Why it matters for Florida small business
               </h3>
               <p style={{ margin: 0, lineHeight: 1.6 }}>{entry.why}</p>
             </aside>
@@ -155,7 +155,7 @@ export default function GlossaryEntry() {
           {relatedEntries.length > 0 && (
             <section style={{ marginTop: 40, paddingTop: 32, borderTop: "1px solid var(--syn-border, #e5e7eb)" }}>
               <h2 className="title-2" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <BookOpen size={20} color="#0F6CBD" /> Related terms
+                <BookOpen size={20} color="#111827" /> Related terms
               </h2>
               <div
                 style={{

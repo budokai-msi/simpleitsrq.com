@@ -329,7 +329,7 @@ export default function LocalLanding() {
           </div>
           <ul className="feature-list feature-list-lg">
             {city.whyLocal.map((line) => (
-              <li key={line}><Check size={18} color="#0F6CBD" /> {line}</li>
+              <li key={line}><Check size={18} color="#111827" /> {line}</li>
             ))}
           </ul>
         </div>
@@ -365,9 +365,9 @@ export default function LocalLanding() {
               <h2 className="title-2">Get a free 15-minute IT assessment for your {city.city} business</h2>
               <p>Tell us a little about your team and we'll schedule a no-pressure call with a local engineer. No sales pitch — just a clear read on your risk, your Microsoft 365, and what good would look like.</p>
               <ul className="feature-list">
-                <li><Check size={16} color="#0F6CBD" /> Local Sarasota/Bradenton engineer</li>
-                <li><Check size={16} color="#0F6CBD" /> No long-term contract required</li>
-                <li><Check size={16} color="#0F6CBD" /> Works with your current team or replaces it</li>
+                <li><Check size={16} color="#111827" /> Local Sarasota/Bradenton engineer</li>
+                <li><Check size={16} color="#111827" /> No long-term contract required</li>
+                <li><Check size={16} color="#111827" /> Works with your current team or replaces it</li>
               </ul>
             </div>
             <form className="lead-capture-form" onSubmit={submit} noValidate>

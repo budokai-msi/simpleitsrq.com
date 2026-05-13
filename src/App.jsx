@@ -33,7 +33,6 @@ import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import "./App.css";
 import "./styles/leadgen.css";
-import "./styles/leadgen-promo.css";
 import "./styles/leadgen-extras.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
@@ -195,7 +194,7 @@ function Logo() {
               letterform reads sculpted, not flat-printed. */}
           <linearGradient id="logo-s" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"   stopColor="#FFFFFF" />
-            <stop offset="100%" stopColor="#E8EEF6" />
+            <stop offset="100%" stopColor="#f3f4f6" />
           </linearGradient>
           {/* Status dot — amber accent w/ inner glow. */}
           <radialGradient id="logo-dot" cx="0.35" cy="0.35" r="0.7">
@@ -284,6 +283,11 @@ function DesktopMenuLink({ item, location, onNavigate }) {
 
 function DesktopNavSection({ section, location, openGroup, setOpenGroup }) {
   const active = isNavSectionActive(section, location);
+  const closeTimerRef = useRef(null);
+
+  useEffect(() => () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+  }, []);
 
   if (!section.items?.length) {
     return (
@@ -300,7 +304,27 @@ function DesktopNavSection({ section, location, openGroup, setOpenGroup }) {
 
   const open = openGroup === section.id;
   const menuId = `nav-${section.id}-menu`;
-  const closeGroup = () => setOpenGroup((current) => (current === section.id ? null : current));
+  const openCurrentGroup = () => {
+    if (closeTimerRef.current) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setOpenGroup(section.id);
+  };
+  const closeGroup = () => {
+    if (closeTimerRef.current) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setOpenGroup((current) => (current === section.id ? null : current));
+  };
+  const scheduleCloseGroup = () => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null;
+      setOpenGroup((current) => (current === section.id ? null : current));
+    }, 220);
+  };
 
   const focusFirstMenuItem = () => {
     window.requestAnimationFrame(() => {
@@ -312,9 +336,9 @@ function DesktopNavSection({ section, location, openGroup, setOpenGroup }) {
     <div
       className={`nav-group${active ? " is-active" : ""}`}
       data-open={open ? "true" : "false"}
-      onMouseEnter={() => setOpenGroup(section.id)}
-      onMouseLeave={closeGroup}
-      onFocusCapture={() => setOpenGroup(section.id)}
+      onMouseEnter={openCurrentGroup}
+      onMouseLeave={scheduleCloseGroup}
+      onFocusCapture={openCurrentGroup}
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) closeGroup();
       }}
@@ -329,7 +353,7 @@ function DesktopNavSection({ section, location, openGroup, setOpenGroup }) {
         onKeyDown={(event) => {
           if (event.key === "ArrowDown") {
             event.preventDefault();
-            setOpenGroup(section.id);
+            openCurrentGroup();
             focusFirstMenuItem();
           }
           if (event.key === "Escape") closeGroup();
@@ -817,7 +841,7 @@ function ThemeProvider({ children }) {
       // fine, the theme just won't persist across sessions.
     }
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "dark" ? "#0B0D10" : "#0F6CBD");
+    if (meta) meta.setAttribute("content", theme === "dark" ? "#0B0D10" : "#111827");
   }, [theme]);
 
   const value = useMemo(() => ({

@@ -39,7 +39,7 @@ const GREETING = {
 
 const SUGGESTIONS = [
   { label: "Managed IT fit", prompt: "Help me understand the best managed IT support option for my Sarasota-area business." },
-  { label: "Leadgen pricing", prompt: "Explain leadgen pricing and the LAUNCH20 promo in plain English." },
+  { label: "Leadgen pricing", prompt: "Explain Leadgen pricing and which tier fits a small local business." },
   { label: "Exposure scan", prompt: "What does the exposure scan check, and what should I prepare before starting?" },
   { label: "Route to human", prompt: "I want to talk to a human. What is the fastest next step?" },
 ];
@@ -541,10 +541,10 @@ export default function AIChat() {
                             rel="noopener"
                             className="aic-callout"
                           >
-                            <span className="aic-callout-emoji" aria-hidden="true">💳</span>
+                            <span className="aic-callout-emoji" aria-hidden="true">$</span>
                             <span className="aic-callout-body">
                               <span className="aic-callout-title">Continue to checkout</span>
-                              <span className="aic-callout-sub">Stripe · LAUNCH20 prefilled</span>
+                              <span className="aic-callout-sub">Stripe checkout</span>
                             </span>
                             <span className="aic-callout-arrow" aria-hidden="true">↗</span>
                           </a>
@@ -969,7 +969,7 @@ body[data-cookie-consent="open"] .aic-panel {
   border-color: var(--border, #2A2F38);
   color: var(--text-1, #F4F5F7);
 }
-[data-theme="dark"] .aic-email-input:focus { border-color: var(--brand, #4DA3E8); }
+[data-theme="dark"] .aic-email-input:focus { border-color: var(--brand, #E8EEF6); }
 .aic-email-send {
   padding: 6px 12px; border: none; border-radius: 6px;
   background: #1f1f1f; color: #faf9f6; font-size: 0.82rem; font-weight: 500;

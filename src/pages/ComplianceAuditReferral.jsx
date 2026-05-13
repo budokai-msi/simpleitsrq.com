@@ -237,7 +237,7 @@ export default function ComplianceAuditReferral() {
                 key={item.text}
                 style={{ display: "flex", alignItems: "center", gap: 8 }}
               >
-                <item.Icon size={16} color="#0F6CBD" /> {item.text}
+                <item.Icon size={16} color="#111827" /> {item.text}
               </li>
             ))}
           </ul>

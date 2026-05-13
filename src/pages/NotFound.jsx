@@ -134,7 +134,7 @@ export default function NotFound() {
         .notfound-card:hover {
           transform: translateY(-2px);
           border-color: var(--brand);
-          box-shadow: 0 8px 24px rgba(15, 108, 189, 0.10);
+          box-shadow: 0 8px 24px rgba(17, 24, 39, 0.10);
         }
       `}</style>
     </main>

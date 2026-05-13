@@ -112,7 +112,7 @@ function NewsletterMockup() {
         borderRadius: 12,
         overflow: "hidden",
         background: "var(--syn-surface, #fff)",
-        boxShadow: "0 10px 30px -15px rgba(15, 108, 189, 0.25)",
+        boxShadow: "0 10px 30px -15px rgba(17, 24, 39, 0.25)",
         maxWidth: 560,
         margin: "0 auto",
         fontSize: "0.92rem",
@@ -120,7 +120,7 @@ function NewsletterMockup() {
     >
       <div
         style={{
-          background: "#0F6CBD",
+          background: "#111827",
           color: "#fff",
           padding: "10px 16px",
           fontSize: "0.78rem",
@@ -134,13 +134,13 @@ function NewsletterMockup() {
       <div
         style={{
           padding: "8px 16px",
-          background: "rgba(15, 108, 189, 0.06)",
+          background: "rgba(17, 24, 39, 0.06)",
           fontSize: "0.72rem",
           letterSpacing: "0.6px",
           textTransform: "uppercase",
-          color: "#0F6CBD",
+          color: "#111827",
           fontWeight: 700,
-          borderBottom: "1px dashed rgba(15, 108, 189, 0.25)",
+          borderBottom: "1px dashed rgba(17, 24, 39, 0.25)",
         }}
       >
         Sponsored by [YourBrand]
@@ -160,7 +160,7 @@ function NewsletterMockup() {
               width: 40,
               height: 40,
               borderRadius: 8,
-              background: "linear-gradient(135deg, #0F6CBD, #4CC2FF)",
+              background: "linear-gradient(135deg, #111827, #4CC2FF)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -186,7 +186,7 @@ function NewsletterMockup() {
           style={{
             display: "inline-block",
             padding: "10px 18px",
-            background: "#0F6CBD",
+            background: "#111827",
             color: "#fff",
             borderRadius: 8,
             textDecoration: "none",
@@ -335,7 +335,7 @@ export default function Advertise() {
                   textAlign: "center",
                 }}
               >
-                <s.Icon size={22} color="#0F6CBD" style={{ marginBottom: 8 }} />
+                <s.Icon size={22} color="#111827" style={{ marginBottom: 8 }} />
                 <div style={{ fontSize: "1.4rem", fontWeight: 700, lineHeight: 1.15 }}>{s.v}</div>
                 <div style={{ fontSize: "0.88rem", color: "var(--syn-text-muted, #6b7280)", marginTop: 4 }}>
                   {s.l}
@@ -367,7 +367,7 @@ export default function Advertise() {
                 key={t.id}
                 style={{
                   border: t.highlight
-                    ? "2px solid #0F6CBD"
+                    ? "2px solid #111827"
                     : "1px solid var(--syn-border, #e5e7eb)",
                   borderRadius: 14,
                   padding: "1.5rem",
@@ -376,7 +376,7 @@ export default function Advertise() {
                   flexDirection: "column",
                   gap: "0.9rem",
                   boxShadow: t.highlight
-                    ? "0 14px 40px -18px rgba(15, 108, 189, 0.45)"
+                    ? "0 14px 40px -18px rgba(17, 24, 39, 0.45)"
                     : "none",
                   position: "relative",
                 }}
@@ -387,7 +387,7 @@ export default function Advertise() {
                       position: "absolute",
                       top: -12,
                       right: 16,
-                      background: "#0F6CBD",
+                      background: "#111827",
                       color: "#fff",
                       fontSize: "0.7rem",
                       letterSpacing: "0.5px",
@@ -401,7 +401,7 @@ export default function Advertise() {
                   </span>
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <t.Icon size={22} color="#0F6CBD" />
+                  <t.Icon size={22} color="#111827" />
                   <h3 style={{ margin: 0, fontSize: "1.1rem" }}>{t.label}</h3>
                 </div>
                 <div>

@@ -64,34 +64,34 @@ function OpsecRadar() {
       <svg viewBox="0 0 200 200" width="180" height="180" role="img">
         <defs>
           <radialGradient id="opsec-radar-bg" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0"   stop-color="#0F6CBD" stop-opacity="0.30"/>
-            <stop offset="0.6" stop-color="#0A4A82" stop-opacity="0.18"/>
+            <stop offset="0"   stop-color="#111827" stop-opacity="0.30"/>
+            <stop offset="0.6" stop-color="#000000" stop-opacity="0.18"/>
             <stop offset="1"   stop-color="#072E54" stop-opacity="0.45"/>
           </radialGradient>
           <linearGradient id="opsec-radar-sweep" x1="0" y1="0" x2="100" y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0"    stop-color="#0E9C95" stop-opacity="0"/>
-            <stop offset="0.7"  stop-color="#0E9C95" stop-opacity="0.05"/>
-            <stop offset="1"    stop-color="#0E9C95" stop-opacity="0.55"/>
+            <stop offset="0"    stop-color="#374151" stop-opacity="0"/>
+            <stop offset="0.7"  stop-color="#374151" stop-opacity="0.05"/>
+            <stop offset="1"    stop-color="#374151" stop-opacity="0.55"/>
           </linearGradient>
         </defs>
         {/* Backdrop disc */}
-        <circle cx="100" cy="100" r="92" fill="url(#opsec-radar-bg)" stroke="#0E9C95" strokeOpacity="0.35" strokeWidth="1"/>
+        <circle cx="100" cy="100" r="92" fill="url(#opsec-radar-bg)" stroke="#374151" strokeOpacity="0.35" strokeWidth="1"/>
         {/* Concentric rings */}
-        <circle cx="100" cy="100" r="70" fill="none" stroke="#0E9C95" strokeOpacity="0.22" strokeWidth="1"/>
-        <circle cx="100" cy="100" r="46" fill="none" stroke="#0E9C95" strokeOpacity="0.22" strokeWidth="1"/>
-        <circle cx="100" cy="100" r="22" fill="none" stroke="#0E9C95" strokeOpacity="0.30" strokeWidth="1"/>
+        <circle cx="100" cy="100" r="70" fill="none" stroke="#374151" strokeOpacity="0.22" strokeWidth="1"/>
+        <circle cx="100" cy="100" r="46" fill="none" stroke="#374151" strokeOpacity="0.22" strokeWidth="1"/>
+        <circle cx="100" cy="100" r="22" fill="none" stroke="#374151" strokeOpacity="0.30" strokeWidth="1"/>
         {/* Cross-hairs */}
-        <line x1="100" y1="8"  x2="100" y2="192" stroke="#0E9C95" strokeOpacity="0.18" strokeWidth="1"/>
-        <line x1="8"   y1="100" x2="192" y2="100" stroke="#0E9C95" strokeOpacity="0.18" strokeWidth="1"/>
+        <line x1="100" y1="8"  x2="100" y2="192" stroke="#374151" strokeOpacity="0.18" strokeWidth="1"/>
+        <line x1="8"   y1="100" x2="192" y2="100" stroke="#374151" strokeOpacity="0.18" strokeWidth="1"/>
         {/* Static blips */}
-        <circle cx="138" cy="62"  r="2.5" fill="#F0B429"/>
-        <circle cx="72"  cy="118" r="2"   fill="#7C5CD8"/>
-        <circle cx="118" cy="142" r="2"   fill="#0E9C95"/>
-        <circle cx="56"  cy="74"  r="1.8" fill="#F0B429" opacity="0.7"/>
+        <circle cx="138" cy="62"  r="2.5" fill="#9ca3af"/>
+        <circle cx="72"  cy="118" r="2"   fill="#6b7280"/>
+        <circle cx="118" cy="142" r="2"   fill="#374151"/>
+        <circle cx="56"  cy="74"  r="1.8" fill="#9ca3af" opacity="0.7"/>
         {/* Sweep arm — rotates via CSS */}
         <g className="opsec-radar__sweep">
           <path d="M 100 100 L 192 100 A 92 92 0 0 0 175 50 Z" fill="url(#opsec-radar-sweep)"/>
-          <line x1="100" y1="100" x2="192" y2="100" stroke="#0E9C95" strokeWidth="1.5" strokeOpacity="0.85"/>
+          <line x1="100" y1="100" x2="192" y2="100" stroke="#374151" strokeWidth="1.5" strokeOpacity="0.85"/>
         </g>
         {/* Center pip */}
         <circle cx="100" cy="100" r="3" fill="#F4E8DC"/>

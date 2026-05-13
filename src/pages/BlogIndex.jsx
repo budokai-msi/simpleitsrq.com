@@ -94,47 +94,47 @@ export default function BlogIndex() {
               <defs>
                 <linearGradient id="bh-card" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0" stopColor="#FFFFFF" />
-                  <stop offset="1" stopColor="#E8EEF6" />
+                  <stop offset="1" stopColor="#f3f4f6" />
                 </linearGradient>
                 <linearGradient id="bh-blue" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#0F6CBD" />
-                  <stop offset="1" stopColor="#0A4A82" />
+                  <stop offset="0" stopColor="#111827" />
+                  <stop offset="1" stopColor="#000000" />
                 </linearGradient>
                 <radialGradient id="bh-glow" cx="0.5" cy="0.5" r="0.6">
-                  <stop offset="0" stopColor="#7C5CD8" stopOpacity="0.30" />
-                  <stop offset="1" stopColor="#7C5CD8" stopOpacity="0" />
+                  <stop offset="0" stopColor="#6b7280" stopOpacity="0.30" />
+                  <stop offset="1" stopColor="#6b7280" stopOpacity="0" />
                 </radialGradient>
               </defs>
               <rect x="0" y="0" width="280" height="220" fill="url(#bh-glow)" />
               {/* Back card */}
               <g transform="translate(48 28) rotate(-6 90 60)">
-                <rect width="180" height="120" rx="10" fill="#E8EEF6" stroke="#0F6CBD" strokeOpacity="0.20" />
-                <rect x="16" y="16" width="60" height="6" rx="3" fill="#0F6CBD" opacity="0.30" />
-                <rect x="16" y="32" width="148" height="5" rx="2.5" fill="#0F6CBD" opacity="0.18" />
-                <rect x="16" y="44" width="120" height="5" rx="2.5" fill="#0F6CBD" opacity="0.18" />
-                <rect x="16" y="60" width="60" height="24" rx="4" fill="#0F6CBD" opacity="0.10" />
+                <rect width="180" height="120" rx="10" fill="#f3f4f6" stroke="#111827" strokeOpacity="0.20" />
+                <rect x="16" y="16" width="60" height="6" rx="3" fill="#111827" opacity="0.30" />
+                <rect x="16" y="32" width="148" height="5" rx="2.5" fill="#111827" opacity="0.18" />
+                <rect x="16" y="44" width="120" height="5" rx="2.5" fill="#111827" opacity="0.18" />
+                <rect x="16" y="60" width="60" height="24" rx="4" fill="#111827" opacity="0.10" />
               </g>
               {/* Middle card */}
               <g transform="translate(58 50) rotate(2 90 60)">
-                <rect width="180" height="120" rx="10" fill="url(#bh-card)" stroke="#0F6CBD" strokeOpacity="0.30" />
-                <rect x="16" y="16" width="40" height="6" rx="3" fill="#0E9C95" />
-                <rect x="16" y="32" width="148" height="5" rx="2.5" fill="#0F6CBD" opacity="0.30" />
-                <rect x="16" y="44" width="100" height="5" rx="2.5" fill="#0F6CBD" opacity="0.30" />
-                <rect x="16" y="68" width="148" height="4" rx="2" fill="#0F6CBD" opacity="0.18" />
-                <rect x="16" y="78" width="130" height="4" rx="2" fill="#0F6CBD" opacity="0.18" />
-                <rect x="16" y="88" width="110" height="4" rx="2" fill="#0F6CBD" opacity="0.18" />
+                <rect width="180" height="120" rx="10" fill="url(#bh-card)" stroke="#111827" strokeOpacity="0.30" />
+                <rect x="16" y="16" width="40" height="6" rx="3" fill="#374151" />
+                <rect x="16" y="32" width="148" height="5" rx="2.5" fill="#111827" opacity="0.30" />
+                <rect x="16" y="44" width="100" height="5" rx="2.5" fill="#111827" opacity="0.30" />
+                <rect x="16" y="68" width="148" height="4" rx="2" fill="#111827" opacity="0.18" />
+                <rect x="16" y="78" width="130" height="4" rx="2" fill="#111827" opacity="0.18" />
+                <rect x="16" y="88" width="110" height="4" rx="2" fill="#111827" opacity="0.18" />
               </g>
               {/* Front card */}
               <g transform="translate(70 70) rotate(8 90 60)">
                 <rect width="180" height="120" rx="10" fill="url(#bh-blue)" />
                 <rect x="0" y="0" width="180" height="120" rx="10" fill="#FFFFFF" opacity="0.04" />
-                <rect x="16" y="16" width="50" height="6" rx="3" fill="#F0B429" />
+                <rect x="16" y="16" width="50" height="6" rx="3" fill="#9ca3af" />
                 <rect x="16" y="32" width="148" height="6" rx="3" fill="#FFFFFF" opacity="0.85" />
                 <rect x="16" y="46" width="120" height="6" rx="3" fill="#FFFFFF" opacity="0.85" />
                 <rect x="16" y="74" width="148" height="3" rx="1.5" fill="#FFFFFF" opacity="0.40" />
                 <rect x="16" y="82" width="130" height="3" rx="1.5" fill="#FFFFFF" opacity="0.40" />
                 <rect x="16" y="90" width="110" height="3" rx="1.5" fill="#FFFFFF" opacity="0.40" />
-                <circle cx="160" cy="100" r="4" fill="#F0B429" />
+                <circle cx="160" cy="100" r="4" fill="#9ca3af" />
               </g>
             </svg>
           </div>

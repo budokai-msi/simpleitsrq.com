@@ -2,7 +2,7 @@
 //
 // Autonomous AI agent that runs on a schedule:
 //   - Every 15 min: auto counter-measures (block repeat attackers, alert on critical events)
-//   - Daily at 06:00 ET: generate a blog post draft
+//   - Daily: generate one guarded Hacker News -> local field-note blog post
 //   - Daily at 06:30 ET: security pattern analysis
 //
 // The cron schedule in vercel.json fires every 15 min. The agent checks
@@ -286,175 +286,120 @@ async function logBlogOutcome(outcome) {
   `.catch(() => {});
 }
 
-async function generateBlogDraft({ force = false } = {}) {
-  if (!ANTHROPIC_API_KEY) {
-    const out = { skipped: true, reason: "ANTHROPIC_API_KEY not set" };
-    await logBlogOutcome(out);
-    return out;
-  }
-
-  // "Already generated today" — anchored to America/New_York so a cron
-  // that fires at 11:15 UTC (≈07:15 ET) doesn't race the UTC date rollover.
-  if (!force) {
-    const todayCheck = await sql`
-      SELECT 1 FROM draft_posts
-      WHERE (ts AT TIME ZONE 'America/New_York')::date
-          = (now() AT TIME ZONE 'America/New_York')::date
-      LIMIT 1
-    `.catch(() => []);
-    if (todayCheck.length > 0) {
-      const out = { skipped: true, reason: "already generated today" };
-      await logBlogOutcome(out);
-      return out;
-    }
-  }
-
-  // Fetch trending IT/security topics via a simple approach:
-  // use the Claude model to pick a topic and write the post.
-  const systemPrompt = `You are the blog writer for Simple IT SRQ, a managed IT services company in Sarasota, Bradenton, and Venice, Florida. You write practical, plain-English blog posts for small business owners (5-80 employees) in healthcare, legal, finance, construction, and real estate.
-
-VOICE AND STYLE:
-- Write like you're explaining something to a smart friend who isn't technical
-- No jargon without explanation. No corporate buzzwords.
-- Short paragraphs (2-3 sentences max). Use headers to break up sections.
-- Always include a "what to do about it" section with concrete next steps
-- End with a soft CTA mentioning Simple IT SRQ and linking to /#contact or /#solutions
-- Use Markdown formatting
-- 800-1200 words
-- Include a meta description (under 160 chars)
-- Include a category from: Cybersecurity, AI & Productivity, Cloud, Compliance, Privacy, Business Tech, Industry News
-- Include a short excerpt (1-2 sentences)
-- Slug should be lowercase-kebab-case, include "sarasota" or "bradenton" for SEO
-
-TOPICS TO COVER (pick one that's timely):
-- New security vulnerabilities affecting small businesses
-- AI tools that help or threaten small business operations
-- Microsoft 365 / Windows updates that matter
-- Compliance changes (HIPAA, cyber-insurance, state privacy laws)
-- Cloud migration best practices
-- Remote work security
-- Practical IT budgeting tips
-
-Respond with ONLY a JSON object (no markdown fencing):
-{
-  "title": "...",
-  "slug": "...",
-  "category": "...",
-  "excerpt": "...",
-  "metaDescription": "...",
-  "body": "..."
-}`;
-
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 4096,
-        messages: [
-          { role: "user", content: "Write today's blog post for Simple IT SRQ. Pick a timely topic that a Sarasota small business owner would care about this week." },
-        ],
-        system: systemPrompt,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text().catch(() => "");
-      const out = { error: `API ${res.status}: ${err.slice(0, 200)}`, model: ANTHROPIC_MODEL };
-      await logBlogOutcome(out);
-      return out;
-    }
-
-    const data = await res.json();
-    const text = data.content?.[0]?.text || "";
-
-    // Parse the JSON response
-    let post;
-    try {
-      // Handle potential markdown code fencing
-      const cleaned = text.replace(/```json\s*/, "").replace(/```\s*$/, "").trim();
-      post = JSON.parse(cleaned);
-    } catch {
-      const out = { error: "Failed to parse model response", raw: text.slice(0, 500) };
-      await logBlogOutcome(out);
-      return out;
-    }
-
-    if (!post.title || !post.slug || !post.body) {
-      const out = { error: "Incomplete post", raw: text.slice(0, 500) };
-      await logBlogOutcome(out);
-      return out;
-    }
-
-    // Pick a non-colliding slug; bail with a logged error if even -2..-10
-    // are all taken (effectively impossible, but never throw).
-    const finalSlug = await pickFreeSlug(post.slug);
-    if (!finalSlug) {
-      const out = { error: "slug_collision_unresolvable", originalSlug: post.slug };
-      await logBlogOutcome(out);
-      return out;
-    }
-
-    // Save to DB and capture the new row's id for the review link.
-    let inserted;
-    try {
-      inserted = await sql`
-        INSERT INTO draft_posts (title, slug, category, excerpt, body, meta_desc, model)
-        VALUES (${post.title}, ${finalSlug}, ${post.category || "Business Tech"},
-                ${post.excerpt || ""}, ${post.body}, ${post.metaDescription || ""},
-                ${ANTHROPIC_MODEL})
-        RETURNING id
-      `;
-    } catch (dbErr) {
-      const out = { error: `db_insert_failed: ${String(dbErr.message || dbErr).slice(0, 200)}`, slug: finalSlug };
-      await logBlogOutcome(out);
-      return out;
-    }
-    const draftId = inserted[0]?.id;
-    const reviewUrl = `https://simpleitsrq.com/portal?tab=drafts${draftId ? `&id=${draftId}` : ""}`;
-
-    // Email the draft
-    const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-    if (resend && REPORT_TO) {
-      try {
-        await resend.emails.send({
-          from: FROM,
-          to: [REPORT_TO],
-          subject: `[Blog Draft] ${post.title}`,
-          text:
-            `New draft generated by AI agent.\n\n` +
-            `Title: ${post.title}\n` +
-            `Slug: ${finalSlug}\n` +
-            `Category: ${post.category}\n\n` +
-            `Review + publish: ${reviewUrl}\n\n` +
-            `---\n\n${post.body}\n\n---\n` +
-            `Open the link above to publish with one click. The portal commits to GitHub and Vercel redeploys automatically.`,
-        });
-      } catch { /* best effort */ }
-    }
-
-    const out = { generated: true, title: post.title, slug: finalSlug, draftId, reviewUrl };
-    await logBlogOutcome(out);
-    return out;
-  } catch (err) {
-    const out = { error: String(err.message || err) };
-    await logBlogOutcome(out);
-    return out;
-  }
+async function generateBlogDraft(options = {}) {
+  // Backward-compatible manual trigger: ?task=blog now runs the guarded HN
+  // pipeline instead of the old broad topic generator.
+  return generateHNDraft(options);
 }
-
 // ========== HACKERNEWS DAILY DRAFT (free — Groq) ==========
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
 // HN story relevance keywords for IT / security / business audience.
-const HN_RELEVANT = /security|cyber|hack|breach|password|backup|cloud|aws|azure|vpn|firewall|malware|ransomware|phishing|compliance|hipaa|gdpr|privacy|encryption|network|server|infrastructure|devops|saas|startup|business|pricing|ai|llm|openai|chatgpt|microsoft|google|apple|linux|windows|update|patch|vulnerability|cve|zero.day|exploit|incident|response|disaster|recovery|continuity|insurance|legal|finance|healthcare|construction|real.estate|remote|work|wifi|router|switch|camera|surveillance|ups|battery|power/i;
+// Keep this tight: the goal is local operator insight, not generic tech news.
+const HN_RELEVANT = /security|hack|breach|password|backup|cloud|aws|azure|vpn|firewall|malware|ransomware|phishing|privacy|encryption|network|server|infrastructure|devops|saas|outage|pricing|ai|llm|openai|chatgpt|microsoft|google|apple|linux|windows|update|patch|vulnerability|cve|zero.day|exploit|incident|response|disaster|recovery|continuity|legal|finance|healthcare|construction|real.estate|remote|work|wifi|router|switch|camera|surveillance|ups|battery|power|hardware|laptop|dock|nas/i;
+
+const HN_BANNED_TITLE = /who is hiring|ask hn|show hn|launch hn|tell hn|poll:|job:|hiring/i;
+
+const AMAZON_GADGETS = [
+  {
+    key: "yubikey",
+    match: /password|mfa|2fa|phishing|account|identity|breach|login|security/i,
+    token: "amazon:B07HBD71HL|YubiKey 5C NFC",
+    why: "phishing-resistant MFA for Microsoft 365, Google Workspace, and admin accounts",
+  },
+  {
+    key: "ups",
+    match: /power|outage|battery|storm|server|router|switch|network|office/i,
+    token: "amazon_search:APC Back-UPS Pro 1500VA sine wave|APC Back-UPS Pro 1500VA",
+    why: "battery backup for the modem, firewall, switch, and one key workstation",
+  },
+  {
+    key: "nas",
+    match: /backup|storage|ransomware|restore|file|server|nas|disaster/i,
+    token: "amazon_search:Synology 2 bay NAS DS224+|Synology 2-bay NAS",
+    why: "local backup and file restore for small offices that cannot wait days for cloud recovery",
+  },
+  {
+    key: "dock",
+    match: /laptop|macbook|windows|hybrid|remote|monitor|desk|workstation|usb-c|thunderbolt/i,
+    token: "amazon:B09GK8LBWS|CalDigit TS4 Thunderbolt 4 Dock",
+    why: "one-cable desks for laptop-heavy offices with dual displays and wired Ethernet",
+  },
+  {
+    key: "unifi",
+    match: /wifi|wireless|router|network|switch|access point|office|latency/i,
+    token: "amazon_search:Ubiquiti UniFi U6 Pro access point|UniFi U6 Pro access point",
+    why: "business-grade WiFi with guest isolation and sane centralized management",
+  },
+  {
+    key: "shredder",
+    match: /privacy|legal|healthcare|records|paper|document|hipaa|client data/i,
+    token: "amazon_search:Fellowes micro cut shredder 12 sheet|Fellowes micro-cut shredder",
+    why: "cheap, boring protection for misprints, intake forms, and client paperwork",
+  },
+  {
+    key: "camera",
+    match: /camera|surveillance|physical|retail|warehouse|theft|office/i,
+    token: "amazon_search:Reolink PoE camera system NVR|Reolink PoE camera system",
+    why: "simple PoE cameras for front desks, stock rooms, and after-hours visibility",
+  },
+];
+
+function pickGadgetForStory(story) {
+  const text = `${story?.title || ""} ${story?.url || ""}`;
+  return AMAZON_GADGETS.find((g) => g.match.test(text)) ||
+    AMAZON_GADGETS[Math.abs(Number(story?.id) || 0) % AMAZON_GADGETS.length];
+}
+
+function scoreSlop(markdown) {
+  const body = String(markdown || "");
+  const rules = [
+    /\bin today'?s (?:fast-paced|digital|business|competitive|ever-evolving|complex|modern) [a-z ]*landscape\b/gi,
+    /\bnavigate the (?:complex|complexities|challenges|landscape|world)\b/gi,
+    /\bdelve\s+into\b/gi,
+    /\b(?:in conclusion|to conclude|in summary)\b/gi,
+    /\bleverag(?:e|es|ed|ing)\b/gi,
+    /\bcutting[- ]edge\b/gi,
+    /\bseamless(?:ly)?\b/gi,
+    /\bunlock(?:ing)? the (?:power|potential|secrets?)\b/gi,
+    /\bcomprehensive guide\b/gi,
+  ];
+  return rules.reduce((sum, re) => sum + ((body.match(re) || []).length * 3), 0);
+}
+
+function validateAutoPost(post) {
+  const issues = [];
+  const title = String(post?.title || "");
+  const meta = String(post?.metaDescription || "");
+  const body = String(post?.body || "");
+  const all = `${title}\n${meta}\n${body}`.toLowerCase();
+
+  if (!title || title.length > 70) issues.push("title_missing_or_too_long");
+  if (meta.length < 50 || meta.length > 200) issues.push("meta_description_length");
+  if (!post?.slug || !/sarasota|bradenton|venice|florida|small-business/i.test(post.slug)) {
+    issues.push("slug_not_local");
+  }
+  if (!/\]\(\/(?:(?:services|tools|leadgen|book|sarasota|bradenton|venice|lakewood-ranch|nokomis|blog)(?:[^)]*)|#contact)\)/i.test(body)) {
+    issues.push("missing_internal_link");
+  }
+  if (/\/store\b|\/cyber-insurance-quote\b|\/compliance-audit-referral\b/.test(all)) {
+    issues.push("dead_or_banned_link");
+  }
+  if (/cyber[- ]insurance quote|insurance broker|broker partner|policy referral|bound policy|audit partner|compliance-audit quote/i.test(all)) {
+    issues.push("banned_offer_language");
+  }
+  if (/\[\[(?:amazon|amazon_search):[^\]]+\]\]/.test(body) && !/affiliate|commission|qualifying purchases/i.test(body)) {
+    issues.push("missing_affiliate_note");
+  }
+  if (!/^## Short answer/m.test(body)) issues.push("missing_short_answer_section");
+  if (!/^## What to do this week/m.test(body)) issues.push("missing_action_section");
+  if (!/^## When to call IT/m.test(body)) issues.push("missing_call_it_section");
+  if (scoreSlop(body) > 12) issues.push("ai_slop_score_too_high");
+
+  return { ok: issues.length === 0, issues, slopScore: scoreSlop(body) };
+}
 
 async function fetchHNTopStory() {
   try {
@@ -477,6 +422,8 @@ async function fetchHNTopStory() {
     // Filter: must be a story (not job/poll), score > 80, and relevant to our audience.
     const scored = candidates
       .filter((s) => s && s.type === "story" && s.score > 80 && s.title && s.url)
+      .filter((s) => !HN_BANNED_TITLE.test(s.title))
+      .filter((s) => HN_RELEVANT.test(`${s.title} ${s.url || ""}`))
       .map((s) => {
         const relevance = HN_RELEVANT.test(s.title) ? 2 : 1;
         return { ...s, weight: s.score * relevance };
@@ -520,32 +467,33 @@ async function generateHNDraft({ force = false } = {}) {
   }
 
   const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
+  const gadget = pickGadgetForStory(story);
 
-  const systemPrompt = `You are Dancho Ivanov, founder of Simple IT SRQ — a managed IT services company in Sarasota, Bradenton, and Venice, Florida. You write practical, opinionated blog posts for small business owners (5-80 employees) in healthcare, legal, finance, construction, and real estate.
+  const systemPrompt = `You are Dancho Ivanov, founder of Simple IT SRQ, a managed IT services company in Sarasota, Bradenton, and Venice, Florida. You write practical, opinionated blog posts for small business owners (5-80 employees) in healthcare, legal, finance, construction, and real estate.
 
 VOICE AND STYLE:
-- Write like you're talking to a smart business owner over coffee — direct, honest, no fluff
-- One-sentence paragraphs are fine. Break up walls of text.
-- Always explain WHY something matters to a small business in Florida
-- Include a "what to do about it" section with concrete next steps
-- End with a soft CTA mentioning Simple IT SRQ and linking to /#contact or /#solutions
+- Write like you're talking to a smart business owner over coffee: direct, honest, no fluff
+- One-sentence paragraphs are fine. Break up walls of text
+- Always explain WHY something matters to a small business in Sarasota, Bradenton, or Venice
+- Do not sell cyber insurance. Do not refer readers to brokers, policies, quotes, audit partners, or /compliance-audit-referral
+- It is OK to say we help gather IT documentation for renewal questionnaires when relevant, but do not make the post about insurance
+- Include these exact Markdown H2 sections: "## Short answer", "## Field note", "## What to do this week", "## When to call IT"
+- End with a local CTA linking to /services, /leadgen, /tools, /book, or /#contact
 - Use Markdown formatting: headers, bold, lists, blockquotes
-- 600-1000 words
-- Include a meta description (under 160 chars)
+- 650-950 words
+- Include a meta description between 120 and 160 characters
 - Category must be one of: Cybersecurity, AI & Productivity, Cloud, Compliance, Privacy, Business Tech, Industry News
 - Include a short excerpt (1-2 sentences)
-- Slug must be lowercase-kebab-case and include "sarasota" or "bradenton" for SEO
+- Slug must be lowercase-kebab-case and include sarasota, bradenton, venice, florida, or small-business
 
-AFFILIATE SHORTCODES:
-When recommending a product or service that matches one of these, include the shortcode exactly as shown (double brackets):
-- Password managers → [[affiliate:1password]]
-- Payroll / HR → [[affiliate:gusto]]
-- Backup / disaster recovery → [[affiliate:acronis]] or [[affiliate:backblaze]]
-- Security cameras / networking → [[affiliate:ubiquiti]] or [[affiliate:reolink]]
-- Business CRM → [[affiliate:honeybook]]
-- Amazon product → [[affiliate:amazon:ASIN|label]]  (replace ASIN and label)
+INTERNAL LINKS:
+- Include at least one internal link using Markdown, for example [managed IT services](/services), [recommended tools](/tools), [Leadgen](/leadgen), [book a consult](/book), or a city page.
+- Never link to /store, /cyber-insurance-quote, or /compliance-audit-referral.
 
-Only include affiliate links when they genuinely fit the recommendation. Do NOT force them.
+GADGET PICK:
+- If the gadget fits the story, include one short paragraph titled "Tool worth considering" and include this exact shortcode: [[${gadget.token}]]
+- Explain why it fits in one plain sentence: ${gadget.why}
+- If you include the shortcode, add this sentence near the end: "Product links may be affiliate links; we may earn a small commission on qualifying purchases."
 
 Respond with ONLY a JSON object (no markdown fencing):
 {
@@ -557,17 +505,17 @@ Respond with ONLY a JSON object (no markdown fencing):
   "body": "..."
 }`;
 
-  const userPrompt = `Rewrite this HackerNews story for the Simple IT SRQ blog.
+  const userPrompt = `Rewrite this Hacker News story for the Simple IT SRQ blog.
 
 Original title: ${story.title}
 Original URL: ${story.url}
 HN discussion: ${hnUrl}
 Score: ${story.score} points | Comments: ${story.descendants || 0}
+Suggested gadget: ${gadget.key} (${gadget.why})
 
-Take the core insight from the story and explain what it means for a small business owner in Sarasota or Bradenton. If the original is highly technical, translate it. If it's about a security issue, explain the real-world risk. If it's about a new tool, evaluate whether a 20-person company should care.
+Take the core insight from the story and explain what it means for a small business owner in Sarasota, Bradenton, Venice, Lakewood Ranch, or Nokomis. If the original is highly technical, translate it. If it's about a security issue, explain the real-world risk. If it's about a new tool, evaluate whether a 20-person company should care.
 
-Mention the HN source casually (e.g., "This blew up on HackerNews this week...") but make the post stand on its own.`;
-
+Mention the HN source casually (for example, "This hit Hacker News this week...") but make the post stand on its own.`;
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -637,29 +585,38 @@ Mention the HN source casually (e.g., "This blew up on HackerNews this week...")
 
     const draftId = inserted[0]?.id;
     const reviewUrl = `https://simpleitsrq.com/portal?tab=drafts${draftId ? `&id=${draftId}` : ""}`;
+    const quality = validateAutoPost({ ...post, slug: finalSlug });
 
-    // Auto-publish draft to GitHub immediately
+    // Auto-publish only when the generated post passes the same hard gates
+    // we would enforce in review. Failures remain in draft_posts for manual
+    // repair instead of becoming public content.
     let publishResult = null;
-    try {
-      publishResult = await publishDraftToGitHub({
-        title: post.title,
-        slug: finalSlug,
-        category: post.category || "Business Tech",
-        excerpt: post.excerpt || "",
-        body: post.body,
-        meta_desc: post.metaDescription || "",
-      });
-      if (publishResult.ok) {
-        await sql`
-          UPDATE draft_posts
-          SET status = 'published',
-              reviewed_at = now(),
-              published_at = now()
-          WHERE id = ${draftId}
-        `;
+    if (!quality.ok) {
+      publishResult = { ok: false, blocked: true, error: `quality_gate_failed:${quality.issues.join(",")}` };
+    } else {
+      try {
+        publishResult = await publishDraftToGitHub({
+          title: post.title,
+          slug: finalSlug,
+          category: post.category || "Business Tech",
+          excerpt: post.excerpt || "",
+          body: post.body,
+          meta_desc: post.metaDescription || "",
+          tags: ["hacker-news", "local-it", gadget.key],
+          sourceUrl: story.url,
+        });
+        if (publishResult.ok) {
+          await sql`
+            UPDATE draft_posts
+            SET status = 'published',
+                reviewed_at = now(),
+                published_at = now()
+            WHERE id = ${draftId}
+          `;
+        }
+      } catch (pubErr) {
+        publishResult = { ok: false, error: String(pubErr.message || pubErr) };
       }
-    } catch (pubErr) {
-      publishResult = { ok: false, error: String(pubErr.message || pubErr) };
     }
 
     const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -677,6 +634,7 @@ Mention the HN source casually (e.g., "This blew up on HackerNews this week...")
             `HN Source: ${story.title}\n` +
             `HN URL: ${story.url}\n` +
             `HN Discussion: ${hnUrl}\n\n` +
+            `Quality gate: ${quality.ok ? "passed" : `blocked (${quality.issues.join(", ")})`}\n` +
             `Auto-publish: ${publishResult?.ok ? (publishResult.alreadyInFile ? "already in posts.js" : "published") : `failed (${publishResult?.error})`}\n` +
             `Review + publish: ${reviewUrl}\n\n` +
             `---\n\n${post.body}\n\n---\n`,
@@ -693,6 +651,8 @@ Mention the HN source casually (e.g., "This blew up on HackerNews this week...")
       source: "hn",
       hnTitle: story.title,
       hnUrl: story.url,
+      gadget: gadget.key,
+      quality,
       published: publishResult?.ok === true,
       alreadyInFile: publishResult?.alreadyInFile === true,
       publishError: publishResult?.ok === false ? publishResult.error : undefined,
@@ -1349,7 +1309,6 @@ export async function GET(request) {
 
   result.tasks.autoCounter = await autoCounter();
   result.tasks.threatFeeds = await ingestThreatFeeds();
-  result.tasks.blogDraft = await generateBlogDraft({ force });
   result.tasks.hnDraft = await generateHNDraft({ force });
   result.tasks.securityAnalysis = await securityAnalysis();
   result.tasks.supplyChain = await supplyChainAudit();

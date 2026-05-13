@@ -1,5 +1,5 @@
 # Creates Stripe Products + Prices + Coupon + Promotion Code + 4 Payment Links
-# for the /leadgen monetization surface. Uses authenticated stripe CLI.
+# for the /leadgen monetization surface. Uses the Stripe REST API directly.
 # Pass -Live to target live mode; default is test.
 
 param(
@@ -7,135 +7,143 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$liveArg = if ($Live) { @("--live") } else { @() }
-$keyArg  = if ($env:STRIPE_API_KEY) { @("--api-key", $env:STRIPE_API_KEY) } else { @() }
 
-function Invoke-Stripe {
-    param([string[]]$StripeArgs)
-    $allArgs = @() + $StripeArgs + $liveArg + $keyArg
-    $raw = & stripe @allArgs 2>&1
-    $exit = $LASTEXITCODE
-    # Stripe CLI sometimes exits non-zero with valid JSON output. Try parse.
-    $text = ($raw | Out-String).Trim()
-    if (-not $text) {
-        throw "stripe call empty (exit=$exit args=$($StripeArgs -join ' '))"
+$apiKey = $env:STRIPE_API_KEY
+if (-not $apiKey) {
+    throw "STRIPE_API_KEY environment variable is required."
+}
+
+$baseUrl = if ($Live) { "https://api.stripe.com/v1" } else { "https://api.stripe.com/v1" }
+# Stripe API keys encode the mode (pk_/sk_test_ vs pk_/sk_live_); the endpoint is the same.
+
+function Invoke-StripeApi {
+    param(
+        [string]$Method = "POST",
+        [string]$Path,
+        [hashtable]$Body = @{}
+    )
+    $uri = "$baseUrl/$Path"
+    $headers = @{
+        Authorization = "Basic $([Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${apiKey}:")))"
     }
+
+    # Build form-encoded body
+    $form = [System.Collections.Generic.List[string]]::new()
+    foreach ($k in $Body.Keys) {
+        $form.Add("$k=$([Uri]::EscapeDataString($Body[$k]))")
+    }
+    $formBody = $form -join "&"
+
     try {
-        return $text | ConvertFrom-Json
+        $response = Invoke-RestMethod -Uri $uri -Method $Method -Headers $headers -ContentType "application/x-www-form-urlencoded" -Body $formBody
+        return $response
     } catch {
-        Write-Host "FAIL parse: $text"
+        $err = $_.ErrorDetails.Message
+        if (-not $err) { $err = $_.Exception.Message }
+        Write-Host "Stripe API error: $err"
         throw
     }
 }
 
 Write-Host "=== Creating Products ==="
-$starter = Invoke-Stripe @(
-    "products","create",
-    "-d","name=Leadgen Starter",
-    "-d","description=SWFL B2B lead generation - Starter tier (up to 250 verified contacts/mo, shared outreach pool)",
-    "-d","metadata[tier]=starter",
-    "-d","metadata[surface]=leadgen"
-)
+$starter = Invoke-StripeApi -Path "products" -Body @{
+    name = "Leadgen Starter"
+    description = "SWFL B2B lead generation - Starter tier (up to 250 verified contacts/mo, shared outreach pool)"
+    "metadata[tier]" = "starter"
+    "metadata[surface]" = "leadgen"
+}
 Write-Host "Starter product: $($starter.id)"
 
-$growth = Invoke-Stripe @(
-    "products","create",
-    "-d","name=Leadgen Growth",
-    "-d","description=SWFL B2B lead generation - Growth tier (up to 1500 verified contacts/mo, dedicated outreach + reply triage)",
-    "-d","metadata[tier]=growth",
-    "-d","metadata[surface]=leadgen"
-)
+$growth = Invoke-StripeApi -Path "products" -Body @{
+    name = "Leadgen Growth"
+    description = "SWFL B2B lead generation - Growth tier (up to 1500 verified contacts/mo, dedicated outreach + reply triage)"
+    "metadata[tier]" = "growth"
+    "metadata[surface]" = "leadgen"
+}
 Write-Host "Growth product:  $($growth.id)"
 
 Write-Host "`n=== Creating Prices ==="
 # Starter monthly $199
-$starterMonthly = Invoke-Stripe @(
-    "prices","create",
-    "-d","product=$($starter.id)",
-    "-d","unit_amount=19900",
-    "-d","currency=usd",
-    "-d","recurring[interval]=month",
-    "-d","nickname=Starter Monthly",
-    "-d","metadata[tier]=starter",
-    "-d","metadata[cadence]=monthly"
-)
+$starterMonthly = Invoke-StripeApi -Path "prices" -Body @{
+    product = $starter.id
+    unit_amount = "19900"
+    currency = "usd"
+    "recurring[interval]" = "month"
+    nickname = "Starter Monthly"
+    "metadata[tier]" = "starter"
+    "metadata[cadence]" = "monthly"
+}
 # Starter annual $169/mo billed yearly = $2028
-$starterAnnual = Invoke-Stripe @(
-    "prices","create",
-    "-d","product=$($starter.id)",
-    "-d","unit_amount=202800",
-    "-d","currency=usd",
-    "-d","recurring[interval]=year",
-    "-d","nickname=Starter Annual",
-    "-d","metadata[tier]=starter",
-    "-d","metadata[cadence]=annual"
-)
+$starterAnnual = Invoke-StripeApi -Path "prices" -Body @{
+    product = $starter.id
+    unit_amount = "202800"
+    currency = "usd"
+    "recurring[interval]" = "year"
+    nickname = "Starter Annual"
+    "metadata[tier]" = "starter"
+    "metadata[cadence]" = "annual"
+}
 # Growth monthly $499
-$growthMonthly = Invoke-Stripe @(
-    "prices","create",
-    "-d","product=$($growth.id)",
-    "-d","unit_amount=49900",
-    "-d","currency=usd",
-    "-d","recurring[interval]=month",
-    "-d","nickname=Growth Monthly",
-    "-d","metadata[tier]=growth",
-    "-d","metadata[cadence]=monthly"
-)
+$growthMonthly = Invoke-StripeApi -Path "prices" -Body @{
+    product = $growth.id
+    unit_amount = "49900"
+    currency = "usd"
+    "recurring[interval]" = "month"
+    nickname = "Growth Monthly"
+    "metadata[tier]" = "growth"
+    "metadata[cadence]" = "monthly"
+}
 # Growth annual $419/mo billed yearly = $5028
-$growthAnnual = Invoke-Stripe @(
-    "prices","create",
-    "-d","product=$($growth.id)",
-    "-d","unit_amount=502800",
-    "-d","currency=usd",
-    "-d","recurring[interval]=year",
-    "-d","nickname=Growth Annual",
-    "-d","metadata[tier]=growth",
-    "-d","metadata[cadence]=annual"
-)
+$growthAnnual = Invoke-StripeApi -Path "prices" -Body @{
+    product = $growth.id
+    unit_amount = "502800"
+    currency = "usd"
+    "recurring[interval]" = "year"
+    nickname = "Growth Annual"
+    "metadata[tier]" = "growth"
+    "metadata[cadence]" = "annual"
+}
 Write-Host "Starter monthly: $($starterMonthly.id)"
 Write-Host "Starter annual:  $($starterAnnual.id)"
 Write-Host "Growth  monthly: $($growthMonthly.id)"
 Write-Host "Growth  annual:  $($growthAnnual.id)"
 
 Write-Host "`n=== Creating Coupon + Promotion Code (LAUNCH20) ==="
-$coupon = Invoke-Stripe @(
-    "coupons","create",
-    "-d","percent_off=20",
-    "-d","duration=repeating",
-    "-d","duration_in_months=3",
-    "-d","name=Leadgen Launch 20",
-    "-d","metadata[surface]=leadgen"
-)
+$coupon = Invoke-StripeApi -Path "coupons" -Body @{
+    percent_off = "20"
+    duration = "repeating"
+    duration_in_months = "3"
+    name = "Leadgen Launch 20"
+    "metadata[surface]" = "leadgen"
+}
 Write-Host "Coupon: $($coupon.id)"
 
-$promo = Invoke-Stripe @(
-    "promotion_codes","create",
-    "-d","coupon=$($coupon.id)",
-    "-d","code=LAUNCH20",
-    "-d","metadata[surface]=leadgen"
-)
+$promo = Invoke-StripeApi -Path "promotion_codes" -Body @{
+    coupon = $coupon.id
+    code = "LAUNCH20"
+    "metadata[surface]" = "leadgen"
+}
 Write-Host "Promotion code: $($promo.code) ($($promo.id))"
 
 Write-Host "`n=== Creating Payment Links ==="
 function New-Link {
     param([string]$priceId, [string]$tier, [string]$cadence)
-    Invoke-Stripe @(
-        "payment_links","create",
-        "-d","line_items[0][price]=$priceId",
-        "-d","line_items[0][quantity]=1",
-        "-d","allow_promotion_codes=true",
-        "-d","billing_address_collection=auto",
-        "-d","after_completion[type]=redirect",
-        "-d","after_completion[redirect][url]=https://simpleitsrq.com/leadgen?checkout=success&tier=$tier&cadence=$cadence",
-        "-d","metadata[tier]=$tier",
-        "-d","metadata[cadence]=$cadence",
-        "-d","metadata[surface]=leadgen"
-    )
+    Invoke-StripeApi -Path "payment_links" -Body @{
+        "line_items[0][price]" = $priceId
+        "line_items[0][quantity]" = "1"
+        allow_promotion_codes = "true"
+        billing_address_collection = "auto"
+        "after_completion[type]" = "redirect"
+        "after_completion[redirect][url]" = "https://simpleitsrq.com/leadgen?checkout=success&tier=$tier&cadence=$cadence"
+        "metadata[tier]" = $tier
+        "metadata[cadence]" = $cadence
+        "metadata[surface]" = "leadgen"
+    }
 }
-$linkStarterMonthly = New-Link $starterMonthly.id "starter" "monthly"
-$linkStarterAnnual  = New-Link $starterAnnual.id  "starter" "annual"
-$linkGrowthMonthly  = New-Link $growthMonthly.id  "growth"  "monthly"
-$linkGrowthAnnual   = New-Link $growthAnnual.id   "growth"  "annual"
+$linkStarterMonthly = New-Link -priceId $starterMonthly.id -tier "starter" -cadence "monthly"
+$linkStarterAnnual  = New-Link -priceId $starterAnnual.id  -tier "starter" -cadence "annual"
+$linkGrowthMonthly  = New-Link -priceId $growthMonthly.id  -tier "growth"  -cadence "monthly"
+$linkGrowthAnnual   = New-Link -priceId $growthAnnual.id   -tier "growth"  -cadence "annual"
 
 $summary = [ordered]@{
     mode = if ($Live) { "live" } else { "test" }
