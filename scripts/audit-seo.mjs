@@ -8,7 +8,7 @@
 //   - tags            (3-8 ideal)
 //   - canonical-able slug
 //   - presence of at least one internal link (/blog or /service area)
-//   - presence of at least one CTA link (/store, /book, /#contact, /tools)
+//   - presence of at least one CTA link (/book, /#contact, /tools)
 //   - heading hierarchy (no h1 inside body — frontmatter title becomes h1)
 //   - publishDate / date present
 //
@@ -80,7 +80,7 @@ const PROBLEMS = {
   W_TAGS_TOO_MANY:        "tags > 8",
   E_DATE_MISSING:         "date/publishDate missing",
   W_NO_INTERNAL_LINK:     "no internal link to /blog/* or /sarasota etc.",
-  W_NO_CTA_LINK:          "no CTA link (/store, /book, /#contact, /tools, /portal)",
+  W_NO_CTA_LINK:          "no CTA link (/book, /#contact, /tools, /portal)",
   W_HAS_BODY_H1:          "body uses # h1 (should start at h2)",
 };
 

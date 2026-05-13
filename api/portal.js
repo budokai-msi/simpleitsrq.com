@@ -2142,14 +2142,13 @@ async function handleTestimonialDelete(session, request) {
 // Revenue Signals: what's earning money. Combines three inputs:
 //   1. Blog traffic — visits to /blog/:slug grouped by post in last 30 days
 //   2. Affiliate clicks — outbound affiliate-link clicks grouped by slug + network
-//   3. Store traffic — visits to /store and each product page
 // Intentionally lightweight — all data already lives in the visits + new
 // affiliate_clicks tables, so this is just aggregate queries.
 async function handleRevenueSignals(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
 
-  const [blogTraffic, clicksByPost, clicksByNetwork, clicksByProduct, storeTraffic, recentClicks] = await Promise.all([
+  const [blogTraffic, clicksByPost, clicksByNetwork, clicksByProduct, recentClicks] = await Promise.all([
     sql`
       SELECT path,
              COUNT(*)::int AS views,
@@ -2186,15 +2185,6 @@ async function handleRevenueSignals(session) {
       GROUP BY label, destination
       ORDER BY clicks DESC
       LIMIT 20
-    `.catch(() => []),
-    sql`
-      SELECT path,
-             COUNT(*)::int AS views
-      FROM visits
-      WHERE (path = '/store' OR path LIKE '/store/%')
-        AND ts > now() - interval '30 days'
-      GROUP BY path
-      ORDER BY views DESC
     `.catch(() => []),
     sql`
       SELECT ts, slug, label, network, country
@@ -2236,7 +2226,6 @@ async function handleRevenueSignals(session) {
     postLeaderboard,
     clicksByNetwork,
     clicksByProduct,
-    storeTraffic,
     recentClicks,
   });
 }
@@ -2583,132 +2572,6 @@ async function handleRevenueSummary(session) {
     console.error("[portal] revenue-summary failed", err);
     return json(500, { ok: false, configured: true, error: String(err?.message || err).slice(0, 200) });
   }
-}
-
-// Programmatically create Stripe Payment Links for every product in the
-// catalog that doesn't already have one. Uses the same STRIPE_SECRET_KEY
-// that invoicing uses. Returns the full list of URLs for the admin to
-// paste into Vercel env vars. Idempotent: running twice produces the same
-// Payment Link per product because we look up the product by its name
-// before creating.
-async function handleCreatePaymentLinks(session) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-  return runCreateAllPaymentLinks();
-}
-
-// Bare helper — same logic, skips the admin gate. Called from the
-// admin-auth path above AND from the one-shot bootstrap branch in
-// dispatch(). Isolated so the bootstrap branch in dispatch can be
-// removed cleanly without disturbing the admin-auth path.
-async function runCreateAllPaymentLinks() {
-  const stripe = getStripe();
-  if (!stripe) return json(500, { ok: false, error: "stripe_not_configured" });
-
-  // Products mirror src/data/products.js — kept hardcoded here so this
-  // endpoint is self-contained and doesn't depend on the frontend bundle.
-  const CATALOG = [
-    { slug: "hipaa-starter-kit",      title: "Florida Small-Business HIPAA Starter Kit",       price: 79,  envVar: "VITE_PRODUCT_HIPAA_KIT_BUY_URL" },
-    { slug: "wisp-template",          title: "Written Information Security Program (WISP)",   price: 149, envVar: "VITE_PRODUCT_WISP_BUY_URL" },
-    { slug: "cyber-insurance-answers", title: "Cyber-Insurance Questionnaire Answer Kit",       price: 99,  envVar: "VITE_PRODUCT_INSURANCE_KIT_BUY_URL" },
-    { slug: "hurricane-it-playbook",  title: "Hurricane-Season IT Continuity Playbook",        price: 49,  envVar: "VITE_PRODUCT_HURRICANE_KIT_BUY_URL" },
-    { slug: "onboarding-runbook",     title: "Employee Onboarding + Offboarding IT Runbook",   price: 39,  envVar: "VITE_PRODUCT_ONBOARDING_KIT_BUY_URL" },
-    { slug: "saas-incident-response-playbook", title: "SaaS Incident Response Playbook",        price: 29,  envVar: "VITE_PRODUCT_SAAS_IR_BUY_URL" },
-    { slug: "vendor-risk-register",   title: "Vendor Risk Register for Small Business",         price: 19,  envVar: "VITE_PRODUCT_VENDOR_RISK_BUY_URL" },
-    { slug: "it-budget-calendar",     title: "365-Day IT Budget Calendar Template",             price: 29,  envVar: "VITE_PRODUCT_BUDGET_CALENDAR_BUY_URL" },
-    { slug: "cyber-insurance-evidence-binder", title: "Cyber-Insurance Evidence Binder Template", price: 39, envVar: "VITE_PRODUCT_INSURANCE_BINDER_BUY_URL" },
-    { slug: "ransomware-tabletop-kit", title: "Ransomware Tabletop Exercise Kit",               price: 49,  envVar: "VITE_PRODUCT_TABLETOP_KIT_BUY_URL" },
-    { slug: "compliance-library",     title: "Complete Florida Compliance Library",            price: 299, envVar: "VITE_PRODUCT_BUNDLE_BUY_URL" },
-    // Synapse Pro — desktop LLM orchestration IDE. Local install, lifetime
-    // updates, license keys signed by SYNAPSE_LICENSE_SECRET (kept in Vercel
-    // env). The Stripe Payment Link this admin endpoint creates points back
-    // to /store?purchased=synapse-pro for now; once the license-issuance
-    // webhook (api/synapse-license-webhook.js) lands the redirect should
-    // change to /synapse/thanks?session_id={CHECKOUT_SESSION_ID}.
-    { slug: "synapse-pro",            title: "Synapse Pro — Visual LLM Orchestration IDE",      price: 49,  envVar: "VITE_PRODUCT_SYNAPSE_PRO_BUY_URL" },
-  ];
-
-  const results = [];
-
-  for (const item of CATALOG) {
-    try {
-      // Idempotency — search for an existing active Stripe Product with the
-      // same name. Stripe's search API is eventually-consistent but fine
-      // for a manual admin trigger.
-      const existing = await stripe.products.search({
-        query: `active:'true' AND name:'${item.title.replace(/'/g, "\\'")}'`,
-        limit: 1,
-      }).catch(() => ({ data: [] }));
-
-      let productId;
-      if (existing.data?.length > 0) {
-        productId = existing.data[0].id;
-      } else {
-        const product = await stripe.products.create({
-          name: item.title,
-          description: `Simple IT SRQ — ${item.title}. Lifetime updates. 30-day refund.`,
-          metadata: { slug: item.slug, source: "simpleitsrq.com/store" },
-        });
-        productId = product.id;
-      }
-
-      // Look for an existing matching price so we don't spam new price IDs
-      // on re-runs.
-      const prices = await stripe.prices.list({ product: productId, active: true, limit: 10 });
-      let price = prices.data.find(
-        (p) => p.unit_amount === item.price * 100 && p.currency === "usd"
-      );
-      if (!price) {
-        price = await stripe.prices.create({
-          product: productId,
-          unit_amount: item.price * 100,
-          currency: "usd",
-        });
-      }
-
-      // Check for existing active Payment Link pointing at this price.
-      const existingLinks = await stripe.paymentLinks.list({ limit: 100, active: true });
-      let link = existingLinks.data.find(
-        (l) => l.line_items?.data?.[0]?.price?.id === price.id
-      );
-      if (!link) {
-        link = await stripe.paymentLinks.create({
-          line_items: [{ price: price.id, quantity: 1 }],
-          after_completion: {
-            type: "redirect",
-            redirect: { url: `https://simpleitsrq.com/store?purchased=${item.slug}` },
-          },
-          metadata: { slug: item.slug, source: "simpleitsrq.com/store" },
-        });
-      }
-
-      results.push({
-        slug: item.slug,
-        title: item.title,
-        price: item.price,
-        envVar: item.envVar,
-        productId,
-        priceId: price.id,
-        paymentLinkId: link.id,
-        url: link.url,
-        ok: true,
-      });
-    } catch (e) {
-      results.push({
-        slug: item.slug,
-        title: item.title,
-        envVar: item.envVar,
-        ok: false,
-        error: String(e.message || e),
-      });
-    }
-  }
-
-  return json(200, {
-    ok: true,
-    message: "Copy each URL into the matching Vercel env var, then redeploy. Re-running this action is safe — it reuses existing Stripe resources.",
-    created: results,
-  });
 }
 
 async function handleDrafts(session, url) {
@@ -4785,7 +4648,6 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "testimonial-delete"   && method === "POST") return handleTestimonialDelete(session, request);
   if (action === "grant-immunity"       && method === "POST") return handleGrantImmunity(session, request);
   if (action === "osint-refresh"        && method === "POST") return handleOsintRefresh(session);
-  if (action === "create-payment-links" && method === "POST") return handleCreatePaymentLinks(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
   if (action === "github-health"   && method === "GET")   return handleGithubHealth(session);

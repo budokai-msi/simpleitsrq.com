@@ -10,8 +10,7 @@ import { track } from "../lib/analytics";
 
 // Full Cal.com path, e.g. "simpleitsrq/free-consultation". Set via Vercel
 // env var VITE_CALCOM_CAL_LINK. When unset the page falls back to the
-// same consultation-request form used on /cyber-insurance-quote and
-// /compliance-audit-referral — so booking always works even before the
+// same consultation-request form used across the site, so booking always works before a dedicated landing flow exists.
 // Cal.com integration is wired.
 const CAL_LINK = import.meta.env.VITE_CALCOM_CAL_LINK || "";
 const CAL_EMBED_SRC = "https://app.cal.com/embed/embed.js";

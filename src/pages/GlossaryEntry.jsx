@@ -1,10 +1,9 @@
 import { useMemo } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Link } from "../lib/Link";
-import { ArrowLeft, ArrowRight, BookOpen, ShieldCheck, Lightbulb, Tag } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, ShieldCheck, Lightbulb } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { findGlossaryEntry, GLOSSARY } from "../data/glossary";
-import { products } from "../data/products";
 import AdUnit from "../components/AdSense";
 
 function buildDefinedTermSchema(entry) {
@@ -29,9 +28,6 @@ export default function GlossaryEntry() {
   const { slug } = useParams();
   const entry = useMemo(() => findGlossaryEntry(slug), [slug]);
 
-  const product = entry?.product
-    ? products.find((p) => p.slug === entry.product)
-    : null;
 
   const relatedEntries = (entry?.related || [])
     .map((s) => GLOSSARY.find((g) => g.slug === s))
@@ -120,32 +116,6 @@ export default function GlossaryEntry() {
               </h3>
               <p style={{ margin: 0, lineHeight: 1.6 }}>{entry.action}</p>
             </aside>
-
-            {/* In-context product CTA — only shown if the term has a
-                mapped product, so generic-term pages don't push a
-                non-sequitur product. */}
-            {product && (
-              <aside
-                style={{
-                  margin: "32px 0",
-                  padding: "24px",
-                  borderRadius: 12,
-                  background: "var(--syn-surface, #ffffff)",
-                  border: "1px solid var(--syn-border, #e5e7eb)",
-                }}
-              >
-                <span className="eyebrow">
-                  <Tag size={12} style={{ display: "inline", marginRight: 6 }} />
-                  Save the weekend
-                </span>
-                <h3 className="title-2" style={{ marginTop: 8 }}>{product.title}</h3>
-                <p className="section-sub" style={{ marginBottom: 16 }}>{product.tagline}</p>
-                <Link to={`/store/${product.slug}`} className="btn btn-primary">
-                  See the {product.priceSuffix ? `${product.priceSuffix.replace("/", " / ")}` : `$${product.price}`} kit
-                  <ArrowRight size={14} />
-                </Link>
-              </aside>
-            )}
           </div>
 
           <AdUnit format="auto" className="ad-in-article" />

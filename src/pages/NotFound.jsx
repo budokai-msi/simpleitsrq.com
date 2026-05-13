@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Link } from "../lib/Link";
-import { ArrowLeft, Search, BookOpen, Shield, MapPin, Calendar, FileText, Calculator } from "lucide-react";
+import { ArrowLeft, Search, BookOpen, Shield, MapPin, Calendar, Wrench, Calculator } from "lucide-react";
 import { useSEO } from "../lib/seo";
 
 // Curated destinations shown on the 404 page. Mirrors what's in the
@@ -11,7 +11,7 @@ import { useSEO } from "../lib/seo";
 const SUGGESTIONS = [
   { to: "/exposure-scan",  Icon: Shield,     title: "Free Exposure Scan",       desc: "10-second DNS + email-auth audit on any domain you own. No signup." },
   { to: "/stack",           Icon: Calculator, title: "Vendor Stack + Calculator", desc: "Every tool we install for a new client + a monthly-cost estimator." },
-  { to: "/store",           Icon: FileText,   title: "Templates & Playbooks",     desc: "HIPAA Kit, WISP, Hurricane Prep — pre-filled for Florida small offices." },
+    { to: "/services",        Icon: Wrench,     title: "Fixed-Fee IT Services",     desc: "Computer repair, WiFi, network setup, cameras, backups, and office moves." },
   { to: "/glossary",        Icon: BookOpen,   title: "Plain-English Glossary",    desc: "25+ cybersecurity + compliance terms defined in 30 seconds each." },
   { to: "/service-area",    Icon: MapPin,     title: "Service Area",              desc: "City-by-city coverage across Sarasota and Manatee counties." },
   { to: "/book",            Icon: Calendar,   title: "Book a Free Consult",       desc: "30-min call with a Sarasota engineer. No obligation." },

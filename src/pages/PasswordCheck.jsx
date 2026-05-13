@@ -254,10 +254,10 @@ export default function PasswordCheck() {
           <div className="cta-card">
             <h2>Running a Florida small business? We put all this in one playbook.</h2>
             <p>
-              Our <Link to="/store/saas-incident-response-playbook" style={{ color: "#fff", textDecoration: "underline" }}>SaaS Incident Response Playbook</Link> ($29) is the 14-page printable version of everything above, plus a vendor-breach decision tree, pre-written client notification emails, and the Florida FIPA 30-day quick reference. Designed so your office manager can run the audit once a quarter.
+              If this check turns up a real password problem, book a short cleanup call. We can help rotate exposed passwords, set up MFA, and document what changed.
             </p>
-            <Link to="/store" className="btn btn-primary btn-lg">
-              See the full store <ArrowRight size={16} />
+            <Link to="/book?topic=password-cleanup" className="btn btn-primary btn-lg">
+              Book password cleanup <ArrowRight size={16} />
             </Link>
           </div>
         </div>

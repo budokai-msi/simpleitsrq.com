@@ -721,7 +721,7 @@ function Overview({ styles, user, openCount, closedCount, unpaidCount }) {
           {[
             { label: "Run your first Exposure Scan", done: false, link: "/exposure-scan" },
             { label: "Verify your emergency contact info", done: true, link: "#profile" },
-            { label: "Download the WISP starter kit", done: false, link: "/store/wisp-template" },
+            { label: "Run a password exposure check", done: false, link: "/password-check" },
             { label: "Connect your primary Microsoft 365 account", done: false, link: "#" },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: tokens.colorNeutralBackground1, borderRadius: tokens.borderRadiusMedium, border: `1px solid ${tokens.colorNeutralStroke2}` }}>
@@ -2193,7 +2193,7 @@ function TestimonialsAdmin() {
 
       {items && items.length === 0 && (
         <p style={{ marginTop: 14, fontSize: 13, color: tokens.colorNeutralForeground3 }}>
-          No testimonials yet. Add one with real client consent — nothing renders on /store or /store/:slug until at least one row is approved here.
+          No testimonials yet. Add one with real client consent; nothing renders publicly until at least one row is approved here.
         </p>
       )}
     </div>
@@ -3026,17 +3026,6 @@ function OpsConsole() {
 
       {/* ── Operations ── */}
       <div style={sectionHeader}>Operations — commerce + integrations</div>
-
-      <div style={card}>
-        <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 600 }}>Create / reuse Stripe Payment Links</h4>
-        <p style={{ margin: "0 0 12px", fontSize: 13, color: tokens.colorNeutralForeground3 }}>
-          Ensures every store SKU (currently 7 including the new $29 SaaS Incident Response Playbook) has a Stripe Product + Price + Payment Link. Idempotent — reuses existing ones. Copy each <code>url</code> from the output into the matching Vercel env var, then redeploy.
-        </p>
-        <Button appearance="primary" onClick={() => run("create-payment-links")} disabled={running === "create-payment-links"}>
-          {running === "create-payment-links" ? "Running…" : "Create all Payment Links"}
-        </Button>
-        <OutputBlock output={output} action="create-payment-links" />
-      </div>
 
       {/* ── Newsletter ── */}
       <div style={sectionHeader}>Newsletter — The Simple IT Brief</div>

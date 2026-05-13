@@ -246,25 +246,6 @@
     "heroAlt": "An illustration accompanying Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know."
   },
   {
-    "slug": "florida-compliance-audit-referral-2026",
-    "title": "How to Pick a Florida Compliance Audit Firm in 2026 (SOC 2, HIPAA, PCI, FTC Safeguards)",
-    "date": "2026-04-22",
-    "category": "Compliance",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "compliance",
-      "audits",
-      "hipaa",
-      "soc-2",
-      "ftc-safeguards",
-      "bradenton",
-      "sarasota"
-    ],
-    "excerpt": "Most Florida small businesses we support go through a compliance audit every 12-24 months — SOC 2 for SaaS, HIPAA for medical/dental, PCI for anyone taking cards, FTC Safeguards for tax preparers and mortgage brokers. Here's how to pick the firm, what to ask in the first call, and how to keep the engagement short.",
-    "metaDescription": "A practical guide to choosing a compliance-audit firm for Florida small businesses: how SOC 2, HIPAA, PCI DSS, and FTC Safeguards engagements actually work, what they cost, and how to avoid the four mistakes that double your bill.",
-    "heroAlt": "An audit kickoff call on a Sarasota small-business laptop showing a SOC 2 scoping checklist and a HIPAA risk assessment PDF."
-  },
-  {
     "slug": "florida-small-business-tech-stack-2026",
     "title": "The 2026 Florida Small-Business Tech Stack (What We Actually Install on Day One)",
     "date": "2026-04-22",
@@ -280,40 +261,6 @@
     "excerpt": "Every time a new Sarasota client asks 'what should we be running?' the answer is the same eight-tool stack. Here it is — with the tiers that actually pass a 2026 cyber-insurance audit and the ones we rejected and why.",
     "metaDescription": "The complete tool-by-tool tech stack we install for every new Sarasota, Bradenton, and Venice small-business client — with the specific tiers that pass a cyber-insurance renewal and the alternatives we rejected.",
     "heroAlt": "A Florida small-business laptop desk with a YubiKey plugged in, a UPS under the desk, and a Microsoft 365 admin console on screen."
-  },
-  {
-    "slug": "5-mfa-methods-2026-cyber-insurance-renewal",
-    "title": "The 5 MFA Methods Your 2026 Cyber-Insurance Renewal Actually Accepts (And the 2 That'll Get You Denied)",
-    "date": "2026-04-21",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "mfa",
-      "cyber-insurance",
-      "compliance",
-      "bradenton",
-      "sarasota"
-    ],
-    "excerpt": "If your renewal quote jumped this spring, check the MFA section of the questionnaire first. In Q1 2026, three of the five biggest small-business cyber carriers silently changed what counts as acceptable multi-factor authentication. SMS is out. Here's what's still in.",
-    "metaDescription": "Cyber-insurance carriers overhauled the MFA section of their 2026 renewal forms — SMS codes now disqualify you. Here are the 5 methods still accepted, the 2 to stop using tonight, and exactly what your renewal questionnaire will ask.",
-    "heroAlt": "A laptop on a Bradenton office desk showing a two-factor login screen with a YubiKey plugged into the USB-C port."
-  },
-  {
-    "slug": "how-to-get-florida-cyber-insurance-quote-2026",
-    "title": "How to Get a Florida Cyber-Insurance Quote in 2026 (Without Wasting Three Weekends)",
-    "date": "2026-04-21",
-    "category": "Compliance",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "cyber-insurance",
-      "compliance",
-      "sarasota",
-      "bradenton",
-      "insurance"
-    ],
-    "excerpt": "Every Florida small business we work with renewed their cyber policy this year — and every single one had questions they wish someone had explained before the quote call. Here's the 2026 process, the documents to have ready, and the one phrase that drops your premium the most.",
-    "metaDescription": "The 2026 playbook for getting a cyber-insurance quote as a Florida small business: what documents to have ready, which questions hurt your premium, and the five-minute shortcut most Sarasota owners skip.",
-    "heroAlt": "A Sarasota small-business owner reviewing a cyber-insurance questionnaire on a laptop with a HIPAA Starter Kit binder open on the desk."
   },
   {
     "slug": "sarasota-biggest-cyber-risk-2024",
@@ -484,20 +431,6 @@
     "excerpt": "Today's top security stories are both about SaaS vendors, not ransomware crews. If you run a small business on Microsoft 365 + Notion + Vercel + half a dozen other tools, this is the 30-minute check you should run before Monday.",
     "metaDescription": "Vercel disclosed a breach. Notion leaked public-page editor emails. Neither story is about you, but both point to the same lesson for Sarasota and Bradenton small businesses: SaaS sprawl is your real threat surface. Here's the 30-minute audit.",
     "heroAlt": "A security operations dashboard on a laptop screen in a Sarasota small-business office showing a map of authenticated login locations and a pending vendor-breach alert."
-  },
-  {
-    "slug": "cyber-insurance-rates-bradenton-sarasota-2024",
-    "title": "Cyber-Insurance Rates Just Jumped—Heres Why Your Bradenton Business Needs to Act Now",
-    "date": "2026-04-17",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Cyber-insurance premiums are climbing fast as breaches hit small businesses harder than ever. If you havent reviewed your coverage lately, costs could shock you.",
-    "metaDescription": "Cyber-insurance premiums rising for small businesses. Learn why rates jumped and what to do about it.",
-    "heroAlt": "An illustration accompanying Cyber-Insurance Rates Just Jumped—Heres Why Your Bradenton Business Needs to Act Now."
   },
   {
     "slug": "florida-data-privacy-law-sarasota-small-business",
@@ -676,22 +609,6 @@
     "excerpt": "SMS 2FA keeps getting bypassed in the wild. A physical security key costs $50, stops the entire class of attack, and is now effectively required by several cyber-insurance carriers. Heres how to deploy them.",
     "metaDescription": "SMS text-message 2FA is being actively bypassed. Heres what a $50 YubiKey does differently and why Sarasota law and medical offices are standardizing on them.",
     "heroAlt": "A small USB-C hardware security key plugged into a laptop with a login screen showing a successful passkey prompt."
-  },
-  {
-    "slug": "sarasota-cybersecurity-insurance-small-business",
-    "title": "Why Your Business Needs a Cybersecurity Insurance Policy (And What It Actually Covers)",
-    "date": "2026-04-12",
-    "category": "Compliance",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "compliance",
-      "insurance",
-      "cybersecurity",
-      "smb"
-    ],
-    "excerpt": "Cybersecurity insurance is not just for big companies anymore. Heres why Sarasota small businesses need it and what to look for in a policy.",
-    "metaDescription": "Cybersecurity insurance for small business: what it covers, why you need it, and how to find the right policy in Sarasota.",
-    "heroAlt": "A clipboard with a cybersecurity insurance checklist next to a laptop showing a ransomware warning."
   },
   {
     "slug": "sarasota-employees-using-ai-work-policy",

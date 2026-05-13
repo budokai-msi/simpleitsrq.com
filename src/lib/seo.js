@@ -235,7 +235,7 @@ export function useSEO({
   }, [title, description, canonical, image, robots, post, breadcrumbs, products, organization, localBusiness, faqs]);
 }
 
-// Build an ItemList of Product+Offer entries for a /store-style page. Google
+// Build an ItemList of Product+Offer entries for offer-style pages. Google
 // uses this for "Merchant listings" rich results and for product knowledge
 // panel enrichment. Only include products that have a real buyLink or that
 // we explicitly mark as coming soon — hiding draft products keeps us out of
@@ -253,7 +253,7 @@ export function productListSchema(products) {
         description: p.description || p.tagline,
         brand: { "@type": "Brand", name: SITE_NAME },
         image: `${SITE_URL}/og-image.png`,
-        url: `${SITE_URL}/store#${p.slug}`,
+        url: `${SITE_URL}/tools#${p.slug}`,
         offers: {
           "@type": "Offer",
           price: String(p.price),
@@ -261,7 +261,7 @@ export function productListSchema(products) {
           availability: p.buyLink
             ? "https://schema.org/InStock"
             : "https://schema.org/PreOrder",
-          url: p.buyLink || `${SITE_URL}/store`,
+          url: p.buyLink || `${SITE_URL}/tools`,
           seller: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
         },
       },

@@ -139,8 +139,8 @@ export default function Partners() {
             <Link to="/book" className="btn btn-primary btn-lg">
               Book a 30-Minute Call <ArrowRight size={14} />
             </Link>
-            <Link to="/store" className="btn btn-secondary btn-lg">
-              Browse Our Playbooks
+            <Link to="/tools" className="btn btn-secondary btn-lg">
+              See Recommended Tools
             </Link>
           </div>
         </div>

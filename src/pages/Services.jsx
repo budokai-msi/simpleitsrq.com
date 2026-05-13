@@ -8,7 +8,7 @@ import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
 
-// Reservation / waitlist CTA. Mirrors the pattern used on /store: when a
+// Reservation / waitlist CTA. When a
 // service has a buyLink, we render a hard Buy/Reserve button that opens the
 // Stripe-hosted checkout. When it doesn't, we render an email capture so we
 // can measure demand BEFORE wiring the Stripe link.
