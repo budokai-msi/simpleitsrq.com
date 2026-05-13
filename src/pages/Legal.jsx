@@ -71,7 +71,7 @@ export function PrivacyPage() {
           <strong>Contact / inquiry / quote forms:</strong> name, company,
           email, phone (optional), and whatever you type into the message
           field. Also the source tag (e.g. <code>leadgen</code>,
-          <code> sponsor-inquiry</code>, <code>compliance-audit-soc-2</code>).
+          <code> sponsor-inquiry</code>, <code>service-inquiry</code>).
         </li>
         <li>
           <strong>Newsletter subscription:</strong> email address and an
@@ -201,7 +201,7 @@ export function PrivacyPage() {
           <tr><td>Resend, Inc.</td><td>Outbound transactional and newsletter email</td><td>US</td></tr>
           <tr><td>Cloudflare</td><td>Turnstile bot challenge</td><td>Global edge</td></tr>
           <tr><td>Google LLC</td><td>Google Analytics 4 (cookieless until you opt in via the consent banner), Google AdSense (only renders ads when you opt in to marketing cookies), and OAuth sign-in</td><td>US / Global</td></tr>
-          <tr><td>Stripe, Inc.</td><td>Payment processing for store products (handled entirely by Stripe — we never see your card number)</td><td>US / Global</td></tr>
+          <tr><td>Stripe, Inc.</td><td>Payment processing for fixed-fee services and subscriptions (handled entirely by Stripe — we never see your card number)</td><td>US / Global</td></tr>
           <tr><td>GitHub, Inc.</td><td>OAuth sign-in (optional)</td><td>US</td></tr>
           <tr><td>AbuseIPDB / IPinfo / Spamhaus / Emerging Threats</td><td>Threat intelligence feeds queried against incoming IPs</td><td>US / EU</td></tr>
         </tbody>
@@ -217,8 +217,8 @@ export function PrivacyPage() {
       <h2>6. Affiliate and referral disclosures</h2>
       <p>
         Some pages include affiliate links to third-party products
-        (1Password, Gusto, Acronis, HoneyBook, Amazon, cyber-insurance
-        brokers, compliance-audit firms). If you click through and purchase
+        (1Password, Gusto, Acronis, HoneyBook, Amazon, and compliance tooling
+        vendors). If you click through and purchase
         or sign up, Simple IT SRQ may receive a referral commission. This
         never changes the price you pay. Pages with affiliate content display
         an FTC-compliant disclosure banner at the top. Clicks are logged for
@@ -326,7 +326,7 @@ export function PrivacyPage() {
 export function TermsPage() {
   useSEO({
     title: "Terms of Service | Simple IT SRQ",
-    description: "Terms governing use of simpleitsrq.com — website use, store products, affiliate disclosures, newsletter, referrals, and the standard limitations of liability. Paid engagements are governed separately by a signed MSA.",
+    description: "Terms governing use of simpleitsrq.com — website use, fixed-fee services, affiliate disclosures, newsletter, referrals, and the standard limitations of liability. Paid engagements are governed separately by a signed MSA.",
     canonical: "https://simpleitsrq.com/terms",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
@@ -337,11 +337,11 @@ export function TermsPage() {
   return (
     <LegalShell
       title="Terms of Service"
-      lede="These terms govern simpleitsrq.com, the digital products sold on our store, our newsletter, and our referral programs. Paid managed-services engagements are governed separately by a signed Master Services Agreement (MSA)."
+      lede="These terms govern simpleitsrq.com, fixed-fee service purchases, our newsletter, and our referral programs. Paid managed-services engagements are governed separately by a signed Master Services Agreement (MSA)."
     >
       <h2>1. Acceptance</h2>
       <p>
-        By accessing simpleitsrq.com or using any feature on it (store, newsletter,
+        By accessing simpleitsrq.com or using any feature on it (newsletter,
         referral forms, client portal) you accept these terms. If you don't
         agree, don't use the site. We may update these terms; the revised
         version takes effect when posted, and the "Last updated" date at the
@@ -369,7 +369,7 @@ export function TermsPage() {
         templates as your own product, or remove our copyright notices.
       </p>
 
-      <h2>4. Digital product purchases (Store)</h2>
+      <h2>4. Fixed-fee service purchases</h2>
 
       <h3>4.1 What you're buying</h3>
       <p>
@@ -378,34 +378,30 @@ export function TermsPage() {
 
       <h3>4.2 License</h3>
       <p>
-        Your purchase grants you a perpetual, non-exclusive, non-transferable
-        license to use the product internally within your organization,
-        including customizing and filling in the templates. You may NOT resell,
-        republish, or redistribute the raw template files outside your
-        organization. "Your organization" means one legal entity; multi-entity
-        use requires an additional license per entity.
+        A fixed-fee service purchase reserves the specific scope described on
+        the service page or checkout link. Deliverables are for your
+        organization only unless we agree otherwise in writing.
       </p>
 
       <h3>4.3 Lifetime updates</h3>
       <p>
-        Every store product ships with lifetime updates. When a template is
-        revised — because regulations change, carriers update their
-        questionnaires, or we improve the format — existing buyers receive
-        the new version by email at no charge.
+        Fixed-fee services do not include ongoing support unless the service
+        description or a separate agreement says so. Managed-services clients
+        are governed by their signed MSA.
       </p>
 
       <h3>4.4 Refund policy</h3>
       <p>
-        30 days, no questions asked. If a product doesn't match what you
-        expected, reply to your receipt email and we will refund you. You
-        keep the files. Refunds are processed through Stripe and typically
-        post to your card within 5–10 business days.
+        If a service was purchased by mistake, contact us before work begins.
+        Refunds are processed through Stripe and typically post to your card
+        within 5–10 business days.
       </p>
 
       <h3>4.5 Not professional advice</h3>
       <p>
-        Templates are starting points. For HIPAA, cyber-insurance,
-        compliance, or legal filings you still need a qualified advisor
+        Our technical documentation is not legal or insurance advice. For
+        HIPAA, GLBA, security renewals, compliance, or legal filings you still
+        need a qualified advisor
         (attorney, CPA, auditor, or compliance consultant) to tailor the
         documents to your specific situation. Simple IT SRQ is not a law firm,
         accounting firm, or licensed compliance attester.
@@ -423,8 +419,7 @@ export function TermsPage() {
       <h2>6. Referral programs and affiliate links</h2>
       <p>
         Some outbound links to third-party products (1Password, Gusto,
-        Acronis, HoneyBook, Amazon, cyber-insurance brokers,
-        compliance-audit firms) are affiliate or referral links. If you
+        Acronis, HoneyBook, Amazon, compliance tooling vendors) are affiliate or referral links. If you
         click and purchase or bind a service, Simple IT SRQ may receive a
         commission. This never changes your price. Pages with affiliate
         content render an FTC-required disclosure banner. See the{" "}

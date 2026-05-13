@@ -45,7 +45,7 @@ function Hero() {
           <ul className="trust-row" aria-label="Why clients work with us">
             <li><MapPin size={14} strokeWidth={2.25} /> On-site coverage across Sarasota, Bradenton, and Venice</li>
             <li><Clock size={14} strokeWidth={2.25} /> Flat monthly contract — no hourly surprises, no break/fix invoicing</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA, GLBA, and cyber-insurance evidence packages included</li>
+            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA, GLBA, and security documentation packages included</li>
           </ul>
         </div>
       </div>
@@ -108,7 +108,7 @@ const SOLUTIONS = [
   {
     Icon: Lock,
     title: "Cybersecurity & Zero Trust",
-    desc: "Modern antivirus, email scam filtering, and 24/7 monitoring. We turn on phishing-resistant MFA and passkeys for every account and hand you the written proof your cyber-insurance carrier asks for at renewal."
+    desc: "Modern antivirus, email scam filtering, and 24/7 monitoring. We turn on phishing-resistant MFA and passkeys for every account and hand you the written proof your security reviewer asks for at renewal."
   },
   {
     Icon: Cloud,
@@ -133,7 +133,7 @@ const SOLUTIONS = [
   {
     Icon: FileCheck,
     title: "Compliance & Audit Readiness",
-    desc: "Made for medical and dental practices, law firms, and any business renewing their cyber-insurance policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor."
+    desc: "Made for medical and dental practices, law firms, and any business renewing their security policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor."
   },
   {
     Icon: Briefcase,
@@ -207,7 +207,7 @@ function Industries() {
 function Compliance() {
   const features = [
     "HIPAA risk assessments and remediation plans",
-    "Cyber-insurance renewal evidence packages",
+    "security renewal evidence packages",
     "Tested off-site backups with documented RTO/RPO",
     "Written disaster-recovery runbook for your team",
     "Full-disk encryption on every laptop and mobile device",
@@ -219,7 +219,7 @@ function Compliance() {
           <span className="eyebrow">Governance, Risk & Compliance</span>
           <h2 id="compliance-title" className="title-1">Audit-ready documentation, without the consultant invoice</h2>
           <p className="section-sub">
-            HIPAA risk assessments, cyber-insurance renewals, disaster-recovery
+            HIPAA risk assessments, security renewals, disaster-recovery
             runbooks, and the evidence trail behind them — we do the engineering
             work and hand you the documents your auditor, carrier, or board
             actually asked for.
@@ -261,7 +261,7 @@ function Testimonial() {
           <blockquote>
             "We brought Simple IT SRQ in after a ransomware scare our previous
             provider missed. They turned on two-step sign-in across every
-            account, rebuilt our backup setup, and walked our cyber-insurance
+            account, rebuilt our backup setup, and walked our security documentation
             carrier through every control they'd put in place. The renewal
             paperwork went through without a single follow-up question."
           </blockquote>
@@ -316,7 +316,7 @@ function StatsBar() {
     { v: "Local", l: "Sarasota, Bradenton, and Venice" },
     { v: "Flat", l: "Monthly contracts" },
     { v: "24/7", l: "Endpoint and network monitoring" },
-    { v: "Documented", l: "HIPAA, GLBA, and cyber-insurance" },
+    { v: "Documented", l: "HIPAA, GLBA, and security documentation" },
   ];
   return (
     <section className="stats-bar" aria-label="Key statistics">

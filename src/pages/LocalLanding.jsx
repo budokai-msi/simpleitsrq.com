@@ -18,13 +18,13 @@ const SERVICES = [
   { Icon: Camera, title: "Security Camera Installation", desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording." },
   { Icon: Network, title: "Enterprise Domain Environments", desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one." },
   { Icon: RefreshCw, title: "Migrations and Upgrades", desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, file-share moves, Windows 11 rollouts, and hardware refreshes." },
-  { Icon: Lock, title: "Cybersecurity and Virus Protection", desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring — plus the written proof your cyber-insurance carrier asks for at renewal." },
+  { Icon: Lock, title: "Cybersecurity and Virus Protection", desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring — plus the written proof your security reviewer asks for at renewal." },
   { Icon: Cloud, title: "Microsoft 365, Email, and Cloud Apps", desc: "We set up your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone." },
   { Icon: Server, title: "Backups and Disaster Recovery", desc: "Automatic backups of every computer and server, with a second copy stored off-site. We test the backups every quarter so a restore actually works when you need it." },
   { Icon: Phone, title: "Business Phone, Copiers, and Fax", desc: "Modern phones that work from anywhere, plus Fax-over-Email and copier integration. Ditch the analog lines and scan straight to your cloud." },
   { Icon: Wifi, title: "Networking, Wi-Fi, and Cabling", desc: "Business-grade firewalls, Wi-Fi that reaches every corner, guest-separated networks, and clean cable runs with every jack labeled." },
   { Icon: Server, title: "Windows Enterprise & Migrations", desc: "Fleet management for Windows 11 Enterprise, Entra ID (Azure AD) migrations, server replacements, and the cloud moves that modernize your office." },
-  { Icon: FileCheck, title: "HIPAA and Cyber-Insurance Paperwork", desc: "Written security reviews, the protections auditors and insurers expect, and a binder of documents you can hand them on audit day." },
+  { Icon: FileCheck, title: "HIPAA and Security Documentation", desc: "Written security reviews, the protections auditors and reviewers expect, and a binder of documents you can hand them on audit day." },
   { Icon: Briefcase, title: "IT Planning and Budgeting", desc: "Quarterly check-ins with a senior tech, a simple 12-month plan, and an IT budget you can explain to anyone in plain English." },
 ];
 
@@ -105,7 +105,7 @@ function buildServiceLd(city) {
     { name: `Backup + Disaster Recovery in ${city.city}`,          type: "Backup and disaster recovery" },
     { name: `Business Phone Systems in ${city.city}`,              type: "VoIP" },
     { name: `Networking, Wi-Fi, and Cabling in ${city.city}`,      type: "Network setup" },
-    { name: `HIPAA + Cyber-Insurance Paperwork in ${city.city}`,   type: "Compliance documentation" },
+    { name: `HIPAA + security documentation Paperwork in ${city.city}`,   type: "Compliance documentation" },
     { name: `IT Planning + Budgeting in ${city.city}`,             type: "vCIO" },
   ];
 

@@ -20,8 +20,8 @@ export const cities = {
     intro: "From the galleries on Main Street to the medical offices off Fruitville Road, Sarasota businesses depend on infrastructure that simply has to work. Simple IT SRQ is the regional managed-services partner for dental groups, law firms, real-estate brokerages, and professional-services firms across the city — with depth in Windows Enterprise environments, Microsoft 365 migrations, and the office hardware (copiers, fax, conference rooms) most MSPs quietly subcontract. Networks monitored 24x7. On-site engineers when remote remediation isn’t enough.",
     servicesIntro: "We operate full-stack IT for Sarasota organizations — from endpoint repair and cloud migrations through complex Windows Enterprise environments and integrated office hardware. The accounts we run typically map to one of three operating profiles:",
     localPatterns: [
-      { title: "Medical practice, Fruitville corridor", body: "EHR uptime on whatever platform the practice uses, HIPAA paperwork built for cyber-insurance renewals, and a Wi-Fi plan that handles 10 providers plus chair-side tablets on the same network without dropping the imaging software." },
-      { title: "Law firm, downtown Sarasota", body: "Microsoft 365 security tuned for law firms, Clio or PracticePanther integrations, encrypted client-document sharing with audit trails, and the cyber-insurance evidence package insurers now demand at renewal — ready to hand over on day one." },
+      { title: "Medical practice, Fruitville corridor", body: "EHR uptime on whatever platform the practice uses, HIPAA paperwork built for security renewals, and a Wi-Fi plan that handles 10 providers plus chair-side tablets on the same network without dropping the imaging software." },
+      { title: "Law firm, downtown Sarasota", body: "Microsoft 365 security tuned for law firms, Clio or PracticePanther integrations, encrypted client-document sharing with audit trails, and the security documentation package reviewers ask for at renewal — ready to hand over on day one." },
       { title: "Boutique retailer, St. Armands / Main Street", body: "Point-of-sale uptime during peak tourist weekends, guest Wi-Fi that's isolated from the register network, security cameras that actually get reviewed after an incident, and back-office systems that survive a hurricane-season power dip." },
     ],
     landmarks: ["Main Street Sarasota", "St. Armands Circle", "Lido Key", "Fruitville Road medical corridor", "Downtown Sarasota"],
@@ -116,17 +116,17 @@ export const cities = {
     title: "Lakewood Ranch IT Support | Local IT Help | Simple IT SRQ",
     metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Lakewood Ranch professional offices and residential clients. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone.",
     intro: "Lakewood Ranch is one of the fastest-growing planned communities in the country, and the professional offices clustered around Main Street, Lakewood Ranch Medical Center, and the UTC corridor demand IT operations that scale with them. Simple IT SRQ runs managed services for the law firms, financial advisors, medical specialists, and real-estate brokerages building their businesses across LWR — from Waterside Place through University Town Center.",
-    servicesIntro: "Lakewood Ranch is a professional-services market: law, finance, medical, insurance, real estate. Most LWR engagements run 15-to-50 seats, framed by a cyber-insurance renewal cycle or a buildout at Center Point or Waterside Place. The capabilities below ship on every engagement — only the prioritization changes.",
+    servicesIntro: "Lakewood Ranch is a professional-services market: law, finance, medical, insurance, real estate. Most LWR engagements run 15-to-50 seats, framed by a security renewal cycle or a buildout at Center Point or Waterside Place. The capabilities below ship on every engagement — only the prioritization changes.",
     localPatterns: [
       { title: "Financial advisory firm, LWR Main Street", body: "SEC + GLBA documentation written to what examiners actually ask in 2026, MFA hardware keys on every admin account, encrypted email workflows that don't break Outlook, and quarterly phishing tests with results packaged for the compliance binder." },
       { title: "Real estate brokerage, UTC corridor", body: "Agent account churn without the lost-email drama, shared-drive governance per team, MLS and transaction-management integrations, and commission-software uptime the day before every closing." },
-      { title: "Medical specialist, LWR Medical Center area", body: "HIPAA, cyber-insurance evidence, and the EHR-vendor coordination nobody wants to do themselves — we book the vendor calls, document the integrations, and keep the audit file current between renewal cycles." },
+      { title: "Medical specialist, LWR Medical Center area", body: "HIPAA, security documentation, and the EHR-vendor coordination nobody wants to do themselves — we book the vendor calls, document the integrations, and keep the audit file current between renewal cycles." },
     ],
     landmarks: ["Lakewood Ranch Main Street", "University Town Center (UTC) mall", "Waterside Place", "Lakewood Ranch Medical Center", "Center Point corporate park"],
     neighborhoods: "Lakewood Ranch Main Street, Waterside Place, Country Club East, Central Park, the UTC corridor, and the business parks along SR-70",
     whyLocal: [
       "Vertical fit for the 10- to 80-seat professional offices that define Lakewood Ranch — law, finance, medical, insurance, and real estate — with the controls and documentation each regulator expects.",
-      "Cyber-insurance renewal evidence aligned to what carriers actually score in 2026: phishing-resistant MFA on every account, modern EDR, tested off-site backups, and a written incident-response plan.",
+      "security renewal evidence aligned to what carriers actually score in 2026: phishing-resistant MFA on every account, modern EDR, tested off-site backups, and a written incident-response plan.",
       "Quarterly Strategic IT Reviews — a senior engineer walks leadership through what’s working, what’s about to fail, and what belongs in next year’s budget. Plain English, no consulting theater.",
     ],
     faqs: [
@@ -139,8 +139,8 @@ export const cities = {
         a: "Yes. We set up the two-step sign-in, antivirus, encrypted backups, and written policies that SEC examiners and GLBA reviewers expect, and we put it all in writing so you're ready on audit day."
       },
       {
-        q: "Our cyber-insurance renewal questionnaire keeps getting harder. Can you help?",
-        a: "That's one of our specialties. We walk through every question on your insurance carrier's form, fix anything that's missing, and give you written proof. Several Lakewood Ranch clients have cut their renewal premium after switching to us."
+        q: "Our security renewal questionnaire keeps getting harder. Can you help?",
+        a: "That's one of our specialties. We walk through every question on your insurance carrier's form, fix anything that's missing, and give you written proof. Several Lakewood Ranch clients have cut their renewal review after switching to us."
       },
       {
         q: "How do you handle Microsoft 365 for a growing firm?",
@@ -216,7 +216,7 @@ export const cities = {
     intro: "Venice carries a business mix you don’t see anywhere else on the Gulf Coast: a healthcare cluster around the hospital, a historic downtown of long-running professional practices, and a wave of newer offices along the Jacaranda and airport corridors. Layered on top is something the rest of the region doesn’t carry — a real snowbird season that doubles network load November through April. Simple IT SRQ operates managed IT for the Venice medical groups, law firms, accounting practices, dental offices, and real-estate brokerages that need an engineering team across both the seasonal surge and the year-round compliance load.",
     servicesIntro: "Venice operates as two markets at once — a downtown of long-running professional practices, and a healthcare cluster around ShoreView Hospital. Both roughly double in network load November through April. Capacity is engineered against the seasonal peak, not the summer baseline.",
     localPatterns: [
-      { title: "Dental or medical specialist, Venice Avenue / near ShoreView", body: "Snowbird-season network sizing (firewalls, APs, and ISP plans spec'd for the peak), HIPAA paperwork aligned to 2026 cyber-insurance renewal forms, and an EHR vendor point-of-contact log that saves an hour on every support call." },
+      { title: "Dental or medical specialist, Venice Avenue / near ShoreView", body: "Snowbird-season network sizing (firewalls, APs, and ISP plans spec'd for the peak), HIPAA paperwork aligned to 2026 security renewal forms, and an EHR vendor point-of-contact log that saves an hour on every support call." },
       { title: "Law firm, historic downtown Venice", body: "Document security with matter-level access, client portal uptime, matter-based backups that ignore the rest of the drive, and the three-times-a-year phishing-simulation evidence the Florida Bar's risk-management CLEs now quietly expect." },
       { title: "Imaging or physical therapy, Jacaranda corridor", body: "DICOM uptime with cross-site replication to a second suite, badge-reader access control that ties into the practice's HR onboarding, and an incident-response runbook the front desk can actually read at 7:45am when things go sideways." },
     ],
@@ -272,10 +272,10 @@ export const cities = {
     intro: "34207 is where Simple IT SRQ is headquartered. We operate managed IT for businesses and residential clients across West Bradenton, Bayshore Gardens, Samoset, and Oneco — plus every account inside roughly a 10-mile dispatch radius of the 34207 core, covering downtown Bradenton, Palmetto, Ellenton, Holmes Beach and Bradenton Beach on the barrier islands, Cortez, Longboat Key (north), and the northern edge of Sarasota.",
     servicesIntro: "Accounts inside this dispatch radius split across three operating profiles: medical and dental practices along Cortez Road and 14th Street West; construction, marine, and trades operations near the Port and along SR-64; and retail + hospitality across the barrier-island tourist corridor. The capabilities ship on every engagement — only the emphasis shifts.",
     localPatterns: [
-      { title: "Medical or dental practice, Cortez Road / 14th Street West", body: "EHR and imaging vendor uptime, HIPAA Risk Assessment + Safeguards paperwork, cyber-insurance evidence binder your carrier asks for at renewal, and two-step sign-in on every account so the one staff click that would otherwise cost you $40,000 in ransomware doesn't." },
+      { title: "Medical or dental practice, Cortez Road / 14th Street West", body: "EHR and imaging vendor uptime, HIPAA Risk Assessment + Safeguards paperwork, security documentation binder your carrier asks for at renewal, and two-step sign-in on every account so the one staff click that would otherwise cost you $40,000 in ransomware doesn't." },
       { title: "Marine or waterfront business, Bayshore Gardens / Cortez / Palma Sola", body: "Dock and lift Wi-Fi that actually reaches the waterfront, ruggedized fleet tablets for the captains, invoicing that survives a summer power outage, and off-site backups stored far enough inland that a tropical storm hitting Anna Maria doesn't take both copies offline." },
       { title: "Retail or hospitality, Anna Maria / Bradenton Beach / Holmes Beach", body: "Point-of-sale uptime through spring break and peak tourist weekends, guest Wi-Fi isolated from the register network, credit-card processing that passes PCI SAQ-A, and security cameras that actually get reviewed after an incident." },
-      { title: "Professional services, downtown Bradenton / Old Main Street", body: "Microsoft 365 Business Premium tuned for law, accounting, or consulting; encrypted client-document sharing; cyber-insurance questionnaire answers ready for renewal; and the written WISP your insurer now requires." },
+      { title: "Professional services, downtown Bradenton / Old Main Street", body: "Microsoft 365 Business Premium tuned for law, accounting, or consulting; encrypted client-document sharing; security renewal questionnaire answers ready for renewal; and the written WISP many reviewers ask for." },
     ],
     landmarks: ["Bayshore Gardens Park", "Cortez Road", "14th Street West medical corridor", "SR-64 construction corridor", "Manatee River Riverwalk", "Anna Maria Island Bridge", "Port Manatee"],
     neighborhoods: "Bayshore Gardens, West Bradenton, Samoset, Oneco, Palma Sola, downtown Bradenton, Cortez, Palmetto, Ellenton, Holmes Beach, Bradenton Beach, Anna Maria, northern Longboat Key, Tallevast, and the SR-64 business corridor",
@@ -295,7 +295,7 @@ export const cities = {
       },
       {
         q: "Do you handle HIPAA for medical and dental practices on Cortez Road?",
-        a: "Yes — a big chunk of our 34207-radius clients are independent medical, dental, physical-therapy, and chiropractic practices. We run the written HIPAA Risk Assessment, put the Administrative / Physical / Technical Safeguards in place, issue the BAAs you need for every vendor, and hand you a binder the state surveyor or your cyber-insurance carrier opens first."
+        a: "Yes — a big chunk of our 34207-radius clients are independent medical, dental, physical-therapy, and chiropractic practices. We run the written HIPAA Risk Assessment, put the Administrative / Physical / Technical Safeguards in place, issue the BAAs you need for every vendor, and hand you a binder the state surveyor or your security reviewer opens first."
       },
       {
         q: "Can you support my restaurant or boutique on Anna Maria Island during tourist season?",

@@ -1,63 +1,7 @@
 [
   {
-    "slug": "sarasota-small-business-ai-mistakes",
-    "title": "Your Team Is Probably Using AI Wrong (And Its Costing You Money)",
-    "date": "2026-05-02",
-    "category": "AI & Productivity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Most small businesses are adopting AI tools without a plan. Heres whats actually happening—and how to fix it before it becomes a security and compliance nightmare.",
-    "metaDescription": "Small business owners in Sarasota are using AI tools unsafely. Learn the risks and how to implement AI securely.",
-    "heroAlt": "An illustration accompanying Your Team Is Probably Using AI Wrong (And Its Costing You Money)."
-  },
-  {
-    "slug": "windows-11-security-update-sarasota-bradenton",
-    "title": "Windows 11 Security Update: What Sarasota Businesses Need to Know",
-    "date": "2026-05-02",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Microsoft just released critical security patches for Windows 11. Heres what small business owners in Sarasota need to do right now to protect their data.",
-    "metaDescription": "Windows 11 security update guide for Sarasota small businesses. What changed, why it matters, and what to do.",
-    "heroAlt": "An illustration accompanying Windows 11 Security Update: What Sarasota Businesses Need to Know."
-  },
-  {
-    "slug": "sarasota-business-phone-spoofing-security-risk",
-    "title": "Your Business Phone Number Just Became a Security Risk (Heres Why)",
-    "date": "2026-04-30",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Hackers are spoofing local Sarasota and Bradenton business phone numbers to trick your customers and employees. Heres whats happening and how to protect your company.",
-    "metaDescription": "Business phone spoofing attacks targeting Sarasota companies. Learn why your phone number is at risk and what to do.",
-    "heroAlt": "An illustration accompanying Your Business Phone Number Just Became a Security Risk (Heres Why)."
-  },
-  {
-    "slug": "microsoft-copilot-pc-requirements-sarasota-small-business",
-    "title": "The New Microsoft Copilot+ PC Requirements: What Your Sarasota Business Needs to Know",
-    "date": "2026-04-30",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Microsoft is pushing AI-powered Copilot+ PCs hard, and they come with strict hardware requirements. Heres what that means for your upgrade budget and whether you actually need one.",
-    "metaDescription": "Copilot+ PCs require expensive hardware. Learn what your Sarasota business really needs before upgrading.",
-    "heroAlt": "An illustration accompanying The New Microsoft Copilot+ PC Requirements: What Your Sarasota Business Needs to Know."
-  },
-  {
     "slug": "hermes-ai-uncensored-open-model-business-2026",
-    "title": "Hermes AI — What an 'Uncensored' Open Model Actually Is, and When a Small Business Should Care",
+    "title": "Hermes AI: When an Open Model Makes Sense",
     "date": "2026-04-28",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -71,12 +15,12 @@
       "smb"
     ],
     "excerpt": "Hermes is an open-weights model line from Nous Research that ships without the heavy 'corporate assistant' tuning ChatGPT and Claude carry. That makes it sharper for some workflows and a poor fit for others. Here is the plain-English read for a small-business operator.",
-    "metaDescription": "Hermes is the open-weights model line from Nous Research that trades the corporate guardrails of ChatGPT and Claude for direct, less-filtered output. Here is what that means in practice, and when it is the right tool for a small business.",
+    "metaDescription": "Hermes is an open-weights AI model with fewer product guardrails. Here is when a small business should use it, avoid it, or run it locally.",
     "heroAlt": "A laptop on an office desk running an open-weights AI model locally, with the response panel showing a longer and more direct answer than a typical chatbot."
   },
   {
     "slug": "kimi-k2-6-moonshot-long-context-business-2026",
-    "title": "Kimi K2.6 — Moonshot AI's Long-Context Model and What It's Actually Good For",
+    "title": "Kimi K2.6: Long-Context AI for Small Business",
     "date": "2026-04-28",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -90,12 +34,12 @@
       "smb"
     ],
     "excerpt": "Kimi K2.6 is Moonshot AI's latest model — a long-context, strongly coding-tuned alternative to Claude and GPT. Here is what it does well, where it falls short, and the situations where a small business should actually consider it over the incumbents.",
-    "metaDescription": "Kimi K2.6 is the latest model from Moonshot AI — a Chinese-built large language model with a notably long context window and strong coding performance. Here is the honest read on when it is the right pick for a small business and when to stay away.",
+    "metaDescription": "Kimi K2.6 is a long-context model from Moonshot AI. Here is where it helps small businesses, where it creates risk, and when to stay away.",
     "heroAlt": "A knowledge worker reviewing a multi-hundred-page PDF in a Kimi K2.6 chat session, with the model summarizing and answering questions in a single conversation."
   },
   {
     "slug": "ollama-local-llm-private-ai-2026",
-    "title": "Ollama — Run a Real AI Model on Your Own Laptop in About Ten Minutes",
+    "title": "Ollama: Run a Private AI Model Locally",
     "date": "2026-04-28",
     "category": "Privacy",
     "author": "Simple IT SRQ Team",
@@ -108,12 +52,12 @@
       "smb"
     ],
     "excerpt": "Ollama is a free open-source runtime that lets you download and run a real AI model on a single laptop — no cloud, no monthly subscription, no data leaving your office. Here is what it is, when it makes sense, and the ten-minute install.",
-    "metaDescription": "Ollama is a free, open-source runtime that lets a small business run a real AI model — Llama, Hermes, Mistral, Qwen — on a single laptop without ever sending data to a cloud. Here is what it is, when it makes sense for an office, and how to set it up.",
+    "metaDescription": "Ollama lets a small business run Llama, Mistral, Hermes, or Qwen on a laptop without sending prompts to the cloud. Here is when it helps.",
     "heroAlt": "A MacBook on a desk running Ollama in a terminal window with a chat session against a local Llama model — no internet connection required."
   },
   {
     "slug": "openclaw-local-ai-agent-runtime-2026",
-    "title": "OpenClaw — The Local AI Agent Runtime We Use to Run Our Own MSP",
+    "title": "OpenClaw: The Local AI Agent Runtime We Use",
     "date": "2026-04-28",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -127,7 +71,7 @@
       "smb"
     ],
     "excerpt": "We run a managed IT business, but we also run our own AI-agent layer to handle ticket triage, threat-feed ingestion, daily blog drafts, and security audits. OpenClaw is the runtime under all of it. Here is what it is, why we built it instead of paying a SaaS, and what a small business can take from the design.",
-    "metaDescription": "OpenClaw is the local AI-agent harness our team built to run our own internal IT operations — ticket triage, threat-feed ingestion, blog drafting, security audits. Here is what it does, why we use it instead of a SaaS, and what a small business should learn from the architecture.",
+    "metaDescription": "OpenClaw runs local AI-agent workflows for ticket triage, threat feeds, draft writing, and audits. Small businesses can copy the architecture.",
     "heroAlt": "A workstation showing the OpenClaw agent dashboard with active agents handling tickets, security feeds, and content drafts in parallel."
   },
   {
@@ -147,12 +91,12 @@
       "open-source"
     ],
     "excerpt": "OpenAI started as a non-profit committed to open, safe AI for humanity. It is now closed-source, Microsoft-controlled, and run by a CEO his own board fired for not being consistently candid. Here is the structural case against ChatGPT — most of it borrowed from Elon Musk's lawsuit — and what to use instead.",
-    "metaDescription": "OpenAI was founded as a non-profit committed to safe, open AI for humanity's benefit. In 2026 it is a closed, Microsoft-controlled, profit-maximizing product run by a CEO his own board fired for not being consistently candid. Here is the case for moving on, including the structural arguments Elon Musk has been making since he sued.",
+    "metaDescription": "ChatGPT is not always the right default for business AI. Compare privacy, contracts, data controls, team workflow, and alternatives before standardizing.",
     "heroAlt": "A user closing a ChatGPT browser tab and opening Claude, Gemini, and a local open-source model side by side."
   },
   {
     "slug": "business-security-cameras-sarasota-honest-guide-2026",
-    "title": "Business Security Cameras in Sarasota: An Honest Buyer's Guide for 2026",
+    "title": "Business Security Cameras in Sarasota: 2026 Guide",
     "date": "2026-04-25",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -165,12 +109,12 @@
       "hardware"
     ],
     "excerpt": "We just put security camera installation back on the homepage — it's something we've quietly done for shop, office, and warehouse clients across Sarasota and Bradenton for years, and it's overdue for an honest writeup. Here's what we actually install in 2026, what we steer clients away from, what each tier costs, and the Florida-specific install gotchas (heat, humidity, hurricane mounts, salt air on barrier islands) that the YouTube reviews never mention.",
-    "metaDescription": "What we actually install for Sarasota small businesses, what we won't install, and what each tier costs. UniFi Protect, Reolink, why we steer clients away from Hikvision and Dahua, and the Florida-specific install gotchas (humidity, salt air, hurricane mounts) that don't get talked about in YouTube reviews.",
+    "metaDescription": "What we install for Sarasota offices, what we avoid, and what each tier costs: UniFi, Reolink, Verkada, Axis, mounts, storage, and wiring.",
     "heroAlt": "A wall-mounted PoE security camera over the back door of a Sarasota retail shop, with a network cable running into a structured wiring rack inside."
   },
   {
     "slug": "computer-repair-sarasota-honest-guide-2026",
-    "title": "Computer Repair in Sarasota: When to Fix It, When to Replace It, and How to Spot a Scam Quote (2026)",
+    "title": "Computer Repair in Sarasota: Fix or Replace?",
     "date": "2026-04-25",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -183,12 +127,12 @@
       "venice"
     ],
     "excerpt": "We just put computer repair back on the homepage as a real, named service — for both businesses and homes — and that means it's overdue for an honest writeup. When is a repair worth doing, when should you replace, what should each common repair actually cost, and what are the six red flags in a quote that mean you're being upsold? Written for Sarasota and Bradenton owners who'd rather be told the truth than handed an expensive estimate.",
-    "metaDescription": "Honest guide to computer repair in Sarasota and Bradenton. The repair-vs-replace decision tree, real prices for SSD upgrades, screen swaps, virus removal, and dead power supplies. Six red flags in a repair quote that mean you're being upsold. For business and residential.",
+    "metaDescription": "Honest Sarasota computer repair guide with real prices for SSD upgrades, screens, virus cleanup, dead power supplies, and scam quote red flags.",
     "heroAlt": "An open laptop on a workbench with the keyboard removed, showing a technician's hand replacing an internal component, alongside a printed quote sheet."
   },
   {
     "slug": "free-exposure-scan-launched-2026",
-    "title": "We Just Launched a Free Exposure Scan — Here's What Your Domain Looks Like to an Attacker",
+    "title": "Free Exposure Scan for Florida Small Businesses",
     "date": "2026-04-24",
     "category": "Cybersecurity",
     "author": "Simple IT SRQ Team",
@@ -204,50 +148,8 @@
     "heroAlt": "A computer screen showing an A-through-F report card grading a small business domain on email authentication, DNS records, and exposed subdomains."
   },
   {
-    "slug": "windows-11-printer-fix-sarasota",
-    "title": "Windows 11 Update Just Broke Your Printers (Heres the Fix)",
-    "date": "2026-04-24",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "A recent Windows update is causing printer failures across small businesses. Well explain what happened and how to fix it without calling IT.",
-    "metaDescription": "Windows 11 update breaks printers. Learn why and get the fix for your Sarasota small business.",
-    "heroAlt": "An illustration accompanying Windows 11 Update Just Broke Your Printers (Heres the Fix)."
-  },
-  {
-    "slug": "windows-11-printer-update-sarasota",
-    "title": "Windows 11 Update Broke Your Printer? Heres What Sarasota Businesses Need to Know",
-    "date": "2026-04-24",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "A recent Windows 11 update is causing printing problems for small businesses. Well explain what happened and how to fix it without losing a day of work.",
-    "metaDescription": "Windows 11 update causing printer issues? Simple IT SRQ explains the fix for Sarasota, Bradenton & Venice businesses.",
-    "heroAlt": "An illustration accompanying Windows 11 Update Broke Your Printer? Heres What Sarasota Businesses Need to Know."
-  },
-  {
-    "slug": "florida-data-privacy-law-sarasota-business-owners",
-    "title": "Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know",
-    "date": "2026-04-24",
-    "category": "Compliance",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Florida just passed new data privacy rules that affect how you handle customer information. Heres what changed and what you need to do about it.",
-    "metaDescription": "Florida data privacy law explained for small business owners in Sarasota. What changed and how to comply.",
-    "heroAlt": "An illustration accompanying Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know."
-  },
-  {
     "slug": "florida-small-business-tech-stack-2026",
-    "title": "The 2026 Florida Small-Business Tech Stack (What We Actually Install on Day One)",
+    "title": "The 2026 Florida Small-Business Tech Stack",
     "date": "2026-04-22",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -258,41 +160,13 @@
       "sarasota",
       "bradenton"
     ],
-    "excerpt": "Every time a new Sarasota client asks 'what should we be running?' the answer is the same eight-tool stack. Here it is — with the tiers that actually pass a 2026 cyber-insurance audit and the ones we rejected and why.",
-    "metaDescription": "The complete tool-by-tool tech stack we install for every new Sarasota, Bradenton, and Venice small-business client — with the specific tiers that pass a cyber-insurance renewal and the alternatives we rejected.",
+    "excerpt": "Every time a new Sarasota client asks 'what should we be running?' the answer is the same eight-tool stack. Here it is — with the tiers that actually pass a 2026 security review and the ones we rejected and why.",
+    "metaDescription": "The tool-by-tool stack we install for Sarasota, Bradenton, and Venice offices, including Microsoft 365, backups, MFA keys, payroll, and Wi-Fi.",
     "heroAlt": "A Florida small-business laptop desk with a YubiKey plugged in, a UPS under the desk, and a Microsoft 365 admin console on screen."
   },
   {
-    "slug": "sarasota-biggest-cyber-risk-2024",
-    "title": "Your Businesss Biggest Cyber Risk Right Now (And Its Not What You Think)",
-    "date": "2026-04-21",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Employee passwords are the #1 weak spot in small business security. Heres why and what to do about it.",
-    "metaDescription": "Why weak passwords are your biggest cyber threat. Simple IT SRQ explains password security for Sarasota small businesses.",
-    "heroAlt": "An illustration accompanying Your Businesss Biggest Cyber Risk Right Now (And Its Not What You Think)."
-  },
-  {
-    "slug": "sarasota-employee-security-risk-training",
-    "title": "Your Employees Are Your Biggest Security Risk (And What To Do About It)",
-    "date": "2026-04-21",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Hackers arent sneaking past your firewall—theyre getting in through your teams email inbox. Heres how to fix it without making everyone miserable.",
-    "metaDescription": "Stop hackers targeting your Sarasota business through employee email. Simple security training that actually works.",
-    "heroAlt": "An illustration accompanying Your Employees Are Your Biggest Security Risk (And What To Do About It)."
-  },
-  {
     "slug": "adobe-alternatives-small-office-creative-stack-2026",
-    "title": "What We Replaced Adobe Creative Cloud With in a 14-Person Sarasota Office (and Kept)",
+    "title": "Adobe Alternatives for a Sarasota Creative Office",
     "date": "2026-04-19",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -306,12 +180,12 @@
       "sarasota"
     ],
     "excerpt": "We migrated a Sarasota real-estate-marketing agency off Adobe Creative Cloud this spring. Twelve of fourteen seats moved to a cheaper stack. Two didn't. Here's the tool-by-tool breakdown — and why we didn't chase the last two.",
-    "metaDescription": "Adobe Creative Cloud at $70/seat/month adds up fast for a small Florida office. Here's the mixed stack we moved a 14-person agency to — what worked, what didn't, and what we had to keep Adobe for anyway.",
+    "metaDescription": "Adobe Creative Cloud adds up fast for small offices. Here is the mixed creative stack we moved a 14-person Sarasota team to, including what still needs Adobe.",
     "heroAlt": "A laptop screen in a Sarasota agency office showing Affinity Designer, Figma, and Canva side by side, with a monthly subscription comparison on paper beside it."
   },
   {
     "slug": "ai-model-switching-small-business-claude-gemini-chatgpt",
-    "title": "Claude Opus 4.7 Dropped This Week. Your Small Business Should Not Care.",
+    "title": "Claude Opus 4.7: What Small Businesses Should Do",
     "date": "2026-04-19",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -325,12 +199,12 @@
       "sarasota"
     ],
     "excerpt": "Opus 4.7 replaced 4.6 last week. Benchmarks traded places. Your staff didn't notice. For small businesses, the conversation that matters isn't 'which model is best,' it's 'which subscription and which habits.' Here's the framework we use with clients.",
-    "metaDescription": "Every few weeks a new AI model version ships and the benchmark discourse explodes. For Sarasota small businesses actually using AI to run payroll, draft emails, and summarize client calls, none of it matters. Here's the boring framework that does.",
+    "metaDescription": "New AI model launches are noisy. Sarasota small businesses need a boring framework for payroll, email, summaries, privacy, and staff use.",
     "heroAlt": "A Sarasota small-business owner at their desk comparing AI tool subscriptions on paper, with Claude, Gemini, and ChatGPT open in three browser tabs."
   },
   {
     "slug": "byte-magazine-1975-small-office-documentation-lessons",
-    "title": "An Archive of BYTE Magazine from 1975 Reminded Me of a Client's Server Closet",
+    "title": "BYTE Magazine and the Server Closet Lesson",
     "date": "2026-04-19",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -342,12 +216,12 @@
       "bradenton"
     ],
     "excerpt": "Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist.",
-    "metaDescription": "The 1975 BYTE Magazine archive hit Hacker News this week. Scrolling through it at 11pm, I realized the 50-year-old advice on IT documentation is exactly what our Sarasota and Bradenton clients still get wrong.",
+    "metaDescription": "A 1975 BYTE Magazine archive still explains why small offices lose track of servers, passwords, backups, diagrams, and vendor notes.",
     "heroAlt": "A binder labeled 'Network and Systems Runbook' sitting on a wooden desk in a Sarasota small-office server closet, with cables and a switch visible in the background."
   },
   {
     "slug": "desk-upgrade-sarasota-ai-heavy-staff-ergonomics",
-    "title": "The $420 Desk Upgrade That Made a Sarasota Client's AI Rollout Actually Stick",
+    "title": "The $420 Desk Upgrade That Made Copilot Stick",
     "date": "2026-04-19",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -360,26 +234,12 @@
       "sarasota"
     ],
     "excerpt": "When a Sarasota accounting firm's Copilot rollout stalled at 60% adoption, the root cause was not training or licensing. It was desks. Three hardware purchases per workstation totaling about $420 took adoption to 95% in three weeks. Here's what we bought and why.",
-    "metaDescription": "We rolled out Microsoft 365 Copilot to an 18-person Sarasota accounting firm in February. Adoption was 60% after six weeks. We fixed three ergonomic problems at $420 per desk and adoption hit 95% by March. Here's what we bought.",
+    "metaDescription": "A Sarasota accounting firm had weak Copilot adoption until we fixed monitors, docks, webcams, and seating. The desk setup changed the rollout.",
     "heroAlt": "A Sarasota CPA's desk setup with a standing desk converter raised to standing height, a single large 4K monitor on a pneumatic arm, a vertical mouse, and a split mechanical keyboard, with accounting-software windows open alongside a Copilot chat."
   },
   {
-    "slug": "employee-ai-policy-sarasota-small-business",
-    "title": "Your Employees Are Using AI at Work (And You Need a Policy)",
-    "date": "2026-04-19",
-    "category": "AI & Productivity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "ChatGPT, Claude, and other AI tools are in your office right now—whether you know it or not. Heres why you need an AI policy before something goes wrong.",
-    "metaDescription": "Small business owners: Your employees are using AI tools at work. Learn why you need a policy and how to create one.",
-    "heroAlt": "An illustration accompanying Your Employees Are Using AI at Work (And You Need a Policy)."
-  },
-  {
     "slug": "notion-public-pages-legal-office-audit-sarasota",
-    "title": "What We Found When We Audited a Sarasota Law Firm's Notion Workspace This Morning",
+    "title": "A Sarasota Law Firm Notion Audit: What We Found",
     "date": "2026-04-19",
     "category": "Privacy",
     "author": "Simple IT SRQ Team",
@@ -392,12 +252,12 @@
       "sarasota"
     ],
     "excerpt": "This morning's Notion story was specific: a public API endpoint returned the email addresses of every editor on any public page. We immediately audited a Sarasota law firm that uses Notion for case intake. Here's what we found, what we rotated, and the one-page audit every business using Notion should run this week.",
-    "metaDescription": "A leaked API endpoint let anyone scrape the email addresses of every editor on any Notion public page. We spent two hours auditing a Sarasota law firm that uses Notion for client intake. What we found, what we moved, and what our clients should audit this week.",
+    "metaDescription": "A Notion public-page leak exposed editor emails. We audited a Sarasota law firm workspace and found the settings every office should check.",
     "heroAlt": "A laptop on a Sarasota law firm conference-room desk showing a Notion workspace page with a 'Share to web' toggle and a list of team members visible."
   },
   {
     "slug": "ram-shortage-small-business-hardware-budget-sarasota",
-    "title": "The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here's What to Buy Now.",
+    "title": "The RAM Shortage and Your Hardware Budget",
     "date": "2026-04-19",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -411,12 +271,12 @@
       "bradenton"
     ],
     "excerpt": "If you have a laptop refresh cycle coming up in the next 18 months, pull the decision forward. DDR5 pricing already doubled in Q1 and the AI data-center buildout means it may not come back down until 2028. Here's what a Sarasota office should buy now.",
-    "metaDescription": "AI workloads have spiked DDR5 demand so hard that analysts expect a 2-3 year RAM shortage. For Sarasota small businesses this is an IT budget conversation, not a tech headline. What to buy this quarter to avoid paying 2X next year.",
+    "metaDescription": "DDR5 and DDR4 prices are rising as AI demand eats supply. Sarasota offices should plan workstation upgrades before replacement costs jump.",
     "heroAlt": "Close-up of DDR5 memory modules on a motherboard in a Sarasota small office, with a calendar and budget spreadsheet visible in the background."
   },
   {
     "slug": "vercel-notion-breach-saas-audit",
-    "title": "Two SaaS Vendors Had a Bad Day — Here's the 30-Minute Check Every Small Business Should Run",
+    "title": "The 30-Minute SaaS Audit After Vercel and Notion",
     "date": "2026-04-19",
     "category": "Security",
     "author": "Simple IT SRQ Team",
@@ -429,64 +289,8 @@
       "bradenton"
     ],
     "excerpt": "Today's top security stories are both about SaaS vendors, not ransomware crews. If you run a small business on Microsoft 365 + Notion + Vercel + half a dozen other tools, this is the 30-minute check you should run before Monday.",
-    "metaDescription": "Vercel disclosed a breach. Notion leaked public-page editor emails. Neither story is about you, but both point to the same lesson for Sarasota and Bradenton small businesses: SaaS sprawl is your real threat surface. Here's the 30-minute audit.",
+    "metaDescription": "Vercel and Notion both exposed real SaaS risk. Sarasota and Bradenton offices can run this 30-minute audit to find public pages and weak access.",
     "heroAlt": "A security operations dashboard on a laptop screen in a Sarasota small-business office showing a map of authenticated login locations and a pending vendor-breach alert."
-  },
-  {
-    "slug": "florida-data-privacy-law-sarasota-small-business",
-    "title": "Floridas New Data Privacy Law: What Sarasota Small Businesses Need to Know",
-    "date": "2026-04-17",
-    "category": "Compliance",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Florida just passed its own data privacy law, and it affects how you handle customer information. Heres what changed and what you need to do about it.",
-    "metaDescription": "Floridas new privacy law affects small businesses. Learn what the Florida Information Protection Act means for your Sarasota company.",
-    "heroAlt": "An illustration accompanying Floridas New Data Privacy Law: What Sarasota Small Businesses Need to Know."
-  },
-  {
-    "slug": "sarasota-business-security-threats-2024",
-    "title": "Your Business is Being Targeted Right Now—Heres What to Do About It",
-    "date": "2026-04-17",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Hackers dont take holidays, and theyre actively targeting small businesses in Sarasota and Bradenton. Heres whats happening and how to protect yourself.",
-    "metaDescription": "Small businesses in Sarasota face rising cyber attacks. Learn what threats are active now and how to protect your company.",
-    "heroAlt": "An illustration accompanying Your Business is Being Targeted Right Now—Heres What to Do About It."
-  },
-  {
-    "slug": "sarasota-employee-password-sharing-security-risk",
-    "title": "Your Employees Are Sharing Passwords (And You Should Know About It)",
-    "date": "2026-04-17",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "Password sharing might seem harmless, but its one of the fastest ways hackers get into your systems. Heres why it matters and what to do about it.",
-    "metaDescription": "Why password sharing among employees is a security risk and how to stop it safely without annoying your team.",
-    "heroAlt": "An illustration accompanying Your Employees Are Sharing Passwords (And You Should Know About It)."
-  },
-  {
-    "slug": "windows-11-update-breaking-computers-sarasota",
-    "title": "The Windows 11 Update Thats Breaking Small Business Computers (And How to Fix It)",
-    "date": "2026-04-17",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "ai",
-      "smb"
-    ],
-    "excerpt": "A recent Windows 11 update is causing significant problems for small businesses, including file access issues and application crashes. Heres what you need to know and what to do about it.",
-    "metaDescription": "Windows 11 update causing file access issues for small businesses in Sarasota. Fixes and prevention steps inside.",
-    "heroAlt": "An illustration accompanying The Windows 11 Update Thats Breaking Small Business Computers (And How to Fix It)."
   },
   {
     "slug": "laptop-docking-station-hybrid-office-bradenton",
@@ -577,7 +381,7 @@
   },
   {
     "slug": "small-business-backup-drive-bradenton-ransomware",
-    "title": "The 3-2-1 Backup Rule Still Works - Heres the Hardware Bradenton Offices Use",
+    "title": "The 3-2-1 Backup Hardware Bradenton Offices Use",
     "date": "2026-04-14",
     "category": "Cybersecurity",
     "author": "Simple IT SRQ Team",
@@ -588,8 +392,8 @@
       "smb",
       "bradenton"
     ],
-    "excerpt": "Cyber-insurance applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes.",
-    "metaDescription": "Ransomware hits small businesses weekly. A $120 external drive plus cloud gives Bradenton and Sarasota offices the 3-2-1 backup every insurer now expects.",
+    "excerpt": "security documentation applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes.",
+    "metaDescription": "Ransomware hits small businesses weekly. A $120 external drive plus cloud gives Bradenton and Sarasota offices the 3-2-1 backup many security reviews expect.",
     "heroAlt": "An external hard drive on a desk next to a laptop, with a padlock icon overlaid showing an encrypted backup."
   },
   {
@@ -606,13 +410,13 @@
       "healthcare",
       "sarasota"
     ],
-    "excerpt": "SMS 2FA keeps getting bypassed in the wild. A physical security key costs $50, stops the entire class of attack, and is now effectively required by several cyber-insurance carriers. Heres how to deploy them.",
+    "excerpt": "SMS 2FA keeps getting bypassed in the wild. A physical security key costs $50, stops the entire class of attack, and is now effectively required by several security reviewers. Heres how to deploy them.",
     "metaDescription": "SMS text-message 2FA is being actively bypassed. Heres what a $50 YubiKey does differently and why Sarasota law and medical offices are standardizing on them.",
     "heroAlt": "A small USB-C hardware security key plugged into a laptop with a login screen showing a successful passkey prompt."
   },
   {
     "slug": "sarasota-employees-using-ai-work-policy",
-    "title": "Your Sarasota Employees Are Using AI at Work. Here Is the Policy You Should Already Have.",
+    "title": "A Practical AI Use Policy for Sarasota Teams",
     "date": "2026-04-11",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -659,7 +463,7 @@
   },
   {
     "slug": "ai-vendor-lockin-procurement-playbook-bradenton",
-    "title": "AI Vendor Lock-In Is the Default. The Anthropic Wrapper Block Just Made It Visible.",
+    "title": "AI Vendor Lock-In: A Procurement Playbook",
     "date": "2026-04-03",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -671,7 +475,7 @@
       "lock-in"
     ],
     "excerpt": "Anthropic quietly blocked third-party wrappers from paid Claude Code accounts. No email, no announcement — users found out when their tools stopped working. This was not a one-off. It is the structural pattern every AI vendor will follow, and your procurement playbook needs to assume it.",
-    "metaDescription": "Anthropic blocked third-party tools from paid Claude Code accounts with no notice. The technical detail is narrow. The structural pattern — every AI vendor will eventually do this — is what your procurement process needs to assume from now on.",
+    "metaDescription": "Anthropic blocking wrapper tools is a warning. Bradenton small businesses need AI procurement rules that assume vendors will change terms.",
     "heroAlt": "A contract document with highlighted clauses about service availability and acceptable-use changes."
   },
   {
@@ -733,7 +537,7 @@
       "incentives"
     ],
     "excerpt": "A developer caught GitHub Copilot inserting a promotional line for a third-party product into a code-review comment with no disclosure. The narrow story is one company, one slip. The structural story is that every AI assistant is a distribution channel and the vendors who own them will eventually monetize it.",
-    "metaDescription": "GitHub Copilot was caught injecting promotional language for a third-party product into a code-review comment. The interesting question is not whether it was intentional. The interesting question is why anyone thought it wouldn't happen.",
+    "metaDescription": "GitHub Copilot showed promotional language in a review comment. The lesson for small teams is simple: AI assistants are now distribution channels.",
     "heroAlt": "A pull request page on a Git provider with a highlighted promotional comment inserted by an AI assistant."
   },
   {
@@ -1020,7 +824,7 @@
       "ownership"
     ],
     "excerpt": "Hacker News banned AI-generated comments and most coverage framed it as a quality complaint. It is not. The real question is whether you still own your voice — and your liability, and your client trust — once your staff routes their writing through a third-party model. Here is the policy frame that actually matters.",
-    "metaDescription": "Hacker News banned AI-generated comments and the discourse missed the point. The real question every business needs to answer is not 'is the output good enough.' It is 'do you still own your voice when your staff outsources writing to a third party.'",
+    "metaDescription": "Hacker News banned AI comments, but the business lesson is ownership. Your team needs a policy for voice, client data, review, and accountability.",
     "heroAlt": "A printed AI Content Policy document on a desk beside a laptop showing a draft email."
   },
   {

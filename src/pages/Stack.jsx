@@ -271,7 +271,7 @@ export default function Stack() {
   useSEO({
     title: "The Florida Small-Business Tech Stack | Simple IT SRQ",
     description:
-      "Every tool we install and recommend for Florida small businesses in 2026 — M365 Business Premium, 1Password, Acronis, Gusto, HoneyBook, YubiKey, and more. Grouped by what they do, with the tier that actually passes a cyber-insurance audit.",
+      "Every tool we install and recommend for Florida small businesses in 2026 — M365 Business Premium, 1Password, Acronis, Gusto, HoneyBook, YubiKey, and more. Grouped by what they do, with the tier that actually passes a security review.",
     canonical: `${SITE_URL}/stack`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [
@@ -300,7 +300,7 @@ export default function Stack() {
             <p className="lede">
               Every tool we install for a new Sarasota or Bradenton client, grouped
               by what it does. Tier recommendations are the ones that pass a
-              cyber-insurance renewal — not the cheapest that works. Links to
+              security renewal — not the cheapest that works. Links to
               vendors we have a referral relationship with are marked; others are
               just plain vendor links.
             </p>

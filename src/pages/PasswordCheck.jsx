@@ -214,7 +214,7 @@ export default function PasswordCheck() {
             <span className="eyebrow">What to do next</span>
             <h2 className="title-1">The 20-minute password hygiene upgrade for your whole business</h2>
             <p className="section-sub">
-              Every Sarasota and Bradenton small office we support started somewhere. Here's the shortest path from "we share a password on a sticky note" to "we pass a cyber-insurance audit."
+              Every Sarasota and Bradenton small office we support started somewhere. Here's the shortest path from "we share a password on a sticky note" to "we pass a security review."
             </p>
           </div>
           <div className="solution-grid">
@@ -242,7 +242,7 @@ export default function PasswordCheck() {
                 <h3 className="solution-card-title">3. Train your staff on what to click</h3>
               </div>
               <p className="solution-card-desc">
-                The strongest password in the world still gets phished if your front desk clicks the wrong email. Run a quarterly phishing simulation (KnowBe4 has a free tier; Microsoft Defender for Business includes Attack Simulator), then walk staff who clicked through a 10-minute refresher. Document it for your cyber-insurance renewal.
+                The strongest password in the world still gets phished if your front desk clicks the wrong email. Run a quarterly phishing simulation (KnowBe4 has a free tier; Microsoft Defender for Business includes Attack Simulator), then walk staff who clicked through a 10-minute refresher. Document it for your security renewal.
               </p>
             </article>
           </div>

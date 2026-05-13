@@ -20,11 +20,11 @@ export const industries = {
     matchPattern: /medical|dental|practice|imaging|physical therapy|chiropract/i,
     cities: ["sarasota", "bradenton", "lakewood-ranch", "nokomis", "venice", "bradenton-34207"],
     intro:
-      "Medical and dental practices on the Florida Gulf Coast carry three layers of IT obligation that every other small business avoids: HIPAA technical and administrative safeguards, an EHR vendor whose uptime defines your day, and a cyber-insurance renewal questionnaire that gets longer every year. Simple IT SRQ specializes in independent practices — 4 to 60 providers — that need real HIPAA paperwork, real backups, and a tech who shows up the day a workstation locks up before morning huddle.",
+      "Medical and dental practices on the Florida Gulf Coast carry three layers of IT obligation that every other small business avoids: HIPAA technical and administrative safeguards, an EHR vendor whose uptime defines your day, and a security renewal questionnaire that gets longer every year. Simple IT SRQ specializes in independent practices — 4 to 60 providers — that need real HIPAA paperwork, real backups, and a tech who shows up the day a workstation locks up before morning huddle.",
     emphasis: [
       "Written HIPAA Risk Assessment + Safeguards documentation refreshed annually",
       "EHR vendor coordination — we book the integration calls so you don't",
-      "Cyber-insurance evidence binder ready before your renewal questionnaire arrives",
+      "security documentation binder ready before your renewal questionnaire arrives",
       "Encrypted, off-site, quarterly-tested backups (most regulators ask for this)",
       "Two-factor authentication on every account that touches PHI",
       "Business Associate Agreements (BAAs) with every vendor that touches your data",
@@ -68,7 +68,7 @@ export const industries = {
       "Clio, PracticePanther, MyCase, or LEAP integration support",
       "Encrypted client portal + secure file exchange (no more Dropbox links)",
       "Florida Bar-aligned phishing-simulation evidence (3+ rounds per year)",
-      "Cyber-insurance renewal questionnaire pre-answered — most firms cut their renewal premium",
+      "Security renewal questionnaire organized before the deadline",
       "Sanitized incident-response runbook the senior partner can read in 5 minutes",
     ],
     faqs: [
@@ -81,8 +81,8 @@ export const industries = {
         a: "Encrypted at rest on every device, encrypted in transit on every network, access scoped per matter when the practice tool supports it, audit logs preserved for the lifetime of the matter + 7 years. Backup retention is configured to match your firm's records-retention policy, not a generic 30-day default.",
       },
       {
-        q: "Can you help us answer our cyber-insurance renewal questionnaire?",
-        a: "Yes — that's one of our most-requested deliverables. We walk through every question on the carrier's 2026 form, fix anything that's missing in your environment, and hand you a written attestation packet. Several Sarasota-county firms have cut their renewal premium 15-30% after switching to us and re-submitting with a complete answer set.",
+        q: "Can you help us answer our security renewal questionnaire?",
+        a: "Yes - that is one of our most-requested deliverables. We walk through the questionnaire, fix the controls we are qualified to handle, and hand you a written documentation packet. We do not sell insurance or make premium promises.",
       },
       {
         q: "What happens if a partner's laptop is stolen?",
@@ -124,7 +124,7 @@ export const industries = {
       },
       {
         q: "What MFA do you require?",
-        a: "Hardware keys (YubiKey 5C NFC) on every account that has admin or client-data access — not SMS, not push-notification authenticator apps. SMS is no longer accepted by the SEC's preferred guidance and is explicitly excluded from most 2026 cyber-insurance carrier questionnaires for advisor firms. We issue 2 keys per advisor.",
+        a: "Hardware keys (YubiKey 5C NFC) on every account that has admin or client-data access — not SMS, not push-notification authenticator apps. SMS is no longer accepted by the SEC's preferred guidance and is explicitly excluded from most 2026 security reviewer questionnaires for advisor firms. We issue 2 keys per advisor.",
       },
       {
         q: "Do you write the WISP?",

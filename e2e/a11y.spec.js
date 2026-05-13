@@ -9,7 +9,7 @@ import AxeBuilder from '@axe-core/playwright';
  * and log (but tolerate) "moderate" and "minor" findings so authors can
  * triage incrementally without blocking shipping.
  */
-const ROUTES = ['/', '/store', '/blog', '/support', '/book'];
+const ROUTES = ['/', '/tools', '/blog', '/support', '/book'];
 
 const BLOCKING_IMPACTS = new Set(['critical', 'serious']);
 

@@ -46,7 +46,7 @@ export const WHY_VS = {
       },
       {
         attribute: "Compliance documentation",
-        sirq: "HIPAA risk assessments, GLBA evidence packages, and cyber-insurance renewal artifacts included on every engagement. Audit-ready binders refreshed annually.",
+        sirq: "HIPAA risk assessments, GLBA evidence packages, and security renewal artifacts included on every engagement. Audit-ready binders refreshed annually.",
         them: "Compliance documentation typically scoped as a paid project on top of MRR. Renewal-cycle artifacts not always included.",
       },
       {
@@ -106,8 +106,8 @@ export const WHY_VS = {
       },
       {
         attribute: "Compliance",
-        sirq: "HIPAA, GLBA, and cyber-insurance evidence packages. Written risk assessments, BAAs, and Safeguards documentation. Audit-ready binders refreshed annually.",
-        them: "No compliance program. Geek Squad does not produce HIPAA, GLBA, or cyber-insurance evidence artifacts.",
+        sirq: "HIPAA, GLBA, and security documentation packages. Written risk assessments, BAAs, and Safeguards documentation. Audit-ready binders refreshed annually.",
+        them: "No compliance program. Geek Squad does not produce HIPAA, GLBA, or security documentation artifacts.",
       },
       {
         attribute: "Account ownership",
