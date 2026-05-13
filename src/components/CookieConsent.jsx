@@ -39,6 +39,18 @@ export default function CookieConsent() {
     return () => window.removeEventListener(REOPEN_CONSENT_EVENT, onReopen);
   }, []);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (visible) {
+      document.body.dataset.cookieConsent = "open";
+    } else {
+      delete document.body.dataset.cookieConsent;
+    }
+    return () => {
+      delete document.body.dataset.cookieConsent;
+    };
+  }, [visible]);
+
   if (!visible) return null;
 
   const acceptAll = () => {
@@ -66,7 +78,7 @@ export default function CookieConsent() {
         <button
           type="button"
           className="cookie-consent__btn"
-          style={{ padding: 0, border: 0, background: "none", color: "var(--brand, #0F6CBD)", textDecoration: "underline", cursor: "pointer" }}
+          style={{ padding: 0, border: 0, background: "none", color: "inherit", textDecoration: "underline", cursor: "pointer" }}
           onClick={rejectNonEssential}
         >
           opt out of the sale or sharing of personal information

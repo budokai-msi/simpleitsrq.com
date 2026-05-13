@@ -138,9 +138,26 @@ const useStyles = makeStyles({
     // primary button can render as a muted gray on some platforms.
     backgroundColor: "#0F6CBD",
     color: "#ffffff",
-    borderColor: "#0F6CBD",
-    "&:hover": { backgroundColor: "#0C5AA6", borderColor: "#0C5AA6", color: "#ffffff" },
-    "&:active": { backgroundColor: "#094A88", borderColor: "#094A88", color: "#ffffff" },
+    borderTopColor: "#0F6CBD",
+    borderRightColor: "#0F6CBD",
+    borderBottomColor: "#0F6CBD",
+    borderLeftColor: "#0F6CBD",
+    "&:hover": {
+      backgroundColor: "#0C5AA6",
+      borderTopColor: "#0C5AA6",
+      borderRightColor: "#0C5AA6",
+      borderBottomColor: "#0C5AA6",
+      borderLeftColor: "#0C5AA6",
+      color: "#ffffff",
+    },
+    "&:active": {
+      backgroundColor: "#094A88",
+      borderTopColor: "#094A88",
+      borderRightColor: "#094A88",
+      borderBottomColor: "#094A88",
+      borderLeftColor: "#094A88",
+      color: "#ffffff",
+    },
   },
   signInFoot: {
     marginTop: "20px",
@@ -288,7 +305,10 @@ const useStyles = makeStyles({
     width: "100%",
     ":hover": {
       backgroundColor: tokens.colorNeutralBackground1Hover,
-      borderColor: tokens.colorNeutralStroke1,
+      borderTopColor: tokens.colorNeutralStroke1,
+      borderRightColor: tokens.colorNeutralStroke1,
+      borderBottomColor: tokens.colorNeutralStroke1,
+      borderLeftColor: tokens.colorNeutralStroke1,
     },
     ":focus-visible": {
       outline: `2px solid ${tokens.colorBrandStroke1}`,
@@ -421,7 +441,10 @@ const useStyles = makeStyles({
   },
   threadMsgAgent: {
     backgroundColor: tokens.colorBrandBackground2,
-    borderColor: tokens.colorBrandStroke2,
+    borderTopColor: tokens.colorBrandStroke2,
+    borderRightColor: tokens.colorBrandStroke2,
+    borderBottomColor: tokens.colorBrandStroke2,
+    borderLeftColor: tokens.colorBrandStroke2,
   },
   threadMsgSystem: {
     backgroundColor: tokens.colorNeutralBackground3,
