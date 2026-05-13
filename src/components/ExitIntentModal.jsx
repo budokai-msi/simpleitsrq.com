@@ -4,7 +4,7 @@
 // the viewport (suggesting they're reaching for the tab bar / close button)
 // after being on the page long enough to rule out instant bounce, we offer
 // a single bite-sized choice — compliance library discount OR a free
-// cyber-insurance intro — in exchange for an email.
+// security documentation intro — in exchange for an email.
 //
 // Trigger rules:
 //   * `mouseout` with e.clientY <= 0 AND e.relatedTarget === null
@@ -168,7 +168,7 @@ export default function ExitIntentModal() {
       // Fire-and-forget GA4 lead event regardless of server response — if
       // the beacon was dropped, the user still wanted it and we still want
       // the conversion count. $400 value as rough average of the two
-      // choices (discount + cyber-insurance intro).
+      // choices (discount + security documentation intro).
       track.lead(picked.source, 400, { choice: picked.id });
       if (res && res.ok) {
         setStatus("sent");

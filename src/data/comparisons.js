@@ -72,7 +72,7 @@ export const COMPARISONS = [
       "1Password Business vs Bitwarden Business for Sarasota-Bradenton offices. Price, UX, directory sync, SSO, self-host — and which one your staff will actually use.",
     h1: "1Password Business vs Bitwarden Business",
     subhead:
-      "Both pass your cyber-insurance renewal. Here's which one your staff will actually use.",
+      "Both pass your security renewal. Here's which one your staff will actually use.",
     date: "2026-04-22",
     products: [
       {
@@ -130,7 +130,7 @@ export const COMPARISONS = [
       { label: "Staff-adoption UX (our field data)", values: ["A", "B"] },
       { label: "Admin console polish", values: ["A", "B-"] },
       { label: "Secret-scanning (shared vaults)", values: ["Yes", "Limited"] },
-      { label: "Cyber-insurance questionnaire: satisfies MFA + PM box", values: ["Yes", "Yes"] },
+      { label: "security renewal questionnaire: satisfies MFA + PM box", values: ["Yes", "Yes"] },
     ],
     verdict:
       "For most Sarasota-Bradenton small offices, pick 1Password. The $2/user/mo delta is real, but we've watched too many Bitwarden rollouts quietly fail because half the staff gave up on the browser extension and went back to a sticky note. Bitwarden is the right answer when IT is cost-obsessed and the team is technical (engineering shops, MSP internal use, offices where most of the staff already live in the CLI). For everyone else, the UX gap ends up more expensive than the license delta.",
@@ -142,10 +142,10 @@ export const COMPARISONS = [
     title:
       "M365 Business Premium vs Google Workspace Business Plus (2026 Florida SMB Comparison)",
     metaDescription:
-      "Microsoft 365 Business Premium vs Google Workspace Business Plus for Florida small offices. Security, HIPAA, cyber-insurance readiness, per-seat math, and which one to pick.",
+      "Microsoft 365 Business Premium vs Google Workspace Business Plus for Florida small offices. Security, HIPAA, security documentation readiness, per-seat math, and which one to pick.",
     h1: "M365 Business Premium vs Google Workspace Business Plus",
     subhead:
-      "Both tiers pass a 2026 cyber-insurance renewal. Picking the wrong one costs more in staff retraining than in licenses.",
+      "Both tiers pass a 2026 security renewal. Picking the wrong one costs more in staff retraining than in licenses.",
     date: "2026-04-22",
     products: [
       {
@@ -201,7 +201,7 @@ export const COMPARISONS = [
       { label: "Meeting platform", values: ["Microsoft Teams", "Google Meet"] },
       { label: "Admin-console count", values: ["4+", "1"] },
       { label: "Conditional access / context-aware access", values: ["Yes (Entra ID)", "Yes (Context-Aware Access)"] },
-      { label: "Satisfies 2026 cyber-insurance MFA + endpoint box", values: ["Yes", "Yes"] },
+      { label: "Satisfies 2026 security documentation MFA + endpoint box", values: ["Yes", "Yes"] },
     ],
     verdict:
       "Pick Microsoft 365 Business Premium if your office is already Windows-first, runs desktop Office apps, or operates in HIPAA/insurance/accounting/legal — you'll save the cost of a separate EDR and match the software your clients send you. Pick Google Workspace Business Plus if staff is browser-native, works heavily in realtime docs, and doesn't need the Office desktop fidelity. Most Florida small offices we see end up on M365 Business Premium specifically because Defender for Business is bundled — that's a $3-7/user/mo bill you skip.",
@@ -228,7 +228,7 @@ export const COMPARISONS = [
           "Single agent covers backup, anti-ransomware, and endpoint protection — meaningful for a 10-person office that can't run three separate tools.",
           "Direct-buy option is viable; you don't have to go through an MSP reseller to get a license.",
           "Cloud + local hybrid storage, so a Gulf Coast office keeps a local copy but also survives losing the office to flooding.",
-          "30-day retention default lines up with what most cyber-insurance carriers want to see.",
+          "30-day retention default lines up with what most security reviewers want to see.",
           "Restore UX is fast enough that we've recovered three clients' data inside a business day post-storm.",
         ],
         cons: [
@@ -297,7 +297,7 @@ export const COMPARISONS = [
           "Florida unemployment filing is automatic and we've yet to see a mis-file in our client base.",
           "Flat, published pricing on the website. The number you quote is the number you pay.",
           "Benefits (health, dental, vision, 401k) integrate cleanly — no separate broker login.",
-          "SOC 2 Type II and BAAs available — clears the cyber-insurance vendor-risk questionnaire row.",
+          "SOC 2 Type II and BAAs available — clears the security documentation vendor-risk questionnaire row.",
           "I-9 and W-4 e-signing built in; no separate DocuSign.",
         ],
         cons: [

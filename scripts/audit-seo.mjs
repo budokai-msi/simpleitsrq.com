@@ -115,7 +115,7 @@ function audit(filename, src) {
   const internal = /\]\((\/(?:blog|sarasota|bradenton|venice|nokomis|lakewood-ranch|industries|service-area|glossary)[^\)]*)\)/i.test(body);
   if (!internal) add("W_NO_INTERNAL_LINK");
 
-  const cta = /\]\((\/(?:store|book|tools|portal|#contact|contact)[^\)]*)\)/i.test(body);
+  const cta = /\]\((\/(?:book|tools|portal|services|exposure-scan|#contact|contact)[^\)]*)\)/i.test(body);
   if (!cta) add("W_NO_CTA_LINK");
 
   if (/^# /m.test(body)) add("W_HAS_BODY_H1");

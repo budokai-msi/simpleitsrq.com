@@ -204,7 +204,7 @@ export default function Services() {
           </p>
           <div className="services-trust-row">
             <span><MapPin size={14} /> Local Sarasota / Bradenton engineering team</span>
-            <span><ShieldCheck size={14} /> Fixed scope · written deliverables · 30-day satisfaction guarantee</span>
+            <span><ShieldCheck size={14} /> Fixed scope - written deliverables - clear handoff notes</span>
           </div>
           <div className="services-stat-band" role="list" aria-label="Service catalog at a glance">
             <div role="listitem" className="services-stat">
@@ -216,8 +216,8 @@ export default function Services() {
               <div className="services-stat__label">Quote-and-callback</div>
             </div>
             <div role="listitem" className="services-stat">
-              <div className="services-stat__num">30-day</div>
-              <div className="services-stat__label">Satisfaction guarantee</div>
+              <div className="services-stat__num">Written</div>
+              <div className="services-stat__label">Scope before checkout</div>
             </div>
             <div role="listitem" className="services-stat">
               <div className="services-stat__num">5-city</div>

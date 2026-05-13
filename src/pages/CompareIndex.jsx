@@ -24,7 +24,7 @@ export default function CompareIndex() {
           <h1 className="display">Tool vs tool, picked for Florida SMBs</h1>
           <p className="lede">
             The buying decisions a small Sarasota-Bradenton office has to make,
-            resolved against the 2026 cyber-insurance questionnaire and actual
+            resolved against the 2026 security renewal questionnaire and actual
             staff-adoption data from our client base. No affiliate pick that
             doesn't match the right answer.
           </p>

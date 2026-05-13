@@ -367,7 +367,7 @@ async function sendWelcomeEmail(email, unsubscribeToken) {
       `Your free starter Written Information Security Program template is here:`,
       `${SITE_URL}/wisp-starter`,
       ``,
-      `It's a 12-section Florida-flavored template — fillable, ready for your 2026 cyber-insurance renewal.`,
+      `It's a 12-section Florida-flavored template — fillable, ready for your 2026 security renewal.`,
       `Print → Save as PDF in your browser to keep an offline copy.`,
       ``,
       `What to expect: one email a month with plain-English security, AI, and cloud news for Florida small business owners. No fluff, no offers in every email — most months it's a single useful pointer.`,
@@ -383,7 +383,7 @@ async function sendWelcomeEmail(email, unsubscribeToken) {
   <p style="margin:24px 0">
     <a href="${SITE_URL}/wisp-starter" style="display:inline-block;padding:12px 22px;background:#0F6CBD;color:#fff;text-decoration:none;border-radius:8px;font-weight:600">Open the WISP starter →</a>
   </p>
-  <p style="font-size:14px;line-height:1.6;color:#444">It's a 12-section Florida-flavored template — fillable, ready for a 2026 cyber-insurance renewal questionnaire. Print → Save as PDF in your browser to keep an offline copy.</p>
+  <p style="font-size:14px;line-height:1.6;color:#444">It's a 12-section Florida-flavored template — fillable, ready for a 2026 security renewal questionnaire. Print → Save as PDF in your browser to keep an offline copy.</p>
   <p style="font-size:14px;line-height:1.6;color:#444">What to expect: one email a month, plain-English security and IT news for Florida small business owners. If we can help with anything specific — computer repair, cameras, M365 migration, HIPAA paperwork — just reply and a real tech will read it.</p>
   <p style="font-size:14px;color:#444;margin-top:24px">— The Simple IT SRQ team</p>
   ${dripFooter}

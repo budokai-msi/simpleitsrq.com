@@ -3,9 +3,8 @@
 // Generates branded 1200×630 Open Graph cards:
 //   public/og-blog-<slug>.png      — one per blog post
 //
-// The URL shapes are fixed by their respective consumers:
-//   BlogPost.jsx     →  og-blog-<slug>.png
-//   ProductDetail.jsx → og-product-<slug>.png  (also embedded in Product JSON-LD)
+// The URL shape is fixed by BlogPost.jsx:
+//   public/og-blog-<slug>.png
 //
 // Rendering path: build an SVG string (brand background, logo mark top-left,
 // wrapped title, category · date line, wordmark bottom-right) and feed it to
@@ -16,8 +15,8 @@
 //   node scripts/generate-og-images.mjs           # cache-aware (skips unchanged)
 //   node scripts/generate-og-images.mjs --force   # rebuild every card
 //
-// Wired into `prebuild` in package.json so new posts/products get a card on
-// every `vercel build` without a manual step.
+// Wired into `prebuild` in package.json so new posts get a card on every
+// `vercel build` without a manual step.
 
 import sharp from "sharp";
 import { createHash } from "node:crypto";
@@ -31,16 +30,14 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadAllPosts } from "./_posts-source.mjs";
-import { products } from "../src/data/products.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const PUBLIC_DIR = join(ROOT, "public");
 const CACHE_DIR = join(ROOT, ".og-cache");
 const POSTS_META_PATH = join(ROOT, "src", "data", "posts-meta.json");
-// Sidecar manifest keyed by `${kind}:${slug}` → input-hash. Single file
-// covers both blog posts and store products so a future "kind" can join
-// without a new cache file. Lives outside public/ so it never ships.
+// Sidecar manifest keyed by `${kind}:${slug}` -> input-hash. Lives outside
+// public/ so it never ships.
 const CACHE_PATH = join(CACHE_DIR, "card.json");
 // Legacy blog-only cache path. We migrate it once on first run after this
 // file's introduction so the first build doesn't regen 59 unchanged blog
@@ -289,7 +286,6 @@ async function main() {
   const cache = loadCache();
   const nextCache = {};
   const blogCounters = { generated: 0, skipped: 0 };
-  const productCounters = { generated: 0, skipped: 0 };
   const t0 = Date.now();
 
   // Sort for deterministic iteration (alphabetical by slug) — the output is
@@ -313,38 +309,11 @@ async function main() {
     });
   }
 
-  // Products. Category line shows "Store · $price[suffix]" so the card reads
-  // like a price tag at a glance — beats a blank "Simple IT SRQ" eyebrow on
-  // social previews.
-  const sortedProducts = [...products].sort((a, b) => a.slug.localeCompare(b.slug));
-  for (const product of sortedProducts) {
-    if (!product.slug) continue;
-    const priceLabel =
-      typeof product.price === "number"
-        ? `$${product.price}${product.priceSuffix || ""}`
-        : "";
-    await renderCard({
-      kind: "product",
-      slug: product.slug,
-      fields: {
-        title: product.title || "Simple IT SRQ Store",
-        category: ["Simple IT SRQ Store", priceLabel].filter(Boolean).join("  ·  "),
-        date: "",
-      },
-      outPath: join(PUBLIC_DIR, `og-product-${product.slug}.png`),
-      cache,
-      nextCache,
-      counters: productCounters,
-    });
-  }
-
   writeFileSync(CACHE_PATH, JSON.stringify(nextCache, null, 2) + "\n", "utf8");
 
   const ms = Date.now() - t0;
   console.log(
-    `og: blog ${blogCounters.generated}/${posts.length} new, ${blogCounters.skipped} cached · ` +
-      `product ${productCounters.generated}/${sortedProducts.length} new, ${productCounters.skipped} cached · ` +
-      `${ms} ms${FORCE ? " [--force]" : ""}`,
+    `og: blog ${blogCounters.generated}/${posts.length} new, ${blogCounters.skipped} cached; ${ms} ms${FORCE ? " [--force]" : ""}`,
   );
 }
 

@@ -6,45 +6,9 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 02 May 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 28 Apr 2026 00:00:00 GMT</lastBuildDate>
     <item>
-      <title>Your Team Is Probably Using AI Wrong (And Its Costing You Money)</title>
-      <link>https://simpleitsrq.com/blog/sarasota-small-business-ai-mistakes</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-small-business-ai-mistakes</guid>
-      <pubDate>Sat, 02 May 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>AI &amp; Productivity</category>
-      <description>Most small businesses are adopting AI tools without a plan. Heres whats actually happening—and how to fix it before it becomes a security and compliance nightmare.</description>
-    </item>
-    <item>
-      <title>Windows 11 Security Update: What Sarasota Businesses Need to Know</title>
-      <link>https://simpleitsrq.com/blog/windows-11-security-update-sarasota-bradenton</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/windows-11-security-update-sarasota-bradenton</guid>
-      <pubDate>Sat, 02 May 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Business Tech</category>
-      <description>Microsoft just released critical security patches for Windows 11. Heres what small business owners in Sarasota need to do right now to protect their data.</description>
-    </item>
-    <item>
-      <title>Your Business Phone Number Just Became a Security Risk (Heres Why)</title>
-      <link>https://simpleitsrq.com/blog/sarasota-business-phone-spoofing-security-risk</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-business-phone-spoofing-security-risk</guid>
-      <pubDate>Thu, 30 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Cybersecurity</category>
-      <description>Hackers are spoofing local Sarasota and Bradenton business phone numbers to trick your customers and employees. Heres whats happening and how to protect your company.</description>
-    </item>
-    <item>
-      <title>The New Microsoft Copilot+ PC Requirements: What Your Sarasota Business Needs to Know</title>
-      <link>https://simpleitsrq.com/blog/microsoft-copilot-pc-requirements-sarasota-small-business</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/microsoft-copilot-pc-requirements-sarasota-small-business</guid>
-      <pubDate>Thu, 30 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Business Tech</category>
-      <description>Microsoft is pushing AI-powered Copilot+ PCs hard, and they come with strict hardware requirements. Heres what that means for your upgrade budget and whether you actually need one.</description>
-    </item>
-    <item>
-      <title>Hermes AI — What an &apos;Uncensored&apos; Open Model Actually Is, and When a Small Business Should Care</title>
+      <title>Hermes AI: When an Open Model Makes Sense</title>
       <link>https://simpleitsrq.com/blog/hermes-ai-uncensored-open-model-business-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/hermes-ai-uncensored-open-model-business-2026</guid>
       <pubDate>Tue, 28 Apr 2026 00:00:00 GMT</pubDate>
@@ -53,7 +17,7 @@
       <description>Hermes is an open-weights model line from Nous Research that ships without the heavy &apos;corporate assistant&apos; tuning ChatGPT and Claude carry. That makes it sharper for some workflows and a poor fit for others. Here is the plain-English read for a small-business operator.</description>
     </item>
     <item>
-      <title>Kimi K2.6 — Moonshot AI&apos;s Long-Context Model and What It&apos;s Actually Good For</title>
+      <title>Kimi K2.6: Long-Context AI for Small Business</title>
       <link>https://simpleitsrq.com/blog/kimi-k2-6-moonshot-long-context-business-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/kimi-k2-6-moonshot-long-context-business-2026</guid>
       <pubDate>Tue, 28 Apr 2026 00:00:00 GMT</pubDate>
@@ -62,7 +26,7 @@
       <description>Kimi K2.6 is Moonshot AI&apos;s latest model — a long-context, strongly coding-tuned alternative to Claude and GPT. Here is what it does well, where it falls short, and the situations where a small business should actually consider it over the incumbents.</description>
     </item>
     <item>
-      <title>Ollama — Run a Real AI Model on Your Own Laptop in About Ten Minutes</title>
+      <title>Ollama: Run a Private AI Model Locally</title>
       <link>https://simpleitsrq.com/blog/ollama-local-llm-private-ai-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ollama-local-llm-private-ai-2026</guid>
       <pubDate>Tue, 28 Apr 2026 00:00:00 GMT</pubDate>
@@ -71,7 +35,7 @@
       <description>Ollama is a free open-source runtime that lets you download and run a real AI model on a single laptop — no cloud, no monthly subscription, no data leaving your office. Here is what it is, when it makes sense, and the ten-minute install.</description>
     </item>
     <item>
-      <title>OpenClaw — The Local AI Agent Runtime We Use to Run Our Own MSP</title>
+      <title>OpenClaw: The Local AI Agent Runtime We Use</title>
       <link>https://simpleitsrq.com/blog/openclaw-local-ai-agent-runtime-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/openclaw-local-ai-agent-runtime-2026</guid>
       <pubDate>Tue, 28 Apr 2026 00:00:00 GMT</pubDate>
@@ -89,7 +53,7 @@
       <description>OpenAI started as a non-profit committed to open, safe AI for humanity. It is now closed-source, Microsoft-controlled, and run by a CEO his own board fired for not being consistently candid. Here is the structural case against ChatGPT — most of it borrowed from Elon Musk&apos;s lawsuit — and what to use instead.</description>
     </item>
     <item>
-      <title>Business Security Cameras in Sarasota: An Honest Buyer&apos;s Guide for 2026</title>
+      <title>Business Security Cameras in Sarasota: 2026 Guide</title>
       <link>https://simpleitsrq.com/blog/business-security-cameras-sarasota-honest-guide-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/business-security-cameras-sarasota-honest-guide-2026</guid>
       <pubDate>Sat, 25 Apr 2026 00:00:00 GMT</pubDate>
@@ -98,7 +62,7 @@
       <description>We just put security camera installation back on the homepage — it&apos;s something we&apos;ve quietly done for shop, office, and warehouse clients across Sarasota and Bradenton for years, and it&apos;s overdue for an honest writeup. Here&apos;s what we actually install in 2026, what we steer clients away from, what each tier costs, and the Florida-specific install gotchas (heat, humidity, hurricane mounts, salt air on barrier islands) that the YouTube reviews never mention.</description>
     </item>
     <item>
-      <title>Computer Repair in Sarasota: When to Fix It, When to Replace It, and How to Spot a Scam Quote (2026)</title>
+      <title>Computer Repair in Sarasota: Fix or Replace?</title>
       <link>https://simpleitsrq.com/blog/computer-repair-sarasota-honest-guide-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/computer-repair-sarasota-honest-guide-2026</guid>
       <pubDate>Sat, 25 Apr 2026 00:00:00 GMT</pubDate>
@@ -107,7 +71,7 @@
       <description>We just put computer repair back on the homepage as a real, named service — for both businesses and homes — and that means it&apos;s overdue for an honest writeup. When is a repair worth doing, when should you replace, what should each common repair actually cost, and what are the six red flags in a quote that mean you&apos;re being upsold? Written for Sarasota and Bradenton owners who&apos;d rather be told the truth than handed an expensive estimate.</description>
     </item>
     <item>
-      <title>We Just Launched a Free Exposure Scan — Here&apos;s What Your Domain Looks Like to an Attacker</title>
+      <title>Free Exposure Scan for Florida Small Businesses</title>
       <link>https://simpleitsrq.com/blog/free-exposure-scan-launched-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/free-exposure-scan-launched-2026</guid>
       <pubDate>Fri, 24 Apr 2026 00:00:00 GMT</pubDate>
@@ -116,61 +80,16 @@
       <description>Yesterday we shipped /exposure-scan — a free, no-signup-required passive scan that grades your domain&apos;s DNS hygiene the same way a ransomware operator would size you up before deciding whether to bother. Here&apos;s what it checks and why every Florida business owner should run it once.</description>
     </item>
     <item>
-      <title>Windows 11 Update Just Broke Your Printers (Heres the Fix)</title>
-      <link>https://simpleitsrq.com/blog/windows-11-printer-fix-sarasota</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/windows-11-printer-fix-sarasota</guid>
-      <pubDate>Fri, 24 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Business Tech</category>
-      <description>A recent Windows update is causing printer failures across small businesses. Well explain what happened and how to fix it without calling IT.</description>
-    </item>
-    <item>
-      <title>Windows 11 Update Broke Your Printer? Heres What Sarasota Businesses Need to Know</title>
-      <link>https://simpleitsrq.com/blog/windows-11-printer-update-sarasota</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/windows-11-printer-update-sarasota</guid>
-      <pubDate>Fri, 24 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Business Tech</category>
-      <description>A recent Windows 11 update is causing printing problems for small businesses. Well explain what happened and how to fix it without losing a day of work.</description>
-    </item>
-    <item>
-      <title>Floridas New Data Privacy Law: What Sarasota Business Owners Need to Know</title>
-      <link>https://simpleitsrq.com/blog/florida-data-privacy-law-sarasota-business-owners</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/florida-data-privacy-law-sarasota-business-owners</guid>
-      <pubDate>Fri, 24 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Compliance</category>
-      <description>Florida just passed new data privacy rules that affect how you handle customer information. Heres what changed and what you need to do about it.</description>
-    </item>
-    <item>
-      <title>The 2026 Florida Small-Business Tech Stack (What We Actually Install on Day One)</title>
+      <title>The 2026 Florida Small-Business Tech Stack</title>
       <link>https://simpleitsrq.com/blog/florida-small-business-tech-stack-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/florida-small-business-tech-stack-2026</guid>
       <pubDate>Wed, 22 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Business Tech</category>
-      <description>Every time a new Sarasota client asks &apos;what should we be running?&apos; the answer is the same eight-tool stack. Here it is — with the tiers that actually pass a 2026 cyber-insurance audit and the ones we rejected and why.</description>
+      <description>Every time a new Sarasota client asks &apos;what should we be running?&apos; the answer is the same eight-tool stack. Here it is — with the tiers that actually pass a 2026 security review and the ones we rejected and why.</description>
     </item>
     <item>
-      <title>Your Businesss Biggest Cyber Risk Right Now (And Its Not What You Think)</title>
-      <link>https://simpleitsrq.com/blog/sarasota-biggest-cyber-risk-2024</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-biggest-cyber-risk-2024</guid>
-      <pubDate>Tue, 21 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Cybersecurity</category>
-      <description>Employee passwords are the #1 weak spot in small business security. Heres why and what to do about it.</description>
-    </item>
-    <item>
-      <title>Your Employees Are Your Biggest Security Risk (And What To Do About It)</title>
-      <link>https://simpleitsrq.com/blog/sarasota-employee-security-risk-training</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-employee-security-risk-training</guid>
-      <pubDate>Tue, 21 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Cybersecurity</category>
-      <description>Hackers arent sneaking past your firewall—theyre getting in through your teams email inbox. Heres how to fix it without making everyone miserable.</description>
-    </item>
-    <item>
-      <title>What We Replaced Adobe Creative Cloud With in a 14-Person Sarasota Office (and Kept)</title>
+      <title>Adobe Alternatives for a Sarasota Creative Office</title>
       <link>https://simpleitsrq.com/blog/adobe-alternatives-small-office-creative-stack-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/adobe-alternatives-small-office-creative-stack-2026</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
@@ -179,7 +98,7 @@
       <description>We migrated a Sarasota real-estate-marketing agency off Adobe Creative Cloud this spring. Twelve of fourteen seats moved to a cheaper stack. Two didn&apos;t. Here&apos;s the tool-by-tool breakdown — and why we didn&apos;t chase the last two.</description>
     </item>
     <item>
-      <title>Claude Opus 4.7 Dropped This Week. Your Small Business Should Not Care.</title>
+      <title>Claude Opus 4.7: What Small Businesses Should Do</title>
       <link>https://simpleitsrq.com/blog/ai-model-switching-small-business-claude-gemini-chatgpt</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-model-switching-small-business-claude-gemini-chatgpt</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
@@ -188,7 +107,7 @@
       <description>Opus 4.7 replaced 4.6 last week. Benchmarks traded places. Your staff didn&apos;t notice. For small businesses, the conversation that matters isn&apos;t &apos;which model is best,&apos; it&apos;s &apos;which subscription and which habits.&apos; Here&apos;s the framework we use with clients.</description>
     </item>
     <item>
-      <title>An Archive of BYTE Magazine from 1975 Reminded Me of a Client&apos;s Server Closet</title>
+      <title>BYTE Magazine and the Server Closet Lesson</title>
       <link>https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/byte-magazine-1975-small-office-documentation-lessons</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
@@ -197,7 +116,7 @@
       <description>Issue #1 of BYTE Magazine from September 1975 opened with a 3-page guide to documenting a home-built computer. I reread it this week and realized every small office we audit in 2026 still skips steps from that 50-year-old checklist.</description>
     </item>
     <item>
-      <title>The $420 Desk Upgrade That Made a Sarasota Client&apos;s AI Rollout Actually Stick</title>
+      <title>The $420 Desk Upgrade That Made Copilot Stick</title>
       <link>https://simpleitsrq.com/blog/desk-upgrade-sarasota-ai-heavy-staff-ergonomics</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/desk-upgrade-sarasota-ai-heavy-staff-ergonomics</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
@@ -206,16 +125,7 @@
       <description>When a Sarasota accounting firm&apos;s Copilot rollout stalled at 60% adoption, the root cause was not training or licensing. It was desks. Three hardware purchases per workstation totaling about $420 took adoption to 95% in three weeks. Here&apos;s what we bought and why.</description>
     </item>
     <item>
-      <title>Your Employees Are Using AI at Work (And You Need a Policy)</title>
-      <link>https://simpleitsrq.com/blog/employee-ai-policy-sarasota-small-business</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/employee-ai-policy-sarasota-small-business</guid>
-      <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>AI &amp; Productivity</category>
-      <description>ChatGPT, Claude, and other AI tools are in your office right now—whether you know it or not. Heres why you need an AI policy before something goes wrong.</description>
-    </item>
-    <item>
-      <title>What We Found When We Audited a Sarasota Law Firm&apos;s Notion Workspace This Morning</title>
+      <title>A Sarasota Law Firm Notion Audit: What We Found</title>
       <link>https://simpleitsrq.com/blog/notion-public-pages-legal-office-audit-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/notion-public-pages-legal-office-audit-sarasota</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
@@ -224,7 +134,7 @@
       <description>This morning&apos;s Notion story was specific: a public API endpoint returned the email addresses of every editor on any public page. We immediately audited a Sarasota law firm that uses Notion for case intake. Here&apos;s what we found, what we rotated, and the one-page audit every business using Notion should run this week.</description>
     </item>
     <item>
-      <title>The Multi-Year RAM Shortage Is Coming for Your Hardware Budget. Here&apos;s What to Buy Now.</title>
+      <title>The RAM Shortage and Your Hardware Budget</title>
       <link>https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ram-shortage-small-business-hardware-budget-sarasota</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
@@ -233,49 +143,13 @@
       <description>If you have a laptop refresh cycle coming up in the next 18 months, pull the decision forward. DDR5 pricing already doubled in Q1 and the AI data-center buildout means it may not come back down until 2028. Here&apos;s what a Sarasota office should buy now.</description>
     </item>
     <item>
-      <title>Two SaaS Vendors Had a Bad Day — Here&apos;s the 30-Minute Check Every Small Business Should Run</title>
+      <title>The 30-Minute SaaS Audit After Vercel and Notion</title>
       <link>https://simpleitsrq.com/blog/vercel-notion-breach-saas-audit</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/vercel-notion-breach-saas-audit</guid>
       <pubDate>Sun, 19 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Security</category>
       <description>Today&apos;s top security stories are both about SaaS vendors, not ransomware crews. If you run a small business on Microsoft 365 + Notion + Vercel + half a dozen other tools, this is the 30-minute check you should run before Monday.</description>
-    </item>
-    <item>
-      <title>Floridas New Data Privacy Law: What Sarasota Small Businesses Need to Know</title>
-      <link>https://simpleitsrq.com/blog/florida-data-privacy-law-sarasota-small-business</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/florida-data-privacy-law-sarasota-small-business</guid>
-      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Compliance</category>
-      <description>Florida just passed its own data privacy law, and it affects how you handle customer information. Heres what changed and what you need to do about it.</description>
-    </item>
-    <item>
-      <title>Your Business is Being Targeted Right Now—Heres What to Do About It</title>
-      <link>https://simpleitsrq.com/blog/sarasota-business-security-threats-2024</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-business-security-threats-2024</guid>
-      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Cybersecurity</category>
-      <description>Hackers dont take holidays, and theyre actively targeting small businesses in Sarasota and Bradenton. Heres whats happening and how to protect yourself.</description>
-    </item>
-    <item>
-      <title>Your Employees Are Sharing Passwords (And You Should Know About It)</title>
-      <link>https://simpleitsrq.com/blog/sarasota-employee-password-sharing-security-risk</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-employee-password-sharing-security-risk</guid>
-      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Cybersecurity</category>
-      <description>Password sharing might seem harmless, but its one of the fastest ways hackers get into your systems. Heres why it matters and what to do about it.</description>
-    </item>
-    <item>
-      <title>The Windows 11 Update Thats Breaking Small Business Computers (And How to Fix It)</title>
-      <link>https://simpleitsrq.com/blog/windows-11-update-breaking-computers-sarasota</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/windows-11-update-breaking-computers-sarasota</guid>
-      <pubDate>Fri, 17 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>Business Tech</category>
-      <description>A recent Windows 11 update is causing significant problems for small businesses, including file access issues and application crashes. Heres what you need to know and what to do about it.</description>
     </item>
     <item>
       <title>The Right Docking Station Turns Any Desk Into a Workstation</title>
@@ -323,13 +197,13 @@
       <description>If your network closet has a tangle of unlabeled cables, consumer switches stacked on a shelf, and a power strip dangling from a hook, you are one accidental unplug away from an office-wide outage.</description>
     </item>
     <item>
-      <title>The 3-2-1 Backup Rule Still Works - Heres the Hardware Bradenton Offices Use</title>
+      <title>The 3-2-1 Backup Hardware Bradenton Offices Use</title>
       <link>https://simpleitsrq.com/blog/small-business-backup-drive-bradenton-ransomware</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/small-business-backup-drive-bradenton-ransomware</guid>
       <pubDate>Tue, 14 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Cybersecurity</category>
-      <description>Cyber-insurance applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes.</description>
+      <description>security documentation applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes.</description>
     </item>
     <item>
       <title>Why Sarasota Law and Medical Offices Are Switching to Hardware 2FA</title>
@@ -338,10 +212,10 @@
       <pubDate>Mon, 13 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Cybersecurity</category>
-      <description>SMS 2FA keeps getting bypassed in the wild. A physical security key costs $50, stops the entire class of attack, and is now effectively required by several cyber-insurance carriers. Heres how to deploy them.</description>
+      <description>SMS 2FA keeps getting bypassed in the wild. A physical security key costs $50, stops the entire class of attack, and is now effectively required by several security reviewers. Heres how to deploy them.</description>
     </item>
     <item>
-      <title>Your Sarasota Employees Are Using AI at Work. Here Is the Policy You Should Already Have.</title>
+      <title>A Practical AI Use Policy for Sarasota Teams</title>
       <link>https://simpleitsrq.com/blog/sarasota-employees-using-ai-work-policy</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-employees-using-ai-work-policy</guid>
       <pubDate>Sat, 11 Apr 2026 00:00:00 GMT</pubDate>
@@ -368,7 +242,7 @@
       <description>A viral browser game walks players through building a GPU from logic gates up. Its a sharp lesson in how serious technical training can hide inside something that feels like play.</description>
     </item>
     <item>
-      <title>AI Vendor Lock-In Is the Default. The Anthropic Wrapper Block Just Made It Visible.</title>
+      <title>AI Vendor Lock-In: A Procurement Playbook</title>
       <link>https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-vendor-lockin-procurement-playbook-bradenton</guid>
       <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>

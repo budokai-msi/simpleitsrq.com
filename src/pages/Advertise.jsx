@@ -176,7 +176,7 @@ function NewsletterMockup() {
         <p style={{ margin: "0 0 14px", lineHeight: 1.55, color: "var(--syn-text, #0B0D10)" }}>
           Stop chasing paper HIPAA binders. [YourBrand] gives Florida practices
           a living risk assessment, automated policy reminders, and an audit-ready
-          export whenever OCR (or your cyber-insurance broker) asks. Built for
+          export whenever OCR (or your insurance agents) asks. Built for
           offices under 50 people — set up in an afternoon. Readers of Simple IT
           SRQ get 20% off the first year.
         </p>
@@ -481,7 +481,7 @@ export default function Advertise() {
                 <li>Compliance tools (HIPAA, SOC 2, FTC Safeguards, WISP)</li>
                 <li>Managed-IT-adjacent services (monitoring, patching, endpoint)</li>
                 <li>Vertical SaaS for legal, medical, accounting, property mgmt</li>
-                <li>Cyber-insurance brokers & MSP tooling vendors</li>
+                <li>security tooling vendors and MSP platforms</li>
               </ul>
             </article>
             <article

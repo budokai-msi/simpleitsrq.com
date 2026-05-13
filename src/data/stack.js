@@ -57,18 +57,18 @@ export const STACK = [
     id: "productivity-suite",
     title: "Email + Productivity Suite",
     intro:
-      "Your email, shared drive, Teams/Meet, and calendar all live here. Get the tier right the first time — the cheaper tiers fail a HIPAA audit and get a premium bump on cyber-insurance renewal.",
+      "Your email, shared drive, Teams/Meet, and calendar all live here. Get the tier right the first time — the cheaper tiers fail a HIPAA audit and get a review bump on security renewal.",
     tools: [
       {
-        id: "m365-business-premium",
+        id: "m365-business-review",
         name: "Microsoft 365 Business Premium",
-        tagline: "Email, Word/Excel/Teams, OneDrive, and the security controls your insurer actually wants.",
+        tagline: "Email, Word/Excel/Teams, OneDrive, and the security controls reviewers usually ask to see.",
         whyThis:
-          "Business Premium is the smallest tier that meets cyber-insurance Audit Controls §164.312(b) and HIPAA technical safeguards. Business Basic and Standard fail both. For offices under 10 people the tier math usually works out to $22/user/mo instead of $12 — but the insurance rate savings on a single policy pay for five years of the delta.",
+          "Business Premium is the smallest tier that meets security review Controls §164.312(b) and HIPAA technical safeguards. Business Basic and Standard fail both. For offices under 10 people the tier math usually works out to $22/user/mo instead of $12 — but the insurance rate savings on a single policy pay for five years of the delta.",
         tier: "Business Premium (not Basic or Standard)",
         priceHint: "$22/user/mo",
         cost: { type: "per_seat", usd: 22 },
-        fallbackUrl: "https://www.microsoft.com/en-us/microsoft-365/business/microsoft-365-business-premium",
+        fallbackUrl: "https://www.microsoft.com/en-us/microsoft-365/business/microsoft-365-business-review",
         alternatives: ["Google Workspace Business Plus"],
         goodFor: "Almost every Florida small office. Default choice.",
         calculatorDefault: true,
@@ -79,7 +79,7 @@ export const STACK = [
         name: "Google Workspace Business Plus",
         tagline: "Same deal as M365 Business Premium, on the Google side.",
         whyThis:
-          "Business Plus is the smallest Google Workspace tier with Vault, eDiscovery, and advanced endpoint management — the three features a HIPAA audit or cyber-insurance renewal will ask about. Starter and Standard tiers won't pass.",
+          "Business Plus is the smallest Google Workspace tier with Vault, eDiscovery, and advanced endpoint management — the three features a HIPAA audit or security renewal will ask about. Starter and Standard tiers won't pass.",
         tier: "Business Plus (not Starter or Standard)",
         priceHint: "$22/user/mo",
         cost: { type: "per_seat", usd: 22 },
@@ -94,7 +94,7 @@ export const STACK = [
     id: "password-manager",
     title: "Password Manager",
     intro:
-      "Every 2026 cyber-insurance questionnaire asks if staff use a password manager. The wrong answer raises premiums more than the annual license cost. Pick one, roll it out company-wide, and keep it to one.",
+      "Every 2026 security renewal questionnaire asks if staff use a password manager. The wrong answer raises review friction more than the annual license cost. Pick one, roll it out company-wide, and keep it to one.",
     tools: [
       {
         id: "1password-business",
@@ -108,7 +108,7 @@ export const STACK = [
         affiliateKey: "onepassword",
         fallbackUrl: "https://1password.com/business",
         alternatives: ["Bitwarden Business (cheaper; less polish)", "Dashlane Business"],
-        goodFor: "Any office 5+ people. Non-negotiable for HIPAA or cyber-insurance.",
+        goodFor: "Any office 5+ people. Non-negotiable for HIPAA or security documentation.",
         calculatorDefault: true,
       },
     ],
@@ -117,7 +117,7 @@ export const STACK = [
     id: "backup-disaster-recovery",
     title: "Backup + Disaster Recovery",
     intro:
-      "Hurricanes, ransomware, and human error — three ways your data can disappear in one afternoon. A 2026 cyber-insurance renewal asks if you've tested a restore in the last 12 months. Having backups isn't enough; having tested backups is.",
+      "Hurricanes, ransomware, and human error — three ways your data can disappear in one afternoon. A 2026 security renewal asks if you've tested a restore in the last 12 months. Having backups isn't enough; having tested backups is.",
     tools: [
       {
         id: "acronis-cyber-protect",
@@ -139,14 +139,14 @@ export const STACK = [
     id: "payroll-hr",
     title: "Payroll + HR",
     intro:
-      "Not strictly IT, but the system that handles your W-2s and direct deposits is a critical vendor from a security posture standpoint. If it lacks SOC 2 Type II and a real BAA, it's a gap on your cyber-insurance questionnaire.",
+      "Not strictly IT, but the system that handles your W-2s and direct deposits is a critical vendor from a security posture standpoint. If it lacks SOC 2 Type II and a real BAA, it's a gap on your security renewal questionnaire.",
     tools: [
       {
         id: "gusto",
         name: "Gusto Payroll",
         tagline: "Payroll + benefits + W-2/1099 that a non-accountant can actually run.",
         whyThis:
-          "Gusto's SOC 2 Type II coverage, BAA availability, and built-in I-9/W-4 e-signing are the specific boxes on a 2026 cyber-insurance form that say 'yes, we have a compliant payroll provider.' Their Florida-specific unemployment filing is automatic, which is the exact place where we've seen other payroll tools mis-file and cost offices money.",
+          "Gusto's SOC 2 Type II coverage, BAA availability, and built-in I-9/W-4 e-signing are the specific boxes on a 2026 security renewal form that say 'yes, we have a compliant payroll provider.' Their Florida-specific unemployment filing is automatic, which is the exact place where we've seen other payroll tools mis-file and cost offices money.",
         tier: "Plus (not Core) for multi-state or R&D tax credits",
         priceHint: "$40/mo base + $6/person",
         cost: { type: "base_plus_seat", baseUsd: 40, seatUsd: 6 },
@@ -169,7 +169,7 @@ export const STACK = [
         name: "HoneyBook",
         tagline: "CRM + proposals + contracts + invoicing + scheduling for service businesses.",
         whyThis:
-          "HoneyBook consolidates five tools (Typeform + DocuSign + QuickBooks + Calendly + Zapier) into one UI for businesses under $2M revenue. SOC 2 Type II, explicit data residency options, and native e-signing mean it passes the cyber-insurance vendor-risk questionnaire without a BAA addendum. Their Stripe integration also means fewer vendors handling payment data.",
+          "HoneyBook consolidates five tools (Typeform + DocuSign + QuickBooks + Calendly + Zapier) into one UI for businesses under $2M revenue. SOC 2 Type II, explicit data residency options, and native e-signing mean it passes the security documentation vendor-risk questionnaire without a BAA addendum. Their Stripe integration also means fewer vendors handling payment data.",
         priceHint: "$39–$79/user/mo",
         cost: { type: "per_seat", usd: 39, note: "Starter tier; Plus is $59" },
         affiliateKey: "honeybook",
@@ -184,7 +184,7 @@ export const STACK = [
     id: "hardware-mfa",
     title: "Hardware MFA Keys",
     intro:
-      "2026 cyber insurance no longer accepts SMS codes as MFA. The authenticator-app route works but breaks when staff change phones. Hardware keys are the only path that survives an IT turnover cleanly.",
+      "2026 security documentation no longer accepts SMS codes as MFA. The authenticator-app route works but breaks when staff change phones. Hardware keys are the only path that survives an IT turnover cleanly.",
     tools: [
       {
         id: "yubikey-5c-nfc",
@@ -197,7 +197,7 @@ export const STACK = [
         affiliateKey: "amazon:B07HBD71HL|YubiKey 5C NFC",
         fallbackUrl: "https://www.yubico.com/product/yubikey-5c-nfc/",
         alternatives: ["Google Titan key", "YubiKey 5 NFC (USB-A) for older machines"],
-        goodFor: "Every admin on every account. Non-negotiable for cyber-insurance Tier A posture.",
+        goodFor: "Every admin on every account. Non-negotiable for security documentation Tier A posture.",
         calculatorDefault: true,
       },
     ],

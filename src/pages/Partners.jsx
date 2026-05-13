@@ -5,7 +5,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 // Vendor stack. Each entry explains what the vendor does, why we picked
 // them, and the client-facing benefit. These are the tools we deploy and
 // support — not a paid advertisement. Keeping the language honest because
-// prospects and their cyber-insurance carriers do check.
+// prospects and their security reviewers do check.
 const STACK = [
   {
     slug: "microsoft-365",
@@ -13,7 +13,7 @@ const STACK = [
     tagline: "Business email, Teams, OneDrive, SharePoint, Office apps",
     Icon: Cloud,
     categoryLabel: "Productivity & Email",
-    why: "The core productivity platform for ~90% of the small businesses we support. We configure Business Premium (not Business Standard) because the Premium tier bundles Defender for Office 365, Intune MDM, and Azure AD P1 — the three features every cyber-insurance questionnaire now asks about.",
+    why: "The core productivity platform for ~90% of the small businesses we support. We configure Business Premium (not Business Standard) because the Premium tier bundles Defender for Office 365, Intune MDM, and Azure AD P1 — the three features every security renewal questionnaire now asks about.",
     clientBenefit: "One vendor for email, files, video, and device management, with a compliance posture that stands up to HIPAA and GLBA reviews.",
   },
   {
@@ -22,7 +22,7 @@ const STACK = [
     tagline: "Managed detection and response (MDR)",
     Icon: ShieldCheck,
     categoryLabel: "Security — MDR",
-    why: "Cyber-insurance carriers in 2026 increasingly require a real MDR on every endpoint, not just antivirus. Huntress is the SOC-as-a-service the MSP industry has settled on for small business — human analysts, 24/7, persistence-focused detection that catches what EDR misses.",
+    why: "security reviewers in 2026 increasingly require a real MDR on every endpoint, not just antivirus. Huntress is the SOC-as-a-service the MSP industry has settled on for small business — human analysts, 24/7, persistence-focused detection that catches what EDR misses.",
     clientBenefit: "When something malicious gets past the firewall at 2am, a human at Huntress is reading the alert and calling us. Your insurance renewal questionnaire has a clean answer to 'do you have 24/7 monitoring?'",
   },
   {
@@ -49,7 +49,7 @@ const STACK = [
     tagline: "Mobile device management + endpoint policy",
     Icon: Briefcase,
     categoryLabel: "Device Management",
-    why: "The 2026 cyber-insurance questionnaire asks specifically whether you can wipe a lost laptop and enforce encryption on every device. Intune is how we answer 'yes' honestly — it manages the full device lifecycle from handed-out to decommissioned.",
+    why: "The 2026 security renewal questionnaire asks specifically whether you can wipe a lost laptop and enforce encryption on every device. Intune is how we answer 'yes' honestly — it manages the full device lifecycle from handed-out to decommissioned.",
     clientBenefit: "A lost phone or a fired employee doesn't become a data breach. One click wipes the company data and leaves the personal data alone.",
   },
   {
@@ -59,7 +59,7 @@ const STACK = [
     Icon: ShieldCheck,
     categoryLabel: "Network & Firewall",
     why: "We deploy FortiGate firewalls in medical, law, and financial offices because the built-in IPS, web filtering, and VPN concentrator satisfy the network-segmentation requirements HIPAA and GLBA auditors ask for. Cisco Meraki for simpler offices where cloud dashboards matter more than granular policy.",
-    clientBenefit: "Your guest Wi-Fi is cleanly isolated from the network your EHR runs on. Auditors and insurers see a real network-segmentation diagram, not a single flat subnet.",
+    clientBenefit: "Your guest Wi-Fi is cleanly isolated from the network your EHR runs on. Auditors and reviewers see a real network-segmentation diagram, not a single flat subnet.",
   },
 ];
 
@@ -111,7 +111,7 @@ export default function Partners() {
           </p>
           <div className="partners-hero-meta">
             <span><Check size={14} /> Honest about what we use — no affiliate-badge theater</span>
-            <span><Check size={14} /> Cyber-insurance-aligned</span>
+            <span><Check size={14} /> security documentation-aligned</span>
             <span><Check size={14} /> Same stack across every client</span>
           </div>
         </div>
