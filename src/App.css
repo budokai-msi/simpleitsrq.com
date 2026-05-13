@@ -2577,7 +2577,7 @@ main, #main {
 
 /* ----- Form: shell + new states ----- */
 /* Shared container + field styles for lead forms on Book, Advertise,
- * CyberInsuranceQuote, ComplianceAuditReferral. These pages wrap their
+ * legacy lead-capture pages. These pages wrap their
  * form in `.form-shell` and use `.field` / `.field-label` labels. The
  * page-scoped `.advertise-page .form-shell` override still wins for
  * Advertise's denser layout. */
@@ -3894,7 +3894,7 @@ main, #main {
   line-height: 1.5;
 }
 
-/* ── Single-product page (/store) ── */
+/* Legacy single-offer page styles */
 .product-page .product-narrow {
   max-width: 760px;
   margin: 0 auto;
@@ -4153,7 +4153,7 @@ main, #main {
   color: #7FDB9F;
 }
 
-/* Bundle banner — shown above the series grid on /store */
+/* Legacy bundle banner styles */
 .bundle-banner {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -4431,7 +4431,7 @@ main, #main {
   border-left-color: var(--brand, #111827);
 }
 
-/* ── Product detail page (/store/:slug) ────────────────────── */
+/* Legacy product detail styles */
 .product-detail-back { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted, #6b7280); text-decoration: none; margin-bottom: 20px; }
 .product-detail-back:hover { color: var(--brand, #111827); }
 .product-detail-hero { display: grid; grid-template-columns: 1fr 280px; gap: 40px; align-items: center; }
@@ -5115,186 +5115,6 @@ main, #main {
 [data-theme="dark"] .stack-tool-inline__cta { color: #4CC2FF; }
 [data-theme="dark"] .stack-tool-inline__details:hover { color: #4CC2FF; }
 
-/* ─── Compliance audit referral CTA (mirrors .cyber-ins-cta) ────────── */
-
-.audit-cta {
-  border: 1px solid var(--syn-border, #e5e7eb);
-  border-radius: 12px;
-  background: var(--syn-surface, #ffffff);
-  margin: 32px 0;
-  overflow: hidden;
-}
-
-.audit-cta--full {
-  display: flex;
-  gap: 20px;
-  padding: 24px;
-  align-items: flex-start;
-  border-left: 4px solid #107C10;
-}
-
-.audit-cta__icon {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 10px;
-  background: rgba(16, 124, 16, 0.08);
-  color: #107C10;
-}
-
-.audit-cta__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.audit-cta__title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0 0 6px;
-  color: var(--syn-text, #0B0D10);
-  letter-spacing: -0.01em;
-}
-
-.audit-cta__desc {
-  font-size: 0.95rem;
-  line-height: 1.55;
-  color: var(--syn-text-muted, #4b5563);
-  margin: 0 0 14px;
-}
-
-.audit-cta__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.audit-cta__disclosure {
-  font-size: 0.78rem;
-  color: var(--syn-text-muted, #6b7280);
-  margin: 10px 0 0;
-  font-style: italic;
-}
-
-.audit-cta--inline {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid #107C10;
-  background: rgba(16, 124, 16, 0.06);
-  color: #107C10;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin: 16px 0;
-}
-
-.audit-cta--inline .audit-cta__btn {
-  background: #107C10;
-  color: #ffffff;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.audit-cta--inline .audit-cta__btn:hover { background: #0b5e0b; }
-
-@media (max-width: 640px) {
-  .audit-cta--full { flex-direction: column; gap: 12px; padding: 20px; }
-  .audit-cta__icon { width: 44px; height: 44px; }
-  .audit-cta__title { font-size: 1.1rem; }
-}
-
-[data-theme="dark"] .audit-cta {
-  background: var(--syn-surface-hi, #161a20);
-  border-color: var(--syn-border, #2a2f37);
-}
-[data-theme="dark"] .audit-cta--full { border-left-color: #50C878; }
-[data-theme="dark"] .audit-cta__icon { background: rgba(80, 200, 120, 0.12); color: #50C878; }
-[data-theme="dark"] .audit-cta--inline {
-  border-color: #50C878;
-  background: rgba(80, 200, 120, 0.08);
-  color: #50C878;
-}
-[data-theme="dark"] .audit-cta--inline .audit-cta__btn { background: #50C878; color: #0B0D10; }
-
-/* ─── Audit-type selector cards (on /compliance-audit-referral) ──────── */
-
-.audit-type-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 18px 20px;
-  border: 1.5px solid var(--syn-border, #e5e7eb);
-  border-radius: 12px;
-  background: var(--syn-surface, #ffffff);
-  text-align: left;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-  transition: border-color 0.15s, transform 0.12s, box-shadow 0.12s;
-}
-
-.audit-type-card:hover {
-  border-color: #111827;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(17, 24, 39, 0.08);
-}
-
-.audit-type-card--active {
-  border-color: #111827;
-  background: rgba(17, 24, 39, 0.04);
-  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.15);
-}
-
-.audit-type-card__icon {
-  color: #111827;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: rgba(17, 24, 39, 0.08);
-}
-
-.audit-type-card__title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--syn-text, #0B0D10);
-}
-
-.audit-type-card__desc {
-  font-size: 0.9rem;
-  color: var(--syn-text-muted, #4b5563);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.audit-type-card__who {
-  font-size: 0.82rem;
-  color: var(--syn-text-muted, #6b7280);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.audit-type-card__who strong { color: var(--syn-text, #0B0D10); }
-
-[data-theme="dark"] .audit-type-card {
-  background: var(--syn-surface-hi, #161a20);
-  border-color: var(--syn-border, #2a2f37);
-}
-[data-theme="dark"] .audit-type-card:hover { border-color: #4CC2FF; }
-[data-theme="dark"] .audit-type-card--active {
-  border-color: #4CC2FF;
-  background: rgba(76, 194, 255, 0.06);
-  box-shadow: 0 0 0 3px rgba(76, 194, 255, 0.15);
-}
-[data-theme="dark"] .audit-type-card__icon { background: rgba(76, 194, 255, 0.12); color: #4CC2FF; }
 
 /* ============ Exit-intent modal — native <dialog> ============ */
 /* The <dialog> itself is the "modal card" element and lives in the

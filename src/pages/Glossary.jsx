@@ -61,15 +61,14 @@ export default function Glossary() {
           <AdUnit format="auto" className="ad-in-article" />
 
           <div style={{ marginTop: 32, padding: "20px 24px", borderRadius: 12, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
-            <h2 className="title-2" style={{ marginTop: 0 }}>Need this for a real audit?</h2>
+            <h2 className="title-2" style={{ marginTop: 0 }}>Need help turning this into real IT work?</h2>
             <p className="section-sub">
-              Definitions are a starting point. The actual paperwork — Risk
-              Assessments, WISP, BAAs, Evidence Binder — is what carriers and
-              auditors ask for. We sell the templates pre-filled for Florida
-              small offices.
+              Definitions are a starting point. We help small offices turn
+              plain-English security terms into backups, MFA, network fixes,
+              password cleanup, and practical documentation.
             </p>
-            <Link to="/store" className="btn btn-primary">
-              Browse the templates <ArrowRight size={14} />
+            <Link to="/services" className="btn btn-primary">
+              See fixed-fee services <ArrowRight size={14} />
             </Link>
           </div>
         </div>

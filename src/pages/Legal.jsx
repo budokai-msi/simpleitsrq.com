@@ -70,7 +70,7 @@ export function PrivacyPage() {
         <li>
           <strong>Contact / inquiry / quote forms:</strong> name, company,
           email, phone (optional), and whatever you type into the message
-          field. Also the source tag (e.g. <code>cyber-insurance-quote</code>,
+          field. Also the source tag (e.g. <code>leadgen</code>,
           <code> sponsor-inquiry</code>, <code>compliance-audit-soc-2</code>).
         </li>
         <li>
@@ -373,11 +373,7 @@ export function TermsPage() {
 
       <h3>4.1 What you're buying</h3>
       <p>
-        Products sold at <Link to="/store">simpleitsrq.com/store</Link> are
-        digital templates, playbooks, spreadsheets, and evidence binders
-        delivered as file downloads. Each product page describes the specific
-        files included. Prices are in USD; taxes where applicable are added
-        at checkout.
+        Fixed-fee services sold through simpleitsrq.com are scoped IT services, appointments, or subscriptions. Each service page describes what is included. Prices are in USD; taxes where applicable are added at checkout.
       </p>
 
       <h3>4.2 License</h3>
@@ -606,7 +602,7 @@ export function AccessibilityPage() {
       <ul>
         <li>
           <strong>Automated:</strong> <code>@axe-core/playwright</code> runs
-          against <code>/</code>, <code>/store</code>, <code>/blog</code>,
+          against <code>/</code>, <code>/blog</code>,
           <code>/support</code>, and <code>/book</code> on every major change.
           We fail the build on any <em>critical</em> or <em>serious</em> axe
           violation; we log and triage <em>moderate</em> and <em>minor</em>{" "}

@@ -16,7 +16,6 @@ import Affiliate from "../components/Affiliate";
 import StackToolInline from "../components/StackToolInline";
 import RelatedPosts from "../components/RelatedPosts";
 import ShareButton from "../components/ShareButton";
-import ComplianceAuditCTA from "../components/ComplianceAuditCTA";
 import { trackAffiliateClick } from "../lib/trackClick";
 import Breadcrumbs from "../components/Breadcrumbs";
 
@@ -43,7 +42,7 @@ function getLazyMdxComponent(slug) {
   return lazyBySlug.get(slug);
 }
 
-// MDX overrides the default `a` renderer so internal paths (`/store/...`,
+// MDX overrides the default `a` renderer so internal paths,
 // `/compare/...`, etc.) use react-router's <Link> for SPA navigation
 // instead of a full page reload. Without this, tapping a product link in
 // a blog post triggers a browser navigation that re-fetches index.html,
@@ -376,46 +375,7 @@ export default function BlogPost() {
           )}
         </div>
       </article>
-      {renderReferralCta(post, rawBody, slug)}
       <RelatedPosts currentSlug={slug} />
     </main>
   );
-}
-
-// Pick at most ONE referral CTA per post so readers don't get a wall of
-// pitches. Precedence: an explicit audit-type tag wins; then specific
-// insurance/cyber-insurance content; then the "Compliance" category
-// (assumed audit); then a body-text mention of cyber-insurance; then the
-// broader "Cybersecurity" category (assumed insurance). Anything else
-// gets nothing.
-function renderReferralCta(post, body, slug) {
-  if (!post) return null;
-  const wrap = (el) => (
-    <div className="container" style={{ maxWidth: 780 }}>{el}</div>
-  );
-
-  const tags = (post.tags || []).map((t) => String(t).toLowerCase());
-  const cat = String(post.category || "").toLowerCase();
-  const hay = `${post.title || ""} ${post.metaDescription || ""} ${String(body || "")}`.toLowerCase();
-
-  // Specific audit-type tag or body match → audit CTA pre-filled to that type.
-  if (tags.includes("hipaa") || /\bhipaa\b/.test(hay)) {
-    return wrap(<ComplianceAuditCTA slug={slug} audit="HIPAA" />);
-  }
-  if (tags.includes("soc-2") || tags.includes("soc2") || /\bsoc\s*2\b/.test(hay)) {
-    return wrap(<ComplianceAuditCTA slug={slug} audit="SOC 2" />);
-  }
-  if (tags.includes("pci") || tags.includes("pci-dss") || /\bpci\s*dss\b/.test(hay)) {
-    return wrap(<ComplianceAuditCTA slug={slug} audit="PCI DSS" />);
-  }
-  if (tags.includes("ftc-safeguards") || /\bftc\s+safeguards\b/.test(hay)) {
-    return wrap(<ComplianceAuditCTA slug={slug} audit="FTC Safeguards" />);
-  }
-
-  // Compliance category without specific audit clue → generic audit CTA.
-  if (cat === "compliance") {
-    return wrap(<ComplianceAuditCTA slug={slug} />);
-  }
-
-  return null;
 }

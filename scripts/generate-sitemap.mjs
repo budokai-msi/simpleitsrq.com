@@ -6,7 +6,6 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { loadAllPosts } from "./_posts-source.mjs";
 import { cityList, cities } from "../src/data/cities.js";
-import { products } from "../src/data/products.js";
 import { COMPARISONS } from "../src/data/comparisons.js";
 import { GLOSSARY } from "../src/data/glossary.js";
 import { WHY_VS_LIST } from "../src/data/why-vs.js";
@@ -28,13 +27,8 @@ const TODAY = LATEST_POST_DATE;
 const staticUrls = [
   { loc: "/", priority: "1.0", changefreq: "weekly" },
   { loc: "/blog", priority: "0.9", changefreq: "daily" },
-  { loc: "/store", priority: "0.9", changefreq: "weekly" },
   { loc: "/services", priority: "0.95", changefreq: "weekly" },
-  { loc: "/wisp-starter", priority: "0.9", changefreq: "monthly" },
-  { loc: "/pricing", priority: "0.95", changefreq: "monthly" },
-  { loc: "/cyber-insurance-quote", priority: "0.9", changefreq: "monthly" },
   { loc: "/stack", priority: "0.9", changefreq: "monthly" },
-  { loc: "/compliance-audit-referral", priority: "0.9", changefreq: "monthly" },
   { loc: "/password-check", priority: "0.9", changefreq: "monthly" },
   { loc: "/book", priority: "0.8", changefreq: "monthly" },
   { loc: "/service-area", priority: "0.85", changefreq: "monthly" },
@@ -67,12 +61,6 @@ const postUrls = posts.map((p) => ({
   lastmod: p.date,
 }));
 
-const productUrls = products.map((p) => ({
-  loc: `/store/${p.slug}`,
-  priority: "0.8",
-  changefreq: "weekly",
-}));
-
 const compareUrls = COMPARISONS.map((c) => ({
   loc: `/compare/${c.slug}`,
   priority: "0.75",
@@ -101,7 +89,7 @@ const industryUrls = [...industryCityPairs(cities)].map((p) => ({
   changefreq: "monthly",
 }));
 
-const all = [...staticUrls, ...cityUrls, ...postUrls, ...productUrls, ...compareUrls, ...whyUrls, ...glossaryUrls, ...industryUrls];
+const all = [...staticUrls, ...cityUrls, ...postUrls, ...compareUrls, ...whyUrls, ...glossaryUrls, ...industryUrls];
 
 const body = all
   .map((u) => {

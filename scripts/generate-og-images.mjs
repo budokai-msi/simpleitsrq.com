@@ -2,7 +2,6 @@
 //
 // Generates branded 1200×630 Open Graph cards:
 //   public/og-blog-<slug>.png      — one per blog post
-//   public/og-product-<slug>.png   — one per /store product
 //
 // The URL shapes are fixed by their respective consumers:
 //   BlogPost.jsx     →  og-blog-<slug>.png

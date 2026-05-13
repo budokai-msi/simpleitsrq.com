@@ -58,7 +58,6 @@ const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
 const ServiceArea = lazy(() => import("./pages/ServiceArea"));
 const Partners = lazy(() => import("./pages/Partners"));
 const Stack = lazy(() => import("./pages/Stack"));
-const ComplianceAuditReferral = lazy(() => import("./pages/ComplianceAuditReferral"));
 const Glossary = lazy(() => import("./pages/Glossary"));
 const GlossaryEntry = lazy(() => import("./pages/GlossaryEntry"));
 const ExposureScan = lazy(() => import("./pages/ExposureScan"));
@@ -84,11 +83,9 @@ function shouldShowExitIntent(pathname) {
   if (pathname.startsWith("/portal")) return false;
   const skip = new Set([
     "/book",
-    "/compliance-audit-referral",
     "/support",
   ]);
   if (skip.has(pathname)) return false;
-  // /store paths removed; nothing else to skip beyond the static set above.
   return true;
 }
 
@@ -930,7 +927,6 @@ function AnimatedRoutes() {
         <Route path="/admin/affiliates" element={<AdminAffiliates />} />
         <Route path="/stack" element={<Stack />} />
         <Route path="/tools-we-use" element={<Stack />} />
-        <Route path="/compliance-audit-referral" element={<ComplianceAuditReferral />} />
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/sponsor" element={<Advertise />} />
         <Route path="/compare" element={<CompareIndex />} />

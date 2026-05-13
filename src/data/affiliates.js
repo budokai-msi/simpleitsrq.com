@@ -31,13 +31,6 @@ const REOLINK_REF   = env.VITE_AFF_REOLINK_REF   || "";
 const BH_REF        = env.VITE_AFF_BH_REF        || "";
 const BACKBLAZE_REF = env.VITE_AFF_BACKBLAZE_REF || "";
 
-// Compliance-audit referral partners — SOC 2, HIPAA, PCI, FTC Safeguards.
-// Typical per-referred-engagement payout is $500-$2,000. Per-type env vars
-// so different specialists can be plugged in for each audit class. Generic
-// VITE_AUDIT_PARTNER_URL is the fallback used when no type-specific URL is
-// configured. ComplianceAuditCTA reads VITE_AUDIT_PARTNER_NAME for display.
-const AUDIT_REF = env.VITE_AUDIT_PARTNER_URL || "";
-const AUDIT_NAME = env.VITE_AUDIT_PARTNER_NAME || "our audit partner";
 
 // Builder for an Amazon product link with the affiliate tag appended. Pass
 // the product ASIN (the 10-char code in any Amazon URL) - the rest is
@@ -152,20 +145,6 @@ export const AFFILIATES = {
         label: "Backblaze unlimited cloud backup",
         href: BACKBLAZE_REF,
         blurb: "Affiliate link — we earn a commission on Backblaze signups.",
-      }
-    : null,
-
-  // === Compliance audit referral - $500-$2,000 per referred engagement ===
-  // SOC 2, HIPAA, PCI, FTC Safeguards. [[compliance-audit]] shortcode in
-  // blog bodies resolves once a partner URL is set; otherwise degrades to
-  // plain text and the ComplianceAuditCTA component falls back to the
-  // internal /compliance-audit-referral lead form.
-  "compliance-audit": AUDIT_REF
-    ? {
-        vendor: AUDIT_NAME,
-        label: "Get a compliance-audit quote",
-        href: AUDIT_REF,
-        blurb: `Referral link — we earn a fee when an engagement starts through ${AUDIT_NAME}.`,
       }
     : null,
 
