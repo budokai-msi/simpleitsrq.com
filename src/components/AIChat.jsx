@@ -1,5 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles, ArrowUp, X, Mail, RotateCcw, CornerDownLeft } from "lucide-react";
+import {
+  Sparkles,
+  ArrowUp,
+  X,
+  Mail,
+  RotateCcw,
+  CornerDownLeft,
+  MessageCircleQuestionMark,
+  Save,
+  Route as RouteIcon,
+  Zap,
+} from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 
 // Notion / Obsidian-flavored chat canvas.
@@ -17,19 +28,51 @@ import { csrfFetch } from "../lib/csrf";
 //  - Input is a textarea that grows up to ~6 lines (Obsidian editor-ish);
 //    Enter sends, Shift+Enter newlines, hint shown to the right.
 
-const STORAGE_KEY = "sirq_aichat_v1";
+const STORAGE_KEY = "sirq_aichat_v2";
+const LEGACY_STORAGE_KEY = "sirq_aichat_v1";
+const DRAFT_KEY = "sirq_aichat_draft_v1";
 const GREETING = {
   role: "assistant",
   content:
-    "Hi — I'm the Simple IT SRQ assistant. Ask me about leadgen pricing, IT support in SWFL, or how the **LAUNCH20** promo works.\n\nI'm AI-generated, so for anything legal or compliance-critical I'll route you to a human.",
+    "Hi - I'm Simple, the Simple IT SRQ assistant. I can help compare managed IT options, estimate leadgen fit, prep an exposure scan, or route you to a human.\n\nI autosave this chat on your device. For legal or compliance-critical decisions, I'll hand you to the team.",
 };
+
+const SUGGESTIONS = [
+  { label: "Managed IT fit", prompt: "Help me understand the best managed IT support option for my Sarasota-area business." },
+  { label: "Leadgen pricing", prompt: "Explain leadgen pricing and the LAUNCH20 promo in plain English." },
+  { label: "Exposure scan", prompt: "What does the exposure scan check, and what should I prepare before starting?" },
+  { label: "Route to human", prompt: "I want to talk to a human. What is the fastest next step?" },
+];
+
+const PREFETCH_LINKS = ["/book", "/services", "/leadgen", "/exposure-scan", "/support"];
+
+function readStoredMessages(storage, key) {
+  try {
+    const raw = storage?.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function isGreetingMessage(message) {
+  if (message?.role !== GREETING.role || typeof message?.content !== "string") return false;
+  return (
+    message.content === GREETING.content ||
+    (message.content.includes("Simple IT SRQ assistant") && message.content.includes("AI-generated"))
+  );
+}
 
 function loadHistory() {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) return [GREETING];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : [GREETING];
+    const stored =
+      readStoredMessages(window.localStorage, STORAGE_KEY) ||
+      readStoredMessages(window.sessionStorage, LEGACY_STORAGE_KEY);
+    if (!stored) return [GREETING];
+    const storedWithoutSeed = stored.filter((message) => !isGreetingMessage(message));
+    return [GREETING, ...storedWithoutSeed];
   } catch {
     return [GREETING];
   }
@@ -37,8 +80,39 @@ function loadHistory() {
 
 function saveHistory(messages) {
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-20)));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-24)));
   } catch { /* quota */ }
+}
+
+function loadDraft() {
+  try {
+    return window.localStorage.getItem(DRAFT_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function saveDraft(value) {
+  try {
+    if (value) {
+      window.localStorage.setItem(DRAFT_KEY, value);
+    } else {
+      window.localStorage.removeItem(DRAFT_KEY);
+    }
+  } catch { /* quota */ }
+}
+
+function prefetchAssistantRoutes() {
+  if (typeof document === "undefined") return;
+  PREFETCH_LINKS.forEach((href) => {
+    if (document.head.querySelector(`link[data-aic-prefetch="${href}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = href;
+    link.as = "document";
+    link.dataset.aicPrefetch = href;
+    document.head.appendChild(link);
+  });
 }
 
 const STRIPE_URL_RE = /https:\/\/buy\.stripe\.com\/[^\s)]+/g;
@@ -152,6 +226,10 @@ function extractStripeUrl(text) {
   return m ? m[0] : null;
 }
 
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 // ----- component --------------------------------------------------------------
 
 export default function AIChat() {
@@ -159,7 +237,9 @@ export default function AIChat() {
   const [messages, setMessages] = useState(() =>
     typeof window === "undefined" ? [GREETING] : loadHistory()
   );
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(() =>
+    typeof window === "undefined" ? "" : loadDraft()
+  );
   const [busy, setBusy] = useState(false);
   const [emailMode, setEmailMode] = useState(false);
   const [emailValue, setEmailValue] = useState("");
@@ -178,6 +258,17 @@ export default function AIChat() {
   }, []);
 
   useEffect(() => { saveHistory(messages); }, [messages]);
+  useEffect(() => { saveDraft(input); }, [input]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(prefetchAssistantRoutes, { timeout: 1800 });
+      return () => window.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(prefetchAssistantRoutes, 1200);
+    return () => window.clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     if (open && scrollRef.current) {
@@ -231,8 +322,8 @@ export default function AIChat() {
     el.style.height = Math.min(el.scrollHeight, 144) + "px";
   }, [input, emailMode]);
 
-  async function send() {
-    const text = input.trim();
+  async function send(promptOverride) {
+    const text = (promptOverride ?? input).trim();
     if (!text || busy) return;
     const next = [...messages, { role: "user", content: text }];
     setMessages(next);
@@ -250,7 +341,7 @@ export default function AIChat() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kind: "chat",
-          messages: next.filter((m) => m !== GREETING),
+          messages: next.filter((m) => !isGreetingMessage(m)),
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -271,6 +362,13 @@ export default function AIChat() {
   async function captureEmail() {
     const email = emailValue.trim();
     if (!email) return;
+    if (!isValidEmail(email)) {
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", content: "That email does not look quite right. Try a work email like name@company.com." },
+      ]);
+      return;
+    }
     try {
       const note = messages
         .slice(-6)
@@ -300,7 +398,12 @@ export default function AIChat() {
 
   function reset() {
     setMessages([GREETING]);
-    try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    setInput("");
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(DRAFT_KEY);
+      window.sessionStorage.removeItem(LEGACY_STORAGE_KEY);
+    } catch { /* ignore */ }
   }
 
   const onKeyDown = (e) => {
@@ -309,6 +412,16 @@ export default function AIChat() {
       send();
     }
   };
+
+  function openAssistant() {
+    prefetchAssistantRoutes();
+    setOpen(true);
+  }
+
+  function askSuggestion(prompt) {
+    prefetchAssistantRoutes();
+    send(prompt);
+  }
 
   // Pre-compute rendered HTML for assistant messages so we don't re-parse on
   // every keystroke (typing in the composer triggers a re-render).
@@ -330,21 +443,31 @@ export default function AIChat() {
         <button
           ref={bubbleRef}
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={openAssistant}
+          onPointerEnter={prefetchAssistantRoutes}
+          onFocus={prefetchAssistantRoutes}
           aria-label="Open AI assistant"
+          aria-expanded={open}
+          aria-controls="simple-ai-assistant"
           className="aic-bubble"
         >
-          <Sparkles size={22} />
+          <span className="aic-bubble-icon" aria-hidden="true"><Sparkles size={17} /></span>
+          <span className="aic-bubble-copy">
+            <span>Ask Simple</span>
+            <small>Saved locally</small>
+          </span>
         </button>
       )}
 
       {open && (
-        <div ref={panelRef} role="dialog" aria-label="AI assistant" className="aic-panel">
+        <div id="simple-ai-assistant" ref={panelRef} role="dialog" aria-label="AI assistant" className="aic-panel">
           <header className="aic-header">
             <div className="aic-title">
-              <span className="aic-dot" aria-hidden="true" />
-              <span className="aic-title-text">Assistant</span>
-              <span className="aic-subtitle">· AI-generated</span>
+              <span className="aic-title-mark" aria-hidden="true"><MessageCircleQuestionMark size={16} /></span>
+              <span>
+                <span className="aic-title-text">Simple AI</span>
+                <span className="aic-subtitle"><Save size={12} aria-hidden="true" /> Saved locally</span>
+              </span>
             </div>
             <div className="aic-actions">
               <button
@@ -377,8 +500,27 @@ export default function AIChat() {
             </div>
           </header>
 
+          <div className="aic-quickbar" aria-label="Assistant shortcuts">
+            <span><Zap size={13} aria-hidden="true" /> Fast paths</span>
+            <span><RouteIcon size={13} aria-hidden="true" /> Human handoff</span>
+          </div>
+
           <div ref={scrollRef} className="aic-doc">
             <div className="aic-doc-inner">
+              <div className="aic-suggestions" aria-label="Suggested prompts">
+                {SUGGESTIONS.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    className="aic-suggestion"
+                    onClick={() => askSuggestion(item.prompt)}
+                    disabled={busy}
+                  >
+                    <Sparkles size={13} aria-hidden="true" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
               {messages.map((m, i) => {
                 const isUser = m.role === "user";
                 return (
@@ -453,18 +595,18 @@ export default function AIChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="Type a message…"
+              placeholder="Ask about support, pricing, exposure scans..."
               disabled={busy}
               rows={1}
               className="aic-textarea"
             />
             <div className="aic-composer-bar">
               <span className="aic-hint">
-                <kbd>↵</kbd> send · <kbd>⇧</kbd>+<kbd>↵</kbd> newline
+                <kbd>Enter</kbd> send
               </span>
               <button
                 type="button"
-                onClick={send}
+                onClick={() => send()}
                 disabled={busy || !input.trim()}
                 aria-label="Send"
                 className="aic-send"
@@ -495,18 +637,63 @@ const AIC_CSS = `
 
 .aic-bubble {
   position: fixed; left: 20px; bottom: var(--aic-bottom-offset); z-index: 999998;
-  width: 52px; height: 52px; border-radius: 50%;
-  background: #1f1f1f; color: #faf9f6; border: 1px solid #2c2c2c;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08);
-  cursor: pointer; display: grid; place-items: center;
-  transition: transform .15s ease, box-shadow .15s ease;
+  min-width: 148px; height: 54px; border-radius: 999px; padding: 6px 14px 6px 7px;
+  background: #fff;
+  color: #111;
+  border: 1px solid rgba(17,17,17,0.16);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.14), 0 3px 8px rgba(0,0,0,0.08);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 9px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
-.aic-bubble:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.22); }
+.aic-bubble:hover {
+  transform: translateY(-2px);
+  border-color: rgba(17,17,17,0.34);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.18), 0 6px 14px rgba(0,0,0,0.10);
+}
+.aic-bubble:focus-visible {
+  outline: 3px solid rgba(17,17,17,0.28);
+  outline-offset: 3px;
+}
+.aic-bubble-icon {
+  position: relative;
+  display: grid; place-items: center;
+  width: 38px; height: 38px; border-radius: 50%;
+  color: #fff;
+  background: #111;
+  box-shadow: none;
+}
+.aic-bubble-copy {
+  display: flex; flex-direction: column; align-items: flex-start;
+  font-weight: 750; font-size: 0.9rem; line-height: 1.05; letter-spacing: 0;
+}
+.aic-bubble-copy small {
+  margin-top: 3px;
+  color: #666;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
 [data-theme="dark"] .aic-bubble {
-  background: var(--surface-2, #1C1F26); color: var(--text-1, #F4F5F7); border-color: var(--border, #2A2F38);
-  box-shadow: 0 8px 22px rgba(0,0,0,0.35), 0 1px 2px rgba(0,0,0,0.20);
+  background: #111;
+  color: #f7f7f7;
+  border-color: rgba(255,255,255,0.18);
+  box-shadow: 0 18px 42px rgba(0,0,0,0.42), 0 6px 16px rgba(0,0,0,0.22);
 }
-[data-theme="dark"] .aic-bubble:hover { box-shadow: 0 12px 28px rgba(0,0,0,0.45); }
+[data-theme="dark"] .aic-bubble-icon { background: #f7f7f7; color: #111; }
+[data-theme="dark"] .aic-bubble-copy small { color: var(--text-3, #8A94A6); }
+[data-theme="dark"] .aic-bubble:hover { box-shadow: 0 22px 48px rgba(0,0,0,0.52), 0 6px 18px rgba(0,0,0,0.26); }
+body[data-cookie-consent="open"] .aic-bubble {
+  bottom: calc(var(--aic-bottom-offset) + 132px);
+}
+body[data-nav-menu="open"] .aic-bubble {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+}
+@media (max-width: 640px) {
+  body[data-cookie-consent="open"] .aic-bubble {
+    bottom: calc(var(--aic-bottom-offset) + clamp(190px, 29vh, 238px));
+  }
+}
 
 .aic-panel {
   position: fixed; left: 20px; bottom: var(--aic-bottom-offset); z-index: 999998;
@@ -520,11 +707,21 @@ const AIC_CSS = `
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
   color: #2f3437;
 }
+body[data-cookie-consent="open"] .aic-panel {
+  bottom: calc(var(--aic-bottom-offset) + 132px);
+  height: min(560px, calc(100dvh - var(--aic-bottom-offset) - 152px));
+}
 [data-theme="dark"] .aic-panel {
   background: var(--surface, #14171C);
   border-color: var(--border, #2A2F38);
   color: var(--text-2, #9AA0A6);
   box-shadow: 0 30px 60px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.25);
+}
+@media (max-width: 640px) {
+  body[data-cookie-consent="open"] .aic-panel {
+    bottom: calc(var(--aic-bottom-offset) + clamp(190px, 29vh, 238px));
+    height: min(56dvh, calc(100dvh - var(--aic-bottom-offset) - clamp(206px, 31vh, 254px)));
+  }
 }
 
 .aic-header {
@@ -539,16 +736,27 @@ const AIC_CSS = `
   border-color: var(--border, #2A2F38);
 }
 
-.aic-title { display: flex; align-items: center; gap: 8px; font-size: 0.86rem; }
-.aic-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #16a34a;
-  box-shadow: 0 0 0 3px rgba(22,163,74,0.15);
+.aic-title { display: flex; align-items: center; gap: 10px; font-size: 0.86rem; min-width: 0; }
+.aic-title > span:last-child {
+  display: flex; flex-direction: column; min-width: 0;
 }
-.aic-title-text { font-weight: 600; color: #1f2328; letter-spacing: -0.01em; }
+.aic-title-mark {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: grid; place-items: center;
+  color: #111;
+  background: #f4f4f4;
+  border: 1px solid rgba(17,17,17,0.12);
+  flex-shrink: 0;
+}
+.aic-title-text { font-weight: 750; color: #1f2328; letter-spacing: 0; line-height: 1.1; }
 [data-theme="dark"] .aic-title-text { color: var(--text-1, #F4F5F7); }
-.aic-subtitle { color: #8a8f98; font-size: 0.78rem; font-weight: 400; }
+.aic-subtitle { display: inline-flex; align-items: center; gap: 4px; color: #708091; font-size: 0.73rem; font-weight: 650; line-height: 1.2; margin-top: 2px; }
 [data-theme="dark"] .aic-subtitle { color: var(--text-3, #6B7280); }
+[data-theme="dark"] .aic-title-mark {
+  color: #f7f7f7;
+  background: #1f1f1f;
+  border-color: rgba(255,255,255,0.12);
+}
 .aic-actions { display: flex; gap: 2px; }
 .aic-icon-btn {
   width: 28px; height: 28px; border-radius: 6px;
@@ -559,6 +767,24 @@ const AIC_CSS = `
 [data-theme="dark"] .aic-icon-btn { color: var(--text-3, #6B7280); }
 [data-theme="dark"] .aic-icon-btn:hover { background: rgba(255,255,255,0.06); color: var(--text-1, #F4F5F7); }
 
+.aic-quickbar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(15,15,15,0.05);
+  background: rgba(0,0,0,0.025);
+}
+.aic-quickbar span {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: #506172;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+[data-theme="dark"] .aic-quickbar {
+  border-color: var(--border, #2A2F38);
+  background: rgba(255,255,255,0.035);
+}
+[data-theme="dark"] .aic-quickbar span { color: var(--text-3, #8A94A6); }
+
 .aic-doc {
   flex: 1; overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: rgba(15,15,15,0.18) transparent;
@@ -568,6 +794,52 @@ const AIC_CSS = `
 .aic-doc::-webkit-scrollbar-thumb { background: rgba(15,15,15,0.18); border-radius: 4px; }
 [data-theme="dark"] .aic-doc::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
 .aic-doc-inner { padding: 6px 0 14px; }
+
+.aic-suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px 14px 8px;
+}
+.aic-suggestion {
+  display: inline-flex; align-items: center; justify-content: flex-start; gap: 7px;
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(17,17,17,0.10);
+  background: #fff;
+  color: #1f2328;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-align: left;
+  cursor: pointer;
+  transition: background .14s ease, border-color .14s ease, transform .14s ease;
+}
+.aic-suggestion:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #f5f5f5;
+  border-color: rgba(17,17,17,0.28);
+}
+.aic-suggestion:disabled {
+  cursor: not-allowed;
+  opacity: 0.54;
+}
+.aic-suggestion span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-theme="dark"] .aic-suggestion {
+  background: #151515;
+  border-color: rgba(255,255,255,0.12);
+  color: var(--text-1, #F4F5F7);
+}
+[data-theme="dark"] .aic-suggestion:hover:not(:disabled) {
+  background: #202020;
+  border-color: rgba(255,255,255,0.26);
+}
 
 .aic-block {
   padding: 14px 20px 10px;
@@ -626,28 +898,28 @@ const AIC_CSS = `
   overflow-x: auto; margin: 8px 0;
 }
 .aic-pre code { background: transparent; color: inherit; padding: 0; }
-.aic-link { color: #2f3437; text-decoration: underline; text-decoration-color: rgba(47,52,55,0.35); text-underline-offset: 2px; }
+.aic-link { color: #111; text-decoration: underline; text-decoration-color: rgba(17,17,17,0.35); text-underline-offset: 2px; }
 .aic-link:hover { text-decoration-color: #2f3437; }
-[data-theme="dark"] .aic-link { color: var(--brand, #4DA3E8); text-decoration-color: rgba(77,163,232,0.45); }
-[data-theme="dark"] .aic-link:hover { text-decoration-color: var(--brand-hover, #6FB6F0); }
+[data-theme="dark"] .aic-link { color: #fff; text-decoration-color: rgba(255,255,255,0.45); }
+[data-theme="dark"] .aic-link:hover { text-decoration-color: rgba(255,255,255,0.86); }
 
 .aic-callout {
   display: flex; align-items: center; gap: 12px;
   margin: 10px 0 4px; padding: 10px 12px;
-  background: #fffaf0;
-  border: 1px solid rgba(203, 145, 47, 0.25);
+  background: #fff;
+  border: 1px solid rgba(17,17,17,0.14);
   border-radius: 8px;
   text-decoration: none; color: inherit;
   transition: background .12s ease, border-color .12s ease;
 }
-.aic-callout:hover { background: #fff5e0; border-color: rgba(203, 145, 47, 0.45); }
+.aic-callout:hover { background: #f5f5f5; border-color: rgba(17,17,17,0.32); }
 [data-theme="dark"] .aic-callout {
-  background: rgba(203, 145, 47, 0.10);
-  border-color: rgba(203, 145, 47, 0.30);
+  background: #151515;
+  border-color: rgba(255,255,255,0.14);
 }
 [data-theme="dark"] .aic-callout:hover {
-  background: rgba(203, 145, 47, 0.15);
-  border-color: rgba(203, 145, 47, 0.45);
+  background: #202020;
+  border-color: rgba(255,255,255,0.30);
 }
 .aic-callout-emoji { font-size: 1.1rem; }
 .aic-callout-body { display: flex; flex-direction: column; flex: 1; min-width: 0; }
@@ -678,10 +950,10 @@ const AIC_CSS = `
   display: flex; align-items: center; gap: 6px;
   padding: 8px 12px;
   border-top: 1px solid rgba(15,15,15,0.06);
-  background: #fffaf0;
+  background: #f7f7f7;
 }
 [data-theme="dark"] .aic-email-row {
-  background: rgba(203, 145, 47, 0.08);
+  background: #151515;
   border-color: var(--border, #2A2F38);
 }
 .aic-email-icon { color: #8a8f98; flex-shrink: 0; }
@@ -705,9 +977,9 @@ const AIC_CSS = `
 }
 .aic-email-send:hover { background: #000; }
 [data-theme="dark"] .aic-email-send {
-  background: var(--brand, #4DA3E8); color: #fff;
+  background: #f7f7f7; color: #111;
 }
-[data-theme="dark"] .aic-email-send:hover { background: var(--brand-hover, #6FB6F0); }
+[data-theme="dark"] .aic-email-send:hover { background: #fff; }
 .aic-email-cancel {
   width: 26px; height: 26px; border: none; background: transparent;
   color: #8a8f98; cursor: pointer; border-radius: 4px;
@@ -767,9 +1039,9 @@ const AIC_CSS = `
 .aic-send:active:not(:disabled) { transform: scale(0.96); }
 .aic-send:disabled { background: #d6d3cc; cursor: not-allowed; }
 [data-theme="dark"] .aic-send {
-  background: var(--brand, #4DA3E8); color: #fff;
+  background: #f7f7f7; color: #111;
 }
-[data-theme="dark"] .aic-send:hover:not(:disabled) { background: var(--brand-hover, #6FB6F0); }
+[data-theme="dark"] .aic-send:hover:not(:disabled) { background: #fff; }
 [data-theme="dark"] .aic-send:disabled { background: var(--surface-3, #232830); cursor: not-allowed; }
 
 @media (max-width: 520px) {
@@ -777,10 +1049,13 @@ const AIC_CSS = `
    * but sharper typography (kept at 0.9rem instead of stepping down)
    * so the chat reads as crisp + intentional rather than shrunken. */
   .aic-bubble {
-    width: 44px; height: 44px;
+    min-width: 54px; width: 54px; height: 54px;
+    padding: 7px;
     left: 12px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.20), 0 1px 2px rgba(0,0,0,0.10);
   }
+  .aic-bubble-copy { display: none; }
+  .aic-bubble-icon { width: 40px; height: 40px; }
   .aic-bubble svg { width: 18px; height: 18px; }
   .aic-panel {
     left: 8px; right: 8px;
@@ -791,6 +1066,9 @@ const AIC_CSS = `
   .aic-header { padding: 8px 10px; }
   .aic-title { font-size: 0.82rem; }
   .aic-subtitle { font-size: 0.72rem; }
+  .aic-quickbar { padding: 7px 10px; gap: 7px; }
+  .aic-suggestions { grid-template-columns: 1fr; padding: 10px 10px 6px; gap: 7px; }
+  .aic-suggestion { min-height: 36px; }
   .aic-icon-btn { width: 26px; height: 26px; }
   .aic-block { padding: 10px 14px 8px; }
   .aic-role { font-size: 0.62rem; margin-bottom: 3px; }

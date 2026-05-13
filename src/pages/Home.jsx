@@ -24,7 +24,7 @@ function Hero() {
           src={heroGrid}
           alt=""
           className="hero-grid-bg"
-          fetchpriority="high"
+          fetchPriority="high"
           decoding="async"
         />
       </div>

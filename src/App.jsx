@@ -1,11 +1,22 @@
 import { detectPreferredContact } from "./lib/detectPreferredContact";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Link } from "./lib/Link";
-import { useEffect, useState, useMemo, lazy, Suspense } from "react";
-import { Globe, AtSign, Share2, Menu, Sun, Moon, LogIn, User as UserIcon, MapPin, Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, Tag, BookOpen, Shield, ShieldAlert, Wrench, FileText, Info, Briefcase } from "lucide-react";
+import { useEffect, useState, useMemo, useRef, lazy, Suspense } from "react";
+import {
+  AtSign, Menu, X, ChevronDown, Sun, Moon, LogIn, User as UserIcon, MapPin,
+  Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, BookOpen,
+  Shield, ShieldAlert, Wrench, FileText, Info, Briefcase, Target, Search, Lock,
+} from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Home from "./pages/Home";
+import {
+  FOOTER_COLUMNS,
+  PRIMARY_NAV,
+  SERVICE_AREA_LINKS,
+  isNavItemActive,
+  isNavSectionActive,
+} from "./data/navigation";
 import { selectionHaptic } from "./lib/haptics";
 import { ThemeContext, useTheme } from "./lib/theme";
 import { AuthProvider } from "./lib/auth.jsx";
@@ -115,18 +126,47 @@ function RouteFallback() {
   );
 }
 
+const NAV_ICONS = {
+  BookOpen,
+  Briefcase,
+  Calendar,
+  FileText,
+  Info,
+  LayoutGrid,
+  Lock,
+  LogIn,
+  MapPin,
+  Search,
+  Shield,
+  ShieldAlert,
+  ShoppingBag,
+  Target,
+  UserIcon,
+  Wrench,
+};
+
+function NavIcon({ name, size = 16 }) {
+  const Icon = NAV_ICONS[name] || Info;
+  return <Icon size={size} aria-hidden="true" />;
+}
+
 function ThemeToggle() {
   const { theme, toggle } = useTheme();
+  const isDark = theme === "dark";
   return (
     <button
       type="button"
-      className="theme-toggle"
+      className={`theme-toggle theme-toggle--${isDark ? "dark" : "light"}`}
       onClick={toggle}
-      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      title={theme === "dark" ? "Light mode" : "Dark mode"}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-pressed={isDark}
+      title={isDark ? "Light mode" : "Dark mode"}
     >
-      <span className="theme-toggle-icon" data-active={theme === "light"}><Sun size={16} /></span>
-      <span className="theme-toggle-icon" data-active={theme === "dark"}><Moon size={16} /></span>
+      <span className="theme-toggle-aura" aria-hidden="true" />
+      <span className="theme-toggle-orb" aria-hidden="true">
+        <span className="theme-toggle-icon theme-toggle-icon--sun" data-active={!isDark}><Sun size={17} /></span>
+        <span className="theme-toggle-icon theme-toggle-icon--moon" data-active={isDark}><Moon size={17} /></span>
+      </span>
     </button>
   );
 }
@@ -134,7 +174,10 @@ function ThemeToggle() {
 function Logo() {
   return (
     <Link to="/" className="brand" aria-label="Simple IT SRQ home">
-      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
+      <span className="brand-mono-mark" aria-hidden="true">
+        <span className="brand-mono-s">S</span>
+      </span>
+      <svg style={{ display: "none" }} className="brand-legacy-mark" width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
         <defs>
           {/* Tile background — diagonal brand → deeper brand. */}
           <linearGradient id="logo-bg" x1="0" y1="0" x2="1" y2="1">
@@ -212,14 +255,155 @@ function Logo() {
         <circle cx="27.5" cy="9.5" r="2"   fill="url(#logo-dot)" />
         <circle cx="26.9" cy="8.9" r="0.55" fill="#FFFFFF" fillOpacity="0.85" />
       </svg>
-      <span className="brand-text">Simple IT <span className="brand-accent">SRQ</span></span>
+      <span className="brand-text">
+        <span className="brand-word">Simple</span>
+        <span className="brand-meta">IT <span className="brand-accent">SRQ</span></span>
+      </span>
     </Link>
   );
 }
 
+function DesktopMenuLink({ item, location, onNavigate }) {
+  const active = isNavItemActive(item, location);
+  return (
+    <Link
+      to={item.to}
+      className={`nav-menu-link${active ? " is-active" : ""}`}
+      aria-current={active ? "page" : undefined}
+      onClick={onNavigate}
+      role="menuitem"
+    >
+      <span className="nav-menu-icon"><NavIcon name={item.icon} size={17} /></span>
+      <span className="nav-menu-copy">
+        <span className="nav-menu-title">{item.label}</span>
+        {item.description && <span className="nav-menu-desc">{item.description}</span>}
+      </span>
+    </Link>
+  );
+}
+
+function DesktopNavSection({ section, location, openGroup, setOpenGroup }) {
+  const active = isNavSectionActive(section, location);
+
+  if (!section.items?.length) {
+    return (
+      <Link
+        to={section.to}
+        className={`nav-top-link${active ? " is-active" : ""}`}
+        aria-current={active ? "page" : undefined}
+      >
+        <NavIcon name={section.icon} size={15} />
+        <span>{section.label}</span>
+      </Link>
+    );
+  }
+
+  const open = openGroup === section.id;
+  const menuId = `nav-${section.id}-menu`;
+  const closeGroup = () => setOpenGroup((current) => (current === section.id ? null : current));
+
+  const focusFirstMenuItem = () => {
+    window.requestAnimationFrame(() => {
+      document.querySelector(`#${menuId} a`)?.focus();
+    });
+  };
+
+  return (
+    <div
+      className={`nav-group${active ? " is-active" : ""}`}
+      data-open={open ? "true" : "false"}
+      onMouseEnter={() => setOpenGroup(section.id)}
+      onMouseLeave={closeGroup}
+      onFocusCapture={() => setOpenGroup(section.id)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) closeGroup();
+      }}
+    >
+      <button
+        type="button"
+        className="nav-top-link nav-group-trigger"
+        aria-expanded={open}
+        aria-controls={menuId}
+        aria-haspopup="true"
+        onClick={() => setOpenGroup(open ? null : section.id)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown") {
+            event.preventDefault();
+            setOpenGroup(section.id);
+            focusFirstMenuItem();
+          }
+          if (event.key === "Escape") closeGroup();
+        }}
+      >
+        <NavIcon name={section.icon} size={15} />
+        <span>{section.label}</span>
+        <ChevronDown className="nav-chevron" size={14} aria-hidden="true" />
+      </button>
+      <div id={menuId} className="nav-dropdown" role="menu">
+        {section.items.map((item) => (
+          <DesktopMenuLink
+            key={item.id}
+            item={item}
+            location={location}
+            onNavigate={() => setOpenGroup(null)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MobileNavLink({ item, location, onNavigate, compact = false }) {
+  const active = isNavItemActive(item, location);
+  const label = item.shortLabel || item.label;
+  return (
+    <Link
+      to={item.to}
+      className={`mobile-menu-link${active ? " is-active" : ""}`}
+      aria-current={active ? "page" : undefined}
+      onClick={onNavigate}
+    >
+      <span className="mobile-menu-icon"><NavIcon name={item.icon} size={16} /></span>
+      <span className="mobile-menu-copy">
+        <span>{label}</span>
+        {!compact && item.description && <small>{item.description}</small>}
+      </span>
+    </Link>
+  );
+}
+
+function MobileNavSection({ section, location, onNavigate }) {
+  if (!section.items?.length) {
+    return <MobileNavLink item={section} location={location} onNavigate={onNavigate} compact />;
+  }
+
+  return (
+    <section className="mobile-nav-section" aria-labelledby={`mobile-${section.id}-title`}>
+      <div className="mobile-nav-header" id={`mobile-${section.id}-title`}>
+        <NavIcon name={section.icon} size={14} />
+        <span>{section.label}</span>
+      </div>
+      <div className="mobile-nav-stack">
+        {section.items.map((item) => (
+          <MobileNavLink
+            key={item.id}
+            item={item}
+            location={location}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Navbar() {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+  const menuRef = useRef(null);
+  const menuButtonRef = useRef(null);
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -229,31 +413,95 @@ function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    setOpen(false);
+    setOpenGroup(null);
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.body.dataset.navMenu = "open";
+
+    function onKeyDown(event) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    function onPointerDown(event) {
+      if (
+        menuRef.current?.contains(event.target) ||
+        menuButtonRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+      setOpen(false);
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      delete document.body.dataset.navMenu;
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open]);
+
+  const portalActive = location.pathname.startsWith("/portal");
+  const portalItem = {
+    id: "portal",
+    label: user ? "My portal" : "Sign in",
+    to: "/portal",
+    icon: user ? "UserIcon" : "LogIn",
+    description: user ? "Tickets, leadgen, opsec, and account tools." : "Access the client portal.",
+    activePrefixes: ["/portal"],
+  };
+
   // Signed-in pill (avatar + first name) or a "Sign In" button.
   const portalCta = loading ? null : user ? (
-    <Link to="/portal" className="link-btn nav-user" title={`Signed in as ${user.email}`}>
+    <Link
+      to="/portal"
+      className={`link-btn nav-user${portalActive ? " is-active" : ""}`}
+      title={`Signed in as ${user.email}`}
+      aria-current={portalActive ? "page" : undefined}
+    >
       {user.avatarUrl
         ? <img src={user.avatarUrl} alt="" className="nav-avatar" />
         : <UserIcon size={16} />}
       <span>{user.name ? user.name.split(" ")[0] : "Portal"}</span>
     </Link>
   ) : (
-    <Link to="/portal" className="link-btn">
+    <Link
+      to="/portal"
+      className={`link-btn${portalActive ? " is-active" : ""}`}
+      aria-current={portalActive ? "page" : undefined}
+    >
       <LogIn size={16} style={{ marginRight: 6 }} />
       Sign In
     </Link>
   );
 
   return (
-    <header className={`navbar${scrolled ? " navbar--scrolled" : ""}`} role="banner">
+    <header
+      className={`navbar${scrolled ? " navbar--scrolled" : ""}${open ? " navbar--menu-open" : ""}`}
+      role="banner"
+    >
       <div className="container nav-inner">
         <ReadingProgress />
         <Logo />
         <nav className="nav-links" aria-label="Primary">
-          <Link to="/#solutions">Services</Link>
-          <Link to="/leadgen">Leadgen</Link>
-          <Link to="/blog">Blog</Link>
-          <Link to="/support">Support</Link>
+          {PRIMARY_NAV.map((section) => (
+            <DesktopNavSection
+              key={section.id}
+              section={section}
+              location={location}
+              openGroup={openGroup}
+              setOpenGroup={setOpenGroup}
+            />
+          ))}
         </nav>
         <div className="nav-actions">
           <ThemeToggle />
@@ -270,7 +518,8 @@ function Navbar() {
             user ? (
               <Link
                 to="/portal"
-                className="nav-mobile-cta nav-mobile-cta--user"
+                className={`nav-mobile-cta nav-mobile-cta--user${portalActive ? " is-active" : ""}`}
+                aria-current={portalActive ? "page" : undefined}
                 aria-label={`Open portal — signed in as ${user.email}`}
               >
                 {user.avatarUrl
@@ -280,46 +529,64 @@ function Navbar() {
             ) : (
               <Link
                 to="/portal"
-                className="nav-mobile-cta"
+                className={`nav-mobile-cta${portalActive ? " is-active" : ""}`}
                 aria-label="Sign in"
+                aria-current={portalActive ? "page" : undefined}
               >
                 <LogIn size={14} />
                 <span>Sign in</span>
               </Link>
             )
           )}
-          <button className="menu-btn" aria-label="Open menu" onClick={() => setOpen(!open)}>
-            <Menu size={20} />
+          <button
+            ref={menuButtonRef}
+            className="menu-btn"
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-primary-menu"
+            onClick={() => setOpen((current) => !current)}
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
       {open && (
-        <div className="mobile-menu" role="menu">
-          <div className="mobile-nav-header">Services</div>
-          <Link to="/#solutions" onClick={() => setOpen(false)}><LayoutGrid size={16} /> All Services</Link>
-          <Link to="/services" onClick={() => setOpen(false)}><ShoppingBag size={16} /> Buy a Service</Link>
-          <Link to="/industries" onClick={() => setOpen(false)}><Briefcase size={16} /> Industries we serve</Link>
-          <Link to="/stack" onClick={() => setOpen(false)}><Shield size={16} /> Vendor Stack</Link>
-          
+        <nav
+          id="mobile-primary-menu"
+          ref={menuRef}
+          className="mobile-menu"
+          aria-label="Mobile primary"
+        >
+          {PRIMARY_NAV.map((section) => (
+            <MobileNavSection
+              key={section.id}
+              section={section}
+              location={location}
+              onNavigate={() => setOpen(false)}
+            />
+          ))}
+
           <div className="mobile-nav-divider" />
-          <div className="mobile-nav-header">Resources</div>
-          <Link to="/blog" onClick={() => setOpen(false)}><BookOpen size={16} /> Blog</Link>
-          <Link to="/exposure-scan" onClick={() => setOpen(false)}><ShieldAlert size={16} /> Free Exposure Scan</Link>
-          <Link to="/tools" onClick={() => setOpen(false)}><Wrench size={16} /> Recommended Tools</Link>
-          <Link to="/glossary" onClick={() => setOpen(false)}><Info size={16} /> Glossary</Link>
-          
-          <div className="mobile-nav-divider" />
-          <div className="mobile-nav-header">Account</div>
-          <Link to="/portal" onClick={() => setOpen(false)}>
-            <UserIcon size={16} /> {user ? "My Portal" : "Sign In"}
-          </Link>
-          <Link to="/support" onClick={() => setOpen(false)}><Shield size={16} /> Support</Link>
-          <div style={{ marginTop: 12 }}>
-            <Link to="/book" className="btn btn-primary" style={{ justifyContent: 'center' }} onClick={() => setOpen(false)}>
-              <Calendar size={16} /> Book a Call
+          <section className="mobile-nav-section mobile-nav-section--account" aria-labelledby="mobile-account-title">
+            <div className="mobile-nav-header" id="mobile-account-title">
+              <UserIcon size={14} aria-hidden="true" />
+              <span>Account</span>
+            </div>
+            <MobileNavLink
+              item={portalItem}
+              location={location}
+              onNavigate={() => setOpen(false)}
+            />
+            <Link
+              to="/book"
+              className="btn btn-primary mobile-menu-cta"
+              onClick={() => setOpen(false)}
+            >
+              <Calendar size={16} aria-hidden="true" /> Book a Call
             </Link>
-          </div>
-        </div>
+          </section>
+        </nav>
       )}
     </header>
   );
@@ -338,19 +605,19 @@ function Footer() {
             </a>
           </div>
         </div>
-        <div>
-          <h4>What We Do</h4>
-          <ul>
-            <li><Link to="/#solutions">Helpdesk and IT support</Link></li>
-            <li><Link to="/#solutions">Computer repair</Link></li>
-            <li><Link to="/#solutions">Security cameras</Link></li>
-            <li><Link to="/#solutions">Enterprise domains and migrations</Link></li>
-            <li><Link to="/#solutions">Cybersecurity</Link></li>
-            <li><Link to="/#solutions">Microsoft 365 and cloud</Link></li>
-            <li><Link to="/#solutions">Backups and recovery</Link></li>
-          </ul>
-        </div>
-        <div>
+        {FOOTER_COLUMNS.map((column) => (
+          <div key={column.title}>
+            <h4>{column.title}</h4>
+            <ul>
+              {column.items.map((item) => (
+                <li key={item.to}>
+                  <Link to={item.to}>{item.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+        <div hidden>
           <h4>Resources</h4>
           <ul>
             <li><Link to="/blog">Blog</Link></li>
@@ -372,11 +639,16 @@ function Footer() {
         <div>
           <h4>Service Area</h4>
           <ul className="footer-cities">
-            <li><Link to="/sarasota-it-support"><MapPin size={12} /> Sarasota</Link></li>
-            <li><Link to="/bradenton-it-support"><MapPin size={12} /> Bradenton</Link></li>
-            <li><Link to="/lakewood-ranch-it-support"><MapPin size={12} /> Lakewood Ranch</Link></li>
-            <li><Link to="/nokomis-it-support"><MapPin size={12} /> Nokomis</Link></li>
-            <li><Link to="/venice-it-support"><MapPin size={12} /> Venice</Link></li>
+            {SERVICE_AREA_LINKS.map((item) => (
+              <li key={item.id}>
+                <Link
+                  to={item.to}
+                  className={item.id === "service-area" ? "footer-cities-all" : undefined}
+                >
+                  <NavIcon name={item.icon} size={12} /> {item.label}
+                </Link>
+              </li>
+            ))}
             <li><Link to="/service-area" className="footer-cities-all">View all markets →</Link></li>
           </ul>
           <p className="footer-area-note">Serving Southwest Florida — Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
@@ -418,13 +690,16 @@ function ScrollToHash() {
   const { pathname, hash } = useLocation();
   useEffect(() => {
     if (hash) {
-      const id = hash.replace("#", "");
+      const id = decodeURIComponent(hash.replace("#", ""));
       setTimeout(() => {
         const el = document.getElementById(id);
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (!el) return;
+        const navHeight = document.querySelector(".navbar")?.getBoundingClientRect().height || 0;
+        const top = el.getBoundingClientRect().top + window.scrollY - navHeight - 16;
+        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
       }, 50);
     } else {
-      window.scrollTo({ top: 0, behavior: "instant" });
+      window.scrollTo({ top: 0, behavior: "auto" });
     }
   }, [pathname, hash]);
   return null;
@@ -506,6 +781,7 @@ function AnalyticsMount() {
 function Layout({ children }) {
   return (
     <>
+      <a className="skip-link" href="#main">Skip to content</a>
       <Navbar />
       <ScrollToHash />
       <VisitorTracker />
@@ -560,18 +836,29 @@ function ThemeProvider({ children }) {
 }
 
 function ReadingProgress() {
+  const { pathname } = useLocation();
+  const enabled = pathname.startsWith("/blog/");
   const [progress, setProgress] = useState(0);
+
   useEffect(() => {
+    if (!enabled) {
+      setProgress(0);
+      return undefined;
+    }
+
     const handleScroll = () => {
       const winScroll = document.documentElement.scrollTop;
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const scrolled = (winScroll / height) * 100;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
       setProgress(scrolled);
     };
+
+    handleScroll();
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [enabled]);
 
+  if (!enabled) return null;
   return <div className="reading-progress" style={{ width: `${progress}%` }} />;
 }
 
