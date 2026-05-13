@@ -64,15 +64,6 @@ export const PRIMARY_NAV = [
         description: "Tools, controls, and cost calculator for managed accounts.",
         activePaths: ["/stack", "/tools-we-use"],
       },
-      {
-        id: "compliance-referral",
-        label: "Compliance audit referral",
-        shortLabel: "Audit referral",
-        to: "/compliance-audit-referral",
-        icon: "FileText",
-        description: "HIPAA and cyber-insurance audit handoff flow.",
-        activePaths: ["/compliance-audit-referral"],
-      },
     ],
   },
   {
@@ -169,7 +160,6 @@ export const FOOTER_COLUMNS = [
       { label: "Managed IT capabilities", to: "/#solutions" },
       { label: "Fixed-fee service catalog", to: "/services" },
       { label: "Industries we serve", to: "/industries" },
-      { label: "Compliance audit referral", to: "/compliance-audit-referral" },
       { label: "Vendor stack", to: "/stack" },
       { label: "Service area", to: "/service-area" },
     ],

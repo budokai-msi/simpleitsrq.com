@@ -92,8 +92,8 @@ function CoverageMap() {
           const cy = (c.y / 100) * 500;
           return (
             <g key={c.slug}>
-              <circle cx={cx} cy={cy} r="14" fill="#0F6CBD" opacity="0.15" />
-              <circle cx={cx} cy={cy} r="6" fill="#0F6CBD" />
+              <circle cx={cx} cy={cy} r="14" fill="#111827" opacity="0.15" />
+              <circle cx={cx} cy={cy} r="6" fill="#111827" />
               <circle cx={cx} cy={cy} r="2" fill="#fff" />
               <text
                 x={cx + 12}

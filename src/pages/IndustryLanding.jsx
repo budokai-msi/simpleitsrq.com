@@ -223,7 +223,7 @@ export default function IndustryLanding() {
       <section className="section">
         <div className="container" style={{ maxWidth: 880 }}>
           <h2 className="title-1">What we deliver for {industry.displayName.toLowerCase()} in {city.city}</h2>
-          <div style={{ padding: "20px 24px", borderRadius: 12, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)", borderLeft: "4px solid #0F6CBD", marginTop: 12 }}>
+          <div style={{ padding: "20px 24px", borderRadius: 12, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)", borderLeft: "4px solid #111827", marginTop: 12 }}>
             <h3 style={{ marginTop: 0, fontSize: "1.05rem" }}>{pattern.title}</h3>
             <p style={{ margin: 0, lineHeight: 1.6 }}>{pattern.body}</p>
           </div>

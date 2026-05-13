@@ -68,7 +68,7 @@ function useCalcomInline(calLink) {
             layout: "month_view",
             theme: "auto",
             cssVarsPerTheme: {
-              light: { "cal-brand": "#0F6CBD" },
+              light: { "cal-brand": "#111827" },
               dark: { "cal-brand": "#4CC2FF" },
             },
           });
@@ -345,7 +345,7 @@ export default function Book() {
           >
             {bullets.map((item) => (
               <li key={item.text} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <item.Icon size={18} color="#0F6CBD" /> {item.text}
+                <item.Icon size={18} color="#111827" /> {item.text}
               </li>
             ))}
           </ul>

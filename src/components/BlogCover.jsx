@@ -24,7 +24,7 @@ const PALETTES = {
   "Cloud":             { base: "#0C4A6E", accent: "#38BDF8", mid: "#075985" },
   "Compliance":        { base: "#14532D", accent: "#22C55E", mid: "#166534" },
   "Privacy":           { base: "#1F2937", accent: "#06B6D4", mid: "#164E63" },
-  "Business Tech":     { base: "#0F6CBD", accent: "#60A5FA", mid: "#1E40AF" },
+  "Business Tech":     { base: "#111827", accent: "#60A5FA", mid: "#1E40AF" },
   "Industry News":     { base: "#422006", accent: "#F59E0B", mid: "#92400E" },
 };
 

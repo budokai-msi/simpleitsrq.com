@@ -39,11 +39,11 @@
   --mica: rgba(213, 207, 195, 0.88);
 
   /* Brand — slightly deeper for better contrast on lighter surfaces */
-  --brand: #0D5FA8;
-  --brand-hover: #0E6BBD;
-  --brand-pressed: #094070;
-  --brand-subtle: #E0ECF8;
-  --brand-glow: rgba(13, 95, 168, 0.22);
+  --brand: #111827;
+  --brand-hover: #000000;
+  --brand-pressed: #000000;
+  --brand-subtle: #E8E8E8;
+  --brand-glow: rgba(17, 24, 39, 0.22);
 
   /* Text — darker for more punch against warm backgrounds */
   --text-1: #141414;
@@ -90,11 +90,11 @@
   --mica: rgba(20, 23, 28, 0.72);
 
   /* Brand — slightly brightened for dark contrast */
-  --brand: #4DA3E8;
-  --brand-hover: #6FB6F0;
-  --brand-pressed: #2B88D8;
-  --brand-subtle: rgba(77, 163, 232, 0.14);
-  --brand-glow: rgba(77, 163, 232, 0.28);
+  --brand: #E8EEF6;
+  --brand-hover: #FFFFFF;
+  --brand-pressed: #C0C8D4;
+  --brand-subtle: rgba(232, 238, 246, 0.14);
+  --brand-glow: rgba(232, 238, 246, 0.28);
 
   /* Text */
   --text-1: #F4F5F7;
@@ -506,10 +506,10 @@ body:has(dialog[open][data-blocking-modal]) {
 :root,
 :root[data-theme="light"] {
   /* Accent palette — used for callouts, badges, sparklines, charts.
-   * Tuned to sit next to --brand (#0F6CBD) without fighting it. */
-  --accent-teal:   #0E9C95;
+   * Tuned to sit next to --brand (#111827) without fighting it. */
+  --accent-teal:   #374151;
   --accent-teal-bg: #DFF5F2;
-  --accent-violet: #7C5CD8;
+  --accent-violet: #6b7280;
   --accent-violet-bg: #EEE9FB;
   --accent-amber:  #C77B0B;
   --accent-amber-bg: #FBF1DC;

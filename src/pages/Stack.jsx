@@ -164,8 +164,8 @@ function StackCalculator() {
                     padding: "8px 10px",
                     borderRadius: 8,
                     cursor: "pointer",
-                    background: included.has(t.id) ? "rgba(15, 108, 189, 0.06)" : "transparent",
-                    border: `1px solid ${included.has(t.id) ? "rgba(15, 108, 189, 0.2)" : "var(--syn-border, #e5e7eb)"}`,
+                    background: included.has(t.id) ? "rgba(17, 24, 39, 0.06)" : "transparent",
+                    border: `1px solid ${included.has(t.id) ? "rgba(17, 24, 39, 0.2)" : "var(--syn-border, #e5e7eb)"}`,
                     fontSize: 13,
                   }}
                 >
@@ -193,7 +193,7 @@ function StackCalculator() {
           <div style={{
             padding: 24,
             borderRadius: 14,
-            background: "linear-gradient(180deg, #0F6CBD 0%, #0A4E8F 100%)",
+            background: "linear-gradient(180deg, #111827 0%, #000000 100%)",
             color: "#fff",
             position: "sticky",
             top: 80,
@@ -235,7 +235,7 @@ function StackCalculator() {
               className="btn"
               style={{
                 background: "#fff",
-                color: "#0F6CBD",
+                color: "#111827",
                 fontWeight: 600,
                 width: "100%",
                 justifyContent: "center",
@@ -311,14 +311,14 @@ export default function Stack() {
                 gap: 10,
                 padding: "12px 16px",
                 borderRadius: 10,
-                background: "rgba(15, 108, 189, 0.06)",
-                border: "1px solid rgba(15, 108, 189, 0.18)",
+                background: "rgba(17, 24, 39, 0.06)",
+                border: "1px solid rgba(17, 24, 39, 0.18)",
                 marginTop: "1.25rem",
                 fontSize: "0.92rem",
                 color: "var(--syn-text, #0B0D10)",
               }}
             >
-              <Info size={18} color="#0F6CBD" style={{ flexShrink: 0, marginTop: 2 }} />
+              <Info size={18} color="#111827" style={{ flexShrink: 0, marginTop: 2 }} />
               <span>
                 <strong>Why this list is short.</strong> We install dozens of
                 products across our client base, but the ones on this page are
@@ -362,7 +362,7 @@ export default function Stack() {
           >
             {STACK.map((cat) => (
               <li key={cat.id}>
-                <a href={`#${cat.id}`} style={{ color: "#0F6CBD", textDecoration: "none" }}>
+                <a href={`#${cat.id}`} style={{ color: "#111827", textDecoration: "none" }}>
                   {cat.title}
                 </a>
               </li>

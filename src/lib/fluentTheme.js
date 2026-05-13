@@ -3,7 +3,7 @@ import { webLightTheme, webDarkTheme } from "@fluentui/react-components";
 // Brand-aligned Fluent themes — only imported by the lazy ClientPortal route,
 // so the homepage bundle never pulls in @fluentui/react-components.
 //
-// We override the communication-blue ramp with the site's #0F6CBD so Fluent
+// We override the communication-blue ramp with the site's #111827 so Fluent
 // Buttons / accents match the rest of the page, and align the neutral surface
 // tokens with the site's --bg / --surface values so FluentProvider's wrapper
 // background doesn't fight the page.
@@ -19,13 +19,13 @@ export const brandedLightTheme = {
   ...webLightTheme,
   ...sharedFluentOverrides,
   // Brand ramp
-  colorBrandBackground: "#0F6CBD",
-  colorBrandBackgroundHover: "#115EA3",
+  colorBrandBackground: "#111827",
+  colorBrandBackgroundHover: "#000000",
   colorBrandBackgroundPressed: "#0C3B5E",
-  colorBrandForeground1: "#0F6CBD",
-  colorBrandForeground2: "#115EA3",
-  colorBrandForegroundLink: "#0F6CBD",
-  colorBrandForegroundLinkHover: "#115EA3",
+  colorBrandForeground1: "#111827",
+  colorBrandForeground2: "#000000",
+  colorBrandForegroundLink: "#111827",
+  colorBrandForegroundLinkHover: "#000000",
   colorBrandForegroundLinkPressed: "#0C3B5E",
   // Surfaces
   colorNeutralBackground1: "#FFFFFF",
@@ -41,14 +41,14 @@ export const brandedLightTheme = {
 export const brandedDarkTheme = {
   ...webDarkTheme,
   ...sharedFluentOverrides,
-  colorBrandBackground: "#4DA3E8",
+  colorBrandBackground: "#E8EEF6",
   colorBrandBackgroundHover: "#6FB6F0",
-  colorBrandBackgroundPressed: "#2B88D8",
-  colorBrandForeground1: "#4DA3E8",
+  colorBrandBackgroundPressed: "#374151",
+  colorBrandForeground1: "#E8EEF6",
   colorBrandForeground2: "#6FB6F0",
-  colorBrandForegroundLink: "#4DA3E8",
+  colorBrandForegroundLink: "#E8EEF6",
   colorBrandForegroundLinkHover: "#6FB6F0",
-  colorBrandForegroundLinkPressed: "#2B88D8",
+  colorBrandForegroundLinkPressed: "#374151",
   colorNeutralBackground1: "#14171C",
   colorNeutralBackground2: "#1C1F26",
   colorNeutralBackground3: "#232830",

@@ -10,7 +10,7 @@ const THREAT_LABELS = {
   scanner:         { label: "Scanner probe",      color: "#D97706", icon: Search },
   exploit_attempt: { label: "Exploit attempt",    color: "#DC2626", icon: Skull },
   hostile_geo:     { label: "Hostile-geo visit",  color: "#7C3AED", icon: Globe2 },
-  osint_match:     { label: "Known-bad IP",       color: "#0F6CBD", icon: ShieldAlert },
+  osint_match:     { label: "Known-bad IP",       color: "#111827", icon: ShieldAlert },
 };
 
 function ago(iso) {
@@ -140,7 +140,7 @@ export default function LiveThreats() {
           }}>
             <StatTile icon={Activity} label="Attacks · last 48h" value={stats.hits48h} color="#DC2626" />
             <StatTile icon={Zap}      label="Exploit attempts"    value={stats.exploitAttempts48h} color="#D97706" />
-            <StatTile icon={Globe2}   label="Unique IPs"           value={stats.uniqueIps48h}  color="#0F6CBD" />
+            <StatTile icon={Globe2}   label="Unique IPs"           value={stats.uniqueIps48h}  color="#111827" />
             <StatTile icon={Shield}   label="Total blocklist"      value={stats.blocklistTotal} color="#107C10" />
           </div>
 
@@ -238,7 +238,7 @@ export default function LiveThreats() {
             marginTop: 32,
             padding: "24px",
             borderRadius: 12,
-            background: "linear-gradient(180deg, #0F6CBD 0%, #0A4E8F 100%)",
+            background: "linear-gradient(180deg, #111827 0%, #000000 100%)",
             color: "#fff",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -252,7 +252,7 @@ export default function LiveThreats() {
               or book a consult to deploy the same defense layer on your site.
             </p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <Link to="/exposure-scan" className="btn" style={{ background: "#fff", color: "#0F6CBD", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Link to="/exposure-scan" className="btn" style={{ background: "#fff", color: "#111827", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>
                 <Search size={14} /> Free exposure scan
               </Link>
               <Link to="/book" className="btn" style={{ background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.5)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>

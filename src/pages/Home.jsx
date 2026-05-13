@@ -226,13 +226,13 @@ function Compliance() {
           </p>
           <ul className="feature-list">
             {features.map((f) => (
-              <li key={f}><Check size={18} color="#0F6CBD" /> {f}</li>
+              <li key={f}><Check size={18} color="#111827" /> {f}</li>
             ))}
           </ul>
         </div>
         <aside className="compliance-card" aria-label="Operational track record">
           <div className="cc-header">
-            <Shield size={24} color="#0F6CBD" />
+            <Shield size={24} color="#111827" />
             <div>
               <span className="cc-eyebrow">HIPAA DOCUMENTED PARTNER</span>
               <h3 className="cc-title">Operational track record</h3>

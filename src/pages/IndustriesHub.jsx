@@ -72,7 +72,7 @@ export default function IndustriesHub() {
                     borderRadius: 14,
                     background: "var(--syn-surface, #f9fafb)",
                     border: "1px solid var(--syn-border, #e5e7eb)",
-                    borderLeft: "4px solid #0F6CBD",
+                    borderLeft: "4px solid #111827",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
@@ -80,9 +80,9 @@ export default function IndustriesHub() {
                       flexShrink: 0,
                       width: 44, height: 44,
                       borderRadius: 10,
-                      background: "rgba(15, 108, 189, 0.1)",
+                      background: "rgba(17, 24, 39, 0.1)",
                       display: "grid", placeItems: "center",
-                      color: "#0F6CBD",
+                      color: "#111827",
                     }}>
                       <Icon size={22} aria-hidden="true" />
                     </div>
@@ -109,9 +109,9 @@ export default function IndustriesHub() {
                               to={`/${industry.slug}-${cityKey}`}
                               style={{
                                 padding: "6px 12px", borderRadius: 999,
-                                background: "rgba(15, 108, 189, 0.08)",
+                                background: "rgba(17, 24, 39, 0.08)",
                                 color: "var(--text-1)",
-                                border: "1px solid rgba(15, 108, 189, 0.2)",
+                                border: "1px solid rgba(17, 24, 39, 0.2)",
                                 fontSize: 13, fontWeight: 500,
                                 textDecoration: "none",
                                 display: "inline-flex", alignItems: "center", gap: 4,

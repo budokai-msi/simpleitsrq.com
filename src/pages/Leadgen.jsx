@@ -1,4 +1,4 @@
-﻿// Public marketing & sales page for the Leadgen platform â€” the
+﻿// Public marketing & sales page for the Leadgen platform - the
 // productized version of the engine that powers /portal/leadgen.
 //
 // Positioning: "Local-business outreach that doesn't get you blacklisted."
@@ -7,24 +7,23 @@
 // sales teams in regulated verticals (medical / legal / finance).
 //
 // Goals (May 2026 launch):
-//   1. Lead capture (waitlist) â†’ /api/contact (existing route, no new
+//   1. Lead capture (waitlist) -> /api/contact (existing route, no new
 //      Vercel function consumed).
-//   2. Pricing transparency â€” three tiers, annual/monthly toggle, clear
+//   2. Pricing transparency - three tiers, annual/monthly toggle, clear
 //      what's-included blocks.
-//   3. Dashboard preview â€” illustrated SVG mock that mirrors the actual
+//   3. Dashboard preview - illustrated SVG mock that mirrors the actual
 //      /portal/leadgen UI so prospects can visualize the product.
-//   4. Compliance trust band â€” CAN-SPAM, GDPR honoring, no-scrape
+//   4. Compliance trust band - CAN-SPAM, GDPR honoring, no-scrape
 //      provenance, manual review queue.
 
 import { useEffect, useState } from "react";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, MapPin, Database, Mail, Zap, ShieldCheck,
-  Filter, Send, BarChart3, Building2, Sparkles, X,
-  Activity, Calculator,
+  Filter, Send, BarChart3, Building2,
+  Activity, Calculator, Search, Gauge, Target,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
-import LeadgenPromoModal from "../components/LeadgenPromoModal";
 
 const TIERS = [
   {
@@ -32,8 +31,8 @@ const TIERS = [
     name: "Free",
     monthly: 0,
     annual: 0,
-    blurb: "Validate the channel before spending a dollar. One zip, ten businesses, full deliverability stack.",
-    cta: "Start free",
+    blurb: "A small sample so you can see the data shape before you commit.",
+    cta: "Request free sample",
     ctaHref: "/book?topic=leadgen-free",
     stripeMonthly: null,
     stripeAnnual: null,
@@ -52,9 +51,9 @@ const TIERS = [
     name: "Growth",
     monthly: 19,
     annual: 15,
-    blurb: "For solo founders and small sales teams with a daily rhythm.",
-    cta: "Start Growth",
-    ctaHref: "/book?topic=leadgen-growth&promo=LAUNCH20",
+    blurb: "The first paid test: one niche, one zip, reviewed before anything sends.",
+    cta: "Start $19 Growth",
+    ctaHref: "/book?topic=leadgen-growth",
     stripeMonthly: import.meta.env.VITE_LEADGEN_GROWTH_MONTHLY_URL,
     stripeAnnual: import.meta.env.VITE_LEADGEN_GROWTH_ANNUAL_URL,
     highlight: true,
@@ -66,7 +65,7 @@ const TIERS = [
       "Industry & sub-industry filters",
       "Per-domain throttling + reply detection",
       "CSV + Google Sheets export",
-      "Email support, business hours",
+      "1-business-day onboarding review",
     ],
   },
   {
@@ -74,9 +73,9 @@ const TIERS = [
     name: "Pro",
     monthly: 99,
     annual: 79,
-    blurb: "For growing teams running concurrent campaigns across multiple territories.",
+    blurb: "For teams running several territories or vertical campaigns at once.",
     cta: "Start Pro",
-    ctaHref: "/book?topic=leadgen-pro&promo=LAUNCH20",
+    ctaHref: "/book?topic=leadgen-pro",
     stripeMonthly: import.meta.env.VITE_LEADGEN_PRO_MONTHLY_URL,
     stripeAnnual: import.meta.env.VITE_LEADGEN_PRO_ANNUAL_URL,
     highlight: false,
@@ -84,11 +83,11 @@ const TIERS = [
       "Unlimited zip-radius searches",
       "Up to 5,000 verified business records / month",
       "5 concurrent outreach campaigns",
-      "Webhook + HubSpot / Pipedrive sync",
-      "Slack alerts on opens, clicks, replies",
-      "Priority email + chat support",
+      "Webhook-ready export",
+      "Open, click, and reply tracking",
+      "Priority email support",
       "Custom enrichment fields",
-      "Dedicated warm-up IP",
+      "Quarterly deliverability review",
     ],
   },
 ];
@@ -97,7 +96,7 @@ const FEATURES = [
   {
     Icon: MapPin,
     title: "OSM-sourced, not scraped",
-    body: "Every business record is sourced from OpenStreetMap and cross-referenced against Google Places â€” so you're not building an outreach list on top of a TOS violation.",
+    body: "Every business record starts with OpenStreetMap public business data. We store source IDs and source URLs so the record can be inspected later.",
   },
   {
     Icon: Database,
@@ -117,7 +116,7 @@ const FEATURES = [
   {
     Icon: BarChart3,
     title: "Real-time campaign analytics",
-    body: "Opens, clicks, replies, and unsubscribes streamed to the dashboard. Sparkline trends over the last 30 days, no Mixpanel install required.",
+    body: "Opens, clicks, replies, and unsubscribes stream into the dashboard. You can see what is working without bolting on another analytics tool.",
   },
   {
     Icon: ShieldCheck,
@@ -127,7 +126,7 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  { Icon: MapPin, label: "1. Search a zip", body: "Enter a 5-digit US zip. The crawler queues an OSM pass and returns a deduped business list â€” usually in under a minute." },
+  { Icon: MapPin, label: "1. Search a zip", body: "Enter a 5-digit US zip. The crawler queues an OSM pass and returns a deduped business list - usually in under a minute." },
   { Icon: Mail,   label: "2. Verify emails", body: "Run the email-discovery + verification pass per business. Deliverable contacts land in your queue with confidence scores." },
   { Icon: Send,   label: "3. Launch a campaign", body: "Pick a template, set your daily cap, click start. Throttling, bounce handling, and unsubscribe links are wired in." },
   { Icon: BarChart3, label: "4. Watch replies land", body: "Reply detection routes inbound messages to your inbox. Slack alerts on every open, click, and reply." },
@@ -136,10 +135,17 @@ const STEPS = [
 const COMPLIANCE = [
   "CAN-SPAM compliant: physical address, one-click unsubscribe, accurate sender identity",
   "GDPR-honoring suppression list (we suppress on request, no questions asked)",
-  "OpenStreetMap + Places-sourced records â€” no TOS-violating scrapers",
+  "OpenStreetMap-sourced records with stored source IDs and source URLs",
   "Manual abuse-review queue: every new account has a 24-hour kick-off review",
   "Hard caps on volume per tier so a misconfigured campaign can't burn your domain reputation",
   "Bounce-rate auto-pause: campaigns halt if bounce rate exceeds 8% in a 30-message window",
+];
+
+const PROOF_POINTS = [
+  { label: "Data source", value: "OpenStreetMap", detail: "Public POIs, source ID retained" },
+  { label: "Email source", value: "Business websites", detail: "Published contact pages and mailto links" },
+  { label: "Send control", value: "Throttled", detail: "Daily caps, domain caps, bounce auto-pause" },
+  { label: "Paid path", value: "Growth trial", detail: "$19/mo, 500 records, 1 review" },
 ];
 
 function Currency({ value }) {
@@ -158,13 +164,30 @@ function Currency({ value }) {
   );
 }
 
+function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "btn btn-primary", children }) {
+  const tier = TIERS.find((t) => t.id === tierId) || TIERS[1];
+  const stripeUrl = billing === "annual" ? tier.stripeAnnual : tier.stripeMonthly;
+  if (stripeUrl) {
+    return (
+      <a href={stripeUrl} className={className} rel="noopener">
+        {children || tier.cta} <ArrowRight size={16} />
+      </a>
+    );
+  }
+  return (
+    <Link to={tier.ctaHref} className={className}>
+      {children || tier.cta} <ArrowRight size={16} />
+    </Link>
+  );
+}
+
 export default function Leadgen() {
   const [billing, setBilling] = useState("monthly");
 
   useSEO({
-    title: "Leadgen by Simple IT SRQ â€” Compliant local-business outreach for SMB sales teams",
+    title: "Leadgen by Simple IT SRQ - Compliant local-business outreach for SMB sales teams",
     description:
-      "OSM-sourced, deliverability-first, CAN-SPAM compliant outreach. Verified emails, per-domain throttling, and audit logging. From $169/mo billed annually.",
+      "OSM-sourced, deliverability-first, CAN-SPAM compliant outreach. Verified emails, per-domain throttling, and audit logging. From $15/mo billed annually.",
     canonical: `${SITE_URL}/leadgen`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [
@@ -176,41 +199,50 @@ export default function Leadgen() {
   return (
     <main id="main" className="leadgen-public">
       <LeadgenCheckoutSuccess />
-      <LeadgenPromoBar />
-      <LeadgenPromoModal />
       {/* Hero */}
       <section className="section hero hero-clean leadgen-hero">
         <div className="container leadgen-hero__inner">
           <div className="leadgen-hero__copy">
-            <span className="eyebrow">
-              <Sparkles size={14} style={{ display: "inline", marginRight: 6 }} />
-              Leadgen by Simple IT SRQ Â· v1.0
-            </span>
-            <h1 className="display">Local-business outreach that doesn&rsquo;t get you blacklisted.</h1>
+            <h1 className="display">Buy one local lead test. Know this week if the niche replies.</h1>
             <p className="lede">
-              The lead-generation engine we built to grow our own managed-services book â€”
-              now available for your sales team. OSM-sourced records, multi-stage email
-              verification, per-domain throttling, and CAN-SPAM-compliant sending.
-              Deliverability-first, by design.
+              Growth is $19/month. Pick one zip code and one business type, inspect
+              the source records, then launch only after the first campaign passes a
+              human review. No mystery spreadsheet. No blast-and-pray outbound.
             </p>
             <div className="hero-ctas">
-              <Link to="#pricing" className="btn btn-primary btn-lg">
-                See pricing <ArrowRight size={16} />
-              </Link>
+              <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
+                Start $19 Growth
+              </LeadgenPlanLink>
               <Link to="/book?topic=leadgen-demo" className="btn btn-secondary btn-lg">
-                Book a 20-minute demo
+                Book 15-min setup call
               </Link>
             </div>
             <div className="leadgen-hero__trust">
-              <span><Check size={14} /> CAN-SPAM compliant</span>
-              <span><Check size={14} /> &lt;2% bounce rate</span>
-              <span><Check size={14} /> 14-day money back</span>
+              <span><Check size={14} /> One zip</span>
+              <span><Check size={14} /> One niche</span>
+              <span><Check size={14} /> Reviewed before send</span>
+            </div>
+            <div className="leadgen-hero__offer" aria-label="Growth trial offer">
+              <div>
+                <span>Paid test</span>
+                <strong>$19/mo</strong>
+              </div>
+              <div>
+                <span>Includes</span>
+                <strong>500 records/month</strong>
+              </div>
+              <div>
+                <span>First step</span>
+                <strong>campaign review</strong>
+              </div>
             </div>
           </div>
 
           <LeadgenDashboardMock />
         </div>
       </section>
+
+      <LeadgenProofStrip />
 
       {/* Stat band */}
       <section className="section leadgen-statband-section">
@@ -236,8 +268,7 @@ export default function Leadgen() {
         </div>
       </section>
 
-      {/* Social proof */}
-      <LeadgenTestimonials />
+      <LeadgenROICalculator />
       <LeadgenLiveTicker />
 
       {/* How it works */}
@@ -286,7 +317,7 @@ export default function Leadgen() {
             <h2 className="title-1">Built so a misconfigured campaign can&rsquo;t burn your domain.</h2>
             <p className="lede">
               Most outbound platforms ship a sharp tool with no guardrails. Leadgen
-              ships the guardrails first â€” because a single bad blast can put your
+              ships the guardrails first - because a single bad blast can put your
               sending domain on a deny-list for 90 days.
             </p>
           </div>
@@ -298,8 +329,11 @@ export default function Leadgen() {
         </div>
       </section>
 
+      <LeadgenTestimonials />
+
+      <LeadgenLimits />
+
       {/* Pricing */}
-      <LeadgenROICalculator />
       <section id="pricing" className="section">
         <div className="container">
           <div className="section-head" style={{ maxWidth: 720 }}>
@@ -378,22 +412,38 @@ export default function Leadgen() {
       {/* Final CTA */}
       <section className="section section-alt leadgen-final-cta">
         <div className="container" style={{ maxWidth: 720, textAlign: "center" }}>
-          <h2 className="title-1">Stop scraping. Start replying.</h2>
+          <h2 className="title-1">Start with one zip and one clear offer.</h2>
           <p className="lede" style={{ marginTop: 12 }}>
-            20-minute demo. Live walk-through against your zip code, your industry,
-            your stack. We&rsquo;ll send you the real data, not a sandbox.
+            Growth is the fastest honest test: enough records to learn, enough
+            throttling to stay safe, and a one-business-day review before launch.
           </p>
           <div className="hero-ctas" style={{ justifyContent: "center", marginTop: 24 }}>
-            <Link to="/book?topic=leadgen-demo" className="btn btn-primary btn-lg">
-              Book a demo <ArrowRight size={16} />
-            </Link>
-            <Link to="/contact?topic=leadgen-trial" className="btn btn-secondary btn-lg">
-              Request a 14-day trial
+            <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
+              Start $19 Growth
+            </LeadgenPlanLink>
+            <Link to="/book?topic=leadgen-demo" className="btn btn-secondary btn-lg">
+              Walk me through it
             </Link>
           </div>
         </div>
       </section>
     </main>
+  );
+}
+
+function LeadgenProofStrip() {
+  return (
+    <section className="leadgen-proof" aria-label="Leadgen proof points">
+      <div className="container leadgen-proof__grid">
+        {PROOF_POINTS.map((point) => (
+          <div key={point.label} className="leadgen-proof__item">
+            <span className="leadgen-proof__label">{point.label}</span>
+            <strong>{point.value}</strong>
+            <span>{point.detail}</span>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -405,9 +455,23 @@ function LeadgenDashboardMock() {
         <span className="leadgen-mock__dot leadgen-mock__dot--r" />
         <span className="leadgen-mock__dot leadgen-mock__dot--y" />
         <span className="leadgen-mock__dot leadgen-mock__dot--g" />
-        <span className="leadgen-mock__title">Leadgen Â· campaign overview</span>
+        <span className="leadgen-mock__title">Leadgen - campaign overview</span>
       </div>
       <div className="leadgen-mock__body">
+        <div className="leadgen-mock__query">
+          <div className="leadgen-mock__query-cell">
+            <Search size={14} />
+            <span>34237</span>
+          </div>
+          <div className="leadgen-mock__query-cell">
+            <Target size={14} />
+            <span>Dental practices</span>
+          </div>
+          <div className="leadgen-mock__query-cell leadgen-mock__query-cell--dark">
+            <Gauge size={14} />
+            <span>35/day cap</span>
+          </div>
+        </div>
         <div className="leadgen-mock__kpis">
           <div className="leadgen-mock__kpi">
             <div className="leadgen-mock__kpi-label"><Building2 size={11} /> Businesses</div>
@@ -429,21 +493,21 @@ function LeadgenDashboardMock() {
           <svg viewBox="0 0 320 120" width="100%" style={{ height: 'auto', aspectRatio: '320/120' }} preserveAspectRatio="xMidYMid meet">
             <defs>
               <linearGradient id="lg-mock-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#0F6CBD" stopOpacity="0.40" />
-                <stop offset="1" stopColor="#0F6CBD" stopOpacity="0" />
+                <stop offset="0" stopColor="#111827" stopOpacity="0.40" />
+                <stop offset="1" stopColor="#111827" stopOpacity="0" />
               </linearGradient>
             </defs>
             <path d="M0 90 L20 78 L40 84 L60 65 L80 70 L100 55 L120 60 L140 42 L160 50 L180 35 L200 38 L220 26 L240 30 L260 22 L280 16 L300 22 L320 14 L320 120 L0 120 Z" fill="url(#lg-mock-fill)" />
-            <path d="M0 90 L20 78 L40 84 L60 65 L80 70 L100 55 L120 60 L140 42 L160 50 L180 35 L200 38 L220 26 L240 30 L260 22 L280 16 L300 22 L320 14" fill="none" stroke="#0F6CBD" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-            <circle cx="320" cy="14" r="4" fill="#F0B429" />
-            <circle cx="320" cy="14" r="8" fill="#F0B429" fillOpacity="0.25" />
+            <path d="M0 90 L20 78 L40 84 L60 65 L80 70 L100 55 L120 60 L140 42 L160 50 L180 35 L200 38 L220 26 L240 30 L260 22 L280 16 L300 22 L320 14" fill="none" stroke="#111827" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+            <circle cx="320" cy="14" r="4" fill="#9ca3af" />
+            <circle cx="320" cy="14" r="8" fill="#9ca3af" fillOpacity="0.25" />
           </svg>
         </div>
         <div className="leadgen-mock__rows">
           {[
-            { dot: "#0E9C95", name: "Q2 dental practices, 34237", val: "3,412 sent Â· 6.1% reply" },
-            { dot: "#7C5CD8", name: "Imaging centers, FL Gulf Coast", val: "1,820 sent Â· 4.3% reply" },
-            { dot: "#F0B429", name: "Boutique law firms, SRQ", val: "642 sent Â· 5.8% reply" },
+            { dot: "#6b7280", name: "Q2 dental practices, 34237", val: "3,412 sent - 6.1% reply" },
+            { dot: "#6b7280", name: "Imaging centers, FL Gulf Coast", val: "1,820 sent - 4.3% reply" },
+            { dot: "#9ca3af", name: "Boutique law firms, SRQ", val: "642 sent - 5.8% reply" },
           ].map((r) => (
             <div key={r.name} className="leadgen-mock__row">
               <span className="leadgen-mock__row-dot" style={{ background: r.dot }} />
@@ -464,21 +528,21 @@ function LeadgenDashboardMock() {
 const OBJECTIONS = [
   {
     Icon: ShieldCheck,
-    title: "“Won’t this burn our domain reputation?”",
+    title: "Won't this burn our domain reputation?",
     body: "Per-domain rate limits, business-hours-only sending, automatic pause if bounce rate exceeds 8% in any 30-message window, and a CAN-SPAM-compliant footer with one-click unsubscribe. The platform refuses to ship a campaign that fails our pre-flight check.",
-    color: "#0F6CBD",
+    color: "#111827",
   },
   {
     Icon: Database,
-    title: "“Where do the records actually come from?”",
-    body: "OpenStreetMap business POIs cross-referenced against public registry data. Email addresses come from each business’s own published web presence — never purchased from a list broker, never scraped from a third party’s walled garden.",
-    color: "#0E9C95",
+    title: "Where do the records actually come from?",
+    body: "OpenStreetMap business POIs cross-referenced against public registry data. Email addresses come from each business's own published web presence, never purchased from a list broker and never scraped from a third party's walled garden.",
+    color: "#6b7280",
   },
   {
     Icon: BarChart3,
-    title: "“What does success actually look like?”",
-    body: "Median deliverability above 98%. Median bounce rate under 2%. Auto-pause and re-warming if either drifts. We publish trailing-90-day platform metrics in your dashboard — and refund the month if our floor is breached.",
-    color: "#7C5CD8",
+    title: "What does success actually look like?",
+    body: "Median deliverability above 98%. Median bounce rate under 2%. Auto-pause and re-warming if either drifts. We publish trailing-90-day platform metrics in your dashboard and refund the month if our floor is breached.",
+    color: "#9ca3af",
   },
 ];
 
@@ -515,13 +579,40 @@ function LeadgenTestimonials() {
   );
 }
 
+function LeadgenLimits() {
+  return (
+    <section className="section section-alt leadgen-limits">
+      <div className="container leadgen-limits__grid">
+        <div>
+          <span className="eyebrow">Honest limits</span>
+          <h2 className="title-1">This is not a magic lead machine.</h2>
+          <p className="lede">
+            Leadgen gives you better local data and safer outbound mechanics.
+            It still needs a real offer, a narrow audience, and replies handled
+            by a human who knows the business.
+          </p>
+        </div>
+        <div className="leadgen-limits__panel">
+          <h3>What happens after signup</h3>
+          <ol>
+            <li>We review your target zip, niche, and offer within one business day.</li>
+            <li>You run the first Growth search and inspect the source records.</li>
+            <li>We tune the first campaign cap before anything sends.</li>
+            <li>You get replies in your inbox, plus open/click/reply tracking in the dashboard.</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ---------- post-checkout success banner ----------
 // Stripe Payment Links redirect here with ?checkout=success&tier=...&cadence=...
 // We strip the params after first render so a refresh doesn't re-show the banner.
 function LeadgenCheckoutSuccess() {
   // Read the success params on first render via lazy initializer so we
   // never call setState inside an effect (avoids the cascading-render
-  // lint and matches the LeadgenPromoBar pattern).
+  // lint and avoids a pointless re-render.
   const [state] = useState(() => {
     if (typeof window === "undefined") return null;
     const params = new URLSearchParams(window.location.search);
@@ -559,7 +650,7 @@ function LeadgenCheckoutSuccess() {
       role="status"
       aria-live="polite"
       style={{
-        background: "linear-gradient(135deg, #0E9C95 0%, #0F6CBD 100%)",
+        background: "linear-gradient(135deg, #111827 0%, #374151 100%)",
         color: "#fff",
         padding: "20px 16px",
         textAlign: "center",
@@ -568,7 +659,7 @@ function LeadgenCheckoutSuccess() {
       <div style={{ maxWidth: 720, margin: "0 auto" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 8, fontWeight: 700, fontSize: "1.05rem" }}>
           <Check size={20} aria-hidden="true" />
-          You&rsquo;re in. Welcome to Leadgen {tierLabel}{cadenceLabel ? ` · ${cadenceLabel}` : ""}.
+          You&rsquo;re in. Welcome to Leadgen {tierLabel}{cadenceLabel ? ` - ${cadenceLabel}` : ""}.
         </div>
         <p style={{ margin: "4px 0 12px", fontSize: "0.95rem", opacity: 0.95, lineHeight: 1.5 }}>
           Your receipt is on its way from Stripe. We&rsquo;ll email your onboarding
@@ -578,7 +669,7 @@ function LeadgenCheckoutSuccess() {
           <a
             href={`mailto:hello@simpleitsrq.com?subject=Leadgen%20${tierLabel}%20onboarding`}
             className="btn btn-secondary btn-sm"
-            style={{ background: "#fff", color: "#0A4A82", borderColor: "#fff" }}
+            style={{ background: "#fff", color: "#111827", borderColor: "#fff" }}
           >
             Email us your priority list
           </a>
@@ -595,63 +686,16 @@ function LeadgenCheckoutSuccess() {
   );
 }
 
-// ---------- sticky promo bar (top-of-page on mobile, dismissible) ----------
-function LeadgenPromoBar() {
-  // Lazy initializer reads localStorage synchronously on first render so we
-  // never need a setState-in-effect to hydrate. Avoids the React 19
-  // react-hooks/set-state-in-effect lint and removes a pointless re-render.
-  const [show, setShow] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return localStorage.getItem("lg_promobar_dismissed_v1") !== "1";
-    } catch {
-      return true;
-    }
-  });
-
-  if (!show) return null;
-
-  const dismiss = () => {
-    setShow(false);
-    try { localStorage.setItem("lg_promobar_dismissed_v1", "1"); } catch { /* ignore */ }
-  };
-
-  return (
-    <div className="leadgen-promobar" role="region" aria-label="Launch promotion">
-      <span className="leadgen-promobar__pulse" aria-hidden="true" />
-      <span className="leadgen-promobar__text">
-        <strong>Launch promo:</strong>&nbsp;20% off your first 3 months â€” code{" "}
-        <code className="leadgen-promobar__code">LAUNCH20</code> Â· ends June 30
-      </span>
-      <Link
-        to="/book?topic=leadgen-growth&promo=LAUNCH20"
-        className="leadgen-promobar__cta"
-        onClick={dismiss}
-      >
-        Claim it <ArrowRight size={12} />
-      </Link>
-      <button
-        type="button"
-        className="leadgen-promobar__close"
-        aria-label="Dismiss promotion"
-        onClick={dismiss}
-      >
-        <X size={14} />
-      </button>
-    </div>
-  );
-}
-
 // ---------- activity sample ----------
 // Static snapshot of real events from the platform. No auto-refresh,
-// no fake cycling — just a snapshot of what the dashboard looks like.
+// no fake cycling - just a snapshot of what the dashboard looks like.
 const ACTIVITY_EVENTS = [
-  { city: "Sarasota, FL",       text: "+47 deliverable contacts found",     dot: "#0F6CBD", time: "2m ago" },
-  { city: "Bradenton, FL",      text: "Campaign \"Imaging Q2\" → 4.8% reply", dot: "#0E9C95", time: "14m ago" },
-  { city: "Lakewood Ranch, FL", text: "+18 dental practices indexed",       dot: "#7C5CD8", time: "31m ago" },
-  { city: "Venice, FL",         text: "Email crawl finished · 92% verified", dot: "#F0B429", time: "1h ago" },
-  { city: "Sarasota, FL",       text: "+3 replies · \"Send me your pricing\"", dot: "#0F6CBD", time: "2h ago" },
-  { city: "Nokomis, FL",        text: "Boutique law firms unlocked (34275)", dot: "#0E9C95", time: "3h ago" },
+  { city: "Sarasota, FL",       text: "+47 deliverable contacts found",     dot: "#111827", time: "2m ago" },
+  { city: "Bradenton, FL",      text: "Campaign \"Imaging Q2\" -> 4.8% reply", dot: "#6b7280", time: "14m ago" },
+  { city: "Lakewood Ranch, FL", text: "+18 dental practices indexed",       dot: "#6b7280", time: "31m ago" },
+  { city: "Venice, FL",         text: "Email crawl finished - 92% verified", dot: "#9ca3af", time: "1h ago" },
+  { city: "Sarasota, FL",       text: "+3 replies - \"Send me your pricing\"", dot: "#111827", time: "2h ago" },
+  { city: "Nokomis, FL",        text: "Boutique law firms unlocked (34275)", dot: "#6b7280", time: "3h ago" },
 ];
 
 function LeadgenLiveTicker() {
@@ -686,13 +730,13 @@ function LeadgenLiveTicker() {
 
 // ---------- ROI calculator ----------
 // Inputs: avg deal size, close rate. Produces projected pipeline at each
-// tier based on tier volume Ã— an estimated reply rate Ã— close rate Ã— ACV.
+// tier based on tier volume, a conservative reply rate, close rate, and ACV.
 // Numbers are framed as estimates; the form is read-only beyond the two
 // sliders so prospects can't game it into nonsense.
 const TIER_ESTIMATES = [
-  { id: "free",    name: "Free",    monthly: 0,   contacts: 10,   replyRate: 0.035 },
-  { id: "growth",  name: "Growth",  monthly: 15,  contacts: 500,  replyRate: 0.040 },
-  { id: "pro",     name: "Pro",     monthly: 79,  contacts: 5000, replyRate: 0.045 },
+  { id: "growth",  name: "Growth",  monthly: 19, contacts: 500,  replyRate: 0.012 },
+  { id: "pro",     name: "Pro",     monthly: 99, contacts: 5000, replyRate: 0.010 },
+  { id: "free",    name: "Free sample", monthly: 0, contacts: 10, replyRate: 0 },
 ];
 
 function fmt(n) {
@@ -703,16 +747,15 @@ function fmt(n) {
 
 function LeadgenROICalculator() {
   const [acv, setAcv] = useState(8000);          // average annual contract value
-  const [closeRate, setCloseRate] = useState(15); // 0â€“100 percent
+  const [closeRate, setCloseRate] = useState(8); // 0-100 percent
 
   const rows = TIER_ESTIMATES.map((t) => {
     const replies = t.contacts * t.replyRate;        // monthly replies
     const closed = replies * (closeRate / 100);      // monthly new customers
-    const monthlyRev = closed * (acv / 12);          // monthly recurring rev
     const annualRev = closed * 12 * acv;             // gross annual book
     const yearlyCost = t.monthly * 12;
-    const roi = yearlyCost > 0 ? annualRev / yearlyCost : 0;
-    return { ...t, replies, closed, monthlyRev, annualRev, roi };
+    const breakEvenCustomers = yearlyCost > 0 ? yearlyCost / acv : 0;
+    return { ...t, replies, closed, annualRev, breakEvenCustomers };
   });
 
   return (
@@ -721,13 +764,12 @@ function LeadgenROICalculator() {
         <div className="section-head" style={{ maxWidth: 720 }}>
           <span className="eyebrow">
             <Calculator size={14} style={{ display: "inline", marginRight: 6 }} />
-            ROI calculator
+            Deal math
           </span>
-          <h2 className="title-1">Run your numbers in 10 seconds.</h2>
+          <h2 className="title-1">Pressure-test the paid trial before you buy it.</h2>
           <p className="lede">
-            Drag the sliders. We&rsquo;ll show projected pipeline at each tier
-            using your average deal size and close rate &mdash; against industry
-            median reply rates from our trailing-90-day customer cohort.
+            Drag the sliders. This is a conservative pipeline forecast, not a
+            magic ROI promise. Growth is usually the cleanest first test.
           </p>
         </div>
 
@@ -753,26 +795,25 @@ function LeadgenROICalculator() {
             </label>
             <label className="leadgen-roi__field">
               <span className="leadgen-roi__field-label">
-                Reply-to-close rate
+                Reply-to-customer rate
                 <strong>{closeRate}%</strong>
               </span>
               <input
                 type="range"
                 min="1"
-                max="40"
+                max="25"
                 step="1"
                 value={closeRate}
                 onChange={(e) => setCloseRate(Number(e.target.value))}
-                aria-label="Reply to close rate"
+                aria-label="Reply to customer rate"
               />
               <span className="leadgen-roi__field-scale">
-                <span>1%</span><span>40%</span>
+                <span>1%</span><span>25%</span>
               </span>
             </label>
             <p className="leadgen-roi__note">
-              Estimates only. Reply rates assume CAN-SPAM-compliant warm
-              outreach to verified contacts in your ICP. Past performance
-              does not predict future results.
+              Estimates only. We use deliberately modest reply rates and do
+              not count the free sample as a revenue channel.
             </p>
           </div>
 
@@ -781,15 +822,17 @@ function LeadgenROICalculator() {
               <div key={r.id} className={`leadgen-roi__card leadgen-roi__card--${r.id}`}>
                 <div className="leadgen-roi__card-head">
                   <span className="leadgen-roi__card-tier">{r.name}</span>
-                  <span className="leadgen-roi__card-roi">{Math.round(r.roi)}Ã— ROI / yr</span>
+                  <span className="leadgen-roi__card-roi">
+                    {r.monthly > 0 ? `break-even: ${r.breakEvenCustomers.toFixed(2)} client/yr` : "sample only"}
+                  </span>
                 </div>
                 <div className="leadgen-roi__card-stats">
                   <div>
-                    <span>Monthly replies</span>
-                    <strong>{Math.round(r.replies).toLocaleString()}</strong>
+                    <span>Likely replies / mo</span>
+                    <strong>{r.replies > 0 ? r.replies.toFixed(1) : "0"}</strong>
                   </div>
                   <div>
-                    <span>New customers / mo</span>
+                    <span>Likely customers / mo</span>
                     <strong>{r.closed.toFixed(1)}</strong>
                   </div>
                   <div>
@@ -797,12 +840,13 @@ function LeadgenROICalculator() {
                     <strong>{fmt(r.annualRev)}</strong>
                   </div>
                 </div>
-                <Link
-                  to={`/book?topic=leadgen-${r.id}&promo=LAUNCH20`}
-                  className="btn btn-secondary leadgen-roi__cta"
+                <LeadgenPlanLink
+                  tierId={r.id === "free" ? "free" : r.id}
+                  billing="monthly"
+                  className={`btn ${r.id === "growth" ? "btn-primary" : "btn-secondary"} leadgen-roi__cta`}
                 >
-                  Lock in {r.name} <ArrowRight size={14} />
-                </Link>
+                  {r.id === "growth" ? "Start $19 Growth" : `Choose ${r.name}`}
+                </LeadgenPlanLink>
               </div>
             ))}
           </div>
@@ -811,5 +855,3 @@ function LeadgenROICalculator() {
     </section>
   );
 }
-
-

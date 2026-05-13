@@ -13,7 +13,7 @@ const SEVERITY_STYLE = {
   high:     { bg: "rgba(217, 119, 6, 0.08)",  border: "#D97706", label: "Important" },
   medium:   { bg: "rgba(245, 158, 11, 0.08)", border: "#F59E0B", label: "Medium" },
   low:      { bg: "rgba(100, 116, 139, 0.08)",border: "#64748B", label: "Low" },
-  info:     { bg: "rgba(15, 108, 189, 0.06)", border: "#0F6CBD", label: "FYI" },
+  info:     { bg: "rgba(17, 24, 39, 0.06)", border: "#111827", label: "FYI" },
 };
 
 const GRADE_COLORS = {
@@ -194,7 +194,7 @@ export default function ExposureScan() {
 
           <div style={{ marginTop: 40, padding: "20px 24px", borderRadius: 12, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
             <h2 className="title-2" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: 8 }}>
-              <Info size={18} color="#0F6CBD" /> What this scan checks
+              <Info size={18} color="#111827" /> What this scan checks
             </h2>
             <ul style={{ margin: "8px 0 0", paddingLeft: 20, lineHeight: 1.7 }}>
               <li><strong>MX records</strong> — can your domain receive email at all?</li>
@@ -225,7 +225,7 @@ function ReportView({ report, onNew }) {
           </div>
           <div style={{ flex: 1, minWidth: 280 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <Globe size={16} color="#0F6CBD" />
+              <Globe size={16} color="#111827" />
               <strong style={{ fontSize: 16 }}>{report.domain}</strong>
             </div>
             <p style={{ margin: 0, lineHeight: 1.6, fontSize: 15 }}>{report.gradeNarrative}</p>
@@ -325,7 +325,7 @@ function ReportView({ report, onNew }) {
       <div style={{
         padding: "24px",
         borderRadius: 12,
-        background: "linear-gradient(180deg, #0F6CBD 0%, #0A4E8F 100%)",
+        background: "linear-gradient(180deg, #111827 0%, #000000 100%)",
         color: "#fff",
         marginBottom: 16,
       }}>
@@ -339,7 +339,7 @@ function ReportView({ report, onNew }) {
           Reply to the email we just sent, or book a free consult.
         </p>
         <a href="/book" className="btn" style={{
-          background: "#fff", color: "#0F6CBD", fontWeight: 600,
+          background: "#fff", color: "#111827", fontWeight: 600,
           display: "inline-flex", alignItems: "center", gap: 8,
         }}>
           Book a free consult <ArrowRight size={14} />
