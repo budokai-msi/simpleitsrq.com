@@ -682,7 +682,9 @@ const AIC_CSS = `
 [data-theme="dark"] .aic-bubble-copy small { color: var(--text-3, #8A94A6); }
 [data-theme="dark"] .aic-bubble:hover { box-shadow: 0 22px 48px rgba(0,0,0,0.52), 0 6px 18px rgba(0,0,0,0.26); }
 body[data-cookie-consent="open"] .aic-bubble {
-  bottom: calc(var(--aic-bottom-offset) + 132px);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
 }
 body[data-nav-menu="open"] .aic-bubble {
   opacity: 0;
@@ -691,7 +693,9 @@ body[data-nav-menu="open"] .aic-bubble {
 }
 @media (max-width: 640px) {
   body[data-cookie-consent="open"] .aic-bubble {
-    bottom: calc(var(--aic-bottom-offset) + clamp(190px, 29vh, 238px));
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
   }
 }
 

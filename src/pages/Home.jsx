@@ -30,17 +30,16 @@ function Hero() {
       </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">Managed IT · Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display hero-aura-title">Enterprise IT operations, delivered locally.</h1>
+          <span className="eyebrow">Sarasota · Bradenton · Venice</span>
+          <h1 id="hero-title" className="display hero-aura-title">Local IT help that answers the phone.</h1>
           <p className="lede">
-            Service desk, identity, security, network, cloud, and continuity — operated
-            as a single managed service for Sarasota and Bradenton businesses. Flat
-            monthly contract, named engineers, documented controls, and a phone number
-            that’s answered on the first ring when something breaks.
+            Computer repair, office Wi-Fi, Microsoft 365, backups, security,
+            and plain-spoken support for small businesses on the Gulf Coast.
+            We fix the urgent thing first, then clean up the mess behind it.
           </p>
           <div className="hero-ctas">
-            <a href="#contact" className="btn btn-primary btn-lg">Request an IT assessment</a>
-            <a href="#solutions" className="btn btn-secondary btn-lg">See capabilities</a>
+            <a href="#contact" className="btn btn-primary btn-lg">Get IT help</a>
+            <Link to="/leadgen" className="btn btn-secondary btn-lg">Get local leads</Link>
           </div>
           <ul className="trust-row" aria-label="Why clients work with us">
             <li><MapPin size={14} strokeWidth={2.25} /> On-site coverage across Sarasota, Bradenton, and Venice</li>
@@ -148,8 +147,8 @@ function Solutions() {
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Capabilities</span>
-          <h2 id="solutions-title" className="title-1">One operations team for every layer of your IT stack</h2>
-          <p className="section-sub">End-user support, identity, security, network, cloud, and continuity — operated as a single service by a Sarasota-based team. One number to call. One invoice. One roadmap. No tickets routed to a vendor of a vendor.</p>
+          <h2 id="solutions-title" className="title-1">IT support, repair, Wi-Fi, cloud, and security</h2>
+          <p className="section-sub">End-user support, identity, security, network, cloud, and continuity from a Sarasota-based team. One number to call, one invoice, and no vendor runaround.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
@@ -160,7 +159,7 @@ function Solutions() {
               </div>
               <p className="solution-card-desc">{desc}</p>
               <span className="solution-card-link">
-                Learn more <ArrowRight size={14} />
+                Ask about this <ArrowRight size={14} />
               </span>
             </a>
           ))}
@@ -185,8 +184,8 @@ function Industries() {
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Industries</span>
-          <h2 id="industries-title" className="title-1">Regulated industries we operate in every week</h2>
-          <p className="section-sub">Healthcare, legal, financial services, construction, and real estate offices across Sarasota and Bradenton — plus residential clients, home offices, and snowbird condos. Every engagement is staffed by a tech who has shipped the controls your auditor or insurance carrier is going to ask about.</p>
+          <h2 id="industries-title" className="title-1">Offices and homes we support</h2>
+          <p className="section-sub">Healthcare, legal, financial services, construction, and real estate offices across Sarasota and Bradenton, plus home offices and snowbird condos. We document the controls your reviewer asks for, but we do not sell insurance or audits.</p>
         </div>
         <div className="industries-grid">
           {INDUSTRIES.map(({ Icon, name, badges }, i) => (
@@ -216,13 +215,13 @@ function Compliance() {
     <section className="section" id="compliance" aria-labelledby="compliance-title">
       <div className="container compliance-grid reveal-up">
         <div>
-          <span className="eyebrow">Governance, Risk & Compliance</span>
-          <h2 id="compliance-title" className="title-1">Audit-ready documentation, without the consultant invoice</h2>
+          <span className="eyebrow">Paperwork and proof</span>
+          <h2 id="compliance-title" className="title-1">The IT evidence people keep asking you for</h2>
           <p className="section-sub">
             HIPAA risk assessments, security renewals, disaster-recovery
             runbooks, and the evidence trail behind them — we do the engineering
             work and hand you the documents your auditor, carrier, or board
-            actually asked for.
+            asked for. We are not an auditor, broker, or law firm.
           </p>
           <ul className="feature-list">
             {features.map((f) => (
@@ -230,12 +229,12 @@ function Compliance() {
             ))}
           </ul>
         </div>
-        <aside className="compliance-card" aria-label="Operational track record">
+        <aside className="compliance-card" aria-label="What we track">
           <div className="cc-header">
             <Shield size={24} color="#111827" />
             <div>
-              <span className="cc-eyebrow">HIPAA DOCUMENTED PARTNER</span>
-              <h3 className="cc-title">Operational track record</h3>
+              <span className="cc-eyebrow">IT documentation</span>
+              <h3 className="cc-title">What we track</h3>
             </div>
           </div>
           <div className="cc-grid">
