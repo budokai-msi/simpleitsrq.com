@@ -111,14 +111,6 @@ export const PRIMARY_NAV = [
         activePrefixes: ["/glossary"],
       },
       {
-        id: "live-threats",
-        label: "Live threats",
-        to: "/live-threats",
-        icon: "ShieldAlert",
-        description: "Current threat intelligence for small business operators.",
-        activePaths: ["/live-threats"],
-      },
-      {
         id: "compare",
         label: "Compare vendors",
         to: "/compare",

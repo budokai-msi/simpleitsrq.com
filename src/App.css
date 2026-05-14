@@ -6098,8 +6098,8 @@ select:focus-visible {
 }
 
 /* ============================================================
-   /admin/affiliates — admin-only affiliate performance dashboard
-   Fluent-free; uses the existing design tokens.
+   Shared internal dashboard table/card primitives.
+   Used by the leadgen command center; kept Fluent-free.
    ============================================================ */
 
 .admin-affiliates { padding: 32px 0 64px; }
@@ -6701,18 +6701,6 @@ select:focus-visible {
 @media (max-width: 720px) { .services-stat-band { grid-template-columns: repeat(2, 1fr); } }
 [data-theme="dark"] .services-stat__num { color: #7DB7E6; }
 
-/* ---- OpSec dashboard hero radar ---- */
-.opsec-hero__row { display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
-.opsec-radar { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
-.opsec-radar svg { display: block; filter: drop-shadow(0 4px 18px rgba(14, 156, 149, 0.18)); }
-.opsec-radar__sweep { transform-origin: 100px 100px; animation: opsec-sweep 3.2s linear infinite; }
-@keyframes opsec-sweep { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.opsec-radar__caption { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: #374151; font-weight: 700; }
-.opsec-radar__pulse { width: 6px; height: 6px; border-radius: 50%; background: #374151; box-shadow: 0 0 0 0 rgba(55, 65, 81, 0.5); animation: opsec-pulse 1.6s ease-out infinite; }
-@keyframes opsec-pulse { 0% { box-shadow: 0 0 0 0 rgba(14, 156, 149, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(14, 156, 149, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 156, 149, 0); } }
-@media (prefers-reduced-motion: reduce) { .opsec-radar__sweep { animation: none; } .opsec-radar__pulse { animation: none; } }
-@media (max-width: 720px) { .opsec-radar svg { width: 130px; height: 130px; } }
-
 /* ---- Blog hero with illustration ---- */
 .blog-hero__inner { display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; text-align: left; }
 .blog-hero__copy { flex: 1 1 380px; max-width: 640px; }
@@ -6871,3 +6859,199 @@ select:focus-visible {
 @media (max-width: 720px)  { .leadgen-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
 [data-theme="dark"] .leadgen-kpi { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); }
 [data-theme="dark"] .leadgen-kpi__value { color: #E8EEF6; }
+
+/* =====================================================================
+   CLIENT PORTAL — public-safe account shell
+   ===================================================================== */
+.portal-page {
+  padding: 48px 0 76px;
+  background: var(--bg, #f7f5ef);
+}
+
+.portal-card {
+  padding: 24px;
+  border: 1px solid var(--border, #d6d0c4);
+  border-radius: 8px;
+  background: var(--surface, #fffdf8);
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
+}
+
+.portal-card h1,
+.portal-card h2,
+.portal-head h1 {
+  margin: 0;
+  color: var(--text, #111827);
+  letter-spacing: 0;
+}
+
+.portal-card h1 {
+  max-width: 760px;
+  font-size: clamp(2rem, 5vw, 4.25rem);
+  line-height: 0.98;
+}
+
+.portal-card h2 {
+  font-size: 1.05rem;
+}
+
+.portal-signin {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.portal-muted {
+  color: var(--text-muted, #6b7280);
+  line-height: 1.65;
+}
+
+.portal-alert {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #991b1b;
+  font-weight: 700;
+}
+
+.portal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.portal-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.portal-actions--row {
+  margin-top: 14px;
+}
+
+.portal-fineprint {
+  margin: 18px 0 0;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.85rem;
+}
+
+.portal-dashboard {
+  display: grid;
+  gap: 18px;
+}
+
+.portal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.portal-head h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
+.portal-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.portal-stats div {
+  padding: 18px;
+  border: 1px solid var(--border, #d6d0c4);
+  border-radius: 8px;
+  background: var(--surface, #fffdf8);
+}
+
+.portal-stats span {
+  display: block;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.portal-stats strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--text, #111827);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.portal-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.portal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border, #d6d0c4);
+}
+
+.portal-row:first-child {
+  border-top: 0;
+}
+
+.portal-row strong,
+.portal-row span {
+  display: block;
+}
+
+.portal-row strong {
+  color: var(--text, #111827);
+}
+
+.portal-row span {
+  margin-top: 3px;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 760px) {
+  .portal-page { padding-top: 24px; }
+  .portal-grid,
+  .portal-stats { grid-template-columns: 1fr; }
+  .portal-card { padding: 20px; }
+}
+
+[data-theme="dark"] .portal-page {
+  background: #08090b;
+}
+
+[data-theme="dark"] .portal-card,
+[data-theme="dark"] .portal-stats div {
+  background: #0f1115;
+  border-color: rgba(255,255,255,0.12);
+}
+
+[data-theme="dark"] .portal-card h1,
+[data-theme="dark"] .portal-card h2,
+[data-theme="dark"] .portal-head h1,
+[data-theme="dark"] .portal-stats strong,
+[data-theme="dark"] .portal-row strong {
+  color: #f7f7f7;
+}
+
+[data-theme="dark"] .portal-muted,
+[data-theme="dark"] .portal-fineprint,
+[data-theme="dark"] .portal-stats span,
+[data-theme="dark"] .portal-row span {
+  color: #a1a1aa;
+}

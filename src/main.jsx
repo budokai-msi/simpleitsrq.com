@@ -4,12 +4,6 @@ import { initBotId } from 'botid/client/core'
 import './index.css'
 import App from './App.jsx'
 
-// Griffel (Fluent's CSS-in-JS engine) used to be initialized here so its
-// runtime <style> tags would carry our CSP nonce. It moved INTO
-// src/pages/ClientPortal.jsx — the only Fluent consumer in the app — so
-// the homepage entry chunk no longer ships @griffel/react. The
-// RendererProvider in ClientPortal reads the same csp-nonce meta tag.
-
 // Vercel BotID — invisible bot detection on the contact form.
 // Free Basic mode; protected paths must match the server route exactly.
 initBotId({
