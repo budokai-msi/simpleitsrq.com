@@ -68,7 +68,7 @@ export const PRIMARY_NAV = [
   },
   {
     id: "leadgen",
-    label: "Leadgen",
+    label: "Get Leads",
     to: "/leadgen",
     icon: "Target",
     activePaths: ["/leadgen"],
@@ -164,7 +164,7 @@ export const FOOTER_COLUMNS = [
       { label: "Free exposure scan", to: "/exposure-scan" },
       { label: "Recommended tools", to: "/tools" },
       { label: "Compare vendors", to: "/compare" },
-      { label: "Leadgen", to: "/leadgen" },
+      { label: "Get local leads", to: "/leadgen" },
       { label: "Partner program", to: "/partners" },
       { label: "Support", to: "/support" },
     ],

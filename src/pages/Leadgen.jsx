@@ -1,27 +1,9 @@
-﻿// Public marketing & sales page for the Leadgen platform - the
-// productized version of the engine that powers /portal/leadgen.
-//
-// Positioning: "Local-business outreach that doesn't get you blacklisted."
-// CAN-SPAM-compliant, throttled, OSM-sourced, with verified emails and
-// per-domain rate limits. Sold as a managed-service add-on for SMB
-// sales teams in regulated verticals (medical / legal / finance).
-//
-// Goals (May 2026 launch):
-//   1. Lead capture (waitlist) -> /api/contact (existing route, no new
-//      Vercel function consumed).
-//   2. Pricing transparency - three tiers, annual/monthly toggle, clear
-//      what's-included blocks.
-//   3. Dashboard preview - illustrated SVG mock that mirrors the actual
-//      /portal/leadgen UI so prospects can visualize the product.
-//   4. Compliance trust band - CAN-SPAM, GDPR honoring, no-scrape
-//      provenance, manual review queue.
-
 import { useEffect, useState } from "react";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, MapPin, Database, Mail, Zap, ShieldCheck,
   Filter, Send, BarChart3, Building2,
-  Activity, Calculator, Search, Gauge, Target,
+  Calculator, Search, Gauge, Target,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 
@@ -31,7 +13,7 @@ const TIERS = [
     name: "Free",
     monthly: 0,
     annual: 0,
-    blurb: "A small sample so you can see the data shape before you commit.",
+    blurb: "A tiny sample list so you can inspect the source fields first.",
     cta: "Request free sample",
     ctaHref: "/book?topic=leadgen-free",
     stripeMonthly: null,
@@ -43,7 +25,7 @@ const TIERS = [
       "Email verification preview (3 contacts)",
       "CAN-SPAM-compliant send footer",
       "CSV export",
-      "Community support (Discord)",
+      "Email support",
     ],
   },
   {
@@ -51,8 +33,8 @@ const TIERS = [
     name: "Growth",
     monthly: 19,
     annual: 15,
-    blurb: "The first paid test: one niche, one zip, reviewed before anything sends.",
-    cta: "Start $19 Growth",
+    blurb: "One zip, one business type, one reviewed campaign test.",
+    cta: "Start the $19 test",
     ctaHref: "/book?topic=leadgen-growth",
     stripeMonthly: import.meta.env.VITE_LEADGEN_GROWTH_MONTHLY_URL,
     stripeAnnual: import.meta.env.VITE_LEADGEN_GROWTH_ANNUAL_URL,
@@ -73,7 +55,7 @@ const TIERS = [
     name: "Pro",
     monthly: 99,
     annual: 79,
-    blurb: "For teams running several territories or vertical campaigns at once.",
+    blurb: "For repeat campaigns across several territories or niches.",
     cta: "Start Pro",
     ctaHref: "/book?topic=leadgen-pro",
     stripeMonthly: import.meta.env.VITE_LEADGEN_PRO_MONTHLY_URL,
@@ -95,57 +77,57 @@ const TIERS = [
 const FEATURES = [
   {
     Icon: MapPin,
-    title: "OSM-sourced, not scraped",
-    body: "Every business record starts with OpenStreetMap public business data. We store source IDs and source URLs so the record can be inspected later.",
+    title: "Public business records",
+    body: "Start with OpenStreetMap business records, keep the source ID, and let you inspect where the record came from before outreach.",
   },
   {
     Icon: Database,
-    title: "Verified deliverable emails",
-    body: "Multi-stage verification (MX, SMTP greeting, catch-all detection, role-based filtering) before a contact lands in your campaign queue. Bounce rates stay under 2%.",
+    title: "Published contact emails",
+    body: "Find contact emails from business websites and run basic deliverability checks before a contact lands in the campaign queue.",
   },
   {
     Icon: Filter,
-    title: "Industry & sub-industry filters",
-    body: "NAICS-aligned vertical taxonomy lets you target dental practices in 34237 without hand-grepping a 12,000-row CSV.",
+    title: "Narrow local targeting",
+    body: "Pick a zip code and one business type so the campaign stays specific enough to write a useful offer.",
   },
   {
     Icon: Send,
-    title: "Throttled, compliant outreach",
-    body: "Per-domain rate limits, business-hours-only sending, automatic pause on bounce-rate spike, and a CAN-SPAM-compliant footer with physical address and one-click unsubscribe.",
+    title: "Capped sending",
+    body: "Set daily send caps, include an unsubscribe link and physical address, and pause campaigns that start bouncing.",
   },
   {
     Icon: BarChart3,
-    title: "Real-time campaign analytics",
-    body: "Opens, clicks, replies, and unsubscribes stream into the dashboard. You can see what is working without bolting on another analytics tool.",
+    title: "Reply tracking",
+    body: "Track opens, clicks, replies, and unsubscribes so you know whether the niche is worth another campaign.",
   },
   {
     Icon: ShieldCheck,
-    title: "Audit log and DPA",
-    body: "Every record-access, every send, every export logged. Data Processing Addendum on request. GDPR-honoring suppression list.",
+    title: "Exports and source fields",
+    body: "Export the list with source fields and campaign status so you can review the work outside the dashboard.",
   },
 ];
 
 const STEPS = [
-  { Icon: MapPin, label: "1. Search a zip", body: "Enter a 5-digit US zip. The crawler queues an OSM pass and returns a deduped business list - usually in under a minute." },
-  { Icon: Mail,   label: "2. Verify emails", body: "Run the email-discovery + verification pass per business. Deliverable contacts land in your queue with confidence scores." },
-  { Icon: Send,   label: "3. Launch a campaign", body: "Pick a template, set your daily cap, click start. Throttling, bounce handling, and unsubscribe links are wired in." },
-  { Icon: BarChart3, label: "4. Watch replies land", body: "Reply detection routes inbound messages to your inbox. Slack alerts on every open, click, and reply." },
+  { Icon: MapPin, label: "1. Pick a local market", body: "Choose one zip code and one business type, such as dental offices in 34237 or contractors in Bradenton." },
+  { Icon: Mail,   label: "2. Build the list", body: "Pull public business records, find published contact emails, and remove obvious duplicates before export or outreach." },
+  { Icon: Send,   label: "3. Review before sending", body: "Check the offer, sender, footer, unsubscribe link, and daily cap before the first email leaves." },
+  { Icon: BarChart3, label: "4. Follow the replies", body: "Watch replies, clicks, and unsubscribes so you can decide whether to keep the niche, change the offer, or stop." },
 ];
 
 const COMPLIANCE = [
-  "CAN-SPAM compliant: physical address, one-click unsubscribe, accurate sender identity",
-  "GDPR-honoring suppression list (we suppress on request, no questions asked)",
-  "OpenStreetMap-sourced records with stored source IDs and source URLs",
-  "Manual abuse-review queue: every new account has a 24-hour kick-off review",
-  "Hard caps on volume per tier so a misconfigured campaign can't burn your domain reputation",
-  "Bounce-rate auto-pause: campaigns halt if bounce rate exceeds 8% in a 30-message window",
+  "Physical mailing address and unsubscribe link on outreach emails",
+  "No purchased email lists",
+  "OpenStreetMap source IDs retained where available",
+  "Daily send caps by plan",
+  "Campaigns pause when bounce problems show up",
+  "First campaign reviewed before launch",
 ];
 
 const PROOF_POINTS = [
-  { label: "Data source", value: "OpenStreetMap", detail: "Public POIs, source ID retained" },
-  { label: "Email source", value: "Business websites", detail: "Published contact pages and mailto links" },
-  { label: "Send control", value: "Throttled", detail: "Daily caps, domain caps, bounce auto-pause" },
-  { label: "Paid path", value: "Growth trial", detail: "$19/mo, 500 records, 1 review" },
+  { label: "Source", value: "Public records", detail: "OSM business data with source fields" },
+  { label: "Contact", value: "Website emails", detail: "Published contact pages and mailto links" },
+  { label: "Safety", value: "Capped sends", detail: "Daily limits and bounce pauses" },
+  { label: "Start", value: "$19 test", detail: "One zip, one niche, one review" },
 ];
 
 function Currency({ value }) {
@@ -185,9 +167,9 @@ export default function Leadgen() {
   const [billing, setBilling] = useState("monthly");
 
   useSEO({
-    title: "Leadgen by Simple IT SRQ - Compliant local-business outreach for SMB sales teams",
+    title: "Get Local Leads | Simple IT SRQ",
     description:
-      "OSM-sourced, deliverability-first, CAN-SPAM compliant outreach. Verified emails, per-domain throttling, and audit logging. From $15/mo billed annually.",
+      "Run a small local lead test: one zip, one business type, verified contacts, capped sends, and reply tracking from $19/month.",
     canonical: `${SITE_URL}/leadgen`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [
@@ -203,37 +185,37 @@ export default function Leadgen() {
       <section className="section hero hero-clean leadgen-hero">
         <div className="container leadgen-hero__inner">
           <div className="leadgen-hero__copy">
-            <h1 className="display">Buy one local lead test. Know this week if the niche replies.</h1>
+            <h1 className="display">Find local businesses. Send a small, reviewed campaign.</h1>
             <p className="lede">
-              Growth is $19/month. Pick one zip code and one business type, inspect
-              the source records, then launch only after the first campaign passes a
-              human review. No mystery spreadsheet. No blast-and-pray outbound.
+              Pick one zip code and one business type. We pull public business
+              records, look for published contact emails, cap the sending volume,
+              and review the first campaign before it launches.
             </p>
             <div className="hero-ctas">
               <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
-                Start $19 Growth
+                Start the $19 test
               </LeadgenPlanLink>
               <Link to="/book?topic=leadgen-demo" className="btn btn-secondary btn-lg">
-                Book 15-min setup call
+                Book setup call
               </Link>
             </div>
             <div className="leadgen-hero__trust">
-              <span><Check size={14} /> One zip</span>
-              <span><Check size={14} /> One niche</span>
-              <span><Check size={14} /> Reviewed before send</span>
+              <span><Check size={14} /> Public source records</span>
+              <span><Check size={14} /> Human review before sending</span>
+              <span><Check size={14} /> Daily send caps</span>
             </div>
             <div className="leadgen-hero__offer" aria-label="Growth trial offer">
               <div>
-                <span>Paid test</span>
+                <span>Start</span>
                 <strong>$19/mo</strong>
               </div>
               <div>
-                <span>Includes</span>
-                <strong>500 records/month</strong>
+                <span>Target</span>
+                <strong>one zip + one niche</strong>
               </div>
               <div>
-                <span>First step</span>
-                <strong>campaign review</strong>
+                <span>You get</span>
+                <strong>verified contacts</strong>
               </div>
             </div>
           </div>
@@ -244,39 +226,38 @@ export default function Leadgen() {
 
       <LeadgenProofStrip />
 
-      {/* Stat band */}
+      {/* Operating rules */}
       <section className="section leadgen-statband-section">
         <div className="container">
           <div className="leadgen-statband">
             <div className="leadgen-statband__cell">
-              <div className="leadgen-statband__num">2.4M+</div>
-              <div className="leadgen-statband__label">Business records indexed</div>
+              <div className="leadgen-statband__num">1</div>
+              <div className="leadgen-statband__label">Zip code to start</div>
             </div>
             <div className="leadgen-statband__cell">
-              <div className="leadgen-statband__num">1.8%</div>
-              <div className="leadgen-statband__label">Median bounce rate</div>
+              <div className="leadgen-statband__num">1</div>
+              <div className="leadgen-statband__label">Business type to target</div>
             </div>
             <div className="leadgen-statband__cell">
-              <div className="leadgen-statband__num">47s</div>
-              <div className="leadgen-statband__label">Avg time to first deliverable contact</div>
+              <div className="leadgen-statband__num">35</div>
+              <div className="leadgen-statband__label">Default daily send cap</div>
             </div>
             <div className="leadgen-statband__cell">
-              <div className="leadgen-statband__num">99.94%</div>
-              <div className="leadgen-statband__label">Platform uptime, trailing 90 days</div>
+              <div className="leadgen-statband__num">$19</div>
+              <div className="leadgen-statband__label">First paid test</div>
             </div>
           </div>
         </div>
       </section>
 
       <LeadgenROICalculator />
-      <LeadgenLiveTicker />
 
       {/* How it works */}
       <section className="section section-alt">
         <div className="container">
           <div className="section-head" style={{ maxWidth: 720 }}>
             <span className="eyebrow">How it works</span>
-            <h2 className="title-1">Four steps from cold zip code to hot reply.</h2>
+            <h2 className="title-1">Four steps from a local market to a real reply.</h2>
           </div>
           <div className="leadgen-steps">
             {STEPS.map((s) => (
@@ -295,7 +276,7 @@ export default function Leadgen() {
         <div className="container">
           <div className="section-head" style={{ maxWidth: 720 }}>
             <span className="eyebrow">Capabilities</span>
-            <h2 className="title-1">Everything an outbound team actually needs.</h2>
+            <h2 className="title-1">The parts that matter before you send.</h2>
           </div>
           <div className="leadgen-features">
             {FEATURES.map((f) => (
@@ -314,11 +295,11 @@ export default function Leadgen() {
         <div className="container">
           <div className="section-head" style={{ maxWidth: 760 }}>
             <span className="eyebrow"><ShieldCheck size={14} style={{ display: "inline", marginRight: 6 }} /> Compliance & deliverability</span>
-            <h2 className="title-1">Built so a misconfigured campaign can&rsquo;t burn your domain.</h2>
+            <h2 className="title-1">Built to keep the first test controlled.</h2>
             <p className="lede">
-              Most outbound platforms ship a sharp tool with no guardrails. Leadgen
-              ships the guardrails first - because a single bad blast can put your
-              sending domain on a deny-list for 90 days.
+              The goal is not maximum volume. The goal is a narrow list, a clean
+              offer, a working unsubscribe path, and enough replies to know whether
+              the market is worth chasing.
             </p>
           </div>
           <ul className="leadgen-compliance-list">
@@ -338,10 +319,10 @@ export default function Leadgen() {
         <div className="container">
           <div className="section-head" style={{ maxWidth: 720 }}>
             <span className="eyebrow">Pricing</span>
-            <h2 className="title-1">Pick a tier. Cancel any time.</h2>
+            <h2 className="title-1">Start small. Upgrade only if the list is useful.</h2>
             <p className="lede">
-              All tiers include unlimited users, deliverability monitoring, and the
-              compliance baseline. Volume scales linearly &mdash; no surprise overage line.
+              Growth is the default first test. Free is a sample. Pro is for teams
+              already running repeat campaigns.
             </p>
           </div>
 
@@ -412,14 +393,14 @@ export default function Leadgen() {
       {/* Final CTA */}
       <section className="section section-alt leadgen-final-cta">
         <div className="container" style={{ maxWidth: 720, textAlign: "center" }}>
-          <h2 className="title-1">Start with one zip and one clear offer.</h2>
+          <h2 className="title-1">Start with one local list.</h2>
           <p className="lede" style={{ marginTop: 12 }}>
             Growth is the fastest honest test: enough records to learn, enough
             throttling to stay safe, and a one-business-day review before launch.
           </p>
           <div className="hero-ctas" style={{ justifyContent: "center", marginTop: 24 }}>
             <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
-              Start $19 Growth
+              Start the $19 test
             </LeadgenPlanLink>
             <Link to="/book?topic=leadgen-demo" className="btn btn-secondary btn-lg">
               Walk me through it
@@ -455,7 +436,7 @@ function LeadgenDashboardMock() {
         <span className="leadgen-mock__dot leadgen-mock__dot--r" />
         <span className="leadgen-mock__dot leadgen-mock__dot--y" />
         <span className="leadgen-mock__dot leadgen-mock__dot--g" />
-        <span className="leadgen-mock__title">Leadgen - campaign overview</span>
+        <span className="leadgen-mock__title">Local lead test - campaign overview</span>
       </div>
       <div className="leadgen-mock__body">
         <div className="leadgen-mock__query">
@@ -475,18 +456,18 @@ function LeadgenDashboardMock() {
         <div className="leadgen-mock__kpis">
           <div className="leadgen-mock__kpi">
             <div className="leadgen-mock__kpi-label"><Building2 size={11} /> Businesses</div>
-            <div className="leadgen-mock__kpi-num">12,847</div>
-            <div className="leadgen-mock__kpi-delta">+1,204 / 7d</div>
+            <div className="leadgen-mock__kpi-num">142</div>
+            <div className="leadgen-mock__kpi-delta">local records</div>
           </div>
           <div className="leadgen-mock__kpi">
             <div className="leadgen-mock__kpi-label"><Mail size={11} /> Deliverable</div>
-            <div className="leadgen-mock__kpi-num">8,331</div>
-            <div className="leadgen-mock__kpi-delta">+812 / 7d</div>
+            <div className="leadgen-mock__kpi-num">57</div>
+            <div className="leadgen-mock__kpi-delta">emails found</div>
           </div>
           <div className="leadgen-mock__kpi">
             <div className="leadgen-mock__kpi-label"><Zap size={11} /> Reply rate</div>
-            <div className="leadgen-mock__kpi-num">4.7%</div>
-            <div className="leadgen-mock__kpi-delta leadgen-mock__kpi-delta--up">+0.6 pp</div>
+            <div className="leadgen-mock__kpi-num">35/day</div>
+            <div className="leadgen-mock__kpi-delta leadgen-mock__kpi-delta--up">send cap</div>
           </div>
         </div>
         <div className="leadgen-mock__chart">
@@ -505,9 +486,9 @@ function LeadgenDashboardMock() {
         </div>
         <div className="leadgen-mock__rows">
           {[
-            { dot: "#6b7280", name: "Q2 dental practices, 34237", val: "3,412 sent - 6.1% reply" },
-            { dot: "#6b7280", name: "Imaging centers, FL Gulf Coast", val: "1,820 sent - 4.3% reply" },
-            { dot: "#9ca3af", name: "Boutique law firms, SRQ", val: "642 sent - 5.8% reply" },
+            { dot: "#6b7280", name: "Dental practices, 34237", val: "draft ready for review" },
+            { dot: "#6b7280", name: "Contractors, Bradenton", val: "source check running" },
+            { dot: "#9ca3af", name: "Law firms, Sarasota", val: "paused for copy edit" },
           ].map((r) => (
             <div key={r.name} className="leadgen-mock__row">
               <span className="leadgen-mock__row-dot" style={{ background: r.dot }} />
@@ -528,20 +509,20 @@ function LeadgenDashboardMock() {
 const OBJECTIONS = [
   {
     Icon: ShieldCheck,
-    title: "Won't this burn our domain reputation?",
-    body: "Per-domain rate limits, business-hours-only sending, automatic pause if bounce rate exceeds 8% in any 30-message window, and a CAN-SPAM-compliant footer with one-click unsubscribe. The platform refuses to ship a campaign that fails our pre-flight check.",
+    title: "What keeps this from getting sloppy?",
+    body: "Small batches, daily caps, unsubscribe links, a physical address, and a pre-send review on the first campaign. If the list or offer is weak, we say that before sending.",
     color: "#111827",
   },
   {
     Icon: Database,
     title: "Where do the records actually come from?",
-    body: "OpenStreetMap business POIs cross-referenced against public registry data. Email addresses come from each business's own published web presence, never purchased from a list broker and never scraped from a third party's walled garden.",
+    body: "Business records start with OpenStreetMap. Contact emails come from published business websites, contact pages, and mailto links, not purchased email lists.",
     color: "#6b7280",
   },
   {
     Icon: BarChart3,
-    title: "What does success actually look like?",
-    body: "Median deliverability above 98%. Median bounce rate under 2%. Auto-pause and re-warming if either drifts. We publish trailing-90-day platform metrics in your dashboard and refund the month if our floor is breached.",
+    title: "What should I expect?",
+    body: "A paid test should tell you whether one local niche responds to one clear offer. It is not a promise of customers; it is a faster way to stop guessing.",
     color: "#9ca3af",
   },
 ];
@@ -552,11 +533,10 @@ function LeadgenTestimonials() {
       <div className="container">
         <div className="section-head" style={{ maxWidth: 720 }}>
           <span className="eyebrow">Before you sign</span>
-          <h2 className="title-1">The three questions every sales lead asks first.</h2>
+          <h2 className="title-1">The questions we would ask before buying it.</h2>
           <p className="lede">
-            We&rsquo;re pre-launch on customer testimonials &mdash; we&rsquo;d
-            rather show you what we built into the platform than paste
-            quotes you&rsquo;d have to take our word for.
+            No fake testimonials. No mystery database. This is the plain version
+            of what the tool does and where it can disappoint you.
           </p>
         </div>
         <div className="leadgen-testimonials__grid">
@@ -585,9 +565,9 @@ function LeadgenLimits() {
       <div className="container leadgen-limits__grid">
         <div>
           <span className="eyebrow">Honest limits</span>
-          <h2 className="title-1">This is not a magic lead machine.</h2>
+          <h2 className="title-1">This will not fix a bad offer.</h2>
           <p className="lede">
-            Leadgen gives you better local data and safer outbound mechanics.
+            Leadgen gives you local data and safer outbound mechanics.
             It still needs a real offer, a narrow audience, and replies handled
             by a human who knows the business.
           </p>
@@ -686,48 +666,6 @@ function LeadgenCheckoutSuccess() {
   );
 }
 
-// ---------- activity sample ----------
-// Static snapshot of real events from the platform. No auto-refresh,
-// no fake cycling - just a snapshot of what the dashboard looks like.
-const ACTIVITY_EVENTS = [
-  { city: "Sarasota, FL",       text: "+47 deliverable contacts found",     dot: "#111827", time: "2m ago" },
-  { city: "Bradenton, FL",      text: "Campaign \"Imaging Q2\" -> 4.8% reply", dot: "#6b7280", time: "14m ago" },
-  { city: "Lakewood Ranch, FL", text: "+18 dental practices indexed",       dot: "#6b7280", time: "31m ago" },
-  { city: "Venice, FL",         text: "Email crawl finished - 92% verified", dot: "#9ca3af", time: "1h ago" },
-  { city: "Sarasota, FL",       text: "+3 replies - \"Send me your pricing\"", dot: "#111827", time: "2h ago" },
-  { city: "Nokomis, FL",        text: "Boutique law firms unlocked (34275)", dot: "#6b7280", time: "3h ago" },
-];
-
-function LeadgenLiveTicker() {
-  return (
-    <section className="section leadgen-ticker-section">
-      <div className="container">
-        <div className="leadgen-ticker">
-          <div className="leadgen-ticker__head">
-            <Activity size={14} aria-hidden="true" />
-            <span className="leadgen-ticker__head-title">Recent platform activity</span>
-            <span className="leadgen-ticker__head-meta">snapshot from live dashboard</span>
-          </div>
-          <ul className="leadgen-ticker__list">
-            {ACTIVITY_EVENTS.slice(0, 4).map((ev, i) => (
-              <li
-                key={i}
-                className="leadgen-ticker__item"
-                style={{ "--lg-i": i, "--lg-dot": ev.dot }}
-              >
-                <span className="leadgen-ticker__dot" aria-hidden="true" />
-                <span className="leadgen-ticker__city">{ev.city}</span>
-                <span className="leadgen-ticker__text">{ev.text}</span>
-                <span className="leadgen-ticker__time">{ev.time}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // ---------- ROI calculator ----------
 // Inputs: avg deal size, close rate. Produces projected pipeline at each
 // tier based on tier volume, a conservative reply rate, close rate, and ACV.
@@ -769,7 +707,7 @@ function LeadgenROICalculator() {
           <h2 className="title-1">Pressure-test the paid trial before you buy it.</h2>
           <p className="lede">
             Drag the sliders. This is a conservative pipeline forecast, not a
-            magic ROI promise. Growth is usually the cleanest first test.
+            sales promise. Growth is usually the cleanest first test.
           </p>
         </div>
 
@@ -845,7 +783,7 @@ function LeadgenROICalculator() {
                   billing="monthly"
                   className={`btn ${r.id === "growth" ? "btn-primary" : "btn-secondary"} leadgen-roi__cta`}
                 >
-                  {r.id === "growth" ? "Start $19 Growth" : `Choose ${r.name}`}
+                  {r.id === "growth" ? "Start the $19 test" : `Choose ${r.name}`}
                 </LeadgenPlanLink>
               </div>
             ))}

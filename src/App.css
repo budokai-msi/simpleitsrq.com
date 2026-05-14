@@ -115,7 +115,7 @@ main, #main {
   box-shadow: var(--shadow2);
   transition: background 200ms var(--ease-out), box-shadow 200ms var(--ease-out), transform 200ms var(--ease-out);
 }
-.btn-primary:hover { background: var(--brand-hover); color: #fff; box-shadow: var(--shadow8); transform: translateY(-1px); }
+.btn-primary:hover { background: var(--brand-hover); color: var(--text-on-accent); box-shadow: var(--shadow8); transform: translateY(-1px); }
 .btn-primary:active { 
   background: var(--brand-pressed); 
   transform: scale(0.97); 
@@ -132,6 +132,21 @@ main, #main {
   color: var(--text-1); 
   border-color: var(--text-3);
   box-shadow: var(--shadow4);
+}
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] .btn-primary:hover,
+[data-theme="dark"] .btn-primary:active {
+  color: var(--text-on-accent);
+}
+[data-theme="dark"] .btn-secondary {
+  background: var(--surface);
+  color: var(--text-1);
+  border-color: var(--border-strong);
+}
+[data-theme="dark"] .btn-secondary:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+  border-color: var(--text-2);
 }
 /* Keyboard focus ring — accessible without polluting mouse :active.
  * Same shadow-glow token both buttons share so the ring matches the
@@ -499,7 +514,7 @@ main, #main {
 }
 .nav-dropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 2px);
   left: 50%;
   width: min(520px, calc(100vw - 32px));
   padding: 10px;
@@ -521,8 +536,8 @@ main, #main {
   position: absolute;
   left: 0;
   right: 0;
-  top: -14px;
-  height: 14px;
+  top: -22px;
+  height: 22px;
 }
 .nav-group[data-open="true"] .nav-dropdown {
   opacity: 1;

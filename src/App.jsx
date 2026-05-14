@@ -317,7 +317,7 @@ function DesktopNavSection({ section, location, openGroup, setOpenGroup }) {
     closeTimerRef.current = window.setTimeout(() => {
       closeTimerRef.current = null;
       setOpenGroup((current) => (current === section.id ? null : current));
-    }, 220);
+    }, 450);
   };
 
   const focusFirstMenuItem = () => {
