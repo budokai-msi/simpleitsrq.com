@@ -30,20 +30,20 @@ function Hero() {
       </div>
       <div className="container hero-stack-clean">
         <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">Sarasota · Bradenton · Venice</span>
-          <h1 id="hero-title" className="display hero-aura-title">Local IT help that answers the phone.</h1>
+          <span className="eyebrow">Sarasota, Bradenton, Venice</span>
+          <h1 id="hero-title" className="display hero-aura-title">Computer repair and small-business IT support.</h1>
           <p className="lede">
             Computer repair, office Wi-Fi, Microsoft 365, backups, security,
             and plain-spoken support for small businesses on the Gulf Coast.
             We fix the urgent thing first, then clean up the mess behind it.
           </p>
           <div className="hero-ctas">
-            <a href="#contact" className="btn btn-primary btn-lg">Get IT help</a>
+            <a href="#contact" className="btn btn-primary btn-lg">Book repair or support</a>
             <Link to="/leadgen" className="btn btn-secondary btn-lg">Get local leads</Link>
           </div>
           <ul className="trust-row" aria-label="Why clients work with us">
             <li><MapPin size={14} strokeWidth={2.25} /> On-site coverage across Sarasota, Bradenton, and Venice</li>
-            <li><Clock size={14} strokeWidth={2.25} /> Flat monthly contract — no hourly surprises, no break/fix invoicing</li>
+            <li><Clock size={14} strokeWidth={2.25} /> Flat monthly contract or one-time repair</li>
             <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA, GLBA, and security documentation packages included</li>
           </ul>
         </div>
