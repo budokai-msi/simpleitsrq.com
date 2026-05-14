@@ -23,8 +23,10 @@ import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   statSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -272,6 +274,28 @@ async function renderCard({ kind, slug, fields, outPath, cache, nextCache, count
   counters.generated++;
 }
 
+function removeStaleCards(validBlogSlugs) {
+  const validBlogFiles = new Set([...validBlogSlugs].map((slug) => `og-blog-${slug}.png`));
+  let removed = 0;
+  for (const file of readdirSync(PUBLIC_DIR)) {
+    if (/^\.og-.*-cache\.json$/.test(file)) {
+      unlinkSync(join(PUBLIC_DIR, file));
+      removed++;
+      continue;
+    }
+    if (file.startsWith("og-product-") && file.endsWith(".png")) {
+      unlinkSync(join(PUBLIC_DIR, file));
+      removed++;
+      continue;
+    }
+    if (file.startsWith("og-blog-") && file.endsWith(".png") && !validBlogFiles.has(file)) {
+      unlinkSync(join(PUBLIC_DIR, file));
+      removed++;
+    }
+  }
+  return removed;
+}
+
 async function main() {
   // Prefer the generated posts-meta.json (cheap, already committed). Fall back
   // to loadAllPosts() if it's missing — covers a clean checkout where
@@ -291,6 +315,8 @@ async function main() {
   // Sort for deterministic iteration (alphabetical by slug) — the output is
   // per-file so order doesn't change bytes, but logs stay stable.
   posts.sort((a, b) => a.slug.localeCompare(b.slug));
+  const validBlogSlugs = new Set(posts.map((post) => post.slug).filter(Boolean));
+  const staleRemoved = removeStaleCards(validBlogSlugs);
 
   for (const post of posts) {
     if (!post.slug) continue;
@@ -313,7 +339,7 @@ async function main() {
 
   const ms = Date.now() - t0;
   console.log(
-    `og: blog ${blogCounters.generated}/${posts.length} new, ${blogCounters.skipped} cached; ${ms} ms${FORCE ? " [--force]" : ""}`,
+    `og: blog ${blogCounters.generated}/${posts.length} new, ${blogCounters.skipped} cached, ${staleRemoved} stale removed; ${ms} ms${FORCE ? " [--force]" : ""}`,
   );
 }
 

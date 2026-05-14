@@ -1,35 +1,7 @@
 ﻿<!doctype html>
-<!--
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    SEO HEAD CONVENTION — read before editing anything inside the document head
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    Per-route Open Graph, Twitter Card, JSON-LD, <title>, and canonical tags
-    are owned by TWO systems — DO NOT add new dynamic SEO tags inline here:
-
-      1. src/lib/seo.js → useSEO()  — runtime per-route updates for the SPA
-         (every page-level component calls this; see src/pages/*.jsx).
-      2. /blog/<slug>.html static stubs — generated at build time so crawlers
-         see the per-post canonical / og:* / JSON-LD without React hydration.
-         (Middleware deliberately does NOT intercept /blog/<slug> for that
-          reason — see middleware.js → isSpaRoute.)
-
-      Plus: middleware.js substitutes __CSP_NONCE__ on every HTML response
-      with a per-request base64url nonce. Anything that breaks that token
-      breaks the strict style-src CSP.
-
-    The blocks below are split into:
-      [A] HARDCODED — never change per route (charset, viewport, fonts, CSP).
-      [B] DEFAULTS — fallback OG/Twitter/JSON-LD for the SPA shell. These are
-          overridden by useSEO() at runtime and by static stubs at build time.
-          Keep them generic + brand-level; do NOT make them route-specific.
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
--->
 <html lang="en">
   <head>
-    <!-- ====================================================================
-         [A] HARDCODED — always present, never per-route.
-         ==================================================================== -->
+    <!-- Static head defaults. Route-specific SEO is handled by src/lib/seo.js and generated blog stubs. -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0F6CBD" />
@@ -72,11 +44,7 @@
     <link rel="preconnect" href="https://connect.facebook.net" crossorigin />
     <link rel="dns-prefetch" href="https://connect.facebook.net" />
 
-    <!-- ====================================================================
-         [B] DEFAULTS — SPA-shell fallback. Overridden per-route by useSEO()
-             (src/lib/seo.js) and per-post by /blog/<slug>.html static stubs.
-             Keep these brand-level only; never edit to be route-specific.
-         ==================================================================== -->
+    <!-- Brand-level SEO fallbacks. Runtime pages and blog stubs override these. -->
     <title>Simple IT SRQ | IT Support for Sarasota & Bradenton Businesses</title>
     <meta name="description" content="Local IT support, cybersecurity, and cloud services for small businesses in Sarasota, Bradenton, and Venice. Flat monthly pricing, same-day response, HIPAA paperwork included. Email hello@simpleitsrq.com for a free IT check-up." />
     <meta name="keywords" content="IT support Sarasota, IT support Bradenton, small business IT Florida, HIPAA paperwork, cybersecurity Sarasota, cloud migration SRQ, local IT company" />
