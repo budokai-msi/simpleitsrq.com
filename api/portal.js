@@ -2437,7 +2437,7 @@ async function handleResetAuditChain(session) {
 // STRIPE_SECRET_KEY is unset, returns a `stripe_not_configured` shape so
 // the widget can show a "Stripe not configured" pill instead of 500-ing.
 // Per-network + per-day affiliate click counts for the last N days.
-// Drives the /admin/affiliates dashboard. Admin-gated. Pure SELECT —
+// Internal affiliate stats endpoint. Admin-gated. Pure SELECT —
 // no Stripe call, no upstream API, just the affiliate_clicks table.
 async function handleAffiliateStats(session, url) {
   const gate = await requireAdmin(session);
@@ -4404,7 +4404,7 @@ function csrfCheck(request, method) {
 }
 
 // ────────────────────────────────────────────────────────────
-// OpSec portal handlers — /portal/opsec
+// Internal OpSec handlers. No public SPA route imports these screens.
 // ────────────────────────────────────────────────────────────
 //
 // Personal defensive ops dashboard. Admin-only (gated by requireAdmin
@@ -4683,8 +4683,8 @@ async function dispatchAuthed(request, method, url, action, session) {
   // touching the dashboard.
   if (action === "admin-status"             && method === "GET")  return handleAdminStatus(session);
 
-  // OpSec portal — defensive personal ops dashboard at /portal/opsec.
-  // All admin-only; mutations write through the same admin-token allowlist.
+  // Internal OpSec data/actions. All admin-only; mutations write through
+  // the same admin-token allowlist.
   if (action === "opsec-data"          && method === "GET")  return handleOpsecData(session);
   if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
   if (action === "opsec-domain-toggle" && method === "POST") return handleOpsecDomainToggle(session, request);

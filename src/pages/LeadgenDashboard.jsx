@@ -11,8 +11,8 @@
 // All mutations go through csrfFetch (double-submit cookie) and POST to
 // /api/portal?action=leadgen-...
 //
-// Styling reuses the .admin-aff-* token-driven classes from App.css so
-// the page sits inside the same visual system as /admin/affiliates.
+// Styling reuses the .admin-aff-* token-driven dashboard primitives from
+// App.css so the leadgen command center stays visually aligned.
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";

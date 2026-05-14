@@ -854,8 +854,9 @@ export async function GET(request) {
 
   // Threat Wall feed — admin-only. Returns 403 to anonymous callers so
   // the per-attack timeline isn't part of our public attack surface.
-  // The /live-threats page checks this and redirects non-admins. The
-  // homepage live-defense strip used to read this endpoint too — it
+  // The old public threat page was removed; this endpoint remains for
+  // internal tooling only. The homepage live-defense strip used to read
+  // this endpoint too; it
   // now uses ?action=protection-status (anonymous, summary-only) so
   // visitors get a trust signal without seeing per-attack rows.
   if (action === "threats") {

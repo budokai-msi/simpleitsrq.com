@@ -1,8 +1,8 @@
 // Shared empty-state component for portal/dashboard surfaces.
 //
 // Renders a small illustrated SVG, a single-line title, and an optional
-// helper paragraph. Used by OpsecPortal, BlogIndex (no-results), and any
-// future admin dashboard tab that needs to fail to a friendly state
+// helper paragraph. Used by BlogIndex (no-results) and dashboard views that
+// need to fail to a friendly state
 // instead of a bare "No items." string.
 
 const ICONS = {

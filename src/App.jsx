@@ -45,15 +45,13 @@ const IndustriesHub = lazy(() => import("./pages/IndustriesHub"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Book = lazy(() => import("./pages/Book"));
 const Support = lazy(() => import("./pages/Support"));
-const ClientPortal = lazy(() => import("./pages/ClientPortal"));
+const ClientPortal = lazy(() => import("./pages/ClientPortalPublic"));
 const LeadgenDashboard = lazy(() => import("./pages/LeadgenDashboard"));
-const OpsecPortal     = lazy(() => import("./pages/OpsecPortal"));
 const PrivacyPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
 const Tools = lazy(() => import("./pages/Tools"));
 const Services = lazy(() => import("./pages/Services"));
-const AdminAffiliates = lazy(() => import("./pages/AdminAffiliates"));
 const PasswordCheck = lazy(() => import("./pages/PasswordCheck"));
 const ServiceArea = lazy(() => import("./pages/ServiceArea"));
 const Partners = lazy(() => import("./pages/Partners"));
@@ -61,7 +59,6 @@ const Stack = lazy(() => import("./pages/Stack"));
 const Glossary = lazy(() => import("./pages/Glossary"));
 const GlossaryEntry = lazy(() => import("./pages/GlossaryEntry"));
 const ExposureScan = lazy(() => import("./pages/ExposureScan"));
-const LiveThreats = lazy(() => import("./pages/LiveThreats"));
 const Advertise = lazy(() => import("./pages/Advertise"));
 const CompareIndex = lazy(() => import("./pages/CompareIndex"));
 const CompareDetail = lazy(() => import("./pages/CompareDetail"));
@@ -924,7 +921,6 @@ function AnimatedRoutes() {
         <Route path="/support" element={<Support />} />
         <Route path="/tools" element={<Tools />} />
         <Route path="/services" element={<Services />} />
-        <Route path="/admin/affiliates" element={<AdminAffiliates />} />
         <Route path="/stack" element={<Stack />} />
         <Route path="/tools-we-use" element={<Stack />} />
         <Route path="/advertise" element={<Advertise />} />
@@ -937,11 +933,9 @@ function AnimatedRoutes() {
         <Route path="/glossary" element={<Glossary />} />
         <Route path="/glossary/:slug" element={<GlossaryEntry />} />
         <Route path="/exposure-scan" element={<ExposureScan />} />
-        <Route path="/live-threats" element={<LiveThreats />} />
         <Route path="/password-check" element={<PasswordCheck />} />
         <Route path="/portal" element={<ClientPortal />} />
         <Route path="/portal/leadgen" element={<LeadgenDashboard />} />
-        <Route path="/portal/opsec"   element={<OpsecPortal />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/accessibility" element={<AccessibilityPage />} />
