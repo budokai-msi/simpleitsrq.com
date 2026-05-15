@@ -4,11 +4,15 @@ import { TOOL_CATEGORIES } from "../data/toolCatalog";
 import { useSEO } from "../lib/seo";
 import {
   ArrowRight,
+  CheckCircle2,
+  Clock,
   ExternalLink,
   FileCheck,
   HardDrive,
   KeyRound,
+  ListChecks,
   Monitor,
+  ShoppingCart,
   Server,
   ShieldCheck,
   SlidersHorizontal,
@@ -28,10 +32,92 @@ const ICONS = {
   infrastructure: Server,
 };
 
+const BUYING_GUIDES = [
+  {
+    id: "ups",
+    title: "Keep the internet alive during power flickers",
+    category: "power",
+    match: /line-interactive/i,
+    problem: "The modem, firewall, switch, and front desk PC reboot every time the lights blink.",
+    buy: ["1500VA line-interactive UPS", "Replacement battery schedule", "Surge protection on coax or Ethernet"],
+    call: "Call us if this feeds a server, PoE switch, cameras, or medical/front-desk equipment.",
+  },
+  {
+    id: "wifi",
+    title: "Fix dead WiFi without buying another plastic router",
+    category: "networking",
+    match: /u6 pro|access point/i,
+    problem: "Video calls drop in the back room and guests are sharing the same network as office PCs.",
+    buy: ["Ceiling access points", "PoE switch", "Guest network with isolation"],
+    call: "Call us before buying if you need more than one access point or have block walls.",
+  },
+  {
+    id: "backup",
+    title: "Make backup boring before the laptop dies",
+    category: "backup",
+    match: /2-bay nas|portable ssd/i,
+    problem: "Files live on one desktop, one laptop, or one external drive nobody checks.",
+    buy: ["Portable SSD for one PC", "2-bay NAS for shared files", "NAS-rated mirrored drives"],
+    call: "Call us if more than one person touches the same files or QuickBooks lives on a workstation.",
+  },
+  {
+    id: "mfa",
+    title: "Stop password theft with hardware keys",
+    category: "security",
+    match: /5c nfc/i,
+    problem: "Staff are using SMS codes or reused passwords for Microsoft 365, Google, banking, or email.",
+    buy: ["Two keys per user", "One sealed spare per person", "Password manager rollout"],
+    call: "Call us if you use Microsoft 365 or Google Workspace and want this deployed without lockouts.",
+  },
+  {
+    id: "shredding",
+    title: "Destroy paper before it becomes a liability",
+    category: "compliance",
+    match: /micro-cut|commercial/i,
+    problem: "Client records, billing papers, labels, and misprints are landing in regular trash.",
+    buy: ["Micro-cut shredder", "Dedicated shred bin", "Label maker for retention boxes"],
+    call: "Call us if you need a retention workflow for law, medical, finance, or property management.",
+  },
+  {
+    id: "closet",
+    title: "Turn the cable pile into a serviceable network closet",
+    category: "infrastructure",
+    match: /wall-mount/i,
+    problem: "Nobody knows which cable feeds which desk, and every outage starts by unplugging random things.",
+    buy: ["Wall rack", "Patch panel", "Short color-coded patch cables"],
+    call: "Call us if there are more than eight drops or you need cameras, phones, or WiFi on PoE.",
+  },
+];
+
 const findTool = (categoryId, labelMatch) => {
   const cat = TOOL_CATEGORIES.find((c) => c.id === categoryId);
   return cat?.items.find((item) => labelMatch.test(item.label)) || cat?.items[0] || null;
 };
+
+function GuideCard({ guide }) {
+  const pick = findTool(guide.category, guide.match);
+  return (
+    <article className="tool-guide-card" id={`guide-${guide.id}`}>
+      <div className="tool-guide-card__top">
+        <span className="tool-guide-card__icon"><ListChecks size={18} /></span>
+        <h3>{guide.title}</h3>
+      </div>
+      <p>{guide.problem}</p>
+      <div className="tool-guide-card__buy">
+        <strong>Buy this first</strong>
+        <ul>
+          {guide.buy.map((item) => (
+            <li key={item}><CheckCircle2 size={14} /> {item}</li>
+          ))}
+        </ul>
+      </div>
+      <div className="tool-guide-card__footer">
+        <ToolLink item={pick} compact reason="Open the current Amazon options." />
+        <small>{guide.call}</small>
+      </div>
+    </article>
+  );
+}
 
 function ToolLink({ item, compact = false, reason }) {
   if (!item) return null;
@@ -249,26 +335,44 @@ export default function Tools() {
     <main className="tools-page">
       <header className="tools-hero tools-hero--buyer">
         <div>
-          <h1>Buy the right office tech the first time.</h1>
+          <h1>Small-office gear we would actually install.</h1>
           <p>
-            Calculators and field-tested picks for small offices around Sarasota,
-            Bradenton, and Venice. Start with the problem, then buy the gear.
-            Links may earn an affiliate commission at no extra cost to you.
+            Problem-first buying guides for Sarasota, Bradenton, and Venice
+            offices. Start with the outage, dead spot, backup gap, or login
+            risk. Then buy the smallest piece of gear that fixes it.
           </p>
           <div className="tools-hero-actions">
             <a href="#calculators" className="btn btn-primary">
               Use the calculators <SlidersHorizontal size={16} />
             </a>
+            <a href="#buying-guides" className="btn btn-secondary">
+              See buying guides <ShoppingCart size={16} />
+            </a>
             <Link to="/book" className="btn btn-secondary">
               Ask us to spec it <Wrench size={16} />
             </Link>
           </div>
+          <div className="tools-hero__rules">
+            <span><CheckCircle2 size={14} /> No mystery bundles</span>
+            <span><CheckCircle2 size={14} /> Search links when models change often</span>
+            <span><CheckCircle2 size={14} /> Install help when wiring is involved</span>
+          </div>
         </div>
         <aside className="tools-quick-list" aria-label="Most common office buys">
-          <h2>Most common fixes</h2>
+          <h2>Most common first buys</h2>
           {essentials.map((item) => <ToolLink key={item.label} item={item} compact />)}
         </aside>
       </header>
+
+      <section className="tools-buying-guides" id="buying-guides" aria-label="Small office buying guides">
+        <div className="tools-section-head">
+          <h2>Choose by the problem you are trying to stop.</h2>
+          <p>These are not gadget roundups. Each guide starts with a failure we see in small offices, then points to the hardware that usually fixes it.</p>
+        </div>
+        <div className="tools-guide-grid">
+          {BUYING_GUIDES.map((guide) => <GuideCard key={guide.id} guide={guide} />)}
+        </div>
+      </section>
 
       <section className="tools-calculators" id="calculators" aria-label="Office technology calculators">
         <UpsPlanner />
@@ -282,6 +386,10 @@ export default function Tools() {
           <h2>When to call before buying</h2>
           <p>If the purchase touches wiring, shared files, WiFi coverage, cameras, or login security, a 15-minute spec check can save a return, a truck roll, or a weekend outage.</p>
         </article>
+        <div className="tools-guide-strip__meta">
+          <Clock size={16} />
+          <span>Typical spec check: 15 minutes</span>
+        </div>
         <Link to="/services" className="tool-guide-link">
           See fixed-fee install options <ArrowRight size={16} />
         </Link>

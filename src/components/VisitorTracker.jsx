@@ -20,6 +20,8 @@ import { useLocation } from "react-router-dom";
 import { readConsent, CONSENT_EVENT } from "../lib/consent.js";
 import { installBehaviorBeacon, startPageview } from "../lib/behaviorBeacon.js";
 
+const RAW_TRACKING_ENABLED = !import.meta.env.DEV || import.meta.env.VITE_ENABLE_LOCAL_TRACKING === "true";
+
 function getAnonId() {
   try {
     const existing = document.cookie
@@ -147,6 +149,12 @@ export default function VisitorTracker() {
     // the previous one (pageview_exit with dwell + max scroll) and start
     // a fresh dwell timer + section observer for this route.
     startPageview(path);
+
+    // Vite's local dev server does not mount Vercel API functions, so the
+    // raw beacon would create noisy /api/track 404s during visual QA. Keep
+    // production tracking on; opt into local API tracking only when running
+    // Vercel dev or an API-capable local stack.
+    if (!RAW_TRACKING_ENABLED) return;
 
     const consent = readConsent();
     const analyticsOk = !!(consent && consent.categories && consent.categories.analytics);

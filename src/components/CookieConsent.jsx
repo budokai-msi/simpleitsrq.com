@@ -70,18 +70,15 @@ export default function CookieConsent() {
       aria-describedby="cookie-consent-body"
     >
       <div className="cookie-consent__body" id="cookie-consent-body">
-        <strong id="cookie-consent-title">We value your privacy</strong>
-        We use essential cookies to keep you signed in and the site working.
-        With your permission we also use analytics to understand how visitors
-        use the site so we can improve it. You can change your mind anytime in
-        our <Link to="/privacy">Privacy Policy</Link>. California residents may{" "}
+        <strong id="cookie-consent-title">Cookie settings</strong>
+        Essential cookies keep forms working. Analytics and marketing stay off
+        unless accepted. <Link to="/privacy">Privacy Policy</Link>. CA may{" "}
         <button
           type="button"
-          className="cookie-consent__btn"
-          style={{ padding: 0, border: 0, background: "none", color: "inherit", textDecoration: "underline", cursor: "pointer" }}
+          className="cookie-consent__link-btn"
           onClick={rejectNonEssential}
         >
-          opt out of the sale or sharing of personal information
+          opt out
         </button>
         .
       </div>
@@ -91,14 +88,14 @@ export default function CookieConsent() {
           className="cookie-consent__btn"
           onClick={rejectNonEssential}
         >
-          Reject non-essential
+          Reject
         </button>
         <button
           type="button"
           className="cookie-consent__btn cookie-consent__btn--primary"
           onClick={acceptAll}
         >
-          Accept all
+          Accept
         </button>
       </div>
     </div>
