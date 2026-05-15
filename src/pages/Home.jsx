@@ -3,12 +3,11 @@ import {
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
   Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi, Briefcase,
   Loader2, CheckCircle2, AlertCircle, Send, Wrench,
-  Camera, Network, RefreshCw, Users, Monitor, Bot, Sparkles
+  Camera, Users, Bot, Sparkles
 } from "lucide-react";
 import { Link } from "../lib/Link";
 import { useState } from "react";
 import { useSEO } from "../lib/seo";
-import heroGrid from "../assets/hero-grid.svg";
 import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
 import GoogleReviews from "../components/GoogleReviews";
@@ -17,36 +16,75 @@ import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { csrfFetch } from "../lib/csrf";
 
 function Hero() {
+  const paths = [
+    {
+      label: "Computer repair",
+      desc: "Slow PCs, failed drives, malware cleanup, new laptop setup.",
+      href: "#contact",
+    },
+    {
+      label: "Small office IT",
+      desc: "Microsoft 365, Wi-Fi, backups, phones, users, and vendors.",
+      href: "#solutions",
+    },
+    {
+      label: "Security paperwork",
+      desc: "MFA, encryption, backup proof, policies, and renewal evidence.",
+      href: "#compliance",
+    },
+    {
+      label: "Local lead campaigns",
+      desc: "Verified local contacts, capped sends, reply tracking, clear limits.",
+      to: "/leadgen",
+    },
+  ];
+
   return (
-    <section className="hero hero-clean hero-mesh grain" aria-labelledby="hero-title">
-      <div className="hero-bg" aria-hidden="true">
-        <img
-          src={heroGrid}
-          alt=""
-          className="hero-grid-bg"
-          fetchPriority="high"
-          decoding="async"
-        />
-      </div>
-      <div className="container hero-stack-clean">
-        <div className="hero-copy hero-copy-centered">
-          <span className="eyebrow">Sarasota, Bradenton, Venice</span>
-          <h1 id="hero-title" className="display hero-aura-title">Computer repair and small-business IT support.</h1>
+    <section className="home-hero" aria-labelledby="hero-title">
+      <div className="container home-hero__grid">
+        <div className="home-hero__copy">
+          <span className="eyebrow">Simple IT SRQ</span>
+          <h1 id="hero-title" className="display">IT support, computer repair, and local lead tools.</h1>
           <p className="lede">
-            Computer repair, office Wi-Fi, Microsoft 365, backups, security,
-            and plain-spoken support for small businesses on the Gulf Coast.
-            We fix the urgent thing first, then clean up the mess behind it.
+            Book one-time repair, move a small office onto Microsoft 365,
+            clean up Wi-Fi, or run a focused local lead campaign. We handle
+            the work, document what changed, and keep the next step obvious.
           </p>
-          <div className="hero-ctas">
-            <a href="#contact" className="btn btn-primary btn-lg">Book repair or support</a>
-            <Link to="/leadgen" className="btn btn-secondary btn-lg">Get local leads</Link>
+          <div className="home-hero__actions">
+            <a href="#contact" className="btn btn-primary btn-lg">Book IT support</a>
+            <Link to="/services" className="btn btn-secondary btn-lg">See services</Link>
+            <Link to="/leadgen" className="btn btn-secondary btn-lg">Leadgen</Link>
           </div>
-          <ul className="trust-row" aria-label="Why clients work with us">
-            <li><MapPin size={14} strokeWidth={2.25} /> On-site coverage across Sarasota, Bradenton, and Venice</li>
-            <li><Clock size={14} strokeWidth={2.25} /> Flat monthly contract or one-time repair</li>
-            <li><ShieldCheck size={14} strokeWidth={2.25} /> HIPAA, GLBA, and security documentation packages included</li>
+          <ul className="home-hero__proof" aria-label="What we support">
+            <li><MapPin size={15} /> Sarasota, Bradenton, Venice</li>
+            <li><Clock size={15} /> One-time repair or monthly support</li>
+            <li><ShieldCheck size={15} /> Documentation without insurance sales</li>
           </ul>
         </div>
+        <aside className="home-hero__panel" aria-label="Choose a service">
+          <div className="home-hero__panel-head">
+            <span>Start here</span>
+            <strong>What needs attention?</strong>
+          </div>
+          <div className="home-hero__path-list">
+            {paths.map((path) => {
+              const content = (
+                <>
+                  <span>
+                    <strong>{path.label}</strong>
+                    <small>{path.desc}</small>
+                  </span>
+                  <ArrowRight size={16} aria-hidden="true" />
+                </>
+              );
+              return path.to ? (
+                <Link key={path.label} to={path.to} className="home-hero__path">{content}</Link>
+              ) : (
+                <a key={path.label} href={path.href} className="home-hero__path">{content}</a>
+              );
+            })}
+          </div>
+        </aside>
       </div>
     </section>
   );
@@ -80,64 +118,54 @@ function LogosBar() {
 
 const SOLUTIONS = [
   {
-    Icon: Headphones,
-    title: "Managed Service Desk",
-    desc: "Unlimited help desk, computer and network monitoring, software updates, and new-employee setup. Call, email, or text — a real person in Sarasota answers, and we triage critical issues first."
+    Icon: Wrench,
+    title: "Computer repair and setup",
+    desc: "Slow PC, bad drive, malware cleanup, laptop setup, printer issue, or workstation replacement."
   },
   {
-    Icon: Wrench,
-    title: "Endpoint Repair & Lifecycle",
-    desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade that's been sitting on the desk for a year. We work on home machines too — no contract, no minimum, just an honest diagnosis and a quote."
+    Icon: Headphones,
+    title: "Managed office support",
+    desc: "Help desk, monitoring, updates, user setup, vendor coordination, and a simple monthly plan."
   },
   {
     Icon: Camera,
-    title: "Physical Security & Surveillance",
-    desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording. We pick the gear, run the cable, mount it, and show you how to use it."
-  },
-  {
-    Icon: Network,
-    title: "Identity & Access (Entra ID)",
-    desc: "Microsoft Entra ID, Active Directory, Group Policy, and the user/computer setup that lets a 20-person office act like one. New cloud-native build-outs and rescues of legacy on-premise servers."
-  },
-  {
-    Icon: RefreshCw,
-    title: "Cloud Migration & AI Readiness",
-    desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, and Copilot/Gemini AI readiness audits. We plan the cutover, do the work over a weekend, and stay on-site the morning after."
-  },
-  {
-    Icon: Lock,
-    title: "Cybersecurity & Zero Trust",
-    desc: "Modern antivirus, email scam filtering, and 24/7 monitoring. We turn on phishing-resistant MFA and passkeys for every account and hand you the written proof your security reviewer asks for at renewal."
+    title: "Cameras and access",
+    desc: "PoE cameras, recorders, mobile viewing, access cleanup, cable runs, and owner training."
   },
   {
     Icon: Cloud,
-    title: "Microsoft 365, Google Workspace & AI",
-    desc: "We set up (or clean up) your email, Teams, and cloud apps like Copilot and Gemini so your team can actually use AI safely without leaking company data."
-  },
-  {
-    Icon: Server,
-    title: "Backup & Business Continuity",
-    desc: "Automatic backups of every computer and server, with a second copy stored off-site so a fire, a hurricane, or a ransomware attack can't wipe you out. We test the backups every quarter."
-  },
-  {
-    Icon: Phone,
-    title: "Unified Communications",
-    desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email. We move your existing numbers and set up after-hours routing."
+    title: "Microsoft 365 and Google Workspace",
+    desc: "Email, Teams, Drive, shared mailboxes, MFA, device sign-in, migrations, and cleanup."
   },
   {
     Icon: Wifi,
-    title: "Network, Wi-Fi & Cabling",
-    desc: "Business-grade firewalls and Wi-Fi that actually reach every corner of your office or home. We run new network cables, label every jack, and guest-separate the Wi-Fi."
+    title: "Wi-Fi, firewall, and cabling",
+    desc: "Business-grade network gear, guest Wi-Fi, labels, rack cleanup, coverage fixes, and handoff notes."
+  },
+  {
+    Icon: Lock,
+    title: "Security hardening",
+    desc: "MFA, passkeys, endpoint protection, admin cleanup, scam filtering, and practical written proof."
+  },
+  {
+    Icon: Server,
+    title: "Backups and recovery",
+    desc: "Local and cloud backups, restore tests, recovery contacts, and a plain disaster checklist."
+  },
+  {
+    Icon: Phone,
+    title: "Phones and messaging",
+    desc: "VoIP, number moves, after-hours routing, voicemail to email, and basic texting workflows."
   },
   {
     Icon: FileCheck,
-    title: "Compliance & Audit Readiness",
-    desc: "Made for medical and dental practices, law firms, and any business renewing their security policy. We run the required security checks, put the protections in place, and give you a binder of documents you can hand an auditor."
+    title: "IT documentation",
+    desc: "Policies, device inventory, MFA status, backup evidence, vendor access, and renewal packets."
   },
   {
     Icon: Briefcase,
-    title: "Strategic IT Advisory",
-    desc: "Sit down with a senior tech once a quarter to look at what's working, what's about to break, and what should be in next year's budget. No corporate speak — just a straight answer on where to spend and where to wait."
+    title: "Quarterly IT planning",
+    desc: "A short review of what is working, what is fragile, and what should be budgeted next."
   },
 ];
 
@@ -147,8 +175,8 @@ function Solutions() {
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Capabilities</span>
-          <h2 id="solutions-title" className="title-1">IT support, repair, Wi-Fi, cloud, and security</h2>
-          <p className="section-sub">End-user support, identity, security, network, cloud, and continuity from a Sarasota-based team. One number to call, one invoice, and no vendor runaround.</p>
+          <h2 id="solutions-title" className="title-1">Work people actually call us for</h2>
+          <p className="section-sub">Repair the urgent issue, then clean up the system behind it: accounts, backups, Wi-Fi, devices, documentation, and vendor sprawl.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
@@ -185,7 +213,7 @@ function Industries() {
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Industries</span>
           <h2 id="industries-title" className="title-1">Offices and homes we support</h2>
-          <p className="section-sub">Healthcare, legal, financial services, construction, and real estate offices across Sarasota and Bradenton, plus home offices and snowbird condos. We document the controls your reviewer asks for, but we do not sell insurance or audits.</p>
+          <p className="section-sub">Healthcare, legal, financial services, construction, real estate, home offices, and seasonal properties. We document controls when needed, but we do not sell insurance or audits.</p>
         </div>
         <div className="industries-grid">
           {INDUSTRIES.map(({ Icon, name, badges }, i) => (
@@ -219,8 +247,8 @@ function Compliance() {
           <h2 id="compliance-title" className="title-1">The IT evidence people keep asking you for</h2>
           <p className="section-sub">
             HIPAA risk assessments, security renewals, disaster-recovery
-            runbooks, and the evidence trail behind them — we do the engineering
-            work and hand you the documents your auditor, carrier, or board
+            runbooks, and the evidence trail behind them. We do the engineering
+            work and hand you the documents your reviewer, board, or lender
             asked for. We are not an auditor, broker, or law firm.
           </p>
           <ul className="feature-list">
@@ -229,46 +257,25 @@ function Compliance() {
             ))}
           </ul>
         </div>
-        <aside className="compliance-card" aria-label="What we track">
+        <aside className="compliance-card" aria-label="Documentation package">
           <div className="cc-header">
             <Shield size={24} color="#111827" />
             <div>
               <span className="cc-eyebrow">IT documentation</span>
-              <h3 className="cc-title">What we track</h3>
+              <h3 className="cc-title">What goes in the packet</h3>
             </div>
           </div>
-          <div className="cc-grid">
-            <div><span>0</span><small>Reportable breaches</small></div>
-            <div><span>&lt;4h</span><small>Mean time to restore</small></div>
-            <div><span>AES-256</span><small>Endpoint encryption</small></div>
-            <div><span>99.99%</span><small>Service availability</small></div>
-          </div>
+          <ul className="cc-checklist">
+            <li><Check size={16} /> Device inventory and owner list</li>
+            <li><Check size={16} /> MFA and admin account status</li>
+            <li><Check size={16} /> Backup location and last restore test</li>
+            <li><Check size={16} /> Encryption and endpoint protection notes</li>
+            <li><Check size={16} /> Recovery contacts and vendor access</li>
+          </ul>
           <div className="cc-footer">
-            <Check size={14} color="#107C10" /> Controls implemented and evidenced
+            <Check size={14} color="#107C10" /> Built from the actual systems we touched
           </div>
         </aside>
-      </div>
-    </section>
-  );
-}
-
-function Testimonial() {
-  return (
-    <section className="testimonial-section" aria-label="Client testimonial">
-      <div className="container">
-        <figure className="testimonial">
-          <blockquote>
-            "We brought Simple IT SRQ in after a ransomware scare our previous
-            provider missed. They turned on two-step sign-in across every
-            account, rebuilt our backup setup, and walked our security documentation
-            carrier through every control they'd put in place. The renewal
-            paperwork went through without a single follow-up question."
-          </blockquote>
-          <figcaption>
-            <strong>Karen M.</strong>
-            <span> Practice Administrator, Sarasota dental group</span>
-          </figcaption>
-        </figure>
       </div>
     </section>
   );
@@ -310,36 +317,15 @@ function BlogPreview() {
   );
 }
 
-function StatsBar() {
-  const stats = [
-    { v: "Local", l: "Sarasota, Bradenton, and Venice" },
-    { v: "Flat", l: "Monthly contracts" },
-    { v: "24/7", l: "Endpoint and network monitoring" },
-    { v: "Documented", l: "HIPAA, GLBA, and security documentation" },
-  ];
-  return (
-    <section className="stats-bar" aria-label="Key statistics">
-      <div className="container stats-grid">
-        {stats.map((s, i) => (
-          <div key={s.l} className="stat reveal-up" data-reveal data-reveal-delay={i + 1}>
-            <span className="stat-v">{s.v}</span>
-            <span className="stat-l">{s.l}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function CtaBanner() {
   return (
     <section className="section">
       <div className="container">
         <div className="cta-banner reveal-scale">
-          <h2 className="title-2">Talk to a local engineer</h2>
-          <p>Book a 30-minute consult with a Sarasota-based engineer. We'll review your current stack, the gaps you already know about, and where a managed agreement would or wouldn't make sense for your business.</p>
+          <h2 className="title-2">Need a real fix this week?</h2>
+          <p>Send the issue, the location, and the deadline. We will tell you whether it is a repair visit, a managed support fit, or something you should not pay us for.</p>
           <div className="cta-actions">
-            <Link to="/book" className="btn btn-primary btn-lg">Book a consult</Link>
+            <Link to="/book" className="btn btn-primary btn-lg">Book a time</Link>
             <Link to="/support" className="btn btn-secondary btn-lg">Existing client support</Link>
           </div>
         </div>
@@ -576,7 +562,7 @@ function Contact() {
 
 export default function Home() {
   useSEO({
-    title: "Simple IT SRQ | Local IT Support, Computer Repair, and Security Cameras — Sarasota and Bradenton",
+    title: "Simple IT SRQ | Local IT Support, Computer Repair, and Security Cameras - Sarasota and Bradenton",
     description: "Local IT support, helpdesk, computer repair, security cameras, and enterprise IT (Active Directory, migrations, upgrades) for businesses and homes in Sarasota, Bradenton, and Venice. Flat monthly pricing for businesses, no-contract repair for residential. Email hello@simpleitsrq.com.",
     canonical: "https://simpleitsrq.com/",
     image: "https://simpleitsrq.com/og-image.png",
@@ -590,9 +576,7 @@ export default function Home() {
       <Solutions />
       <Industries />
       <Compliance />
-      <Testimonial />
       <GoogleReviews />
-      <StatsBar />
       <BlogPreview />
       <CtaBanner />
       <Contact />
