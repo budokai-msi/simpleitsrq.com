@@ -108,7 +108,7 @@
       "venice",
       "hardware"
     ],
-    "excerpt": "We just put security camera installation back on the homepage — it's something we've quietly done for shop, office, and warehouse clients across Sarasota and Bradenton for years, and it's overdue for an honest writeup. Here's what we actually install in 2026, what we steer clients away from, what each tier costs, and the Florida-specific install gotchas (heat, humidity, hurricane mounts, salt air on barrier islands) that the YouTube reviews never mention.",
+    "excerpt": "A practical security-camera guide for Sarasota and Bradenton businesses: Reolink vs UniFi vs enterprise systems, installed cost, and Florida install gotchas.",
     "metaDescription": "What we install for Sarasota offices, what we avoid, and what each tier costs: UniFi, Reolink, Verkada, Axis, mounts, storage, and wiring.",
     "heroAlt": "A wall-mounted PoE security camera over the back door of a Sarasota retail shop, with a network cable running into a structured wiring rack inside."
   },
@@ -311,7 +311,7 @@
   },
   {
     "slug": "office-wifi-dead-spots-sarasota-bradenton-fix",
-    "title": "Your Office WiFi Is Probably Costing You Money - Heres How to Fix It",
+    "title": "Sarasota Office WiFi Dead Spots: The Fix",
     "date": "2026-04-16",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -323,8 +323,8 @@
       "sarasota",
       "bradenton"
     ],
-    "excerpt": "The consumer router your ISP gave you was never designed for 15 people on Teams calls. Heres the hardware upgrade that kills dead spots, isolates your guest network, and actually shows you who is on it.",
-    "metaDescription": "Dead spots, dropped video calls, and guest network risks plague Sarasota and Bradenton small offices. A proper business access point fixes all three for under $500.",
+    "excerpt": "A plain office WiFi guide: when the ISP router is the problem, what business access points cost, and when a site survey is worth it.",
+    "metaDescription": "Fix Sarasota and Bradenton office WiFi dead spots with business access points, guest isolation, PoE, and a proper site survey.",
     "heroAlt": "A ceiling-mounted white business access point in a modern office with a clear WiFi signal icon above it."
   },
   {
@@ -346,7 +346,7 @@
   },
   {
     "slug": "document-shredder-hipaa-legal-sarasota-compliance",
-    "title": "HIPAA and Legal Compliance Start at the Shredder - Heres What to Buy",
+    "title": "Document Shredder Guide for Sarasota Offices",
     "date": "2026-04-15",
     "category": "Compliance",
     "author": "Simple IT SRQ Team",
@@ -358,8 +358,8 @@
       "smb",
       "sarasota"
     ],
-    "excerpt": "You locked down your network, encrypted your drives, and trained your staff on phishing. But the printed patient intake form sitting in the recycling bin next to the copier just undid all of it.",
-    "metaDescription": "Florida medical and legal offices must destroy paper PHI and client records properly. A $200 cross-cut shredder is the cheapest compliance control you will ever buy.",
+    "excerpt": "A practical shredder guide for offices that print sensitive records: what to buy, where to put it, and how to write a one-page disposal policy.",
+    "metaDescription": "Choose the right cross-cut or micro-cut shredder for Sarasota medical, legal, accounting, and small-business offices that print sensitive records.",
     "heroAlt": "A micro-cut document shredder next to a medical office printer with a HIPAA compliance notice on the wall."
   },
   {
@@ -381,7 +381,7 @@
   },
   {
     "slug": "small-business-backup-drive-bradenton-ransomware",
-    "title": "The 3-2-1 Backup Hardware Bradenton Offices Use",
+    "title": "Bradenton Office Backup Hardware Guide",
     "date": "2026-04-14",
     "category": "Cybersecurity",
     "author": "Simple IT SRQ Team",
@@ -392,13 +392,13 @@
       "smb",
       "bradenton"
     ],
-    "excerpt": "security documentation applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes.",
-    "metaDescription": "Ransomware hits small businesses weekly. A $120 external drive plus cloud gives Bradenton and Sarasota offices the 3-2-1 backup many security reviews expect.",
+    "excerpt": "A practical 3-2-1 backup hardware guide for small offices: external SSD, NAS, cloud backup, restore tests, and what not to leave plugged in.",
+    "metaDescription": "Build a practical 3-2-1 backup stack for a Bradenton or Sarasota office using external SSDs, NAS storage, and cloud backup.",
     "heroAlt": "An external hard drive on a desk next to a laptop, with a padlock icon overlaid showing an encrypted backup."
   },
   {
     "slug": "hardware-2fa-yubikey-sarasota-law-firms",
-    "title": "Why Sarasota Law and Medical Offices Are Switching to Hardware 2FA",
+    "title": "YubiKey Setup for Sarasota Offices",
     "date": "2026-04-13",
     "category": "Cybersecurity",
     "author": "Simple IT SRQ Team",
@@ -410,8 +410,8 @@
       "healthcare",
       "sarasota"
     ],
-    "excerpt": "SMS 2FA keeps getting bypassed in the wild. A physical security key costs $50, stops the entire class of attack, and is now effectively required by several security reviewers. Heres how to deploy them.",
-    "metaDescription": "SMS text-message 2FA is being actively bypassed. Heres what a $50 YubiKey does differently and why Sarasota law and medical offices are standardizing on them.",
+    "excerpt": "A practical hardware 2FA guide: what YubiKey model to buy, why SMS codes fail, how rollout works, and how to avoid account lockouts.",
+    "metaDescription": "A practical YubiKey setup guide for Sarasota law, medical, and professional offices using Microsoft 365, Google, banks, and password managers.",
     "heroAlt": "A small USB-C hardware security key plugged into a laptop with a login screen showing a successful passkey prompt."
   },
   {

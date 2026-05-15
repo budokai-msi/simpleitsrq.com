@@ -59,7 +59,7 @@
       <pubDate>Sat, 25 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Business Tech</category>
-      <description>We just put security camera installation back on the homepage — it&apos;s something we&apos;ve quietly done for shop, office, and warehouse clients across Sarasota and Bradenton for years, and it&apos;s overdue for an honest writeup. Here&apos;s what we actually install in 2026, what we steer clients away from, what each tier costs, and the Florida-specific install gotchas (heat, humidity, hurricane mounts, salt air on barrier islands) that the YouTube reviews never mention.</description>
+      <description>A practical security-camera guide for Sarasota and Bradenton businesses: Reolink vs UniFi vs enterprise systems, installed cost, and Florida install gotchas.</description>
     </item>
     <item>
       <title>Computer Repair in Sarasota: Fix or Replace?</title>
@@ -161,13 +161,13 @@
       <description>Hot-desking and hybrid schedules mean laptops are the default. But a laptop on a desk with no external monitor is a productivity and ergonomics problem. Heres the docking station setup that fixes both.</description>
     </item>
     <item>
-      <title>Your Office WiFi Is Probably Costing You Money - Heres How to Fix It</title>
+      <title>Sarasota Office WiFi Dead Spots: The Fix</title>
       <link>https://simpleitsrq.com/blog/office-wifi-dead-spots-sarasota-bradenton-fix</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/office-wifi-dead-spots-sarasota-bradenton-fix</guid>
       <pubDate>Thu, 16 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Business Tech</category>
-      <description>The consumer router your ISP gave you was never designed for 15 people on Teams calls. Heres the hardware upgrade that kills dead spots, isolates your guest network, and actually shows you who is on it.</description>
+      <description>A plain office WiFi guide: when the ISP router is the problem, what business access points cost, and when a site survey is worth it.</description>
     </item>
     <item>
       <title>Sarasota Office UPS Buying Guide</title>
@@ -179,13 +179,13 @@
       <description>A practical UPS buying guide for Sarasota and Bradenton offices: what to protect, what to skip, how to size the unit, and when to use rackmount gear.</description>
     </item>
     <item>
-      <title>HIPAA and Legal Compliance Start at the Shredder - Heres What to Buy</title>
+      <title>Document Shredder Guide for Sarasota Offices</title>
       <link>https://simpleitsrq.com/blog/document-shredder-hipaa-legal-sarasota-compliance</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/document-shredder-hipaa-legal-sarasota-compliance</guid>
       <pubDate>Wed, 15 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Compliance</category>
-      <description>You locked down your network, encrypted your drives, and trained your staff on phishing. But the printed patient intake form sitting in the recycling bin next to the copier just undid all of it.</description>
+      <description>A practical shredder guide for offices that print sensitive records: what to buy, where to put it, and how to write a one-page disposal policy.</description>
     </item>
     <item>
       <title>Network Closet Cleanup for Small Offices</title>
@@ -197,22 +197,22 @@
       <description>If your network closet has unlabeled cables, consumer switches on a shelf, and a power strip dangling from a hook, this is the fix.</description>
     </item>
     <item>
-      <title>The 3-2-1 Backup Hardware Bradenton Offices Use</title>
+      <title>Bradenton Office Backup Hardware Guide</title>
       <link>https://simpleitsrq.com/blog/small-business-backup-drive-bradenton-ransomware</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/small-business-backup-drive-bradenton-ransomware</guid>
       <pubDate>Tue, 14 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Cybersecurity</category>
-      <description>security documentation applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes.</description>
+      <description>A practical 3-2-1 backup hardware guide for small offices: external SSD, NAS, cloud backup, restore tests, and what not to leave plugged in.</description>
     </item>
     <item>
-      <title>Why Sarasota Law and Medical Offices Are Switching to Hardware 2FA</title>
+      <title>YubiKey Setup for Sarasota Offices</title>
       <link>https://simpleitsrq.com/blog/hardware-2fa-yubikey-sarasota-law-firms</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/hardware-2fa-yubikey-sarasota-law-firms</guid>
       <pubDate>Mon, 13 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Cybersecurity</category>
-      <description>SMS 2FA keeps getting bypassed in the wild. A physical security key costs $50, stops the entire class of attack, and is now effectively required by several security reviewers. Heres how to deploy them.</description>
+      <description>A practical hardware 2FA guide: what YubiKey model to buy, why SMS codes fail, how rollout works, and how to avoid account lockouts.</description>
     </item>
     <item>
       <title>A Practical AI Use Policy for Sarasota Teams</title>
