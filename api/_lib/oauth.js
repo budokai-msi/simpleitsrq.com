@@ -4,6 +4,7 @@
 // in one place so the login/callback routes stay thin.
 
 import { sql } from "./db.js";
+import { isAdminEmail } from "./admin.js";
 
 /** @typedef {import('./types.js').OAuthProviderConfig} OAuthProviderConfig */
 /** @typedef {import('./types.js').OAuthProfile} OAuthProfile */
@@ -401,8 +402,7 @@ export async function upsertUserFromProfile(provider, profile) {
     // Only the owner email gets admin. Everyone else is a regular client.
     // Boolean() so `adminEmail &&` doesn't coerce to "" and land in Postgres'
     // is_admin boolean column as an empty string.
-    const adminEmail = process.env.ADMIN_EMAIL || "";
-    const isOwner = Boolean(adminEmail) && profile.email.toLowerCase() === adminEmail.toLowerCase();
+    const isOwner = isAdminEmail(profile.email);
 
     const inserted = await sql`
       INSERT INTO users (email, name, avatar_url, is_admin)
@@ -410,6 +410,11 @@ export async function upsertUserFromProfile(provider, profile) {
       RETURNING *
     `;
     user = inserted[0];
+  }
+
+  if (isAdminEmail(profile.email) && user?.is_admin !== true) {
+    await sql`UPDATE users SET is_admin = true, updated_at = now() WHERE id = ${user.id}`;
+    user.is_admin = true;
   }
 
   await sql`

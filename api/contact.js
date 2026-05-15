@@ -29,6 +29,7 @@ import { requireCsrf } from "./_lib/csrf.js";
 import { getSession } from "./_lib/session.js";
 import { runExposureScan } from "./_lib/exposure.js";
 import { identifyScanner } from "./_lib/scanner-fingerprints.js";
+import { isAdminEmail } from "./_lib/admin.js";
 
 // Inline admin check — gates OPSEC-sensitive surfaces (the threats feed)
 // without pulling the larger portal.js admin helper. Mirrors the email +
@@ -37,11 +38,7 @@ async function isAdminRequest(request) {
   try {
     const session = await getSession(request);
     if (!session?.user?.email) return false;
-    const adminEmail = process.env.ADMIN_EMAIL || "";
-    if (!adminEmail) return false;
-    if (session.user.email.toLowerCase() !== adminEmail.toLowerCase()) return false;
-    const rows = await sql`SELECT is_admin FROM users WHERE id = ${session.user.id} LIMIT 1`;
-    return rows.length > 0 && rows[0].is_admin === true;
+    return isAdminEmail(session.user.email);
   } catch {
     return false;
   }

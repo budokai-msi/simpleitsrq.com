@@ -165,6 +165,20 @@ function Dashboard({ user, logout }) {
           <a className="btn btn-secondary" href={STRIPE_BILLING_URL} target="_blank" rel="noopener noreferrer">Manage billing</a>
         </div>
       </section>
+
+      {user.isAdmin ? (
+        <section className="portal-card">
+          <h2>Admin operations</h2>
+          <p className="portal-muted">
+            Internal dashboard for affiliate clicks, leadgen, content drafts, AdSense, and OpSec. Hidden from public navigation.
+          </p>
+          <div className="portal-actions portal-actions--row">
+            <Link className="btn btn-primary" to="/portal/ops">Open ops dashboard</Link>
+            <Link className="btn btn-secondary" to="/portal/ops?tab=affiliate">Affiliate signals</Link>
+            <Link className="btn btn-secondary" to="/portal/leadgen">Leadgen workspace</Link>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
