@@ -47,6 +47,7 @@ const Book = lazy(() => import("./pages/Book"));
 const Support = lazy(() => import("./pages/Support"));
 const ClientPortal = lazy(() => import("./pages/ClientPortalPublic"));
 const LeadgenDashboard = lazy(() => import("./pages/LeadgenDashboard"));
+const AdminOps = lazy(() => import("./pages/AdminOps"));
 const PrivacyPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.PrivacyPage })));
 const TermsPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.TermsPage })));
 const AccessibilityPage = lazy(() => import("./pages/Legal").then((m) => ({ default: m.AccessibilityPage })));
@@ -797,24 +798,29 @@ function AnalyticsMount() {
 }
 
 function Layout({ children }) {
+  const location = useLocation();
+  const isInternalOps =
+    location.pathname.startsWith("/portal/ops") ||
+    location.pathname.startsWith("/portal/opsec");
+
   return (
     <>
       <a className="skip-link" href="#main">Skip to content</a>
-      <Navbar />
+      {!isInternalOps && <Navbar />}
       <ScrollToHash />
-      <VisitorTracker />
-      <AnalyticsMount />
+      {!isInternalOps && <VisitorTracker />}
+      {!isInternalOps && <AnalyticsMount />}
       {children}
-      <Footer />
-      <MobileStickyCTA />
-      <ExitIntentMount />
+      {!isInternalOps && <Footer />}
+      {!isInternalOps && <MobileStickyCTA />}
+      {!isInternalOps && <ExitIntentMount />}
       <ScrollToTop />
-      <CookieConsent />
-      <AutoAds />
-      <LiveChat />
-      <AIChat />
-      <Analytics />
-      <SpeedInsights />
+      {!isInternalOps && <CookieConsent />}
+      {!isInternalOps && <AutoAds />}
+      {!isInternalOps && <LiveChat />}
+      {!isInternalOps && <AIChat />}
+      {!isInternalOps && <Analytics />}
+      {!isInternalOps && <SpeedInsights />}
     </>
   );
 }
@@ -936,6 +942,8 @@ function AnimatedRoutes() {
         <Route path="/password-check" element={<PasswordCheck />} />
         <Route path="/portal" element={<ClientPortal />} />
         <Route path="/portal/leadgen" element={<LeadgenDashboard />} />
+        <Route path="/portal/ops" element={<AdminOps />} />
+        <Route path="/portal/opsec" element={<AdminOps />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/accessibility" element={<AccessibilityPage />} />

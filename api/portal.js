@@ -220,12 +220,22 @@ async function handleAdminStatus(session) {
   const env = {
     ADMIN_API_TOKEN: !!process.env.ADMIN_API_TOKEN,
     GROQ_API_KEY:    !!process.env.GROQ_API_KEY,
+    GITHUB_TOKEN:    !!process.env.GITHUB_TOKEN,
     BREVO_API_KEY:   !!process.env.BREVO_API_KEY,
     SMTP_HOST:       !!process.env.SMTP_HOST,
     SMTP_USER:       !!process.env.SMTP_USER,
     RESEND_API_KEY:  !!process.env.RESEND_API_KEY,
     STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
     NEON_API_KEY:    !!process.env.NEON_API_KEY,
+    VITE_AFF_AMAZON_TAG: !!process.env.VITE_AFF_AMAZON_TAG,
+    VITE_AFF_GUSTO_REF: !!process.env.VITE_AFF_GUSTO_REF,
+    VITE_AFF_1PASSWORD_REF: !!process.env.VITE_AFF_1PASSWORD_REF,
+    VITE_AFF_HONEYBOOK_REF: !!process.env.VITE_AFF_HONEYBOOK_REF,
+    VITE_AFF_ACRONIS_REF: !!process.env.VITE_AFF_ACRONIS_REF,
+    VITE_AFF_UBNT_REF: !!process.env.VITE_AFF_UBNT_REF,
+    VITE_AFF_REOLINK_REF: !!process.env.VITE_AFF_REOLINK_REF,
+    VITE_AFF_BH_REF: !!process.env.VITE_AFF_BH_REF,
+    VITE_AFF_BACKBLAZE_REF: !!process.env.VITE_AFF_BACKBLAZE_REF,
   };
 
   // Run all probe queries in parallel; wrap each in a defensive try
