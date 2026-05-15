@@ -9,37 +9,17 @@ import { useSEO, SITE_URL } from "../lib/seo";
 
 const TIERS = [
   {
-    id: "free",
-    name: "Free",
-    monthly: 0,
-    annual: 0,
-    blurb: "A tiny sample list so you can inspect the source fields first.",
-    cta: "Request free sample",
-    ctaHref: "/book?topic=leadgen-free",
-    stripeMonthly: null,
-    stripeAnnual: null,
-    highlight: false,
-    features: [
-      "1 zip-radius search (lifetime)",
-      "Up to 10 verified business records",
-      "Email verification preview (3 contacts)",
-      "CAN-SPAM-compliant send footer",
-      "CSV export",
-      "Email support",
-    ],
-  },
-  {
     id: "growth",
     name: "Growth",
     monthly: 19,
     annual: 15,
-    blurb: "One zip, one business type, one reviewed campaign test.",
-    cta: "Start the $19 test",
+    blurb: "The focused paid test: one local niche, reviewed before sending.",
+    cta: "Start Growth",
     ctaHref: "/book?topic=leadgen-growth",
     stripeMonthly: import.meta.env.VITE_LEADGEN_GROWTH_MONTHLY_URL,
     stripeAnnual: import.meta.env.VITE_LEADGEN_GROWTH_ANNUAL_URL,
     highlight: true,
-    badge: "Most popular",
+    badge: "Start here",
     features: [
       "1 zip-radius search per day",
       "Up to 500 verified business records / month",
@@ -48,6 +28,26 @@ const TIERS = [
       "Per-domain throttling + reply detection",
       "CSV + Google Sheets export",
       "1-business-day onboarding review",
+    ],
+  },
+  {
+    id: "free",
+    name: "Sample",
+    monthly: 0,
+    annual: 0,
+    blurb: "A small inspection sample. Useful, but not the product.",
+    cta: "Request sample",
+    ctaHref: "/book?topic=leadgen-free",
+    stripeMonthly: null,
+    stripeAnnual: null,
+    highlight: false,
+    features: [
+      "1 zip-radius search (lifetime)",
+      "Up to 10 verified business records",
+      "Email verification preview (3 contacts)",
+      "Source fields included",
+      "CSV export",
+      "Email support",
     ],
   },
   {
@@ -124,10 +124,16 @@ const COMPLIANCE = [
 ];
 
 const PROOF_POINTS = [
-  { label: "Source", value: "Public records", detail: "OSM business data with source fields" },
-  { label: "Contact", value: "Website emails", detail: "Published contact pages and mailto links" },
-  { label: "Safety", value: "Capped sends", detail: "Daily limits and bounce pauses" },
-  { label: "Start", value: "$19 test", detail: "One zip, one niche, one review" },
+  { label: "Product", value: "Growth", detail: "The default first paid test" },
+  { label: "Scope", value: "1 zip + 1 niche", detail: "No broad spray campaigns" },
+  { label: "Safety", value: "35/day cap", detail: "Review before the first send" },
+  { label: "Price", value: "$19/mo", detail: "Upgrade only after it proves useful" },
+];
+
+const PRODUCT_RULES = [
+  { title: "One market", body: "Pick a zip code or tight service area. Sarasota dentists, Bradenton contractors, Venice property managers - not everyone at once." },
+  { title: "One offer", body: "Use a plain first email tied to a real service. The system helps deliver it; it cannot save weak positioning." },
+  { title: "One review", body: "Before the first send, review source records, contact fields, unsubscribe footer, daily cap, and the actual email copy." },
 ];
 
 function Currency({ value }) {
@@ -185,18 +191,18 @@ export default function Leadgen() {
       <section className="section hero hero-clean leadgen-hero">
         <div className="container leadgen-hero__inner">
           <div className="leadgen-hero__copy">
-            <h1 className="display">Find local businesses. Send a small, reviewed campaign.</h1>
+            <h1 className="display">Find local leads. Launch one reviewed campaign.</h1>
             <p className="lede">
-              Pick one zip code and one business type. We pull public business
-              records, look for published contact emails, cap the sending volume,
-              and review the first campaign before it launches.
+              Growth is a paid local outbound test: one zip, one business type,
+              verified public records, capped email sends, and a human review
+              before the first campaign leaves.
             </p>
             <div className="hero-ctas">
               <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
-                Start the $19 test
+                Start Growth
               </LeadgenPlanLink>
               <Link to="/book?topic=leadgen-demo" className="btn btn-secondary btn-lg">
-                Book setup call
+                Book a 15-minute review
               </Link>
             </div>
             <div className="leadgen-hero__trust">
@@ -207,7 +213,7 @@ export default function Leadgen() {
             <div className="leadgen-hero__offer" aria-label="Growth trial offer">
               <div>
                 <span>Start</span>
-                <strong>$19/mo</strong>
+                <strong>Growth - $19/mo</strong>
               </div>
               <div>
                 <span>Target</span>
@@ -225,6 +231,30 @@ export default function Leadgen() {
       </section>
 
       <LeadgenProofStrip />
+
+      <section className="section leadgen-product-focus">
+        <div className="container leadgen-product-focus__grid">
+          <div>
+            <h2 className="title-1">The product is the first paid test.</h2>
+            <p className="lede">
+              Not a CRM. Not a social scheduler. Not a promise of booked calls.
+              Growth is the controlled workflow that tells you whether a local
+              niche is worth pursuing before you spend real ad money.
+            </p>
+          </div>
+          <div className="leadgen-product-rules">
+            {PRODUCT_RULES.map((rule, index) => (
+              <article key={rule.title} className="leadgen-product-rule">
+                <span>{index + 1}</span>
+                <div>
+                  <h3>{rule.title}</h3>
+                  <p>{rule.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Operating rules */}
       <section className="section leadgen-statband-section">
@@ -319,10 +349,11 @@ export default function Leadgen() {
         <div className="container">
           <div className="section-head" style={{ maxWidth: 720 }}>
             <span className="eyebrow">Pricing</span>
-            <h2 className="title-1">Start small. Upgrade only if the list is useful.</h2>
+            <h2 className="title-1">Growth is the default. Everything else is secondary.</h2>
             <p className="lede">
-              Growth is the default first test. Free is a sample. Pro is for teams
-              already running repeat campaigns.
+              Start with Growth unless you only want to inspect a sample.
+              Pro is for teams already repeating the same workflow across
+              several local markets.
             </p>
           </div>
 
@@ -400,10 +431,10 @@ export default function Leadgen() {
           </p>
           <div className="hero-ctas" style={{ justifyContent: "center", marginTop: 24 }}>
             <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
-              Start the $19 test
+              Start Growth
             </LeadgenPlanLink>
             <Link to="/book?topic=leadgen-demo" className="btn btn-secondary btn-lg">
-              Walk me through it
+              Review my first niche
             </Link>
           </div>
         </div>
@@ -674,7 +705,7 @@ function LeadgenCheckoutSuccess() {
 const TIER_ESTIMATES = [
   { id: "growth",  name: "Growth",  monthly: 19, contacts: 500,  replyRate: 0.012 },
   { id: "pro",     name: "Pro",     monthly: 99, contacts: 5000, replyRate: 0.010 },
-  { id: "free",    name: "Free sample", monthly: 0, contacts: 10, replyRate: 0 },
+  { id: "free",    name: "Sample", monthly: 0, contacts: 10, replyRate: 0 },
 ];
 
 function fmt(n) {
@@ -707,7 +738,8 @@ function LeadgenROICalculator() {
           <h2 className="title-1">Pressure-test the paid trial before you buy it.</h2>
           <p className="lede">
             Drag the sliders. This is a conservative pipeline forecast, not a
-            sales promise. Growth is usually the cleanest first test.
+            sales promise. If Growth cannot clear the break-even line, do not
+            buy a bigger plan yet.
           </p>
         </div>
 
@@ -783,7 +815,7 @@ function LeadgenROICalculator() {
                   billing="monthly"
                   className={`btn ${r.id === "growth" ? "btn-primary" : "btn-secondary"} leadgen-roi__cta`}
                 >
-                  {r.id === "growth" ? "Start the $19 test" : `Choose ${r.name}`}
+                  {r.id === "growth" ? "Start Growth" : `Choose ${r.name}`}
                 </LeadgenPlanLink>
               </div>
             ))}
