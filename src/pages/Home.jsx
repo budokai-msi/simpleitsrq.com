@@ -175,8 +175,8 @@ function Solutions() {
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Capabilities</span>
-          <h2 id="solutions-title" className="title-1">Work people actually call us for</h2>
-          <p className="section-sub">Repair the urgent issue, then clean up the system behind it: accounts, backups, Wi-Fi, devices, documentation, and vendor sprawl.</p>
+          <h2 id="solutions-title" className="title-1">The calls we get most often</h2>
+          <p className="section-sub">A computer is down, the Wi-Fi is unreliable, email is locked out, or files are not backed up. We fix the immediate problem, then leave the setup easier to support next time.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
