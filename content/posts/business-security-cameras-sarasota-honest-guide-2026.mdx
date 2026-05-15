@@ -12,15 +12,29 @@ tags:
   - bradenton
   - venice
   - hardware
-excerpt: "We just put security camera installation back on the homepage — it's something we've quietly done for shop, office, and warehouse clients across Sarasota and Bradenton for years, and it's overdue for an honest writeup. Here's what we actually install in 2026, what we steer clients away from, what each tier costs, and the Florida-specific install gotchas (heat, humidity, hurricane mounts, salt air on barrier islands) that the YouTube reviews never mention."
+excerpt: "A practical security-camera guide for Sarasota and Bradenton businesses: Reolink vs UniFi vs enterprise systems, installed cost, and Florida install gotchas."
 heroAlt: "A wall-mounted PoE security camera over the back door of a Sarasota retail shop, with a network cable running into a structured wiring rack inside."
 ---
 
-## Why we put this back on the homepage
+## Short answer
 
-When we re-did our service list this week, "Security Camera Installation" got its own card. It's been part of what we do for years, quietly, mostly through word of mouth, but it never made it into the marketing copy. That's a marketing failure, not a service gap. Plenty of small business owners across Sarasota and Bradenton end up with the wrong system because they Googled "security cameras near me" and clicked the alarm company that paid the most for the ad.
+For most Sarasota and Bradenton small businesses, the honest camera answer is **UniFi Protect** if you want a durable business system with no monthly recording fee, **Reolink PoE** if the site is small and budget-sensitive, and **Axis or Verkada** only when the building, analytics, or multi-site requirements justify the cost.
 
-This post is the writeup we should have had on the site already. What we actually install, what we won't, what each tier costs, and the Florida-specific gotchas that don't show up in a Best Buy comparison chart.
+A normal 4-camera business install lands around **$3,200-$4,500**. A small Reolink job can stay near **$900-$1,400**. An 8-camera UniFi job usually lands around **$5,500-$7,500**.
+
+## Field note
+
+Composite example from local installs: a shop wants cameras after a back-door incident, but the first quote includes a monthly monitoring package they do not need. What they actually need is four PoE cameras, a local recorder, clean cable runs, and remote access owned by the business.
+
+We are not an alarm company and we do not sell 24/7 monitoring contracts. We install camera systems the owner can actually use.
+
+**Photo to take:** the front door, back door, register or lobby, parking area, and the network closet where the recorder would live.
+
+## Why this page exists
+
+Security camera installation is a real service for us, mostly through word of mouth. Small business owners across Sarasota and Bradenton often end up with the wrong system because they search "security cameras near me" and get an alarm bundle, a consumer kit, or a quote built around monthly fees.
+
+This is the plain version: what we install, what we avoid, what each tier costs, and the Florida-specific gotchas that do not show up in a product comparison chart.
 
 ## The three real tiers
 
@@ -60,7 +74,7 @@ Both are Chinese-manufactured. The FCC formally banned new authorizations for bo
 For a private Sarasota retail shop the FCC ban doesn't directly apply. But three things make us steer clients away anyway:
 
 1. **Resale value collapses.** The next owner of your business will inherit a system the next IT vendor flags as a security liability. We've already replaced two Hikvision systems for clients who bought a building from a previous owner.
-2. **security reviewers ask.** Several Florida security reviewers have started asking about Hikvision/Dahua specifically on renewal questionnaires. "Yes" is no longer a free answer.
+2. **Risk reviews flag them.** IT vendors increasingly flag Hikvision/Dahua during risk reviews. "Yes" is no longer a harmless answer if the system is exposed to the internet or used in a sensitive environment.
 3. **The CVE history is bad.** Both brands have repeatedly shipped cameras with hardcoded credentials, default-on remote shells, and CVEs that take 12+ months to patch. They're trying to fix the engineering culture, but trust takes longer than firmware.
 
 We'll work on existing Hikvision/Dahua systems if you've got one, we don't refuse. We just won't recommend a new one.
@@ -98,12 +112,32 @@ Most quotes we send for a Sarasota or Bradenton small business land in this rang
 
 Every quote is fixed-fee. Every install gets a written cable map and a label on every jack. Every client gets the admin password to their own NVR, we don't lock you into needing us to view your own footage.
 
+## What to do this week
+
+1. Decide what you need to identify: faces, license plates, packages, doors, register activity, or general motion.
+2. Take photos of each camera location in daylight and at night.
+3. Check whether there is Ethernet near those locations.
+4. Decide whether you want local recording, cloud recording, or both.
+5. Use [Tools](/tools#calculators) to sanity-check the network closet and UPS before adding PoE cameras.
+
+## When to call IT
+
+Call before buying if the cameras need PoE cabling, remote access, VLAN separation, a recorder in the closet, or surge protection on outdoor cable runs. Call if the quote pushes monitoring before it explains camera placement. Call if you already have cameras but nobody knows the admin password.
+
 ## How to start
 
-If you already know you want a 4-camera UniFi Protect install, **[reserve your install slot online](/services#camera-install-deposit)** with a $500 deposit (credits in full toward the $3,500 total). Skips the quote stage entirely.
+If you already know you want a 4-camera UniFi Protect install, **[reserve your install slot online through Services](/services#camera-install-deposit)** with a $500 deposit that credits toward the project. Skips the quote stage entirely.
 
 If you want a real walk-through with a tech first, [book a free 30-minute call](/book). We'll come look at the building, ask what you actually want to see (the back door? the parking lot? the register?), and email you a fixed-fee quote within a week. No pressure, no upsell to a system you don't need.
 
 If you've got an existing system you want a second opinion on, that's a 30-minute call too, no charge, no obligation.
 
 We're [based in Bradenton](/bradenton-it-support) and we cover [Sarasota](/sarasota-it-support), [Lakewood Ranch](/lakewood-ranch-it-support), [Nokomis](/nokomis-it-support), and [Venice](/venice-it-support) as part of our regular service area.
+
+
+## Related reading
+
+- [Network Closet Cleanup for Small Offices](/blog/network-closet-cleanup-sarasota-small-office)
+- [Sarasota Office UPS Buying Guide](/blog/business-ups-battery-backup-sarasota-storm-season)
+- [Sarasota Office WiFi Dead Spots: The Fix](/blog/office-wifi-dead-spots-sarasota-bradenton-fix)
+- [Simple Leadgen for local outreach](/leadgen)

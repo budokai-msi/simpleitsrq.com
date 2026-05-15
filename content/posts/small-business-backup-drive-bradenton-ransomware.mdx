@@ -1,7 +1,7 @@
 ---
 slug: "small-business-backup-drive-bradenton-ransomware"
-title: "The 3-2-1 Backup Hardware Bradenton Offices Use"
-metaDescription: "Ransomware hits small businesses weekly. A $120 external drive plus cloud gives Bradenton and Sarasota offices the 3-2-1 backup many security reviews expect."
+title: "Bradenton Office Backup Hardware Guide"
+metaDescription: "Build a practical 3-2-1 backup stack for a Bradenton or Sarasota office using external SSDs, NAS storage, and cloud backup."
 date: "2026-04-14"
 author: "Simple IT SRQ Team"
 category: "Cybersecurity"
@@ -11,15 +11,29 @@ tags:
   - "hardware"
   - "smb"
   - "bradenton"
-excerpt: "security documentation applications now specifically ask whether you follow 3-2-1 backups. Heres what that rule means, the hardware that satisfies it for under $300, and the mistake almost every small office makes."
+excerpt: "A practical 3-2-1 backup hardware guide for small offices: external SSD, NAS, cloud backup, restore tests, and what not to leave plugged in."
 heroAlt: "An external hard drive on a desk next to a laptop, with a padlock icon overlaid showing an encrypted backup."
 ---
 
-## Why Your Insurer Keeps Asking About Backups
+## Short answer
 
-Five years ago, security documentation applications had maybe two backup questions. The 2026 applications we are seeing for Sarasota and Bradenton clients now have eight to twelve. Carriers want to know not just whether you back up, but how often, where the backups live, whether they are tested, and whether the backup destination can be reached by ransomware that gets into your network.
+A credible small-office backup has three layers: the live files, a local backup you can restore quickly, and an offsite/cloud copy that ransomware or a bad day in the office cannot reach. For a Bradenton or Sarasota office, the hardware usually costs **$300-$800**, plus **$10-$30 per workstation per month** for cloud backup.
 
-There is a reason. Ransomware groups now specifically hunt and delete backups before they encrypt the live data, because a working backup is the one thing that makes a victim not pay. If your backup is an external drive that sits permanently plugged into the bookkeeping PC, it is not really a backup - it is a second copy that will get encrypted alongside the first.
+The external drive that stays plugged into the bookkeeping PC does not count. If ransomware can reach it, it is just another target.
+
+## Field note
+
+Composite example from local calls: a business thinks QuickBooks is backed up because an external drive is plugged in. The drive has not completed a backup in six months, and nobody noticed because no one ever tested a restore.
+
+The fix is not fancy. It is a local backup, a cloud backup, and a twice-a-year restore test that proves the files come back.
+
+**Photo to take:** the current external drive or NAS, the computer it plugs into, and the folder where the business files actually live.
+
+## Why backups matter
+
+Security reviews and vendor questionnaires increasingly ask how often backups run, where they live, whether they are tested, and whether the backup destination can be reached from a compromised workstation.
+
+There is a reason. Ransomware groups hunt and delete backups before they encrypt live data, because a working backup is the one thing that makes a victim not pay. If your backup is an external drive that sits permanently plugged into the bookkeeping PC, it is not really a backup - it is a second copy that can get encrypted alongside the first.
 
 ## The 3-2-1 Rule, Translated
 
@@ -57,24 +71,37 @@ What you want is a real backup service - one that keeps multiple historical vers
 
 A backup you have never restored from is not a backup - it is a hope. Twice a year, pick one random file, delete it, and restore it from each of your backup layers. If either restore fails or takes more than 15 minutes to figure out, fix the process now, not during an incident.
 
-We also recommend testing a full-device restore at least once. Take an old spare laptop, wipe it, and restore a user profile from backup. If you cannot get back to a working desktop in a few hours, your real recovery time during an incident will be days. That is the gap security reviewers are pricing for.
+We also recommend testing a full-device restore at least once. Take an old spare laptop, wipe it, and restore a user profile from backup. If you cannot get back to a working desktop in a few hours, your real recovery time during an incident will be days. That is the gap that turns a small incident into a multi-day outage.
 
 ## The Mistake Almost Every Small Office Makes
 
 External drive permanently plugged in. NAS on the same network with the same admin password as every PC. Cloud sync treated as cloud backup. Each of these looks like a backup and fails as one during an actual incident.
 
-The fix is the three separations: media (different hardware), time (versions going back weeks), and network (at least one copy that a ransomware payload on your PC cannot reach).
+The fix is the three separations: media (different hardware), time (versions going back weeks), and network (at least one copy that a compromised PC cannot reach).
 
-## The Bottom Line
+## What to do this week
 
-A credible 3-2-1 backup for a typical Sarasota or Bradenton small office runs $300 to $800 in hardware and $10 to $30 per workstation per month for cloud. It is the single cheapest insurance policy against the most common disaster scenario your office will face. Every security reviewer will ask about it. Every ransomware incident response document we have written starts with whether it existed.
+1. Find where the real business files live: desktop, shared drive, QuickBooks folder, OneDrive, NAS, or server.
+2. Check the date of the last successful backup.
+3. Unplug any external drive that is only used for backup.
+4. Restore one random file and time how long it takes.
+5. Use [Tools](/tools#calculators) to decide whether an external SSD or NAS makes more sense.
+
+## When to call IT
+
+Call if more than one person uses the files, if QuickBooks or a shared drive is involved, if you need a NAS, or if you have never tested a restore. Call immediately if the backup account uses the same password as the computers being backed up.
+
+## The bottom line
+
+A credible 3-2-1 backup for a typical Sarasota or Bradenton small office runs $300 to $800 in hardware and $10 to $30 per workstation per month for cloud. It is the cheapest protection against deleted files, failed drives, theft, fire, and ransomware.
 
 Build the stack before you need it.
 
-[Talk to Simple IT SRQ](/#contact) about setting up and monitoring a real 3-2-1 backup across your office - including the test-restore cycle that reviewers often ask to see documented. The product links above are affiliate links; we earn a small commission when you buy through them.
+[Talk to Simple IT SRQ](/#contact) about setting up and monitoring a real 3-2-1 backup across your office, including the test-restore cycle. You can also start with fixed-fee help through [Services](/services). Product links above are affiliate links; we earn a small commission when you buy through them.
 
 ## Related reading
 
-- [The Right Docking Station Turns Any Desk Into a Workstation](/blog/laptop-docking-station-hybrid-office-bradenton)
-- [Business Security Cameras in Sarasota: An Honest Buyer's Guide for 2026](/blog/business-security-cameras-sarasota-honest-guide-2026)
-- [Your Office WiFi Is Probably Costing You Money - Heres How to Fix It](/blog/office-wifi-dead-spots-sarasota-bradenton-fix)
+- [Network Closet Cleanup for Small Offices](/blog/network-closet-cleanup-sarasota-small-office)
+- [Sarasota Office UPS Buying Guide](/blog/business-ups-battery-backup-sarasota-storm-season)
+- [Sarasota Office WiFi Dead Spots: The Fix](/blog/office-wifi-dead-spots-sarasota-bradenton-fix)
+- [Simple Leadgen for local outreach](/leadgen)
