@@ -451,7 +451,6 @@ function InsightsTab() {
     } catch (e) { setErr(String(e.message || e)); }
     finally { setBusy(false); }
   };
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   if (busy && !data) return <p className="admin-leadgen-ok">Loading insights...</p>;
@@ -659,7 +658,7 @@ function DiscoverTab({ onStatusChange }) {
 
   // Re-load whenever the filter changes. Fetch-on-mount is a legitimate
   // effect use; the lint rule is overly strict here.
-  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadList(page); }, [filter, page]);
 
   const queueDiscover = async () => {
@@ -989,7 +988,6 @@ function CampaignsTab() {
       setList(r.rows || []);
     } catch (e) { setErr(String(e.message || e)); }
   };
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { reload(); }, []);
 
   const newCampaign = () => setEditing({
@@ -1258,7 +1256,6 @@ function JobsTab({ recent }) {
       setRows(r.rows || []);
     } catch (e) { setErr(String(e.message || e)); }
   };
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { reload(); }, []);
 
   return (

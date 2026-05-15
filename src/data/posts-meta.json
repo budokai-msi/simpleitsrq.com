@@ -126,7 +126,7 @@
       "bradenton",
       "venice"
     ],
-    "excerpt": "We just put computer repair back on the homepage as a real, named service — for both businesses and homes — and that means it's overdue for an honest writeup. When is a repair worth doing, when should you replace, what should each common repair actually cost, and what are the six red flags in a quote that mean you're being upsold? Written for Sarasota and Bradenton owners who'd rather be told the truth than handed an expensive estimate.",
+    "excerpt": "A practical Sarasota computer repair guide: when to fix, when to replace, what common repairs should cost, and when a quote is probably an upsell.",
     "metaDescription": "Honest Sarasota computer repair guide with real prices for SSD upgrades, screens, virus cleanup, dead power supplies, and scam quote red flags.",
     "heroAlt": "An open laptop on a workbench with the keyboard removed, showing a technician's hand replacing an internal component, alongside a printed quote sheet."
   },
@@ -329,7 +329,7 @@
   },
   {
     "slug": "business-ups-battery-backup-sarasota-storm-season",
-    "title": "The UPS Buying Guide for Sarasota Offices Heading Into Storm Season",
+    "title": "Sarasota Office UPS Buying Guide",
     "date": "2026-04-15",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -340,8 +340,8 @@
       "smb",
       "sarasota"
     ],
-    "excerpt": "A $150 battery backup pays for itself the first time a summer storm kills the power mid-QuickBooks sync. Heres what to buy - and what sizing shortcuts quietly leave you exposed.",
-    "metaDescription": "Hurricane-season power flickers cost Sarasota and Bradenton businesses more than they realize. Heres how to size a UPS that actually works when it counts.",
+    "excerpt": "A practical UPS buying guide for Sarasota and Bradenton offices: what to protect, what to skip, how to size the unit, and when to use rackmount gear.",
+    "metaDescription": "Use this Sarasota UPS guide to size battery backup for desks, network closets, routers, NAS devices, and storm-season power flickers.",
     "heroAlt": "A row of desktop computers behind a business counter with a small rackmount UPS on the floor, power LEDs glowing during a storm."
   },
   {
@@ -364,7 +364,7 @@
   },
   {
     "slug": "network-closet-cleanup-sarasota-small-office",
-    "title": "The Network Closet Cleanup That Prevents Your Next Outage",
+    "title": "Network Closet Cleanup for Small Offices",
     "date": "2026-04-15",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -375,8 +375,8 @@
       "smb",
       "sarasota"
     ],
-    "excerpt": "If your network closet has a tangle of unlabeled cables, consumer switches stacked on a shelf, and a power strip dangling from a hook, you are one accidental unplug away from an office-wide outage.",
-    "metaDescription": "A messy network closet causes outages, extends troubleshooting, and fails audits. Heres the $300 hardware list that turns chaos into a clean, labeled rack.",
+    "excerpt": "If your network closet has unlabeled cables, consumer switches on a shelf, and a power strip dangling from a hook, this is the fix.",
+    "metaDescription": "A messy network closet causes outages and slow troubleshooting. Here is the rack, patch panel, switch, UPS, and labeling plan we use.",
     "heroAlt": "A clean small-office network rack with labeled patch cables, a managed switch, and a wall-mount UPS in a closet."
   },
   {

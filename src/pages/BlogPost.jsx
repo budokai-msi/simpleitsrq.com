@@ -264,7 +264,6 @@ export default function BlogPost() {
   // that, so the disable is intentional.
   useEffect(() => {
     if (!slug || isMdx) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLegacyEntry(null);
       return undefined;
     }
