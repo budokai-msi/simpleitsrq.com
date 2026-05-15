@@ -40,6 +40,7 @@ const CORE_ACTIONS = [
   "leadgen-status",
   "adsense-health",
   "opsec-data",
+  "opsec-hunt-brief",
 ];
 
 function fmtNumber(value) {
@@ -318,7 +319,7 @@ export default function AdminOps() {
           {tab === "affiliate" && <AffiliateTab data={data} />}
           {tab === "leadgen" && <LeadgenTab status={data["leadgen-status"]} />}
           {tab === "adsense" && <AdsenseTab health={data["adsense-health"]} />}
-          {tab === "opsec" && <OpsecTab data={data["opsec-data"]} busy={busy} runAction={runAction} />}
+          {tab === "opsec" && <OpsecTab data={{ ...(data["opsec-data"] || {}), huntBrief: data["opsec-hunt-brief"] }} busy={busy} runAction={runAction} />}
         </section>
       </div>
     </main>
@@ -591,12 +592,62 @@ function AdsenseTab({ health }) {
 }
 
 function OpsecTab({ data, busy, runAction }) {
+  const hunt = data?.huntBrief;
   const [domain, setDomain] = useState("");
   const [ioc, setIoc] = useState({ ioc_type: "domain", value: "", severity: "medium" });
   const [note, setNote] = useState({ title: "", body: "", tags: "" });
 
   return (
     <div className="ops-grid">
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head">
+          <h2>Hunt brief</h2>
+          <SignalPill state={hunt?.level === "critical" ? "bad" : hunt?.level === "elevated" ? "warn" : "good"}>
+            {hunt?.level || "loading"}
+          </SignalPill>
+        </div>
+        <p className="ops-panel__copy">{hunt?.headline || "Building defensive brief from recent security telemetry."}</p>
+        <div className="ops-metric-grid">
+          <Metric label="24h threats" value={fmtNumber(hunt?.metrics?.threats24h)} hint={`${fmtNumber(hunt?.metrics?.threatIps24h)} IPs`} />
+          <Metric label="Campaigns" value={fmtNumber(hunt?.campaigns?.length)} hint="rotating fingerprints" />
+          <Metric label="Exploit events" value={fmtNumber(hunt?.metrics?.exploitEvents24h)} />
+          <Metric label="Honeypot creds" value={fmtNumber(hunt?.metrics?.honeypotCredentials24h)} />
+          <Metric label="Threat feeds" value={fmtNumber(hunt?.metrics?.threatFeedEntries)} hint={`${fmtNumber(hunt?.metrics?.threatFeedSources)} sources`} />
+          <Metric label="Active IOCs" value={fmtNumber(hunt?.metrics?.activeIocs)} />
+        </div>
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Action queue</h2><Shield size={16} /></div>
+        <Table
+          columns={["Priority", "Action", "Reason"]}
+          rows={hunt?.actionQueue || []}
+          empty="No hunt actions yet."
+          renderRow={(row) => (
+            <tr key={`${row.priority}-${row.action}`}>
+              <td><SignalPill state={row.priority === "P0" || row.priority === "P1" ? "bad" : row.priority === "P2" ? "warn" : "neutral"}>{row.priority}</SignalPill></td>
+              <td><strong>{row.action}</strong></td>
+              <td>{row.reason}</td>
+            </tr>
+          )}
+        />
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Top attackers</h2><RadioTower size={16} /></div>
+        <Table
+          columns={["IP", "Hits", "Country", "Classes", "Last seen"]}
+          rows={hunt?.topAttackers || []}
+          empty="No attacker telemetry in the selected window."
+          renderRow={(row) => (
+            <tr key={row.ip}>
+              <td className="ops-mono">{row.ip}</td>
+              <td>{fmtNumber(row.hits)}</td>
+              <td>{row.country || "-"}</td>
+              <td>{(row.classes || []).join(", ") || "-"}</td>
+              <td>{fmtTime(row.lastSeen)}</td>
+            </tr>
+          )}
+        />
+      </section>
       <section className="admin-aff-card ops-panel">
         <div className="ops-panel__head"><h2>Add watch</h2><Eye size={16} /></div>
         <div className="ops-form-row">

@@ -167,6 +167,7 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "leadgen-ai",
   // opsec portal — defensive personal ops dashboard
   "opsec-data",
+  "opsec-hunt-brief",
   "opsec-domain-add",
   "opsec-domain-toggle",
   "opsec-ioc-add",
@@ -4382,6 +4383,207 @@ async function handleOpsecData(session) {
   });
 }
 
+async function handleOpsecHuntBrief(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const safe = async (q, fallback = []) => { try { return await q; } catch { return fallback; } };
+  const [
+    threat24,
+    threat7,
+    security24,
+    topAttackers,
+    campaigns,
+    blocked,
+    opsecCounts,
+    feedCounts,
+  ] = await Promise.all([
+    safe(sql`
+      SELECT COUNT(*)::int AS hits,
+             COUNT(DISTINCT ip)::int AS ips,
+             COUNT(DISTINCT device_hash)::int AS devices,
+             MAX(ts) AS last_seen
+      FROM threat_actors
+      WHERE ts > now() - interval '24 hours'
+    `, [{}]),
+    safe(sql`
+      SELECT COUNT(*)::int AS hits,
+             COUNT(DISTINCT ip)::int AS ips,
+             COUNT(DISTINCT device_hash)::int AS devices
+      FROM threat_actors
+      WHERE ts > now() - interval '7 days'
+    `, [{}]),
+    safe(sql`
+      SELECT
+        COUNT(*) FILTER (WHERE severity IN ('critical','error'))::int AS critical,
+        COUNT(*) FILTER (WHERE kind = 'honeypot.credential')::int AS credentials,
+        COUNT(*) FILTER (WHERE kind = 'exploit_attempt' OR detail ? 'cve')::int AS exploits,
+        MAX(ts) AS last_seen
+      FROM security_events
+      WHERE ts > now() - interval '24 hours'
+    `, [{}]),
+    safe(sql`
+      SELECT ip,
+             COUNT(*)::int AS hits,
+             MAX(country) AS country,
+             MAX(ts) AS last_seen,
+             array_remove(array_agg(DISTINCT threat_class), NULL) AS classes,
+             array_remove((array_agg(DISTINCT path))[1:8], NULL) AS paths
+      FROM threat_actors
+      WHERE ts > now() - interval '24 hours'
+      GROUP BY ip
+      ORDER BY hits DESC, last_seen DESC
+      LIMIT 8
+    `),
+    safe(sql`
+      SELECT device_hash,
+             COUNT(DISTINCT ip)::int AS ip_count,
+             COUNT(*)::int AS hits,
+             MIN(ts) AS first_seen,
+             MAX(ts) AS last_seen,
+             array_remove((array_agg(DISTINCT ip))[1:8], NULL) AS ips,
+             array_remove((array_agg(DISTINCT threat_class))[1:8], NULL) AS classes
+      FROM threat_actors
+      WHERE ts > now() - interval '24 hours'
+        AND device_hash IS NOT NULL
+      GROUP BY device_hash
+      HAVING COUNT(DISTINCT ip) > 1 OR COUNT(*) >= 12
+      ORDER BY hits DESC, ip_count DESC
+      LIMIT 6
+    `),
+    safe(sql`
+      SELECT ip, reason, created_at
+      FROM ip_blocklist
+      ORDER BY created_at DESC
+      LIMIT 8
+    `),
+    safe(sql`
+      SELECT
+        (SELECT COUNT(*)::int FROM opsec_watched_domains WHERE is_active = true) AS watched_domains,
+        (SELECT COUNT(*)::int FROM opsec_iocs WHERE is_active = true) AS active_iocs,
+        (SELECT COUNT(*)::int FROM opsec_notes) AS notes
+    `, [{}]),
+    safe(sql`
+      SELECT COUNT(*)::int AS feeds,
+             COUNT(DISTINCT feed_name)::int AS sources,
+             MAX(fetched_at) AS last_refresh
+      FROM threat_feeds
+    `, [{}]),
+  ]);
+
+  const t24 = threat24[0] || {};
+  const t7 = threat7[0] || {};
+  const sec = security24[0] || {};
+  const opsec = opsecCounts[0] || {};
+  const feeds = feedCounts[0] || {};
+  const topHits = Number(topAttackers[0]?.hits || 0);
+  const exploits = Number(sec.exploits || 0);
+  const critical = Number(sec.critical || 0);
+  const credentials = Number(sec.credentials || 0);
+  const campaignCount = campaigns.length;
+
+  let level = "calm";
+  if (exploits > 0 || critical > 0 || topHits >= 75) level = "critical";
+  else if (campaignCount > 0 || credentials >= 3 || Number(t24.ips || 0) >= 20) level = "elevated";
+  else if (Number(t24.hits || 0) > 0) level = "watch";
+
+  const headline =
+    level === "critical"
+      ? "Active defensive review recommended."
+      : level === "elevated"
+        ? "Coordinated or high-volume probing detected."
+        : level === "watch"
+          ? "Routine internet noise, but worth logging."
+          : "Quiet window.";
+
+  const actionQueue = [];
+  if (exploits > 0) actionQueue.push({
+    priority: "P0",
+    action: "Review exploit payloads",
+    reason: `${exploits} exploit-shaped event${exploits === 1 ? "" : "s"} landed in the last 24h.`,
+  });
+  if (campaignCount > 0) actionQueue.push({
+    priority: "P1",
+    action: "Investigate rotating device fingerprints",
+    reason: `${campaignCount} campaign-like fingerprint${campaignCount === 1 ? "" : "s"} used multiple IPs or high request volume.`,
+  });
+  if (credentials > 0) actionQueue.push({
+    priority: credentials >= 3 ? "P1" : "P2",
+    action: "Review honeypot credential attempts",
+    reason: `${credentials} fake-login credential capture${credentials === 1 ? "" : "s"} in the last 24h.`,
+  });
+  if (topHits >= 10 && topAttackers[0]?.ip) actionQueue.push({
+    priority: topHits >= 75 ? "P1" : "P2",
+    action: `Investigate ${topAttackers[0].ip}`,
+    reason: `${topAttackers[0].ip} produced ${topHits} hit${topHits === 1 ? "" : "s"} in the last 24h.`,
+  });
+  if (!Number(opsec.watched_domains || 0)) actionQueue.push({
+    priority: "P2",
+    action: "Add watched domains",
+    reason: "OpSec cannot detect DNS/certificate drift until the critical domains are registered here.",
+  });
+  if (!Number(opsec.active_iocs || 0)) actionQueue.push({
+    priority: "P3",
+    action: "Seed the IOC notebook",
+    reason: "Saving known bad IPs/domains makes future reviews faster and gives you continuity across incidents.",
+  });
+  if (!actionQueue.length) actionQueue.push({
+    priority: "P3",
+    action: "Keep monitoring",
+    reason: "No urgent defensive work from this window.",
+  });
+
+  return json(200, {
+    ok: true,
+    generatedAt: new Date().toISOString(),
+    level,
+    headline,
+    objective: "Defensive triage only: correlate what touched the site, what was blocked, and what needs human review.",
+    metrics: {
+      threats24h: Number(t24.hits || 0),
+      threatIps24h: Number(t24.ips || 0),
+      devices24h: Number(t24.devices || 0),
+      threats7d: Number(t7.hits || 0),
+      threatIps7d: Number(t7.ips || 0),
+      criticalEvents24h: critical,
+      exploitEvents24h: exploits,
+      honeypotCredentials24h: credentials,
+      watchedDomains: Number(opsec.watched_domains || 0),
+      activeIocs: Number(opsec.active_iocs || 0),
+      threatFeedEntries: Number(feeds.feeds || 0),
+      threatFeedSources: Number(feeds.sources || 0),
+    },
+    actionQueue,
+    topAttackers: topAttackers.map((row) => ({
+      ip: row.ip,
+      hits: row.hits,
+      country: row.country,
+      lastSeen: row.last_seen,
+      classes: row.classes || [],
+      paths: row.paths || [],
+    })),
+    campaigns: campaigns.map((row) => ({
+      deviceHash: row.device_hash,
+      ipCount: row.ip_count,
+      hits: row.hits,
+      firstSeen: row.first_seen,
+      lastSeen: row.last_seen,
+      ips: row.ips || [],
+      classes: row.classes || [],
+    })),
+    recentBlocks: blocked.map((row) => ({
+      ip: row.ip,
+      reason: row.reason,
+      createdAt: row.created_at,
+    })),
+    feeds: {
+      entries: Number(feeds.feeds || 0),
+      sources: Number(feeds.sources || 0),
+      lastRefresh: feeds.last_refresh || null,
+    },
+  });
+}
+
 async function handleOpsecDomainAdd(session, request) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
@@ -4621,6 +4823,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   // Internal OpSec data/actions. All admin-only; mutations write through
   // the same admin-token allowlist.
   if (action === "opsec-data"          && method === "GET")  return handleOpsecData(session);
+  if (action === "opsec-hunt-brief"    && method === "GET")  return handleOpsecHuntBrief(session);
   if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
   if (action === "opsec-domain-toggle" && method === "POST") return handleOpsecDomainToggle(session, request);
   if (action === "opsec-ioc-add"       && method === "POST") return handleOpsecIocAdd(session, request);
