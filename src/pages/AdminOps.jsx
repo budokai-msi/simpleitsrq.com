@@ -1,0 +1,640 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  ClipboardList,
+  DollarSign,
+  Eye,
+  FileText,
+  Lock,
+  RadioTower,
+  RefreshCcw,
+  Search,
+  Shield,
+  Target,
+  XCircle,
+} from "lucide-react";
+import { csrfFetch } from "../lib/csrf";
+import { useSEO } from "../lib/seo";
+
+const TABS = [
+  ["ops", "Ops", Activity],
+  ["drafts", "Drafts", FileText],
+  ["affiliate", "Affiliate", DollarSign],
+  ["leadgen", "Leadgen", Target],
+  ["adsense", "AdSense", BarChart3],
+  ["opsec", "OpSec", Shield],
+];
+
+const CORE_ACTIONS = [
+  "admin-status",
+  "ops-status",
+  "countermeasures",
+  "drafts",
+  "affiliate-stats",
+  "revenue-signals",
+  "revenue-summary",
+  "leadgen-status",
+  "adsense-health",
+  "opsec-data",
+];
+
+function fmtNumber(value) {
+  const n = Number(value || 0);
+  return Number.isFinite(n) ? n.toLocaleString() : "-";
+}
+
+function fmtMoney(cents) {
+  const n = Number(cents || 0) / 100;
+  return n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+}
+
+function fmtTime(value) {
+  if (!value) return "-";
+  try { return new Date(value).toLocaleString(); } catch { return String(value); }
+}
+
+async function getJson(action, params = {}) {
+  const url = new URL("/api/portal", window.location.origin);
+  url.searchParams.set("action", action);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value != null && value !== "") url.searchParams.set(key, value);
+  });
+  const res = await fetch(url.pathname + url.search, { credentials: "same-origin" });
+  const data = await res.json().catch(() => {
+    throw new Error(`HTTP ${res.status} non_json_response`);
+  });
+  if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function postJson(action, body = {}) {
+  const res = await csrfFetch(`/api/portal?action=${encodeURIComponent(action)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok === false) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+function SignalPill({ state, children }) {
+  return <span className={`ops-pill ops-pill--${state || "neutral"}`}>{children}</span>;
+}
+
+function Metric({ label, value, hint, state }) {
+  return (
+    <article className="ops-metric">
+      <span className="ops-metric__label">{label}</span>
+      <strong>{value ?? "-"}</strong>
+      {hint ? <span className={`ops-metric__hint${state ? ` is-${state}` : ""}`}>{hint}</span> : null}
+    </article>
+  );
+}
+
+function EmptyState({ children }) {
+  return (
+    <div className="ops-empty">
+      <AlertTriangle size={16} />
+      <span>{children}</span>
+    </div>
+  );
+}
+
+function Table({ columns, rows, empty, renderRow }) {
+  if (!rows?.length) return <EmptyState>{empty || "No records yet."}</EmptyState>;
+  return (
+    <div className="ops-table-wrap">
+      <table className="admin-aff-table ops-table">
+        <thead>
+          <tr>{columns.map((col) => <th key={col}>{col}</th>)}</tr>
+        </thead>
+        <tbody>{rows.map(renderRow)}</tbody>
+      </table>
+    </div>
+  );
+}
+
+function deriveIntel(data) {
+  const admin = data["admin-status"];
+  const ops = data["ops-status"];
+  const leadgen = data["leadgen-status"];
+  const drafts = data.drafts?.drafts || [];
+  const affiliate = data["affiliate-stats"];
+  const adsense = data["adsense-health"];
+  const opsec = data["opsec-data"];
+  const env = admin?.env || {};
+  const counts = admin?.counts || {};
+
+  const checks = [
+    {
+      label: "Blog engine",
+      state: env.GROQ_API_KEY && env.GITHUB_TOKEN ? "good" : "warn",
+      detail: env.GROQ_API_KEY && env.GITHUB_TOKEN ? "Groq and GitHub publish path are present." : "Needs Groq plus GitHub token to publish cleanly.",
+    },
+    {
+      label: "Leadgen engine",
+      state: env.SMTP_HOST && env.SMTP_USER && Number(leadgen?.businesses?.total || 0) > 0 ? "good" : "warn",
+      detail: `${fmtNumber(leadgen?.businesses?.total)} businesses, ${fmtNumber(leadgen?.emails?.deliverable)} deliverable emails.`,
+    },
+    {
+      label: "Affiliate capture",
+      state: (env.VITE_AFF_AMAZON_TAG || affiliate?.totalClicks > 0) ? "good" : "warn",
+      detail: `${fmtNumber(affiliate?.totalClicks)} clicks in the selected window.`,
+    },
+    {
+      label: "AdSense beacons",
+      state: adsense && !adsense.noData ? "good" : "warn",
+      detail: adsense?.headline || "Waiting for beacon data.",
+    },
+    {
+      label: "OpSec tables",
+      state: (opsec?.domains?.length || opsec?.iocs?.length || opsec?.threats?.total) ? "good" : "warn",
+      detail: `${fmtNumber(opsec?.domains?.length)} watched domains, ${fmtNumber(opsec?.iocs?.length)} IOCs.`,
+    },
+    {
+      label: "Audit chain",
+      state: !ops ? "warn" : ops?.audit?.ok === false ? "bad" : "good",
+      detail: !ops ? "Waiting for ops-status." : ops?.audit?.ok === false ? "Audit chain needs attention." : "Audit status endpoint is reachable.",
+    },
+  ];
+
+  const actions = [];
+  if (drafts.some((d) => d.status === "draft")) actions.push("Review pending blog drafts before they decay into noise.");
+  if ((leadgen?.recent_jobs || []).some((j) => j.status === "failed")) actions.push("Open Leadgen jobs and clear failed crawls before launching campaigns.");
+  if (!env.VITE_AFF_AMAZON_TAG) actions.push("Add Amazon Associates tag in Vercel before pushing more gadget content.");
+  if (adsense?.noData) actions.push("Seed AdSense health from a clean browser after deploy and watch the first beacon.");
+  if (!opsec?.domains?.length) actions.push("Add simpleitsrq.com and critical customer domains to OpSec watch.");
+  if (!counts?.security_events?.n) actions.push("Verify security event collection so the ops timeline is not blind.");
+  if (!actions.length) actions.push("Systems are online. Next move: publish one useful post, launch one narrow leadgen segment, and watch revenue signals.");
+
+  return { checks, actions };
+}
+
+export default function AdminOps() {
+  useSEO({
+    title: "Admin Ops | Simple IT SRQ",
+    description: "Internal Simple IT SRQ operations cockpit.",
+    canonical: "https://simpleitsrq.com/portal/ops",
+    robots: "noindex, nofollow",
+  });
+
+  const initialTab = new URLSearchParams(window.location.search).get("tab") || "ops";
+  const [tab, setTab] = useState(TABS.some(([key]) => key === initialTab) ? initialTab : "ops");
+  const [data, setData] = useState({});
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(null);
+  const [notice, setNotice] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    const entries = await Promise.all(CORE_ACTIONS.map(async (action) => {
+      try {
+        const params = action === "affiliate-stats" ? { days: "30" } : action === "adsense-health" ? { range: "7d" } : {};
+        return [action, await getJson(action, params), null];
+      } catch (e) {
+        return [action, null, String(e.message || e)];
+      }
+    }));
+    const nextData = {};
+    const nextErrors = {};
+    for (const [action, value, error] of entries) {
+      if (error) nextErrors[action] = error;
+      else nextData[action] = value;
+    }
+    setData(nextData);
+    setErrors(nextErrors);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    let alive = true;
+    const run = async () => { if (alive) await load(); };
+    run();
+    const timer = setInterval(run, 60_000);
+    return () => { alive = false; clearInterval(timer); };
+  }, []);
+
+  const forbidden = Object.values(errors).some((e) => /401|403|forbidden|unauthorized/i.test(e));
+  const intel = useMemo(() => deriveIntel(data), [data]);
+
+  const runAction = async (action, body, success) => {
+    setBusy(action);
+    setNotice(null);
+    try {
+      await postJson(action, body);
+      setNotice(success || `${action} complete.`);
+      await load();
+    } catch (e) {
+      setNotice(`Failed: ${String(e.message || e)}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  if (forbidden) {
+    return (
+      <main id="main" className="section admin-affiliates admin-ops">
+        <div className="container">
+          <section className="ops-restricted">
+            <Lock size={24} />
+            <h1>Admin ops is restricted.</h1>
+            <p>Sign in with an admin account, then return to this hidden route.</p>
+            <Link to="/portal" className="btn btn-primary">Go to portal</Link>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main id="main" className="section admin-affiliates admin-ops">
+      <div className="container">
+        <header className="admin-aff-head ops-head">
+          <Link to="/portal" className="admin-aff-back">Portal</Link>
+          <div className="ops-head__row">
+            <div>
+              <h1 className="display-2">Operations</h1>
+              <p className="admin-aff-sub">
+                Internal command surface for revenue, content, leadgen, AdSense, and defensive operations.
+              </p>
+            </div>
+            <div className="ops-head__actions">
+              <SignalPill state={loading ? "neutral" : "good"}>{loading ? "Syncing" : "Live"}</SignalPill>
+              <button className="btn btn-secondary btn-sm" type="button" onClick={load} disabled={loading}>
+                <RefreshCcw size={14} /> Refresh
+              </button>
+            </div>
+          </div>
+          {notice ? <div className="ops-notice">{notice}</div> : null}
+        </header>
+
+        <section className="ops-graph">
+          <div className="ops-graph__main">
+            <h2>Operating graph</h2>
+            <p>Sources feed functions. Functions create outcomes. Anything weak shows up here before it turns into wasted traffic.</p>
+          </div>
+          <div className="ops-graph__rail" aria-label="Data flow">
+            {["Traffic", "HN drafts", "OSM leads", "Affiliate clicks", "Ad beacons", "Threat feeds"].map((item) => (
+              <span key={item}>{item}</span>
+            ))}
+          </div>
+        </section>
+
+        <div className="ops-status-grid">
+          {intel.checks.map((check) => (
+            <article className="ops-status-card" key={check.label}>
+              {check.state === "good" ? <CheckCircle2 size={18} /> : check.state === "bad" ? <XCircle size={18} /> : <AlertTriangle size={18} />}
+              <div>
+                <strong>{check.label}</strong>
+                <p>{check.detail}</p>
+              </div>
+              <SignalPill state={check.state}>{check.state}</SignalPill>
+            </article>
+          ))}
+        </div>
+
+        <nav className="admin-leadgen-tabs ops-tabs" aria-label="Admin ops sections">
+          {TABS.map(([key, label, Icon]) => (
+            <button
+              key={key}
+              className={`admin-leadgen-tab${tab === key ? " is-active" : ""}`}
+              type="button"
+              onClick={() => setTab(key)}
+            >
+              <Icon size={14} /> {label}
+            </button>
+          ))}
+        </nav>
+
+        <section className="admin-leadgen-tab-body">
+          {tab === "ops" && <OpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
+          {tab === "drafts" && <DraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
+          {tab === "affiliate" && <AffiliateTab data={data} />}
+          {tab === "leadgen" && <LeadgenTab status={data["leadgen-status"]} />}
+          {tab === "adsense" && <AdsenseTab health={data["adsense-health"]} />}
+          {tab === "opsec" && <OpsecTab data={data["opsec-data"]} busy={busy} runAction={runAction} />}
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function OpsTab({ data, errors, intel, busy, runAction }) {
+  const admin = data["admin-status"];
+  const counts = admin?.counts || {};
+  const revenue = data["revenue-summary"];
+  const ops = data["ops-status"];
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head">
+          <h2>Next actions</h2>
+          <SignalPill state="neutral">computed</SignalPill>
+        </div>
+        <ol className="ops-action-list">
+          {intel.actions.map((action) => <li key={action}>{action}</li>)}
+        </ol>
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Revenue</h2></div>
+        <div className="ops-metric-grid">
+          <Metric label="30-day Stripe" value={revenue?.configured ? fmtMoney(revenue.paid_total_cents) : "Not configured"} />
+          <Metric label="MRR" value={revenue?.configured ? fmtMoney(revenue.mrr_cents) : "-"} />
+          <Metric label="Paid invoices" value={revenue?.configured ? fmtNumber(revenue.paid_count) : "-"} />
+        </div>
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Database pulse</h2></div>
+        <div className="ops-metric-grid">
+          <Metric label="Lead businesses" value={fmtNumber(counts.lead_businesses?.n)} hint={`${fmtNumber(counts.lead_businesses?.active)} active`} />
+          <Metric label="Email contacts" value={fmtNumber(counts.lead_emails?.n)} hint={`${fmtNumber(counts.lead_emails?.deliverable)} deliverable`} />
+          <Metric label="Security events" value={fmtNumber(counts.security_events?.n)} />
+          <Metric label="Engagement events" value={fmtNumber(counts.engagement_events?.n)} />
+        </div>
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Functions</h2></div>
+        <div className="ops-button-stack">
+          <button className="btn btn-secondary btn-sm" disabled={busy === "run-audit-migration"} onClick={() => runAction("run-audit-migration", {}, "Audit/ops migrations checked.")}>Run migrations</button>
+          <button className="btn btn-secondary btn-sm" disabled={busy === "osint-refresh"} onClick={() => runAction("osint-refresh", {}, "OSINT feeds refreshed.")}>Refresh OSINT</button>
+          <Link className="btn btn-primary btn-sm" to="/portal/leadgen">Open Leadgen</Link>
+        </div>
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Recent jobs</h2><SignalPill state={errors["admin-status"] ? "bad" : "good"}>{errors["admin-status"] || "admin-status"}</SignalPill></div>
+        <Table
+          columns={["ID", "Kind", "Status", "Progress", "Created", "Error"]}
+          rows={admin?.recent_jobs || []}
+          empty="No leadgen jobs have run yet."
+          renderRow={(row) => (
+            <tr key={row.id || row.error}>
+              <td>{row.id || "-"}</td>
+              <td>{row.kind || "-"}</td>
+              <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "completed" ? "good" : "neutral"}>{row.status || "-"}</SignalPill></td>
+              <td>{fmtNumber(row.progress)} / {fmtNumber(row.total)}</td>
+              <td>{fmtTime(row.created_at)}</td>
+              <td>{row.error || ""}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Ops status</h2></div>
+        <pre className="ops-pre">{JSON.stringify({ migrations: ops?.migrations, osint: ops?.osint, errors }, null, 2)}</pre>
+      </section>
+    </div>
+  );
+}
+
+function DraftsTab({ drafts, errors, busy, runAction }) {
+  const pending = drafts.filter((d) => d.status === "draft");
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head">
+          <h2>Blog drafts</h2>
+          <SignalPill state={pending.length ? "warn" : "good"}>{pending.length} pending</SignalPill>
+        </div>
+        {errors.drafts ? <EmptyState>{errors.drafts}</EmptyState> : null}
+        <Table
+          columns={["Title", "Status", "Category", "Created", "Actions"]}
+          rows={drafts}
+          empty="No HN/local blog drafts yet."
+          renderRow={(draft) => (
+            <tr key={draft.id}>
+              <td>
+                <strong>{draft.title}</strong>
+                <div className="admin-aff-slug">{draft.slug}</div>
+              </td>
+              <td><SignalPill state={draft.status === "published" ? "good" : draft.status === "rejected" ? "bad" : "warn"}>{draft.status}</SignalPill></td>
+              <td>{draft.category || "-"}</td>
+              <td>{fmtTime(draft.createdAt)}</td>
+              <td className="ops-row-actions">
+                {draft.status === "draft" ? (
+                  <>
+                    <button className="btn btn-secondary btn-sm" disabled={busy === "reject-draft"} onClick={() => runAction("reject-draft", { id: draft.id }, "Draft rejected.")}>Reject</button>
+                    <button className="btn btn-primary btn-sm" disabled={busy === "publish-draft"} onClick={() => runAction("publish-draft", { id: draft.id }, "Draft published to GitHub.")}>Publish</button>
+                  </>
+                ) : null}
+              </td>
+            </tr>
+          )}
+        />
+      </section>
+    </div>
+  );
+}
+
+function AffiliateTab({ data }) {
+  const aff = data["affiliate-stats"];
+  const revenueSignals = data["revenue-signals"];
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Affiliate signal</h2></div>
+        <div className="ops-metric-grid">
+          <Metric label="Clicks" value={fmtNumber(aff?.totalClicks)} />
+          <Metric label="Networks" value={fmtNumber(aff?.byNetwork?.length)} />
+          <Metric label="Revenue posts" value={fmtNumber(revenueSignals?.postLeaderboard?.length)} />
+        </div>
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Top networks</h2></div>
+        <Table
+          columns={["Network", "Clicks", "Unique", "Last click"]}
+          rows={aff?.byNetwork || []}
+          empty="No affiliate clicks recorded."
+          renderRow={(row) => (
+            <tr key={row.network}>
+              <td>{row.network}</td>
+              <td>{fmtNumber(row.clicks)}</td>
+              <td>{fmtNumber(row.unique_visitors)}</td>
+              <td>{fmtTime(row.last_click)}</td>
+            </tr>
+          )}
+        />
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Recent clicks</h2></div>
+        <Table
+          columns={["Time", "Network", "Product", "Page", "Country"]}
+          rows={aff?.recent || []}
+          empty="No recent affiliate clicks."
+          renderRow={(row, index) => (
+            <tr key={`${row.ts}-${index}`}>
+              <td>{fmtTime(row.ts)}</td>
+              <td>{row.network}</td>
+              <td>{row.label || "-"}</td>
+              <td>{row.slug || "-"}</td>
+              <td>{row.country || "-"}</td>
+            </tr>
+          )}
+        />
+      </section>
+    </div>
+  );
+}
+
+function LeadgenTab({ status }) {
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Pipeline</h2><Link className="btn btn-primary btn-sm" to="/portal/leadgen">Open workspace</Link></div>
+        <div className="ops-metric-grid">
+          <Metric label="Businesses" value={fmtNumber(status?.businesses?.total)} hint={`${fmtNumber(status?.businesses?.with_website)} with website`} />
+          <Metric label="Deliverable emails" value={fmtNumber(status?.emails?.deliverable)} />
+          <Metric label="Campaigns" value={fmtNumber(status?.campaigns?.total)} hint={`${fmtNumber(status?.campaigns?.running)} running`} />
+          <Metric label="Replies" value={fmtNumber(status?.sends?.replied)} />
+        </div>
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Recent crawl jobs</h2></div>
+        <Table
+          columns={["ID", "Kind", "Status", "Progress", "Created"]}
+          rows={status?.recent_jobs || []}
+          empty="No leadgen jobs yet."
+          renderRow={(row) => (
+            <tr key={row.id}>
+              <td>{row.id}</td>
+              <td>{row.kind}</td>
+              <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "completed" ? "good" : "neutral"}>{row.status}</SignalPill></td>
+              <td>{fmtNumber(row.progress)} / {fmtNumber(row.total)}</td>
+              <td>{fmtTime(row.created_at)}</td>
+            </tr>
+          )}
+        />
+      </section>
+    </div>
+  );
+}
+
+function AdsenseTab({ health }) {
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>AdSense health</h2><SignalPill state={health?.noData ? "warn" : "good"}>{health?.range || "7d"}</SignalPill></div>
+        <p className="ops-panel__copy">{health?.headline || health?.hint || "No AdSense health response yet."}</p>
+        <div className="ops-metric-grid">
+          <Metric label="Sessions" value={fmtNumber(health?.summary?.sessions)} />
+          <Metric label="Slots" value={fmtNumber(health?.summary?.totalSlots)} />
+          <Metric label="Filled" value={`${health?.summary?.fillPct ?? 0}%`} />
+          <Metric label="Blocked" value={`${health?.summary?.blockedPct ?? 0}%`} />
+        </div>
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Pages</h2></div>
+        <Table
+          columns={["Path", "Sessions", "Slots", "Filled", "Blocked", "Timeout"]}
+          rows={health?.byPath || []}
+          empty="No page-level AdSense beacons yet."
+          renderRow={(row) => (
+            <tr key={row.path}>
+              <td>{row.path}</td>
+              <td>{fmtNumber(row.sessions)}</td>
+              <td>{fmtNumber(row.slots)}</td>
+              <td>{fmtNumber(row.filled)}</td>
+              <td>{fmtNumber(row.blocked)}</td>
+              <td>{fmtNumber(row.timeout)}</td>
+            </tr>
+          )}
+        />
+      </section>
+    </div>
+  );
+}
+
+function OpsecTab({ data, busy, runAction }) {
+  const [domain, setDomain] = useState("");
+  const [ioc, setIoc] = useState({ ioc_type: "domain", value: "", severity: "medium" });
+  const [note, setNote] = useState({ title: "", body: "", tags: "" });
+
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Add watch</h2><Eye size={16} /></div>
+        <div className="ops-form-row">
+          <input className="admin-leadgen-input" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="domain.com" />
+          <button className="btn btn-primary btn-sm" disabled={busy === "opsec-domain-add"} onClick={() => runAction("opsec-domain-add", { domain }, "Domain added to watch list.").then(() => setDomain(""))}>Add</button>
+        </div>
+      </section>
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Add IOC</h2><RadioTower size={16} /></div>
+        <div className="ops-form-grid">
+          <select className="admin-leadgen-input" value={ioc.ioc_type} onChange={(e) => setIoc({ ...ioc, ioc_type: e.target.value })}>
+            {["ip", "domain", "url", "email", "hash", "cidr", "user_agent", "other"].map((type) => <option key={type}>{type}</option>)}
+          </select>
+          <select className="admin-leadgen-input" value={ioc.severity} onChange={(e) => setIoc({ ...ioc, severity: e.target.value })}>
+            {["low", "medium", "high", "critical"].map((severity) => <option key={severity}>{severity}</option>)}
+          </select>
+          <input className="admin-leadgen-input ops-form-grid__full" value={ioc.value} onChange={(e) => setIoc({ ...ioc, value: e.target.value })} placeholder="indicator value" />
+          <button className="btn btn-primary btn-sm ops-form-grid__full" disabled={busy === "opsec-ioc-add"} onClick={() => runAction("opsec-ioc-add", ioc, "IOC saved.").then(() => setIoc({ ...ioc, value: "" }))}>Save IOC</button>
+        </div>
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Watched domains</h2></div>
+        <Table
+          columns={["Domain", "Label", "Active", "Last scanned"]}
+          rows={data?.domains || []}
+          empty="No watched domains yet."
+          renderRow={(row) => (
+            <tr key={row.id}>
+              <td>{row.domain}</td>
+              <td>{row.label || "-"}</td>
+              <td><SignalPill state={row.is_active ? "good" : "neutral"}>{row.is_active ? "active" : "paused"}</SignalPill></td>
+              <td>{fmtTime(row.last_scanned_at)}</td>
+            </tr>
+          )}
+        />
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Indicators</h2></div>
+        <Table
+          columns={["Type", "Value", "Severity", "Source", "Last seen"]}
+          rows={data?.iocs || []}
+          empty="No indicators saved."
+          renderRow={(row) => (
+            <tr key={row.id}>
+              <td>{row.ioc_type}</td>
+              <td className="ops-mono">{row.value}</td>
+              <td><SignalPill state={row.severity === "critical" || row.severity === "high" ? "bad" : row.severity === "medium" ? "warn" : "neutral"}>{row.severity}</SignalPill></td>
+              <td>{row.source || "-"}</td>
+              <td>{fmtTime(row.last_seen_at)}</td>
+            </tr>
+          )}
+        />
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Notes</h2><Search size={16} /></div>
+        <div className="ops-note-editor">
+          <input className="admin-leadgen-input" value={note.title} onChange={(e) => setNote({ ...note, title: e.target.value })} placeholder="Title" />
+          <input className="admin-leadgen-input" value={note.tags} onChange={(e) => setNote({ ...note, tags: e.target.value })} placeholder="tags, comma separated" />
+          <textarea className="admin-leadgen-input admin-leadgen-textarea" rows={5} value={note.body} onChange={(e) => setNote({ ...note, body: e.target.value })} placeholder="Investigation note" />
+          <button className="btn btn-primary btn-sm" disabled={busy === "opsec-note-save"} onClick={() => runAction("opsec-note-save", { ...note, tags: note.tags.split(",").map((t) => t.trim()).filter(Boolean) }, "Note saved.").then(() => setNote({ title: "", body: "", tags: "" }))}>Save note</button>
+        </div>
+        <Table
+          columns={["Title", "Tags", "Updated"]}
+          rows={data?.notes || []}
+          empty="No OpSec notes yet."
+          renderRow={(row) => (
+            <tr key={row.id}>
+              <td>{row.title || "(untitled)"}<div className="ops-muted">{String(row.body || "").slice(0, 120)}</div></td>
+              <td>{(row.tags || []).join(", ")}</td>
+              <td>{fmtTime(row.updated_at)}</td>
+            </tr>
+          )}
+        />
+      </section>
+    </div>
+  );
+}
