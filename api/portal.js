@@ -26,11 +26,7 @@ import { csrfValid } from "./_lib/csrf.js";
 import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
 import { runLeadgenWorker } from "./cron/agent.js";
 import { timingSafeEqual } from "node:crypto";
-import {
-  formatDraftAsPostEntry,
-  spliceIntoPostsFile,
-  commitPostsFile,
-} from "./_lib/publish-draft.js";
+import { publishDraftToGitHub } from "./_lib/publish-draft.js";
 
 // Vercel function config: lead-gen Discover + Crawl run their workers
 // inline (Overpass + outbound HTTP fetches), so we need the higher
@@ -2653,79 +2649,7 @@ async function handlePublishDraft(session, request) {
     return json(409, { ok: false, error: "already_published" });
   }
 
-  // Build the entry, fetch posts.js, splice, commit.
-  const entry = formatDraftAsPostEntry(draft, overrides);
-
-  const token = process.env.GITHUB_TOKEN;
-  const repo  = process.env.GITHUB_REPO  || "budokai-msi/simpleitsrq.com";
-  const branch = process.env.GITHUB_BRANCH || "main";
-  if (!token) {
-    return json(500, { ok: false, error: "github_token_not_set",
-      hint: "Set GITHUB_TOKEN in Vercel env with contents:write on the repo." });
-  }
-
-  // Fetch current posts.js through the Contents API (same path the commit
-  // uses, so we are always in sync).
-  const getUrl = `https://api.github.com/repos/${repo}/contents/src/data/posts.js?ref=${encodeURIComponent(branch)}`;
-  const getRes = await fetch(getUrl, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "simpleitsrq-portal",
-    },
-  });
-  if (!getRes.ok) {
-    const txt = await getRes.text().catch(() => "");
-    // Diagnose common causes to help admins fix without hunting through logs.
-    let hint = null;
-    if (getRes.status === 404) {
-      // Token presence is already checked above; at this point we have a token
-      // that GitHub either rejected as unauthorized (404 masks 403 on private
-      // repos) or couldn't find the file. Common causes: wrong GITHUB_REPO or
-      // GITHUB_BRANCH, token scoped to a different repo, or token lacks
-      // Contents:Read+Write on this repo.
-      hint = "GitHub returned 404. Either the file doesn't exist at " + repo + "@" + branch + "/src/data/posts.js, or the token can authenticate but lacks Contents:Read+Write on this repo (GitHub masks 403 as 404 for private repos). Verify GITHUB_REPO/GITHUB_BRANCH env vars in Vercel, and the token's repository access.";
-    } else if (getRes.status === 401) {
-      hint = "GitHub rejected the token (401). The token is malformed or revoked. Rotate it in GitHub and update GITHUB_TOKEN in Vercel.";
-    } else if (getRes.status === 403) {
-      hint = "GitHub returned 403. The token is valid but doesn't have permission to read this file. Check the token's repository access and scope (needs Contents:Read+Write).";
-    }
-    return json(502, {
-      ok: false,
-      error: `github_get_${getRes.status}`,
-      detail: txt.slice(0, 300),
-      repo,
-      branch,
-      hint,
-    });
-  }
-  const meta = await getRes.json();
-  const currentFile = Buffer.from(meta.content, "base64").toString("utf8");
-  const fileSha = meta.sha;
-
-  // Bail if this slug is already in the file (idempotency).
-  if (currentFile.includes(`slug: "${draft.slug}"`)) {
-    await sql`
-      UPDATE draft_posts
-      SET status = 'published',
-          reviewed_at = COALESCE(reviewed_at, now()),
-          published_at = now()
-      WHERE id = ${id}
-    `;
-    return json(200, { ok: true, alreadyInFile: true });
-  }
-
-  const spliced = spliceIntoPostsFile(currentFile, entry);
-  if (!spliced) {
-    return json(500, { ok: false, error: "posts_file_anchor_missing" });
-  }
-
-  const commit = await commitPostsFile(
-    spliced,
-    `Publish blog post: ${draft.title}`,
-    fileSha,
-  );
+  const commit = await publishDraftToGitHub(draft, overrides);
   if (!commit.ok) {
     return json(502, commit);
   }
@@ -2754,6 +2678,7 @@ async function handlePublishDraft(session, request) {
       slug: draft.slug,
       title: draft.title,
       commitSha: commit.commitSha,
+      path: commit.path || null,
     },
   });
 
@@ -3222,7 +3147,7 @@ async function handleGithubHealth(session) {
   const token = process.env.GITHUB_TOKEN;
   const repo  = process.env.GITHUB_REPO  || "budokai-msi/simpleitsrq.com";
   const branch = process.env.GITHUB_BRANCH || "main";
-  const path  = "src/data/posts.js";
+  const path  = "content/posts";
 
   const result = {
     tokenSet: !!token,

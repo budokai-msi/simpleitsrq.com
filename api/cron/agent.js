@@ -635,7 +635,7 @@ Mention the HN source casually (for example, "This hit Hacker News this week..."
             `HN URL: ${story.url}\n` +
             `HN Discussion: ${hnUrl}\n\n` +
             `Quality gate: ${quality.ok ? "passed" : `blocked (${quality.issues.join(", ")})`}\n` +
-            `Auto-publish: ${publishResult?.ok ? (publishResult.alreadyInFile ? "already in posts.js" : "published") : `failed (${publishResult?.error})`}\n` +
+            `Auto-publish: ${publishResult?.ok ? (publishResult.alreadyInFile ? "already in MDX" : `published ${publishResult.path || ""}`) : `failed (${publishResult?.error})`}\n` +
             `Review + publish: ${reviewUrl}\n\n` +
             `---\n\n${post.body}\n\n---\n`,
         });
