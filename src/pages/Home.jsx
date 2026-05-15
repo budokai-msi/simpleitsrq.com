@@ -1,7 +1,7 @@
 import {
-  Headphones, Server, ShieldCheck, Lock, Cloud, FileCheck,
+  Headphones, Server, ShieldCheck, Lock, Cloud,
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
-  Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi, Briefcase,
+  Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi,
   Loader2, CheckCircle2, AlertCircle, Send, Wrench,
   Camera, Users, Bot, Sparkles
 } from "lucide-react";
@@ -119,53 +119,43 @@ function LogosBar() {
 const SOLUTIONS = [
   {
     Icon: Wrench,
-    title: "Computer repair and setup",
-    desc: "Slow PC, bad drive, malware cleanup, laptop setup, printer issue, or workstation replacement."
+    title: "Computer repair",
+    desc: "Slow, infected, cracked, overheating, or won't boot. We repair Windows and Mac, recover what we can, and tell you when replacement is cheaper."
   },
   {
     Icon: Headphones,
-    title: "Managed office support",
-    desc: "Help desk, monitoring, updates, user setup, vendor coordination, and a simple monthly plan."
-  },
-  {
-    Icon: Camera,
-    title: "Cameras and access",
-    desc: "PoE cameras, recorders, mobile viewing, access cleanup, cable runs, and owner training."
-  },
-  {
-    Icon: Cloud,
-    title: "Microsoft 365 and Google Workspace",
-    desc: "Email, Teams, Drive, shared mailboxes, MFA, device sign-in, migrations, and cleanup."
+    title: "Email and account lockouts",
+    desc: "Microsoft 365, Google Workspace, password resets, MFA recovery, shared mailbox cleanup, and owner access."
   },
   {
     Icon: Wifi,
-    title: "Wi-Fi, firewall, and cabling",
-    desc: "Business-grade network gear, guest Wi-Fi, labels, rack cleanup, coverage fixes, and handoff notes."
+    title: "Wi-Fi and network fixes",
+    desc: "Dead rooms, dropped video calls, messy cabling, slow switches, guest Wi-Fi, firewall cleanup, and small-office access points."
   },
   {
-    Icon: Lock,
-    title: "Security hardening",
-    desc: "MFA, passkeys, endpoint protection, admin cleanup, scam filtering, and practical written proof."
+    Icon: Cloud,
+    title: "New office setup",
+    desc: "Internet handoff, workstations, printers, Microsoft 365, shared drives, passwords, and the checklist people forget until opening day."
   },
   {
     Icon: Server,
     title: "Backups and recovery",
-    desc: "Local and cloud backups, restore tests, recovery contacts, and a plain disaster checklist."
+    desc: "Set up local and cloud backups, test a restore, and document who to call before a bad drive becomes a business emergency."
+  },
+  {
+    Icon: Lock,
+    title: "Security cleanup",
+    desc: "Remove risky admin accounts, turn on MFA, clean up old devices, and reduce the obvious ways people get phished."
+  },
+  {
+    Icon: Camera,
+    title: "Cameras and vendor handoffs",
+    desc: "PoE cameras, recorders, mobile viewing, ISP appointments, software logins, and the vendor details that disappear when staff changes."
   },
   {
     Icon: Phone,
-    title: "Phones and messaging",
-    desc: "VoIP, number moves, after-hours routing, voicemail to email, and basic texting workflows."
-  },
-  {
-    Icon: FileCheck,
-    title: "IT documentation",
-    desc: "Policies, device inventory, MFA status, backup evidence, vendor access, and renewal packets."
-  },
-  {
-    Icon: Briefcase,
-    title: "Quarterly IT planning",
-    desc: "A short review of what is working, what is fragile, and what should be budgeted next."
+    title: "Phones and front desk tools",
+    desc: "VoIP moves, number transfers, after-hours routing, voicemail to email, basic texting workflows, and front desk device setup."
   },
 ];
 
@@ -174,9 +164,9 @@ function Solutions() {
     <section className="section" id="solutions" aria-labelledby="solutions-title">
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
-          <span className="eyebrow">Capabilities</span>
-          <h2 id="solutions-title" className="title-1">The calls we get most often</h2>
-          <p className="section-sub">A computer is down, the Wi-Fi is unreliable, email is locked out, or files are not backed up. We fix the immediate problem, then leave the setup easier to support next time.</p>
+          <span className="eyebrow">Common Calls</span>
+          <h2 id="solutions-title" className="title-1">When tech stops work, call us.</h2>
+          <p className="section-sub">Most calls start with one broken thing: a laptop, printer, email account, Wi-Fi room, camera, or backup. We fix that first, then check the setup so the same issue is less likely to come back.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
@@ -198,12 +188,12 @@ function Solutions() {
 }
 
 const INDUSTRIES = [
-  { Icon: HeartPulse, name: "Healthcare", badges: ["HIPAA", "HITECH"] },
-  { Icon: Scale, name: "Legal", badges: ["ABA", "SOC 2"] },
-  { Icon: Landmark, name: "Finance", badges: ["GLBA", "PCI-DSS"] },
-  { Icon: HardHat, name: "Construction", badges: ["OSHA", "CMMC"] },
-  { Icon: HomeIcon, name: "Real Estate", badges: ["NAR", "SOC 2"] },
-  { Icon: Users, name: "Residential", badges: ["Home offices", "Snowbird condos"] },
+  { Icon: HeartPulse, name: "Healthcare", badges: ["front desk", "secure access"] },
+  { Icon: Scale, name: "Legal", badges: ["Clio", "secure email"] },
+  { Icon: Landmark, name: "Finance", badges: ["MFA", "backups"] },
+  { Icon: HardHat, name: "Construction", badges: ["field laptops", "jobsite Wi-Fi"] },
+  { Icon: HomeIcon, name: "Real Estate", badges: ["listings", "cameras"] },
+  { Icon: Users, name: "Residential", badges: ["home offices", "seasonal homes"] },
 ];
 
 function Industries() {
