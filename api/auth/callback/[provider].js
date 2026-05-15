@@ -15,6 +15,7 @@ import { createSession } from "../../_lib/session.js";
 import { redirect, json, safeRedirectPath } from "../../_lib/http.js";
 import { clientIp, logSecurityEvent } from "../../_lib/security.js";
 import { sql } from "../../_lib/db.js";
+import { isAdminEmail } from "../../_lib/admin.js";
 
 const SUPPORTED = new Set(["google", "github", "auth0"]);
 
@@ -67,8 +68,7 @@ export async function GET(request) {
     // auto-block paths (scanner trap cron, 5-in-24h, 3-in-1h realtime)
     // never lock the owner out of their own portal. 7-day TTL, refreshed
     // on every login. Silently skipped for non-owners.
-    const adminEmail = process.env.ADMIN_EMAIL || "";
-    const isOwner = Boolean(adminEmail) && user.email.toLowerCase() === adminEmail.toLowerCase();
+    const isOwner = isAdminEmail(user.email);
     if (isOwner) {
       const ip = clientIp(request);
       if (ip && ip !== "unknown") {

@@ -6,6 +6,7 @@
 
 import { sql } from "./db.js";
 import { clientIp } from "./security.js";
+import { isAdminEmail } from "./admin.js";
 
 /** @typedef {import('./types.js').Session} Session */
 /** @typedef {import('./types.js').SessionIssue} SessionIssue */
@@ -289,7 +290,7 @@ export async function getSession(request) {
       avatarUrl: row.avatar_url,
       company: row.company,
       phone: row.phone,
-      isAdmin: row.is_admin === true,
+      isAdmin: isAdminEmail(row.email),
     },
   };
 }

@@ -27,6 +27,7 @@ import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
 import { runLeadgenWorker } from "./cron/agent.js";
 import { timingSafeEqual } from "node:crypto";
 import { publishDraftToGitHub } from "./_lib/publish-draft.js";
+import { isAdminEmail } from "./_lib/admin.js";
 
 // Vercel function config: lead-gen Discover + Crawl run their workers
 // inline (Overpass + outbound HTTP fetches), so we need the higher
@@ -130,8 +131,7 @@ async function sendReplyNotification({ ticket, message, authorType }) {
 // the owner email can pass. This is the single source of truth for admin.
 async function resolveAdmin(session) {
   if (session.__isAdmin !== undefined) return session.__isAdmin;
-  const adminEmail = process.env.ADMIN_EMAIL || "";
-  session.__isAdmin = Boolean(adminEmail) && session.user.email.toLowerCase() === adminEmail.toLowerCase();
+  session.__isAdmin = isAdminEmail(session?.user?.email);
   return session.__isAdmin;
 }
 
