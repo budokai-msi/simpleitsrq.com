@@ -7867,6 +7867,14 @@ select:focus-visible {
   margin-bottom: 4px;
 }
 
+.ops-path-cell {
+  max-width: 340px;
+  overflow: hidden;
+  color: var(--text-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .ops-row-actions {
   white-space: nowrap;
   display: flex;

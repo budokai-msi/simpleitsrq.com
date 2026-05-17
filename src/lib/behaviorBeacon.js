@@ -289,6 +289,53 @@ function onDocumentClick(e) {
   });
 }
 
+function fieldIntentFor(el) {
+  if (!el) return null;
+  const tag = el.tagName?.toLowerCase?.() || "";
+  const type = (el.getAttribute("type") || tag).toLowerCase();
+  if (["password", "email", "tel", "hidden"].includes(type)) return null;
+  const name = el.getAttribute("name") || el.id || el.getAttribute("aria-label") || el.getAttribute("placeholder") || tag;
+  const form = el.closest("form");
+  return {
+    field: String(name || "field").slice(0, 80),
+    form: String(form?.getAttribute("name") || form?.id || form?.getAttribute("aria-label") || "inline").slice(0, 80),
+    inputType: type,
+    length: typeof el.value === "string" ? Math.min(el.value.length, 10000) : null,
+  };
+}
+
+let lastInputIntentAt = 0;
+const lastInputByField = new Map();
+
+function onDocumentFocusIn(e) {
+  const el = e.target?.closest?.("input, textarea, select");
+  const intent = fieldIntentFor(el);
+  if (!intent) return;
+  pushEvent("form_focus", {
+    valueText: intent.field,
+    meta: intent,
+  });
+}
+
+function onDocumentInput(e) {
+  const el = e.target?.closest?.("input, textarea, select");
+  const intent = fieldIntentFor(el);
+  if (!intent) return;
+
+  const now = Date.now();
+  const key = `${currentPath || ""}:${intent.form}:${intent.field}`;
+  const prev = lastInputByField.get(key) || 0;
+  if (now - prev < 2500 || now - lastInputIntentAt < 600) return;
+  lastInputByField.set(key, now);
+  lastInputIntentAt = now;
+
+  pushEvent("input_intent", {
+    valueText: intent.field,
+    valueNum: intent.length,
+    meta: intent,
+  });
+}
+
 // One-time setup. Idempotent — calling twice is a no-op.
 let installed = false;
 export function installBehaviorBeacon() {
@@ -307,6 +354,8 @@ export function installBehaviorBeacon() {
   window.addEventListener("focus", onVisibilityChange, { passive: true });
   window.addEventListener("blur", onVisibilityChange, { passive: true });
   document.addEventListener("click", onDocumentClick, { passive: true, capture: true });
+  document.addEventListener("focusin", onDocumentFocusIn, { passive: true, capture: true });
+  document.addEventListener("input", onDocumentInput, { passive: true, capture: true });
 
   // Final flush on page hide. pageview_exit + sendBeacon survives navigation
   // away, tab close, and most mobile-Safari edge cases that "unload" misses.

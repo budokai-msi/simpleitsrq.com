@@ -14,7 +14,8 @@
 // Styling reuses the .admin-aff-* token-driven dashboard primitives from
 // App.css so the leadgen command center stays visually aligned.
 
-import { useEffect, useState } from "react";
+import "leaflet/dist/leaflet.css";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { csrfFetch } from "../lib/csrf";
 
@@ -42,6 +43,11 @@ async function postJson(url, body) {
 function fmtTime(iso) {
   if (!iso) return "-";
   try { return new Date(iso).toLocaleString(); } catch { return iso; }
+}
+
+function hostFor(url) {
+  if (!url) return null;
+  try { return new URL(url).host.replace(/^www\./, ""); } catch { return url; }
 }
 
 function Stat({ label, value, hint, accent }) {
@@ -892,6 +898,8 @@ function DiscoverTab({ onStatusChange }) {
         </div>
       </div>
 
+      <LeadgenMap rows={rows} total={total} busy={busy} />
+
       <div className="admin-aff-card">
         <table className="admin-aff-table">
           <thead>
@@ -918,7 +926,7 @@ function DiscoverTab({ onStatusChange }) {
                 <td>
                   {r.website ? (
                     <a href={r.website} target="_blank" rel="noreferrer">
-                      {(() => { try { return new URL(r.website).host; } catch { return r.website; } })()}
+                      {hostFor(r.website)}
                     </a>
                   ) : "-"}
                 </td>
@@ -957,6 +965,107 @@ function DiscoverTab({ onStatusChange }) {
         </div>
       ) : null}
     </div>
+  );
+}
+
+function LeadgenMap({ rows, total, busy }) {
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const layerRef = useRef(null);
+  const leafletRef = useRef(null);
+  const geocodedRows = useMemo(
+    () => rows.filter((r) => Number.isFinite(Number(r.lat)) && Number.isFinite(Number(r.lng))),
+    [rows]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function setupMap() {
+      if (!containerRef.current || mapRef.current) return;
+      const leaflet = await import("leaflet");
+      if (cancelled || !containerRef.current) return;
+      const L = leaflet.default || leaflet;
+      leafletRef.current = L;
+      const map = L.map(containerRef.current, {
+        zoomControl: true,
+        scrollWheelZoom: false,
+      }).setView([27.3364, -82.5307], 10);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+      layerRef.current = L.layerGroup().addTo(map);
+      mapRef.current = map;
+    }
+
+    setupMap();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    const L = leafletRef.current;
+    const layer = layerRef.current;
+    const map = mapRef.current;
+    if (!L || !layer || !map) return;
+
+    layer.clearLayers();
+    const points = geocodedRows.slice(0, 80);
+    for (const row of points) {
+      const marker = L.marker([Number(row.lat), Number(row.lng)], {
+        icon: L.divIcon({
+          className: "leadgen-map-pin",
+          html: `<span></span>`,
+          iconSize: [24, 24],
+          iconAnchor: [12, 22],
+          popupAnchor: [0, -18],
+        }),
+      });
+      const popup = document.createElement("div");
+      popup.className = "leadgen-map-popup";
+      const title = document.createElement("strong");
+      title.textContent = row.name || "Unnamed business";
+      const meta = document.createElement("span");
+      meta.textContent = [row.industry_group || row.industry, row.zip].filter(Boolean).join(" · ");
+      const contact = document.createElement("span");
+      contact.textContent = `${row.deliverable_emails || 0} email${Number(row.deliverable_emails) === 1 ? "" : "s"} found${row.website ? ` · ${hostFor(row.website)}` : ""}`;
+      const source = document.createElement("a");
+      source.href = row.source_url || "#";
+      source.target = "_blank";
+      source.rel = "noreferrer";
+      source.textContent = row.source_url ? "Open source record" : "Source pending";
+      if (!row.source_url) source.removeAttribute("href");
+      popup.append(title, meta, contact, source);
+      marker.bindPopup(popup);
+      marker.addTo(layer);
+    }
+
+    if (points.length) {
+      const bounds = L.latLngBounds(points.map((r) => [Number(r.lat), Number(r.lng)]));
+      map.fitBounds(bounds, { padding: [28, 28], maxZoom: points.length === 1 ? 14 : 15 });
+    }
+  }, [geocodedRows]);
+
+  return (
+    <section className="admin-aff-card leadgen-map-card" aria-label="Map of discovered businesses">
+      <div className="admin-leadgen-section-head">
+        <div>
+          <h3>Discovery map</h3>
+          <p className="admin-leadgen-muted">
+            Pins show the public-source businesses in the current filtered page before email crawling or outreach.
+          </p>
+        </div>
+        <span className="leadgen-powered-pill">{geocodedRows.length} mapped / {total} matches</span>
+      </div>
+      <div className="leadgen-map-shell">
+        <div ref={containerRef} className="leadgen-map" />
+        {!geocodedRows.length ? (
+          <div className="leadgen-map-empty">
+            {busy ? "Waiting for the discovery crawl to finish..." : "Discover a zip or adjust filters to show mapped businesses."}
+          </div>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
