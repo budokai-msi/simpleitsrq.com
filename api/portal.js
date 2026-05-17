@@ -922,6 +922,7 @@ async function handleBehaviorInsights(session) {
     recentActivity,
     typedSignals,
     topForms,
+    searchTerms,
     contentDepth,
   ] = await Promise.all([
     sql`
@@ -1032,6 +1033,24 @@ async function handleBehaviorInsights(session) {
       LIMIT 20
     `.catch(() => []),
     sql`
+      SELECT e.ts, e.session_id, e.path, e.value_text AS query, e.value_num AS result_count, e.meta,
+             CASE
+               WHEN e.path LIKE '/leadgen%' OR e.path LIKE '/portal/leadgen%' THEN 'Leadgen'
+               WHEN e.path LIKE '/services%' OR e.path LIKE '/sarasota%' OR e.path LIKE '/bradenton%' OR e.path LIKE '/venice%' OR e.path LIKE '/lakewood-ranch%' OR e.path LIKE '/nokomis%' THEN 'Managed IT'
+               WHEN e.path LIKE '/tools%' OR e.path LIKE '/stack%' OR e.path LIKE '/partners%' THEN 'Tools / affiliate'
+               WHEN e.path LIKE '/industries%' OR e.path LIKE '/%/it-%' THEN 'Industry pages'
+               WHEN e.path LIKE '/blog/%' THEN 'Blog research'
+               WHEN e.path LIKE '/book%' OR e.path LIKE '/support%' OR e.path LIKE '/portal%' THEN 'Conversion / support'
+               ELSE 'General site'
+             END AS interest,
+             ws.ip, ws.country, ws.region, ws.city
+      FROM engagement_events e
+      LEFT JOIN web_sessions ws ON ws.id = e.session_id
+      WHERE e.kind = 'search'
+      ORDER BY e.ts DESC
+      LIMIT 80
+    `.catch(() => []),
+    sql`
       SELECT path,
              COUNT(*) FILTER (WHERE kind = 'pageview_exit')::int AS exits,
              ROUND(AVG(value_num) FILTER (WHERE kind = 'pageview_exit') / 1000.0, 1)::text AS avg_dwell_sec,
@@ -1085,6 +1104,7 @@ async function handleBehaviorInsights(session) {
     recentActivity,
     typedSignals,
     topForms,
+    searchTerms,
     contentDepth,
     privacy: {
       note: "Form telemetry stores field/form names and character counts, not raw typed text, passwords, emails, phone numbers, or message bodies.",

@@ -492,6 +492,25 @@ function VisitorsTab({ data, errors }) {
       </section>
 
       <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>On-site searches</h2><Search size={16} /></div>
+        <Table
+          columns={["Time", "Query", "Results", "Page", "Interest", "Location"]}
+          rows={data?.searchTerms || []}
+          empty="No site searches recorded yet."
+          renderRow={(row, index) => (
+            <tr key={`${row.ts}-${row.query}-${index}`}>
+              <td>{fmtTime(row.ts)}</td>
+              <td><strong>{row.query || "-"}</strong></td>
+              <td>{row.result_count != null ? fmtNumber(row.result_count) : "-"}</td>
+              <td className="ops-path-cell">{row.path || "-"}</td>
+              <td>{row.interest || "-"}</td>
+              <td>{[row.city, row.region, row.country].filter(Boolean).join(", ") || "-"}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head"><h2>Typing and form intent</h2><Eye size={16} /></div>
         <Table
           columns={["Time", "Interest", "Page", "Form", "Field", "Length"]}
