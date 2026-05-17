@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
+import { trackSiteSearch } from "../lib/behaviorBeacon.js";
 
 /**
  * Client-side fuzzy-ish search for the blog index. No new deps.
@@ -95,6 +96,14 @@ export default function BlogSearch({ posts, onFilter, initialQuery = "", onQuery
   // query so it can reflect it in the URL.
   useEffect(() => { onFilter(filtered, committed.trim()); }, [filtered, committed, onFilter]);
   useEffect(() => { if (onQueryChange) onQueryChange(committed.trim()); }, [committed, onQueryChange]);
+
+  const lastTracked = useRef("");
+  useEffect(() => {
+    const q = committed.trim();
+    if (q.length < 2 || q === lastTracked.current) return;
+    lastTracked.current = q;
+    trackSiteSearch(q, { source: "blog", resultCount: filtered.length });
+  }, [committed, filtered.length]);
 
   const clear = () => {
     setQuery("");

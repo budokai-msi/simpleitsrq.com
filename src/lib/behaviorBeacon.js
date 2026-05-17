@@ -262,6 +262,23 @@ export function startPageview(path) {
   onScroll();
 }
 
+export function trackSiteSearch(query, meta = {}) {
+  if (typeof window === "undefined") return;
+  if (typeof navigator !== "undefined" && navigator.doNotTrack === "1") return;
+  const q = String(query || "").trim().slice(0, 200);
+  if (q.length < 2) return;
+  pushEvent("search", {
+    valueText: q,
+    valueNum: Number.isFinite(Number(meta.resultCount)) ? Number(meta.resultCount) : null,
+    meta: {
+      source: String(meta.source || "site").slice(0, 40),
+      resultCount: Number.isFinite(Number(meta.resultCount)) ? Number(meta.resultCount) : null,
+      category: meta.category ? String(meta.category).slice(0, 80) : null,
+    },
+  });
+  flush();
+}
+
 // Click delegation on document. Fires once per click on internal anchors,
 // outbound links, buttons, and any element with [data-track]. Lightweight
 // enough to attach unconditionally — no per-element listeners.
