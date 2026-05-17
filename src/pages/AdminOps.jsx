@@ -22,6 +22,7 @@ import { useSEO } from "../lib/seo";
 
 const TABS = [
   ["ops", "Ops", Activity],
+  ["visitors", "Visitors", Eye],
   ["drafts", "Drafts", FileText],
   ["affiliate", "Affiliate", DollarSign],
   ["leadgen", "Leadgen", Target],
@@ -36,6 +37,7 @@ const CORE_ACTIONS = [
   "drafts",
   "affiliate-stats",
   "revenue-signals",
+  "behavior-insights",
   "revenue-summary",
   "leadgen-status",
   "adsense-health",
@@ -56,6 +58,15 @@ function fmtMoney(cents) {
 function fmtTime(value) {
   if (!value) return "-";
   try { return new Date(value).toLocaleString(); } catch { return String(value); }
+}
+
+function fmtDuration(ms) {
+  const sec = Math.round(Number(ms || 0) / 1000);
+  if (!Number.isFinite(sec) || sec <= 0) return "0s";
+  if (sec < 60) return `${sec}s`;
+  const min = Math.floor(sec / 60);
+  const rem = sec % 60;
+  return rem ? `${min}m ${rem}s` : `${min}m`;
 }
 
 async function getJson(action, params = {}) {
@@ -315,6 +326,7 @@ export default function AdminOps() {
 
         <section className="admin-leadgen-tab-body">
           {tab === "ops" && <OpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
+          {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} errors={errors} />}
           {tab === "drafts" && <DraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
           {tab === "affiliate" && <AffiliateTab data={data} />}
           {tab === "leadgen" && <LeadgenTab status={data["leadgen-status"]} />}
@@ -393,6 +405,145 @@ function OpsTab({ data, errors, intel, busy, runAction }) {
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head"><h2>Ops status</h2></div>
         <pre className="ops-pre">{JSON.stringify({ migrations: ops?.migrations, osint: ops?.osint, errors }, null, 2)}</pre>
+      </section>
+    </div>
+  );
+}
+
+function VisitorsTab({ data, errors }) {
+  const totals = data?.totals || {};
+  const engagedRate = totals.sessions14d
+    ? Math.round((Number(totals.engaged14d || 0) / Number(totals.sessions14d || 1)) * 100)
+    : 0;
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head">
+          <h2>Live visitor intent</h2>
+          <SignalPill state={totals.liveSessions ? "good" : "neutral"}>{fmtNumber(totals.liveSessions)} live</SignalPill>
+        </div>
+        <p className="ops-panel__copy">
+          {data?.privacy?.note || "Field telemetry stores intent signals, not raw private form contents."}
+        </p>
+        {errors["behavior-insights"] ? <EmptyState>{errors["behavior-insights"]}</EmptyState> : null}
+        <div className="ops-metric-grid">
+          <Metric label="Live sessions" value={fmtNumber(totals.liveSessions)} hint="active in 30 min" />
+          <Metric label="14d sessions" value={fmtNumber(totals.sessions14d)} />
+          <Metric label="14d visitors" value={fmtNumber(totals.visitors14d)} />
+          <Metric label="Engaged rate" value={`${engagedRate}%`} hint={`${fmtNumber(totals.engaged14d)} engaged`} />
+        </div>
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Active sessions</h2><RadioTower size={16} /></div>
+        <Table
+          columns={["Last", "Interest", "Current page", "Pages", "Dwell", "Scroll", "Location", "Last action"]}
+          rows={data?.liveSessions || []}
+          empty="No active sessions in the last 30 minutes."
+          renderRow={(row) => (
+            <tr key={row.id}>
+              <td>{fmtTime(row.lastActivity)}</td>
+              <td><SignalPill state={row.engaged ? "good" : "neutral"}>{row.interest || "General site"}</SignalPill></td>
+              <td className="ops-path-cell">{row.exitPath || row.landingPath || "-"}</td>
+              <td>{fmtNumber(row.pageCount)}</td>
+              <td>{fmtDuration(row.totalDwellMs)}</td>
+              <td>{fmtNumber(row.maxScrollPct)}%</td>
+              <td>{[row.city, row.region, row.country].filter(Boolean).join(", ") || "-"}</td>
+              <td>{row.lastEventKind || "-"}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Product interest</h2></div>
+        <Table
+          columns={["Area", "Views", "Visitors", "Sessions"]}
+          rows={data?.interests || []}
+          empty="No interest data yet."
+          renderRow={(row) => (
+            <tr key={row.interest}>
+              <td><strong>{row.interest}</strong></td>
+              <td>{fmtNumber(row.views)}</td>
+              <td>{fmtNumber(row.visitors)}</td>
+              <td>{fmtNumber(row.sessions)}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Retention</h2></div>
+        <Table
+          columns={["Day", "Sessions", "Visitors", "Engaged", "Avg pages", "Avg dwell"]}
+          rows={data?.retention || []}
+          empty="No retention data yet."
+          renderRow={(row) => (
+            <tr key={row.day}>
+              <td>{row.day}</td>
+              <td>{fmtNumber(row.sessions)}</td>
+              <td>{fmtNumber(row.visitors)}</td>
+              <td>{fmtNumber(row.engaged_sessions)}</td>
+              <td>{row.avg_pages || "-"}</td>
+              <td>{row.avg_dwell_sec ? `${row.avg_dwell_sec}s` : "-"}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Typing and form intent</h2><Eye size={16} /></div>
+        <Table
+          columns={["Time", "Interest", "Page", "Form", "Field", "Length"]}
+          rows={data?.typedSignals || []}
+          empty="No form focus or typing-intent events yet."
+          renderRow={(row, index) => (
+            <tr key={`${row.ts}-${index}`}>
+              <td>{fmtTime(row.ts)}</td>
+              <td>{row.interest || "-"}</td>
+              <td className="ops-path-cell">{row.path || "-"}</td>
+              <td>{row.meta?.form || "-"}</td>
+              <td><strong>{row.meta?.field || row.value_text || "-"}</strong></td>
+              <td>{row.value_num != null ? fmtNumber(row.value_num) : "-"}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Top forms</h2></div>
+        <Table
+          columns={["Form", "Field", "Events", "Sessions", "Last seen"]}
+          rows={data?.topForms || []}
+          empty="No form-level activity yet."
+          renderRow={(row) => (
+            <tr key={`${row.form}-${row.field}`}>
+              <td>{row.form}</td>
+              <td><strong>{row.field}</strong></td>
+              <td>{fmtNumber(row.events)}</td>
+              <td>{fmtNumber(row.sessions)}</td>
+              <td>{fmtTime(row.last_seen)}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Page depth</h2></div>
+        <Table
+          columns={["Path", "Exits", "Avg dwell", "Avg scroll", "Clicks"]}
+          rows={data?.contentDepth || []}
+          empty="No page-depth events yet."
+          renderRow={(row) => (
+            <tr key={row.path}>
+              <td className="ops-path-cell">{row.path}</td>
+              <td>{fmtNumber(row.exits)}</td>
+              <td>{row.avg_dwell_sec ? `${row.avg_dwell_sec}s` : "-"}</td>
+              <td>{row.avg_scroll ? `${row.avg_scroll}%` : "-"}</td>
+              <td>{fmtNumber(row.clicks)}</td>
+            </tr>
+          )}
+        />
       </section>
     </div>
   );

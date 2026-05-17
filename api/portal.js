@@ -911,6 +911,187 @@ async function handleVisitors(session) {
   });
 }
 
+async function handleBehaviorInsights(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const [
+    liveSessions,
+    retention,
+    interestRows,
+    recentActivity,
+    typedSignals,
+    topForms,
+    contentDepth,
+  ] = await Promise.all([
+    sql`
+      SELECT ws.id, ws.anon_id, ws.ip, ws.country, ws.region, ws.city,
+             ws.landing_path, ws.exit_path, ws.referrer, ws.page_count,
+             ws.total_dwell_ms, ws.max_scroll_pct, ws.event_count, ws.engaged,
+             ws.started_at, ws.last_activity,
+             le.kind AS last_event_kind, le.path AS last_event_path, le.value_text AS last_event_text, le.ts AS last_event_at,
+             CASE
+               WHEN le.path LIKE '/leadgen%' OR le.path LIKE '/portal/leadgen%' THEN 'Leadgen'
+               WHEN le.path LIKE '/services%' OR le.path LIKE '/sarasota%' OR le.path LIKE '/bradenton%' OR le.path LIKE '/venice%' OR le.path LIKE '/lakewood-ranch%' OR le.path LIKE '/nokomis%' THEN 'Managed IT'
+               WHEN le.path LIKE '/tools%' OR le.path LIKE '/stack%' OR le.path LIKE '/partners%' THEN 'Tools / affiliate'
+               WHEN le.path LIKE '/industries%' OR le.path LIKE '/%/it-%' THEN 'Industry pages'
+               WHEN le.path LIKE '/blog/%' THEN 'Blog research'
+               WHEN le.path LIKE '/book%' OR le.path LIKE '/support%' OR le.path LIKE '/portal%' THEN 'Conversion / support'
+               ELSE 'General site'
+             END AS interest
+      FROM web_sessions ws
+      LEFT JOIN LATERAL (
+        SELECT kind, path, value_text, ts
+        FROM engagement_events e
+        WHERE e.session_id = ws.id
+        ORDER BY ts DESC
+        LIMIT 1
+      ) le ON true
+      WHERE ws.last_activity > now() - interval '30 minutes'
+      ORDER BY ws.last_activity DESC
+      LIMIT 25
+    `.catch(() => []),
+    sql`
+      WITH daily AS (
+        SELECT date_trunc('day', started_at)::date AS day,
+               COUNT(*)::int AS sessions,
+               COUNT(DISTINCT COALESCE(anon_id, ip))::int AS visitors,
+               COUNT(*) FILTER (WHERE page_count > 1 OR engaged)::int AS engaged_sessions,
+               ROUND(AVG(page_count), 2)::text AS avg_pages,
+               ROUND(AVG(total_dwell_ms) / 1000.0, 1)::text AS avg_dwell_sec
+        FROM web_sessions
+        WHERE started_at > now() - interval '14 days'
+        GROUP BY 1
+      )
+      SELECT * FROM daily ORDER BY day DESC
+    `.catch(() => []),
+    sql`
+      SELECT CASE
+               WHEN v.path LIKE '/leadgen%' OR v.path LIKE '/portal/leadgen%' THEN 'Leadgen'
+               WHEN v.path LIKE '/services%' OR v.path LIKE '/sarasota%' OR v.path LIKE '/bradenton%' OR v.path LIKE '/venice%' OR v.path LIKE '/lakewood-ranch%' OR v.path LIKE '/nokomis%' THEN 'Managed IT'
+               WHEN v.path LIKE '/tools%' OR v.path LIKE '/stack%' OR v.path LIKE '/partners%' THEN 'Tools / affiliate'
+               WHEN v.path LIKE '/industries%' OR v.path LIKE '/%/it-%' THEN 'Industry pages'
+               WHEN v.path LIKE '/blog/%' THEN 'Blog research'
+               WHEN v.path LIKE '/book%' OR v.path LIKE '/support%' OR v.path LIKE '/portal%' THEN 'Conversion / support'
+               ELSE 'General site'
+             END AS interest,
+             COUNT(*)::int AS views,
+             COUNT(DISTINCT COALESCE(v.anon_id, v.ip))::int AS visitors,
+             COUNT(DISTINCT v.session_id)::int AS sessions
+      FROM visits v
+      WHERE v.ts > now() - interval '7 days'
+      GROUP BY interest
+      ORDER BY views DESC
+    `.catch(() => []),
+    sql`
+      SELECT e.ts, e.session_id, e.anon_id, e.path, e.kind, e.value_num, e.value_text, e.meta,
+             CASE
+               WHEN e.path LIKE '/leadgen%' OR e.path LIKE '/portal/leadgen%' THEN 'Leadgen'
+               WHEN e.path LIKE '/services%' OR e.path LIKE '/sarasota%' OR e.path LIKE '/bradenton%' OR e.path LIKE '/venice%' OR e.path LIKE '/lakewood-ranch%' OR e.path LIKE '/nokomis%' THEN 'Managed IT'
+               WHEN e.path LIKE '/tools%' OR e.path LIKE '/stack%' OR e.path LIKE '/partners%' THEN 'Tools / affiliate'
+               WHEN e.path LIKE '/industries%' OR e.path LIKE '/%/it-%' THEN 'Industry pages'
+               WHEN e.path LIKE '/blog/%' THEN 'Blog research'
+               WHEN e.path LIKE '/book%' OR e.path LIKE '/support%' OR e.path LIKE '/portal%' THEN 'Conversion / support'
+               ELSE 'General site'
+             END AS interest,
+             ws.ip, ws.country, ws.city
+      FROM engagement_events e
+      LEFT JOIN web_sessions ws ON ws.id = e.session_id
+      ORDER BY e.ts DESC
+      LIMIT 80
+    `.catch(() => []),
+    sql`
+      SELECT e.ts, e.session_id, e.path, e.value_text, e.value_num, e.meta,
+             CASE
+               WHEN e.path LIKE '/leadgen%' OR e.path LIKE '/portal/leadgen%' THEN 'Leadgen'
+               WHEN e.path LIKE '/services%' OR e.path LIKE '/sarasota%' OR e.path LIKE '/bradenton%' OR e.path LIKE '/venice%' OR e.path LIKE '/lakewood-ranch%' OR e.path LIKE '/nokomis%' THEN 'Managed IT'
+               WHEN e.path LIKE '/tools%' OR e.path LIKE '/stack%' OR e.path LIKE '/partners%' THEN 'Tools / affiliate'
+               WHEN e.path LIKE '/industries%' OR e.path LIKE '/%/it-%' THEN 'Industry pages'
+               WHEN e.path LIKE '/blog/%' THEN 'Blog research'
+               WHEN e.path LIKE '/book%' OR e.path LIKE '/support%' OR e.path LIKE '/portal%' THEN 'Conversion / support'
+               ELSE 'General site'
+             END AS interest,
+             ws.country, ws.city
+      FROM engagement_events e
+      LEFT JOIN web_sessions ws ON ws.id = e.session_id
+      WHERE e.kind IN ('input_intent','form_focus')
+      ORDER BY e.ts DESC
+      LIMIT 50
+    `.catch(() => []),
+    sql`
+      SELECT COALESCE(e.meta->>'form', 'inline') AS form,
+             COALESCE(e.meta->>'field', e.value_text, 'field') AS field,
+             COUNT(*)::int AS events,
+             COUNT(DISTINCT e.session_id)::int AS sessions,
+             MAX(e.ts) AS last_seen
+      FROM engagement_events e
+      WHERE e.kind IN ('input_intent','form_focus')
+        AND e.ts > now() - interval '7 days'
+      GROUP BY form, field
+      ORDER BY events DESC
+      LIMIT 20
+    `.catch(() => []),
+    sql`
+      SELECT path,
+             COUNT(*) FILTER (WHERE kind = 'pageview_exit')::int AS exits,
+             ROUND(AVG(value_num) FILTER (WHERE kind = 'pageview_exit') / 1000.0, 1)::text AS avg_dwell_sec,
+             ROUND(AVG((meta->>'maxScrollPct')::numeric) FILTER (WHERE kind = 'pageview_exit'), 1)::text AS avg_scroll,
+             COUNT(*) FILTER (WHERE kind = 'click')::int AS clicks
+      FROM engagement_events
+      WHERE ts > now() - interval '7 days'
+        AND path IS NOT NULL
+      GROUP BY path
+      ORDER BY clicks DESC, exits DESC
+      LIMIT 25
+    `.catch(() => []),
+  ]);
+
+  const totals = {
+    liveSessions: liveSessions.length,
+    sessions14d: retention.reduce((sum, row) => sum + Number(row.sessions || 0), 0),
+    visitors14d: retention.reduce((sum, row) => sum + Number(row.visitors || 0), 0),
+    engaged14d: retention.reduce((sum, row) => sum + Number(row.engaged_sessions || 0), 0),
+  };
+
+  return json(200, {
+    ok: true,
+    generatedAt: new Date().toISOString(),
+    totals,
+    liveSessions: liveSessions.map((row) => ({
+      id: row.id,
+      anonId: row.anon_id,
+      ip: row.ip,
+      country: row.country,
+      region: row.region,
+      city: row.city,
+      landingPath: row.landing_path,
+      exitPath: row.exit_path,
+      referrer: row.referrer,
+      pageCount: row.page_count,
+      totalDwellMs: Number(row.total_dwell_ms || 0),
+      maxScrollPct: row.max_scroll_pct,
+      eventCount: row.event_count,
+      engaged: row.engaged,
+      startedAt: row.started_at,
+      lastActivity: row.last_activity,
+      lastEventKind: row.last_event_kind,
+      lastEventPath: row.last_event_path,
+      lastEventText: row.last_event_text,
+      lastEventAt: row.last_event_at,
+      interest: row.interest || "General site",
+    })),
+    retention,
+    interests: interestRows,
+    recentActivity,
+    typedSignals,
+    topForms,
+    contentDepth,
+    privacy: {
+      note: "Form telemetry stores field/form names and character counts, not raw typed text, passwords, emails, phone numbers, or message bodies.",
+    },
+  });
+}
+
 // --- Per-IP investigation endpoint (admin only) ---
 async function handleInvestigateIp(session, url) {
   if (!(await resolveAdmin(session))) {
@@ -3501,9 +3682,9 @@ async function handleLeadgenBusinesses(session, url) {
   const like = `%${q.toLowerCase()}%`;
 
   const rows = await sql`
-    SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.website,
+    SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.lat, b.lng, b.website,
            b.phone, b.industry, b.industry_group, b.sub_industry, b.tags,
-           b.status, b.created_at,
+           b.status, b.source, b.source_id, b.source_url, b.created_at,
            (SELECT COUNT(*)::int FROM lead_emails e
               WHERE e.business_id = b.id
                 AND e.opted_out_at IS NULL
@@ -4778,6 +4959,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "ops-status"           && method === "GET")  return handleOpsStatus(session);
   if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
   if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
+  if (action === "behavior-insights"    && method === "GET")  return handleBehaviorInsights(session);
   if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);
   if (action === "affiliate-stats"      && method === "GET")  return handleAffiliateStats(session, url);
   if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);

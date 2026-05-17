@@ -459,7 +459,15 @@ function LeadgenProofStrip() {
   );
 }
 
-// ---------- dashboard preview SVG mock ----------
+const MOCK_MAP_PINS = [
+  { name: "Palm Ave Dental", meta: "website found", x: 24, y: 35 },
+  { name: "Bayfront Orthodontics", meta: "2 emails found", x: 44, y: 58 },
+  { name: "Ringling Family Dental", meta: "source verified", x: 61, y: 31 },
+  { name: "Tuttle Dental Studio", meta: "crawl queued", x: 73, y: 66 },
+  { name: "North Trail Smiles", meta: "1 email found", x: 83, y: 43 },
+];
+
+// ---------- dashboard preview mock ----------
 function LeadgenDashboardMock() {
   return (
     <div className="leadgen-mock" aria-hidden="true">
@@ -501,19 +509,23 @@ function LeadgenDashboardMock() {
             <div className="leadgen-mock__kpi-delta leadgen-mock__kpi-delta--up">send cap</div>
           </div>
         </div>
-        <div className="leadgen-mock__chart">
-          <svg viewBox="0 0 320 120" width="100%" style={{ height: 'auto', aspectRatio: '320/120' }} preserveAspectRatio="xMidYMid meet">
-            <defs>
-              <linearGradient id="lg-mock-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#111827" stopOpacity="0.40" />
-                <stop offset="1" stopColor="#111827" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path d="M0 90 L20 78 L40 84 L60 65 L80 70 L100 55 L120 60 L140 42 L160 50 L180 35 L200 38 L220 26 L240 30 L260 22 L280 16 L300 22 L320 14 L320 120 L0 120 Z" fill="url(#lg-mock-fill)" />
-            <path d="M0 90 L20 78 L40 84 L60 65 L80 70 L100 55 L120 60 L140 42 L160 50 L180 35 L200 38 L220 26 L240 30 L260 22 L280 16 L300 22 L320 14" fill="none" stroke="#111827" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-            <circle cx="320" cy="14" r="4" fill="#9ca3af" />
-            <circle cx="320" cy="14" r="8" fill="#9ca3af" fillOpacity="0.25" />
-          </svg>
+        <div className="leadgen-mock-map" aria-label="Animated map preview">
+          <div className="leadgen-mock-map__streets" />
+          {MOCK_MAP_PINS.map((pin, index) => (
+            <div
+              key={pin.name}
+              className={`leadgen-mock-map__pin${pin.x > 70 ? " leadgen-mock-map__pin--right" : ""}`}
+              style={{ left: `${pin.x}%`, top: `${pin.y}%`, "--lg-pin-i": index }}
+            >
+              <span />
+              <strong>{pin.name}</strong>
+              <em>{pin.meta}</em>
+            </div>
+          ))}
+          <div className="leadgen-mock-map__legend">
+            <MapPin size={13} />
+            Pins appear before the crawl starts
+          </div>
         </div>
         <div className="leadgen-mock__rows">
           {[
