@@ -17,6 +17,17 @@
 // App.css so the leadgen command center stays visually aligned.
 
 import "leaflet/dist/leaflet.css";
+import {
+  Activity,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Mail,
+  Play,
+  RefreshCw,
+  Search,
+  Send,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { csrfFetch } from "../lib/csrf";
@@ -71,6 +82,66 @@ function pct(part, whole) {
 function jobCount(status, counts) {
   const row = (counts || []).find((r) => r.status === status);
   return Number(row?.count || 0);
+}
+
+function compactNumber(value) {
+  const n = Number(value || 0);
+  if (n >= 1000) return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+  return n.toLocaleString();
+}
+
+function statusTone(status) {
+  const s = String(status || "").toLowerCase();
+  if (["completed", "done", "sent", "running", "active"].includes(s)) return "good";
+  if (["queued", "scheduled", "draft", "pending"].includes(s)) return "wait";
+  if (["failed", "cancelled", "error", "paused"].includes(s)) return "bad";
+  return "neutral";
+}
+
+function nextLeadgenMove({ businesses, emailBusinesses, campaignQueue, queuedJobs }) {
+  if (!Number(businesses)) {
+    return {
+      title: "Start with one zip code",
+      detail: "Discovery is the first useful action. Queue a local zip to build the reviewable market list.",
+      action: "Open Discover",
+      tab: "discover",
+    };
+  }
+  if (Number(businesses) && !Number(emailBusinesses)) {
+    return {
+      title: "Crawl contact paths",
+      detail: "You have companies, but no deliverable contact list yet. Crawl published websites before building a campaign.",
+      action: "Review records",
+      tab: "discover",
+    };
+  }
+  if (Number(queuedJobs) > 0) {
+    return {
+      title: "Run the worker queue",
+      detail: "There are pending jobs. Run them now so the dashboard catches up with queued discovery and email crawls.",
+      action: "Open Jobs",
+      tab: "jobs",
+    };
+  }
+  if (!campaignQueue?.length) {
+    return {
+      title: "Build the first campaign",
+      detail: "Segments are usable now. Turn a reviewed list into a capped outreach campaign.",
+      action: "Open Email",
+      tab: "campaigns",
+    };
+  }
+  return {
+    title: "Inspect campaign performance",
+    detail: "The pipeline is active. Check sends, opens, replies, and the segments producing signal.",
+    action: "Open Reports",
+    tab: "insights",
+  };
+}
+
+function StatusChip({ status }) {
+  const label = status || "unknown";
+  return <span className={`leadgen-status-chip leadgen-status-chip--${statusTone(label)}`}>{label}</span>;
 }
 
 // ---------- main ----------
@@ -235,8 +306,8 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
     try {
       const r = await postJson("/api/portal?action=leadgen-run-jobs", {});
       const s = r.summary || {};
-      setMsg(`Worker ran ${s.picked || 0} jobs: ${s.completed || 0} completed` +
-        (s.failed ? `, ${s.failed} failed` : "") +
+      setMsg("Worker ran " + (s.picked || 0) + " jobs: " + (s.completed || 0) + " completed" +
+        (s.failed ? ", " + s.failed + " failed" : "") +
         (s.budget_exhausted ? ". Time budget hit; run again to continue." : "."));
       if (onStatusChange) await onStatusChange();
     } catch (e) {
@@ -254,7 +325,7 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
     setBusy(true); setErr(null); setMsg(null);
     try {
       const r = await postJson("/api/portal?action=leadgen-discover", { zip });
-      setMsg(r.deduped ? `Zip ${zip} was already queued. Running worker...` : `Queued discovery job #${r.job_id} for ${zip}. Running worker...`);
+      setMsg(r.deduped ? "Zip " + zip + " was already queued. Running worker..." : "Queued discovery job #" + r.job_id + " for " + zip + ". Running worker...");
       await runWorker();
       onSelectTab("discover");
     } catch (e) {
@@ -272,7 +343,7 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
     setBusy(true); setErr(null); setMsg(null);
     try {
       const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip, limit: 100 });
-      setMsg(`Queued ${r.queued || 0} email crawl jobs for ${zip}. Running worker...`);
+      setMsg("Queued " + (r.queued || 0) + " email crawl jobs for " + zip + ". Running worker...");
       await runWorker();
       onSelectTab("discover");
     } catch (e) {
@@ -282,111 +353,193 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
     }
   };
 
+  const queuedJobs = jobCount("queued", status?.job_counts);
+  const runningJobs = jobCount("running", status?.job_counts);
+  const nextMove = nextLeadgenMove({ businesses, emailBusinesses, campaignQueue, queuedJobs });
+  const stages = [
+    {
+      icon: Search,
+      label: "Discover",
+      value: compactNumber(businesses),
+      detail: compactNumber(withWebsite) + " with websites",
+      active: Number(businesses) > 0,
+    },
+    {
+      icon: Mail,
+      label: "Verify",
+      value: compactNumber(emails),
+      detail: compactNumber(emailBusinesses) + " businesses with email",
+      active: Number(emailBusinesses) > 0,
+    },
+    {
+      icon: CheckCircle2,
+      label: "Review",
+      value: compactNumber(reviewQueue.length),
+      detail: "records ready to inspect",
+      active: reviewQueue.length > 0,
+    },
+    {
+      icon: Send,
+      label: "Campaign",
+      value: compactNumber(campaignQueue.length),
+      detail: compactNumber(sent) + " sent so far",
+      active: campaignQueue.length > 0,
+    },
+    {
+      icon: BarChart3,
+      label: "Learn",
+      value: compactNumber(replies),
+      detail: pct(replies, sent) + " reply rate",
+      active: Number(replies) > 0,
+    },
+  ];
+
   return (
     <div className="leadgen-command">
-      <section className="leadgen-command-hero">
-        <div>
-          <span className="eyebrow">Leadgen operating console</span>
-          <h2>Find local companies, verify contact paths, then launch the reviewed campaign.</h2>
+      <section className="leadgen-command-console">
+        <div className="leadgen-console-main">
+          <div className="leadgen-console-topline">
+            <span className="eyebrow">Live leadgen workspace</span>
+            <span className="leadgen-powered-pill">{queuedJobs} queued jobs</span>
+          </div>
+          <h2>Operate the local prospect pipeline from one screen.</h2>
           <p>
-            This dashboard is the product: public-source business discovery,
-            website email crawling, record review, campaign materialization,
-            send tracking, and job diagnostics in one workflow.
+            Enter a zip, discover public business records, crawl published
+            contact paths, review the list, then launch a capped campaign.
           </p>
-          <div className="leadgen-command-actions">
-            <button type="button" className="btn btn-primary" onClick={() => onSelectTab("discover")}>Review records</button>
-            <button type="button" className="btn btn-secondary" onClick={() => onSelectTab("campaigns")}>Build campaign</button>
-            <button type="button" className="btn btn-secondary" onClick={() => onSelectTab("jobs")}>Watch jobs</button>
+
+          <div className="leadgen-console-actions" aria-label="Leadgen pipeline controls">
+            <label className="leadgen-zip-field">
+              <span>Target zip</span>
+              <input
+                value={zip}
+                onChange={(e) => setZip(e.target.value)}
+                inputMode="numeric"
+                pattern="\d{5}"
+                placeholder="34237"
+                className="admin-leadgen-input admin-leadgen-input--zip"
+                aria-label="Zip code"
+              />
+            </label>
+            <button type="button" className="btn btn-primary" onClick={queueDiscover} disabled={busy}>
+              <Search size={16} aria-hidden="true" />
+              Discover
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={queueEmailCrawls} disabled={busy}>
+              <Mail size={16} aria-hidden="true" />
+              Crawl emails
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={runWorker} disabled={busy}>
+              <Play size={16} aria-hidden="true" />
+              Run jobs
+            </button>
+          </div>
+
+          {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
+          {err ? <p className="admin-leadgen-err">{err}</p> : null}
+
+          <div className="leadgen-stage-list" aria-label="Pipeline stages">
+            {stages.map((stage) => {
+              const Icon = stage.icon;
+              return (
+                <article key={stage.label} className={"leadgen-stage" + (stage.active ? " is-active" : "")}>
+                  <span className="leadgen-stage__icon"><Icon size={16} aria-hidden="true" /></span>
+                  <div>
+                    <strong>{stage.label}</strong>
+                    <em>{stage.value}</em>
+                    <span>{stage.detail}</span>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
-        <div className="leadgen-command-scorecard" aria-label="Workspace snapshot">
-          <div><strong>{Number(businesses).toLocaleString()}</strong><span>local records</span></div>
-          <div><strong>{Number(emails).toLocaleString()}</strong><span>deliverable emails</span></div>
-          <div><strong>{Number(replies).toLocaleString()}</strong><span>tracked replies</span></div>
+
+        <aside className="leadgen-next-card" aria-label="Recommended next action">
+          <div className="leadgen-next-card__icon"><Activity size={18} aria-hidden="true" /></div>
+          <span className="eyebrow">Next best move</span>
+          <h3>{nextMove.title}</h3>
+          <p>{nextMove.detail}</p>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => onSelectTab(nextMove.tab)}>
+            {nextMove.action}
+            <ArrowRight size={15} aria-hidden="true" />
+          </button>
+          <dl className="leadgen-console-metrics">
+            <div>
+              <dt>Records</dt>
+              <dd>{compactNumber(businesses)}</dd>
+            </div>
+            <div>
+              <dt>Emails</dt>
+              <dd>{compactNumber(emails)}</dd>
+            </div>
+            <div>
+              <dt>Replies</dt>
+              <dd>{compactNumber(replies)}</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+
+      <section className="leadgen-signal-panel">
+        <div className="admin-leadgen-section-head">
+          <div>
+            <h2 className="title-2">Pipeline health</h2>
+            <p className="admin-leadgen-muted">Coverage and activity from the real leadgen tables.</p>
+          </div>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={onStatusChange} disabled={busy}>
+            <RefreshCw size={14} aria-hidden="true" />
+            Refresh
+          </button>
+        </div>
+        <div className="leadgen-signal-grid">
+          <div><strong>{pct(withWebsite, businesses)}</strong><span>records with websites</span></div>
+          <div><strong>{pct(emailBusinesses, businesses)}</strong><span>businesses with email</span></div>
+          <div><strong>{pct(replies, sent)}</strong><span>reply rate on sent email</span></div>
+          <div><strong>{runningJobs}</strong><span>worker jobs running</span></div>
         </div>
       </section>
 
-      <div className="leadgen-ops-grid">
-        <section className="leadgen-pipeline-card">
+      <div className="leadgen-command-grid">
+        <section className="admin-aff-card leadgen-data-board">
           <div className="admin-leadgen-section-head">
             <div>
-              <h2 className="title-2">Run the lead pipeline</h2>
-              <p className="admin-leadgen-muted">Queue real worker jobs from the dashboard, then inspect the records they produce.</p>
+              <h2 className="title-2">Ready segments</h2>
+              <p className="admin-leadgen-muted">Segments with enough contact signal to turn into a campaign.</p>
             </div>
-            <span className="leadgen-powered-pill">{jobCount("queued", status?.job_counts)} queued</span>
-          </div>
-          <div className="leadgen-pipeline-controls">
-            <input
-              value={zip}
-              onChange={(e) => setZip(e.target.value)}
-              inputMode="numeric"
-              pattern="\d{5}"
-              placeholder="34237"
-              className="admin-leadgen-input admin-leadgen-input--zip"
-              aria-label="Zip code"
-            />
-            <button type="button" className="btn btn-primary" onClick={queueDiscover} disabled={busy}>
-              Discover businesses
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={queueEmailCrawls} disabled={busy}>
-              Crawl published emails
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={runWorker} disabled={busy}>
-              Run pending jobs
-            </button>
-          </div>
-          {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
-          {err ? <p className="admin-leadgen-err">{err}</p> : null}
-        </section>
-
-        <section className="leadgen-pipeline-card">
-          <div className="admin-leadgen-section-head">
-            <h2 className="title-2">Coverage</h2>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={onStatusChange} disabled={busy}>Refresh</button>
-          </div>
-          <div className="leadgen-health-grid">
-            <div><strong>{pct(withWebsite, businesses)}</strong><span>records with websites</span></div>
-            <div><strong>{pct(emailBusinesses, businesses)}</strong><span>businesses with email</span></div>
-            <div><strong>{pct(replies, sent)}</strong><span>reply rate on sent email</span></div>
-            <div><strong>{jobCount("running", status?.job_counts)}</strong><span>worker jobs running</span></div>
-          </div>
-        </section>
-      </div>
-
-      <div className="leadgen-command-grid">
-        <section className="admin-aff-card leadgen-launch-board">
-          <div className="admin-leadgen-section-head">
-            <h2 className="title-2">Segments ready now</h2>
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("discover")}>Open Discover</button>
           </div>
           {readySegments.length ? readySegments.map((segment) => (
-            <article key={`${segment.zip}-${segment.industry_group}`} className="leadgen-play-row">
+            <article key={segment.zip + "-" + (segment.industry_group || "Other")} className="leadgen-data-row">
               <div>
                 <strong>{segment.zip} - {segment.industry_group || "Other"}</strong>
-                <span>{segment.city || "-"} · {segment.businesses} businesses</span>
+                <span>{segment.city || "-"} - {segment.businesses} businesses</span>
               </div>
-              <div>
-                <strong>{segment.with_email} with email</strong>
+              <div className="leadgen-mini-metrics">
+                <span>{segment.with_email} with email</span>
                 <span>{segment.with_website} with website</span>
               </div>
             </article>
           )) : <p className="admin-leadgen-empty">No ready segments yet. Run discovery and email crawling first.</p>}
         </section>
 
-        <section className="admin-aff-card leadgen-launch-board">
+        <section className="admin-aff-card leadgen-data-board">
           <div className="admin-leadgen-section-head">
-            <h2 className="title-2">Records to review</h2>
+            <div>
+              <h2 className="title-2">Review queue</h2>
+              <p className="admin-leadgen-muted">Businesses with deliverable contacts, ready for human review.</p>
+            </div>
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("discover")}>Review list</button>
           </div>
           <div className="leadgen-review-list">
             {reviewQueue.length ? reviewQueue.map((row) => (
-              <article key={row.id} className="leadgen-review-row">
+              <article key={row.id} className="leadgen-data-row">
                 <div>
                   <strong>{row.name}</strong>
-                  <span>{[row.city, row.zip, row.industry_group || row.sub_industry].filter(Boolean).join(" · ")}</span>
+                  <span>{[row.city, row.zip, row.industry_group || row.sub_industry].filter(Boolean).join(" - ")}</span>
                 </div>
-                <div>
-                  <strong>{row.deliverable_emails} email{Number(row.deliverable_emails) === 1 ? "" : "s"}</strong>
+                <div className="leadgen-mini-metrics">
+                  <span>{row.deliverable_emails} email{Number(row.deliverable_emails) === 1 ? "" : "s"}</span>
                   {row.website ? <a href={row.website} target="_blank" rel="noreferrer">{hostFor(row.website)}</a> : <span>No website</span>}
                 </div>
               </article>
@@ -394,38 +547,45 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
           </div>
         </section>
 
-        <section className="admin-aff-card leadgen-launch-board">
+        <section className="admin-aff-card leadgen-data-board">
           <div className="admin-leadgen-section-head">
-            <h2 className="title-2">Campaign queue</h2>
+            <div>
+              <h2 className="title-2">Campaign queue</h2>
+              <p className="admin-leadgen-muted">Created campaigns with current send and response status.</p>
+            </div>
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("campaigns")}>Open Email</button>
           </div>
           {campaignQueue.length ? campaignQueue.map((campaign) => (
-            <article key={campaign.id} className="leadgen-play-row">
+            <article key={campaign.id} className="leadgen-data-row">
               <div>
                 <strong>{campaign.name}</strong>
-                <span>{campaign.status} · {campaign.daily_cap}/day cap</span>
+                <span>{campaign.daily_cap}/day cap</span>
               </div>
-              <div>
-                <strong>{campaign.sent} sent / {campaign.queued} queued</strong>
-                <span>{campaign.opened} opened · {campaign.replied} replied</span>
+              <div className="leadgen-mini-metrics">
+                <StatusChip status={campaign.status} />
+                <span>{campaign.sent} sent / {campaign.queued} queued</span>
+                <span>{campaign.opened} opened - {campaign.replied} replied</span>
               </div>
             </article>
           )) : <p className="admin-leadgen-empty">No campaigns yet. Build one from the Email tab after a segment is ready.</p>}
         </section>
 
-        <section className="admin-aff-card leadgen-launch-board">
+        <section className="admin-aff-card leadgen-data-board">
           <div className="admin-leadgen-section-head">
-            <h2 className="title-2">Worker jobs</h2>
+            <div>
+              <h2 className="title-2">Worker jobs</h2>
+              <p className="admin-leadgen-muted">Recent crawl and campaign jobs, with progress.</p>
+            </div>
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("jobs")}>Open Jobs</button>
           </div>
           {recentJobs.length ? recentJobs.slice(0, 6).map((job) => (
-            <article key={job.id} className="leadgen-play-row">
+            <article key={job.id} className="leadgen-data-row">
               <div>
                 <strong>#{job.id} {job.kind}</strong>
                 <span>{fmtTime(job.created_at)}</span>
               </div>
-              <div>
-                <strong>{job.status}</strong>
+              <div className="leadgen-mini-metrics">
+                <StatusChip status={job.status} />
                 <span>{job.progress || 0}/{job.total || 0}</span>
               </div>
             </article>
