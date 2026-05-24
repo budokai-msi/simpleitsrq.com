@@ -3464,7 +3464,7 @@ async function handleLeadgenStatus(session) {
 
   // Aggregate counts in one round-trip per table. These power the
   // dashboard top-line numbers.
-  const [biz, emails, camps, sends, jobs] = await Promise.all([
+  const [biz, emails, camps, sends, jobs, readySegments, reviewQueue, campaignQueue, jobCounts] = await Promise.all([
     sql`SELECT COUNT(*)::int AS total,
                COUNT(*) FILTER (WHERE status='active')::int AS active,
                COUNT(*) FILTER (WHERE website IS NOT NULL)::int AS with_website
@@ -3486,6 +3486,51 @@ async function handleLeadgenStatus(session) {
         FROM lead_crawl_jobs
         ORDER BY created_at DESC
         LIMIT 20`,
+    sql`SELECT b.zip,
+               COALESCE(NULLIF(MAX(b.city), ''), '-') AS city,
+               COALESCE(b.industry_group, 'Other') AS industry_group,
+               COUNT(*)::int AS businesses,
+               COUNT(*) FILTER (WHERE b.website IS NOT NULL)::int AS with_website,
+               COUNT(*) FILTER (WHERE EXISTS (
+                 SELECT 1 FROM lead_emails e
+                 WHERE e.business_id = b.id
+                   AND e.opted_out_at IS NULL
+                   AND e.bounced_at IS NULL
+               ))::int AS with_email
+        FROM lead_businesses b
+        WHERE b.status = 'active'
+          AND b.zip IS NOT NULL
+        GROUP BY b.zip, b.industry_group
+        HAVING COUNT(*) >= 2
+        ORDER BY with_email DESC, businesses DESC
+        LIMIT 8`,
+    sql`SELECT b.id, b.name, b.city, b.state, b.zip, b.website, b.phone,
+               b.industry_group, b.sub_industry, b.source_url, b.created_at,
+               (SELECT COUNT(*)::int FROM lead_emails e
+                 WHERE e.business_id = b.id
+                   AND e.opted_out_at IS NULL
+                   AND e.bounced_at IS NULL) AS deliverable_emails
+        FROM lead_businesses b
+        WHERE b.status = 'active'
+        ORDER BY deliverable_emails DESC, b.created_at DESC
+        LIMIT 8`,
+    sql`SELECT c.id, c.name, c.status, c.daily_cap, c.updated_at,
+               (SELECT COUNT(*)::int FROM lead_campaign_sends s WHERE s.campaign_id = c.id) AS total_sends,
+               (SELECT COUNT(*)::int FROM lead_campaign_sends s
+                 WHERE s.campaign_id = c.id AND s.status = 'queued') AS queued,
+               (SELECT COUNT(*)::int FROM lead_campaign_sends s
+                 WHERE s.campaign_id = c.id AND s.sent_at IS NOT NULL) AS sent,
+               (SELECT COUNT(*)::int FROM lead_campaign_sends s
+                 WHERE s.campaign_id = c.id AND s.opened_at IS NOT NULL) AS opened,
+               (SELECT COUNT(*)::int FROM lead_campaign_sends s
+                 WHERE s.campaign_id = c.id AND s.replied_at IS NOT NULL) AS replied
+        FROM lead_campaigns c
+        ORDER BY c.updated_at DESC, c.id DESC
+        LIMIT 6`,
+    sql`SELECT status, COUNT(*)::int AS count
+        FROM lead_crawl_jobs
+        GROUP BY status
+        ORDER BY status`,
   ]);
 
   return json(200, {
@@ -3495,6 +3540,10 @@ async function handleLeadgenStatus(session) {
     campaigns: camps[0] || {},
     sends: sends[0] || {},
     recent_jobs: jobs,
+    ready_segments: readySegments || [],
+    review_queue: reviewQueue || [],
+    campaign_queue: campaignQueue || [],
+    job_counts: jobCounts || [],
   });
 }
 

@@ -640,6 +640,7 @@
 
 .leadgen-command-scorecard span,
 .leadgen-play-row span,
+.leadgen-review-row span,
 .leadgen-inbox-card span,
 .leadgen-inbox-card em {
   display: block;
@@ -692,13 +693,64 @@
 }
 
 .leadgen-command-grid,
+.leadgen-ops-grid,
 .leadgen-builder-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
-.leadgen-play-row {
+.leadgen-pipeline-card {
+  padding: 18px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 10px;
+}
+
+.leadgen-pipeline-controls {
+  display: grid;
+  grid-template-columns: 120px repeat(3, minmax(0, auto));
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.leadgen-health-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.leadgen-health-grid div {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: var(--surface-2, #f8fafc);
+}
+
+.leadgen-health-grid strong {
+  display: block;
+  color: var(--text-1, #111827);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.leadgen-health-grid span {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-3, #6b7280);
+  font-size: 0.78rem;
+}
+
+.leadgen-review-list {
+  display: grid;
+  gap: 0;
+}
+
+.leadgen-play-row,
+.leadgen-review-row {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(150px, 0.8fr);
   gap: 12px;
@@ -706,8 +758,16 @@
   border-top: 1px solid var(--border, #d1d5db);
 }
 
-.leadgen-play-row:first-of-type {
+.leadgen-play-row:first-of-type,
+.leadgen-review-row:first-of-type {
   border-top: 0;
+}
+
+.leadgen-review-row a {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .leadgen-task-list {
@@ -790,6 +850,7 @@
 @media (max-width: 960px) {
   .leadgen-command-hero,
   .leadgen-command-grid,
+  .leadgen-ops-grid,
   .leadgen-builder-grid,
   .leadgen-inbox-board {
     grid-template-columns: 1fr;
@@ -809,7 +870,10 @@
 
   .leadgen-workflow,
   .leadgen-ad-preview dl,
-  .leadgen-play-row {
+  .leadgen-pipeline-controls,
+  .leadgen-health-grid,
+  .leadgen-play-row,
+  .leadgen-review-row {
     grid-template-columns: 1fr;
   }
 }
@@ -818,6 +882,8 @@
 [data-theme="dark"] .leadgen-command-hero > div:first-child,
 [data-theme="dark"] .leadgen-command-scorecard,
 [data-theme="dark"] .leadgen-workflow-step,
+[data-theme="dark"] .leadgen-pipeline-card,
+[data-theme="dark"] .leadgen-health-grid div,
 [data-theme="dark"] .leadgen-builder-panel,
 [data-theme="dark"] .leadgen-ad-preview,
 [data-theme="dark"] .leadgen-social-preview,
@@ -831,6 +897,7 @@
 [data-theme="dark"] .leadgen-command-hero h2,
 [data-theme="dark"] .leadgen-command-scorecard strong,
 [data-theme="dark"] .leadgen-workflow-step h3,
+[data-theme="dark"] .leadgen-health-grid strong,
 [data-theme="dark"] .leadgen-ad-preview h3,
 [data-theme="dark"] .leadgen-social-preview h3,
 [data-theme="dark"] .leadgen-inbox-column h3,
@@ -840,6 +907,7 @@
 
 [data-theme="dark"] .leadgen-command-hero p,
 [data-theme="dark"] .leadgen-workflow-step p,
+[data-theme="dark"] .leadgen-health-grid span,
 [data-theme="dark"] .leadgen-ad-preview p,
 [data-theme="dark"] .leadgen-social-preview p,
 [data-theme="dark"] .leadgen-inbox-card p,

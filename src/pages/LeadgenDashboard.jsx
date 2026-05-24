@@ -2,10 +2,12 @@
 // behind admin role (the API enforces; the UI just hides itself if the
 // status call returns 401/403).
 //
-// Three tabs:
+// Core tabs:
+//   - Command   - live operating dashboard over real leadgen tables
 //   - Discover  - enter zip -> queue OSM crawl, list discovered businesses,
 //                 batch-queue email crawls per zip
-//   - Campaigns - list / create / start / monitor outreach campaigns
+//   - Email     - list / create / start / monitor outreach campaigns
+//   - Reports   - segment, email-health, and campaign performance views
 //   - Jobs      - recent crawl_jobs queue (diagnostics)
 //
 // All mutations go through csrfFetch (double-submit cookie) and POST to
@@ -60,24 +62,16 @@ function Stat({ label, value, hint, accent }) {
   );
 }
 
-const WORKFLOW_STEPS = [
-  ["Audience", "Pick city, niche, and public-source records."],
-  ["Offer", "Choose one clean promise and one landing page."],
-  ["Channels", "Launch email, Google search, Meta, and socials in one plan."],
-  ["Follow-up", "Track replies, calls, booked jobs, and next actions."],
-];
+function pct(part, whole) {
+  const p = Number(part || 0);
+  const w = Number(whole || 0);
+  return w > 0 ? `${Math.round((p / w) * 100)}%` : "0%";
+}
 
-const ACTIVE_PLAYS = [
-  { name: "Sarasota computer repair", channel: "Google + email", stage: "Ready to launch", metric: "28 verified shops" },
-  { name: "Bradenton IT support", channel: "Search ads", stage: "Needs budget", metric: "$32 suggested daily" },
-  { name: "Venice network setup", channel: "Email + GBP post", stage: "Drafted", metric: "14 warm prospects" },
-];
-
-const SAMPLE_INBOX = [
-  { name: "Coastal Dental Group", city: "Sarasota", need: "WiFi drops in operatories", value: "$1.8k setup", stage: "New reply" },
-  { name: "Manatee Builders", city: "Bradenton", need: "Jobsite camera quote", value: "$2.4k install", stage: "Qualified" },
-  { name: "Venice CPA Office", city: "Venice", need: "UPS + backup review", value: "$650 visit", stage: "Book call" },
-];
+function jobCount(status, counts) {
+  const row = (counts || []).find((r) => r.status === status);
+  return Number(row?.count || 0);
+}
 
 // ---------- main ----------
 
@@ -143,8 +137,8 @@ export default function LeadgenDashboard() {
               <span className="eyebrow">Powered by Simple IT SRQ</span>
               <h1 className="display-2">Leadgen Command Center</h1>
               <p className="leadgen-admin-hero__sub">
-                Find local buyers, build an offer, launch email and ad drafts,
-                track replies, and hand hot leads to the next follow-up.
+                Discover local businesses, crawl published contact paths, review
+                records, launch capped email campaigns, and inspect every worker job.
               </p>
             </div>
             <div className="leadgen-admin-hero__actions">
@@ -186,9 +180,6 @@ export default function LeadgenDashboard() {
             ["command", "Command"],
             ["discover", "Discover"],
             ["campaigns", "Email"],
-            ["ads", "Ads"],
-            ["social", "Social"],
-            ["inbox", "Inbox"],
             ["insights", "Reports"],
             ["jobs", "Jobs"],
           ].map(([id, label]) => (
@@ -204,12 +195,9 @@ export default function LeadgenDashboard() {
         </nav>
 
         <div className="admin-leadgen-tab-body">
-          {tab === "command" && <CommandTab status={status} onSelectTab={setTab} />}
+          {tab === "command" && <CommandTab status={status} onSelectTab={setTab} onStatusChange={loadStatus} />}
           {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
           {tab === "campaigns" && <CampaignsTab />}
-          {tab === "ads" && <AdsTab />}
-          {tab === "social" && <SocialTab />}
-          {tab === "inbox" && <InboxTab />}
           {tab === "insights" && <InsightsTab />}
           {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} />}
         </div>
@@ -226,25 +214,89 @@ export default function LeadgenDashboard() {
 // Command tab
 // ============================================================
 
-function CommandTab({ status, onSelectTab }) {
+function CommandTab({ status, onSelectTab, onStatusChange }) {
   const businesses = status?.businesses?.total ?? 0;
+  const withWebsite = status?.businesses?.with_website ?? 0;
   const emails = status?.emails?.deliverable ?? 0;
+  const emailBusinesses = status?.emails?.businesses_with_email ?? 0;
+  const sent = status?.sends?.sent ?? 0;
   const replies = status?.sends?.replied ?? 0;
+  const readySegments = status?.ready_segments || [];
+  const reviewQueue = status?.review_queue || [];
+  const campaignQueue = status?.campaign_queue || [];
+  const recentJobs = status?.recent_jobs || [];
+  const [zip, setZip] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const [err, setErr] = useState(null);
+
+  const runWorker = async () => {
+    setBusy(true); setErr(null); setMsg(null);
+    try {
+      const r = await postJson("/api/portal?action=leadgen-run-jobs", {});
+      const s = r.summary || {};
+      setMsg(`Worker ran ${s.picked || 0} jobs: ${s.completed || 0} completed` +
+        (s.failed ? `, ${s.failed} failed` : "") +
+        (s.budget_exhausted ? ". Time budget hit; run again to continue." : "."));
+      if (onStatusChange) await onStatusChange();
+    } catch (e) {
+      setErr(String(e.message || e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const queueDiscover = async () => {
+    if (!/^\d{5}$/.test(zip)) {
+      setErr("Enter a 5-digit US zip code.");
+      return;
+    }
+    setBusy(true); setErr(null); setMsg(null);
+    try {
+      const r = await postJson("/api/portal?action=leadgen-discover", { zip });
+      setMsg(r.deduped ? `Zip ${zip} was already queued. Running worker...` : `Queued discovery job #${r.job_id} for ${zip}. Running worker...`);
+      await runWorker();
+      onSelectTab("discover");
+    } catch (e) {
+      setErr(String(e.message || e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const queueEmailCrawls = async () => {
+    if (!/^\d{5}$/.test(zip)) {
+      setErr("Enter the zip you want to crawl for published emails.");
+      return;
+    }
+    setBusy(true); setErr(null); setMsg(null);
+    try {
+      const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip, limit: 100 });
+      setMsg(`Queued ${r.queued || 0} email crawl jobs for ${zip}. Running worker...`);
+      await runWorker();
+      onSelectTab("discover");
+    } catch (e) {
+      setErr(String(e.message || e));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="leadgen-command">
       <section className="leadgen-command-hero">
         <div>
-          <span className="eyebrow">Local growth cockpit</span>
-          <h2>One place to find buyers, run campaigns, and turn replies into booked work.</h2>
+          <span className="eyebrow">Leadgen operating console</span>
+          <h2>Find local companies, verify contact paths, then launch the reviewed campaign.</h2>
           <p>
-            Built for Sarasota, Bradenton, Venice, Lakewood Ranch, and Nokomis
-            operators who do not want five disconnected marketing tabs.
+            This dashboard is the product: public-source business discovery,
+            website email crawling, record review, campaign materialization,
+            send tracking, and job diagnostics in one workflow.
           </p>
           <div className="leadgen-command-actions">
-            <button type="button" className="btn btn-primary" onClick={() => onSelectTab("discover")}>Find leads</button>
-            <button type="button" className="btn btn-secondary" onClick={() => onSelectTab("ads")}>Plan ads</button>
-            <button type="button" className="btn btn-secondary" onClick={() => onSelectTab("campaigns")}>Launch email</button>
+            <button type="button" className="btn btn-primary" onClick={() => onSelectTab("discover")}>Review records</button>
+            <button type="button" className="btn btn-secondary" onClick={() => onSelectTab("campaigns")}>Build campaign</button>
+            <button type="button" className="btn btn-secondary" onClick={() => onSelectTab("jobs")}>Watch jobs</button>
           </div>
         </div>
         <div className="leadgen-command-scorecard" aria-label="Workspace snapshot">
@@ -254,187 +306,131 @@ function CommandTab({ status, onSelectTab }) {
         </div>
       </section>
 
-      <div className="leadgen-workflow">
-        {WORKFLOW_STEPS.map(([title, body], index) => (
-          <article key={title} className="leadgen-workflow-step">
-            <span>{index + 1}</span>
-            <h3>{title}</h3>
-            <p>{body}</p>
-          </article>
-        ))}
+      <div className="leadgen-ops-grid">
+        <section className="leadgen-pipeline-card">
+          <div className="admin-leadgen-section-head">
+            <div>
+              <h2 className="title-2">Run the lead pipeline</h2>
+              <p className="admin-leadgen-muted">Queue real worker jobs from the dashboard, then inspect the records they produce.</p>
+            </div>
+            <span className="leadgen-powered-pill">{jobCount("queued", status?.job_counts)} queued</span>
+          </div>
+          <div className="leadgen-pipeline-controls">
+            <input
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              inputMode="numeric"
+              pattern="\d{5}"
+              placeholder="34237"
+              className="admin-leadgen-input admin-leadgen-input--zip"
+              aria-label="Zip code"
+            />
+            <button type="button" className="btn btn-primary" onClick={queueDiscover} disabled={busy}>
+              Discover businesses
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={queueEmailCrawls} disabled={busy}>
+              Crawl published emails
+            </button>
+            <button type="button" className="btn btn-secondary" onClick={runWorker} disabled={busy}>
+              Run pending jobs
+            </button>
+          </div>
+          {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
+          {err ? <p className="admin-leadgen-err">{err}</p> : null}
+        </section>
+
+        <section className="leadgen-pipeline-card">
+          <div className="admin-leadgen-section-head">
+            <h2 className="title-2">Coverage</h2>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onStatusChange} disabled={busy}>Refresh</button>
+          </div>
+          <div className="leadgen-health-grid">
+            <div><strong>{pct(withWebsite, businesses)}</strong><span>records with websites</span></div>
+            <div><strong>{pct(emailBusinesses, businesses)}</strong><span>businesses with email</span></div>
+            <div><strong>{pct(replies, sent)}</strong><span>reply rate on sent email</span></div>
+            <div><strong>{jobCount("running", status?.job_counts)}</strong><span>worker jobs running</span></div>
+          </div>
+        </section>
       </div>
 
       <div className="leadgen-command-grid">
         <section className="admin-aff-card leadgen-launch-board">
           <div className="admin-leadgen-section-head">
-            <h2 className="title-2">Active plays</h2>
-            <span className="leadgen-powered-pill">Powered by Simple IT SRQ</span>
+            <h2 className="title-2">Segments ready now</h2>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("discover")}>Open Discover</button>
           </div>
-          {ACTIVE_PLAYS.map((play) => (
-            <article key={play.name} className="leadgen-play-row">
+          {readySegments.length ? readySegments.map((segment) => (
+            <article key={`${segment.zip}-${segment.industry_group}`} className="leadgen-play-row">
               <div>
-                <strong>{play.name}</strong>
-                <span>{play.channel}</span>
+                <strong>{segment.zip} - {segment.industry_group || "Other"}</strong>
+                <span>{segment.city || "-"} · {segment.businesses} businesses</span>
               </div>
               <div>
-                <strong>{play.stage}</strong>
-                <span>{play.metric}</span>
+                <strong>{segment.with_email} with email</strong>
+                <span>{segment.with_website} with website</span>
               </div>
             </article>
-          ))}
+          )) : <p className="admin-leadgen-empty">No ready segments yet. Run discovery and email crawling first.</p>}
         </section>
 
         <section className="admin-aff-card leadgen-launch-board">
           <div className="admin-leadgen-section-head">
-            <h2 className="title-2">Next best moves</h2>
+            <h2 className="title-2">Records to review</h2>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("discover")}>Review list</button>
           </div>
-          <ol className="leadgen-task-list">
-            <li>Pick one buyer intent page: computer repair, IT support, or network setup.</li>
-            <li>Attach one verified lead segment from Discover.</li>
-            <li>Generate the email, Google ad, Meta ad, and GBP post together.</li>
-            <li>Route replies into Inbox and book the first qualified call.</li>
-          </ol>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function AdsTab() {
-  const [city, setCity] = useState("Sarasota");
-  const [service, setService] = useState("computer repair");
-  const [budget, setBudget] = useState(450);
-  const [saved, setSaved] = useState(false);
-  const dailyBudget = Math.max(5, Math.round(Number(budget || 0) / 30));
-
-  const headline = `${city} ${service} help`;
-  const description = `Local Simple IT SRQ team for ${service}, office visits, and practical follow-up. Call or book this week.`;
-
-  return (
-    <div className="leadgen-channel">
-      <div className="admin-leadgen-section-head">
-        <div>
-          <h2 className="title-2">Ads launch desk</h2>
-          <p className="admin-leadgen-muted">Draft Google and Meta campaigns from the same local offer before API publishing is connected.</p>
-        </div>
-        <span className="leadgen-powered-pill">Customer ad brief</span>
-      </div>
-
-      <div className="leadgen-builder-grid">
-        <section className="admin-aff-card leadgen-builder-panel">
-          <Field label="City">
-            <select className="admin-leadgen-input" value={city} onChange={(e) => setCity(e.target.value)}>
-              {["Sarasota", "Bradenton", "Venice", "Lakewood Ranch", "Nokomis"].map((name) => <option key={name}>{name}</option>)}
-            </select>
-          </Field>
-          <Field label="Buyer intent">
-            <select className="admin-leadgen-input" value={service} onChange={(e) => setService(e.target.value)}>
-              {["computer repair", "IT support", "network setup", "WiFi repair", "camera install", "backup setup"].map((name) => <option key={name}>{name}</option>)}
-            </select>
-          </Field>
-          <Field label="Monthly test budget">
-            <input className="admin-leadgen-input" type="number" min="150" step="50" value={budget} onChange={(e) => setBudget(e.target.value)} />
-          </Field>
-          <div className="leadgen-builder-actions">
-            <button type="button" className="btn btn-primary" onClick={() => setSaved(true)}>Save ad brief</button>
-            <button type="button" className="btn btn-secondary" onClick={() => window.print()}>Export brief</button>
-          </div>
-          {saved ? <p className="admin-leadgen-ok">Ad brief saved locally in this workspace view.</p> : null}
-        </section>
-
-        <section className="admin-aff-card leadgen-ad-preview">
-          <span className="eyebrow">Google Search</span>
-          <h3>{headline}</h3>
-          <p>{description}</p>
-          <dl>
-            <div><dt>Daily budget</dt><dd>${dailyBudget}</dd></div>
-            <div><dt>Landing page</dt><dd>/services or city money page</dd></div>
-            <div><dt>Conversion</dt><dd>Call, text, booking, form</dd></div>
-          </dl>
-          <div className="leadgen-ad-copy">
-            <strong>Meta angle</strong>
-            <p>Before the next office tech emergency, get a local IT person who can show up, fix the mess, and document what changed.</p>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function SocialTab() {
-  const [channel, setChannel] = useState("Google Business Profile");
-  const [topic, setTopic] = useState("small office UPS check");
-  const [draft, setDraft] = useState("We are checking small office battery backups in Sarasota and Bradenton this week. If your front desk PC, modem, or network closet dies when power blinks, book a quick UPS check before storm season gets rude.");
-
-  return (
-    <div className="leadgen-channel">
-      <div className="admin-leadgen-section-head">
-        <div>
-          <h2 className="title-2">Social planner</h2>
-          <p className="admin-leadgen-muted">Write simple local posts that support the same offer your ads and email are pushing.</p>
-        </div>
-        <span className="leadgen-powered-pill">Powered by Simple IT SRQ</span>
-      </div>
-
-      <div className="leadgen-builder-grid">
-        <section className="admin-aff-card leadgen-builder-panel">
-          <Field label="Channel">
-            <select className="admin-leadgen-input" value={channel} onChange={(e) => setChannel(e.target.value)}>
-              {["Google Business Profile", "Facebook", "LinkedIn", "Instagram"].map((name) => <option key={name}>{name}</option>)}
-            </select>
-          </Field>
-          <Field label="Topic">
-            <input className="admin-leadgen-input" value={topic} onChange={(e) => setTopic(e.target.value)} />
-          </Field>
-          <Field label="Post draft" full>
-            <textarea className="admin-leadgen-input admin-leadgen-textarea" rows={8} value={draft} onChange={(e) => setDraft(e.target.value)} />
-          </Field>
-          <div className="leadgen-builder-actions">
-            <button type="button" className="btn btn-primary">Save draft</button>
-            <button type="button" className="btn btn-secondary">Add to calendar</button>
-          </div>
-        </section>
-
-        <section className="admin-aff-card leadgen-social-preview">
-          <span className="eyebrow">{channel}</span>
-          <h3>{topic}</h3>
-          <p>{draft}</p>
-          <div className="leadgen-calendar-strip">
-            <span>Mon: GBP</span>
-            <span>Wed: Facebook</span>
-            <span>Fri: LinkedIn</span>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function InboxTab() {
-  return (
-    <div className="leadgen-channel">
-      <div className="admin-leadgen-section-head">
-        <div>
-          <h2 className="title-2">Unified inbox</h2>
-          <p className="admin-leadgen-muted">Replies, calls, form fills, and ad leads should land in one qualification board.</p>
-        </div>
-        <button type="button" className="btn btn-primary btn-sm">New follow-up task</button>
-      </div>
-
-      <div className="leadgen-inbox-board">
-        {["New reply", "Qualified", "Book call"].map((stage) => (
-          <section key={stage} className="leadgen-inbox-column">
-            <h3>{stage}</h3>
-            {SAMPLE_INBOX.filter((lead) => lead.stage === stage).map((lead) => (
-              <article key={lead.name} className="leadgen-inbox-card">
-                <strong>{lead.name}</strong>
-                <span>{lead.city}</span>
-                <p>{lead.need}</p>
-                <em>{lead.value}</em>
+          <div className="leadgen-review-list">
+            {reviewQueue.length ? reviewQueue.map((row) => (
+              <article key={row.id} className="leadgen-review-row">
+                <div>
+                  <strong>{row.name}</strong>
+                  <span>{[row.city, row.zip, row.industry_group || row.sub_industry].filter(Boolean).join(" · ")}</span>
+                </div>
+                <div>
+                  <strong>{row.deliverable_emails} email{Number(row.deliverable_emails) === 1 ? "" : "s"}</strong>
+                  {row.website ? <a href={row.website} target="_blank" rel="noreferrer">{hostFor(row.website)}</a> : <span>No website</span>}
+                </div>
               </article>
-            ))}
-          </section>
-        ))}
+            )) : <p className="admin-leadgen-empty">No records yet. Discover a zip to populate the review queue.</p>}
+          </div>
+        </section>
+
+        <section className="admin-aff-card leadgen-launch-board">
+          <div className="admin-leadgen-section-head">
+            <h2 className="title-2">Campaign queue</h2>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("campaigns")}>Open Email</button>
+          </div>
+          {campaignQueue.length ? campaignQueue.map((campaign) => (
+            <article key={campaign.id} className="leadgen-play-row">
+              <div>
+                <strong>{campaign.name}</strong>
+                <span>{campaign.status} · {campaign.daily_cap}/day cap</span>
+              </div>
+              <div>
+                <strong>{campaign.sent} sent / {campaign.queued} queued</strong>
+                <span>{campaign.opened} opened · {campaign.replied} replied</span>
+              </div>
+            </article>
+          )) : <p className="admin-leadgen-empty">No campaigns yet. Build one from the Email tab after a segment is ready.</p>}
+        </section>
+
+        <section className="admin-aff-card leadgen-launch-board">
+          <div className="admin-leadgen-section-head">
+            <h2 className="title-2">Worker jobs</h2>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("jobs")}>Open Jobs</button>
+          </div>
+          {recentJobs.length ? recentJobs.slice(0, 6).map((job) => (
+            <article key={job.id} className="leadgen-play-row">
+              <div>
+                <strong>#{job.id} {job.kind}</strong>
+                <span>{fmtTime(job.created_at)}</span>
+              </div>
+              <div>
+                <strong>{job.status}</strong>
+                <span>{job.progress || 0}/{job.total || 0}</span>
+              </div>
+            </article>
+          )) : <p className="admin-leadgen-empty">No crawl jobs yet.</p>}
+        </section>
       </div>
     </div>
   );
