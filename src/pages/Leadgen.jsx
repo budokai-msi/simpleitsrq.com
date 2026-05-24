@@ -136,6 +136,34 @@ const PRODUCT_RULES = [
   { title: "One review", body: "Before the first send, review source records, contact fields, unsubscribe footer, daily cap, and the actual email copy." },
 ];
 
+const WORKSPACE_FLOW = [
+  {
+    Icon: Search,
+    title: "Discover",
+    body: "Enter a zip code and niche. The workspace queues a local business crawl and keeps source fields with every record.",
+  },
+  {
+    Icon: Mail,
+    title: "Crawl emails",
+    body: "Scan business websites for published contact emails, then separate deliverable contacts from no-contact records.",
+  },
+  {
+    Icon: Filter,
+    title: "Review",
+    body: "Tag, reject, update, or export businesses before a campaign can touch the list.",
+  },
+  {
+    Icon: Send,
+    title: "Campaigns",
+    body: "Write with the AI helper, send a test, set the daily cap, and start only the reviewed campaign.",
+  },
+  {
+    Icon: BarChart3,
+    title: "Jobs and insights",
+    body: "Watch queued jobs, sends, opens, clicks, unsubscribes, and which local niche is worth another pass.",
+  },
+];
+
 function Currency({ value }) {
   if (value == null) return <span className="leadgen-tier__price-custom">Custom</span>;
   if (value === 0) return (
@@ -191,18 +219,18 @@ export default function Leadgen() {
       <section className="section hero hero-clean leadgen-hero">
         <div className="container leadgen-hero__inner">
           <div className="leadgen-hero__copy">
-            <h1 className="display">Find local leads. Launch one reviewed campaign.</h1>
+            <h1 className="display">Find local businesses worth calling this week.</h1>
             <p className="lede">
-              Growth is a paid local outbound test: one zip, one business type,
-              verified public records, capped email sends, and a human review
-              before the first campaign leaves.
+              Leadgen is a local prospect radar: one zip, one business type,
+              source records, published website emails, capped sends, and a
+              review step before anything leaves.
             </p>
             <div className="hero-ctas">
               <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
                 Start Growth
               </LeadgenPlanLink>
-              <Link to="/book?topic=leadgen-demo" className="btn btn-secondary btn-lg">
-                Book a 15-minute review
+              <Link to="/portal/leadgen" className="btn btn-secondary btn-lg">
+                Open workspace
               </Link>
             </div>
             <div className="leadgen-hero__trust">
@@ -255,6 +283,8 @@ export default function Leadgen() {
           </div>
         </div>
       </section>
+
+      <LeadgenWorkspaceSection />
 
       {/* Operating rules */}
       <section className="section leadgen-statband-section">
@@ -454,6 +484,44 @@ function LeadgenProofStrip() {
             <span>{point.detail}</span>
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function LeadgenWorkspaceSection() {
+  return (
+    <section className="section section-alt leadgen-workspace">
+      <div className="container leadgen-workspace__grid">
+        <div className="leadgen-workspace__copy">
+          <span className="eyebrow">Actual workspace</span>
+          <h2 className="title-1">This is the app behind the page.</h2>
+          <p className="lede">
+            The public page sells the paid test. The portal is where the work
+            happens: build the local list, verify contacts, review the campaign,
+            run the queue, and see whether the market responds.
+          </p>
+          <div className="hero-ctas">
+            <Link to="/portal/leadgen" className="btn btn-primary">
+              Open workspace <ArrowRight size={16} />
+            </Link>
+            <Link to="/book?topic=leadgen-demo" className="btn btn-secondary">
+              Review a niche
+            </Link>
+          </div>
+        </div>
+        <div className="leadgen-workspace__flow" aria-label="Leadgen workspace workflow">
+          {WORKSPACE_FLOW.map((item, index) => (
+            <article key={item.title} className="leadgen-workspace__step">
+              <span className="leadgen-workspace__num">{index + 1}</span>
+              <div className="leadgen-workspace__icon"><item.Icon size={18} /></div>
+              <div>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );

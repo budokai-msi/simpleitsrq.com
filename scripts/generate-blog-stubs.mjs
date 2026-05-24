@@ -28,12 +28,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import matter from "gray-matter";
 import { loadAllPosts } from "./_posts-source.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const DIST = path.join(ROOT, "dist");
 const SHELL = path.join(DIST, "index.html");
+const CONTENT_DIR = path.join(ROOT, "content", "posts");
 const SITE_URL = "https://simpleitsrq.com";
 
 const escAttr = (s) =>
@@ -48,6 +50,173 @@ const escText = (s) =>
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+
+const escUrl = (s) => escAttr(String(s ?? "").trim());
+
+function affiliateLabel(token) {
+  const raw = String(token || "").trim();
+  const label = raw.includes("|") ? raw.split("|").pop() : raw.replace(/^[a-z_]+:/i, "");
+  return label
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stripMdxNoise(markdown) {
+  return String(markdown || "")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
+    .replace(/<Affiliate\s+token=["']([^"']+)["']\s*\/>/gi, (_, token) => affiliateLabel(token))
+    .replace(/\[\[([a-z_]+:[^\]|]+)\|([^\]]+)\]\]/gi, "$2")
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*(import|export)\s+/.test(line))
+    .filter((line) => !/^\s*<\/?[A-Z][A-Za-z0-9]*(\s[^>]*)?>\s*$/.test(line))
+    .join("\n");
+}
+
+function renderInline(raw) {
+  const tokens = [];
+  const stash = (html) => {
+    const id = tokens.length;
+    tokens.push(html);
+    return `@@HTML${id}@@`;
+  };
+
+  let text = String(raw || "").replace(/`([^`]+)`/g, (_, value) => {
+    return stash(`<code>${escText(value)}</code>`);
+  });
+
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) =>
+    stash(`<img src="${escUrl(url)}" alt="${escAttr(alt)}" loading="lazy" />`),
+  );
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) =>
+    stash(`<a href="${escUrl(url)}">${renderInline(label)}</a>`),
+  );
+
+  text = escText(text)
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/__([^_]+)__/g, "<strong>$1</strong>")
+    .replace(/_([^_]+)_/g, "<em>$1</em>");
+
+  return text.replace(/@@HTML(\d+)@@/g, (_, id) => tokens[Number(id)] || "");
+}
+
+function isBlockStart(line) {
+  return /^(#{1,6})\s+/.test(line)
+    || /^>\s?/.test(line)
+    || /^[-*]\s+/.test(line)
+    || /^\d+\.\s+/.test(line)
+    || /^```/.test(line);
+}
+
+function renderMarkdownBody(markdown) {
+  const lines = stripMdxNoise(markdown).split(/\r?\n/);
+  const html = [];
+
+  for (let i = 0; i < lines.length;) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      i++;
+      continue;
+    }
+
+    const fence = trimmed.match(/^```(\w+)?/);
+    if (fence) {
+      const code = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i].trim())) {
+        code.push(lines[i]);
+        i++;
+      }
+      if (i < lines.length) i++;
+      const lang = fence[1] ? ` class="language-${escAttr(fence[1])}"` : "";
+      html.push(`<pre><code${lang}>${escText(code.join("\n"))}</code></pre>`);
+      continue;
+    }
+
+    const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) {
+      const level = Math.min(6, heading[1].length + 1);
+      html.push(`<h${level}>${renderInline(heading[2])}</h${level}>`);
+      i++;
+      continue;
+    }
+
+    if (/^>\s?/.test(trimmed)) {
+      const parts = [];
+      while (i < lines.length && /^>\s?/.test(lines[i].trim())) {
+        parts.push(lines[i].trim().replace(/^>\s?/, ""));
+        i++;
+      }
+      html.push(`<blockquote><p>${renderInline(parts.join(" "))}</p></blockquote>`);
+      continue;
+    }
+
+    const unordered = /^[-*]\s+/.test(trimmed);
+    const ordered = /^\d+\.\s+/.test(trimmed);
+    if (unordered || ordered) {
+      const tag = ordered ? "ol" : "ul";
+      const itemRe = ordered ? /^\d+\.\s+/ : /^[-*]\s+/;
+      const items = [];
+      while (i < lines.length && itemRe.test(lines[i].trim())) {
+        items.push(`<li>${renderInline(lines[i].trim().replace(itemRe, ""))}</li>`);
+        i++;
+      }
+      html.push(`<${tag}>${items.join("")}</${tag}>`);
+      continue;
+    }
+
+    const parts = [trimmed];
+    i++;
+    while (i < lines.length && lines[i].trim() && !isBlockStart(lines[i].trim())) {
+      parts.push(lines[i].trim());
+      i++;
+    }
+    html.push(`<p>${renderInline(parts.join(" "))}</p>`);
+  }
+
+  return html.join("\n");
+}
+
+function loadPostBody(post) {
+  const file = path.join(CONTENT_DIR, `${post.slug}.mdx`);
+  if (!fs.existsSync(file)) return "";
+  const raw = fs.readFileSync(file, "utf8");
+  return matter(raw).content;
+}
+
+function renderStaticArticle(post) {
+  const body = renderMarkdownBody(loadPostBody(post));
+  if (!body) return "";
+
+  const date = post.date
+    ? `<time datetime="${escAttr(post.date)}">${escText(post.date)}</time>`
+    : "";
+  const category = post.category ? `<span>${escText(post.category)}</span>` : "";
+  const meta = [date, category].filter(Boolean).join("");
+
+  return `
+    <article class="static-blog-article" data-prerendered="true">
+      <header>
+        ${meta ? `<div class="static-blog-article__meta">${meta}</div>` : ""}
+        <h1>${escText(post.title || "Simple IT SRQ")}</h1>
+        ${post.excerpt ? `<p class="static-blog-article__excerpt">${escText(post.excerpt)}</p>` : ""}
+      </header>
+      ${body}
+    </article>
+  `;
+}
+
+function injectStaticArticle(html, post) {
+  const article = renderStaticArticle(post);
+  if (!article) return html;
+  if (/<div\s+id="root"\s*><\/div>/.test(html)) {
+    return html.replace(/<div\s+id="root"\s*><\/div>/, `<div id="root">${article}</div>`);
+  }
+  return html.replace(/<body([^>]*)>/, `<body$1>${article}`);
+}
 
 function patchHead(shell, post) {
   const url = `${SITE_URL}/blog/${post.slug}`;
@@ -164,7 +333,7 @@ function patchHead(shell, post) {
     `    ${articleMeta}\n    ${ldScript}\n  </head>`,
   );
 
-  return html;
+  return injectStaticArticle(html, post);
 }
 
 function main() {
