@@ -847,8 +847,302 @@
   background: var(--surface-2, #f8fafc);
 }
 
+.leadgen-command-console {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.75fr);
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 14px;
+}
+
+.leadgen-console-main,
+.leadgen-next-card,
+.leadgen-signal-panel,
+.leadgen-data-board {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+}
+
+.leadgen-console-main {
+  padding: 20px;
+}
+
+.leadgen-console-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.leadgen-console-main h2 {
+  max-width: 760px;
+  margin: 0.45rem 0 0.55rem;
+  color: var(--text-1, #111827);
+  font-size: clamp(1.65rem, 2.35vw, 2.35rem);
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.leadgen-console-main p,
+.leadgen-next-card p {
+  max-width: 700px;
+  color: var(--text-2, #4b5563);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.leadgen-console-actions {
+  display: grid;
+  grid-template-columns: minmax(110px, 130px) repeat(3, minmax(0, auto));
+  gap: 10px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.leadgen-console-actions .btn,
+.leadgen-next-card .btn,
+.leadgen-signal-panel .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.leadgen-zip-field {
+  display: grid;
+  gap: 5px;
+}
+
+.leadgen-zip-field span {
+  color: var(--text-3, #6b7280);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.leadgen-stage-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.leadgen-stage {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: var(--surface-2, #f8fafc);
+}
+
+.leadgen-stage.is-active {
+  border-color: var(--text-1, #111827);
+  background: color-mix(in srgb, var(--surface, #fff) 88%, var(--text-1, #111827) 12%);
+}
+
+.leadgen-stage__icon,
+.leadgen-next-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--text-1, #111827);
+  color: var(--surface, #fff);
+}
+
+.leadgen-stage strong,
+.leadgen-stage em,
+.leadgen-data-row strong,
+.leadgen-console-metrics dd {
+  display: block;
+  color: var(--text-1, #111827);
+  font-style: normal;
+}
+
+.leadgen-stage strong {
+  font-size: 0.84rem;
+}
+
+.leadgen-stage em {
+  margin-top: 2px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.leadgen-stage span,
+.leadgen-data-row span,
+.leadgen-data-row a,
+.leadgen-console-metrics dt {
+  display: block;
+  color: var(--text-3, #6b7280);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.leadgen-next-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+}
+
+.leadgen-next-card h3 {
+  margin: 0;
+  color: var(--text-1, #111827);
+  font-size: 1.18rem;
+  line-height: 1.2;
+}
+
+.leadgen-next-card .btn {
+  width: fit-content;
+  margin-top: 2px;
+}
+
+.leadgen-console-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: auto 0 0;
+}
+
+.leadgen-console-metrics div {
+  padding: 10px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: var(--surface-2, #f8fafc);
+}
+
+.leadgen-console-metrics dd {
+  margin: 3px 0 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.leadgen-signal-panel {
+  margin: 0 0 14px;
+  padding: 18px;
+}
+
+.leadgen-signal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.leadgen-signal-grid div {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: var(--surface-2, #f8fafc);
+}
+
+.leadgen-signal-grid strong {
+  display: block;
+  color: var(--text-1, #111827);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.leadgen-signal-grid span {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-3, #6b7280);
+  font-size: 0.78rem;
+}
+
+.leadgen-data-board {
+  margin: 0;
+  padding: 18px;
+}
+
+.leadgen-data-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(160px, 0.85fr);
+  gap: 12px;
+  align-items: start;
+  padding: 13px 0;
+  border-top: 1px solid var(--border, #d1d5db);
+}
+
+.leadgen-data-row:first-of-type {
+  border-top: 0;
+}
+
+.leadgen-data-row strong {
+  overflow-wrap: anywhere;
+}
+
+.leadgen-data-row a {
+  margin-top: 2px;
+  color: var(--link, #0f6cbd);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.leadgen-mini-metrics {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: wrap;
+  text-align: right;
+}
+
+.leadgen-mini-metrics > span,
+.leadgen-mini-metrics > a {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.leadgen-status-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #d1d5db);
+  background: var(--surface-2, #f8fafc);
+  color: var(--text-2, #4b5563);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.leadgen-status-chip--good {
+  border-color: #166534;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.leadgen-status-chip--wait {
+  border-color: #92400e;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.leadgen-status-chip--bad {
+  border-color: #991b1b;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 @media (max-width: 960px) {
   .leadgen-command-hero,
+  .leadgen-command-console,
   .leadgen-command-grid,
   .leadgen-ops-grid,
   .leadgen-builder-grid,
@@ -857,6 +1151,11 @@
   }
 
   .leadgen-workflow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .leadgen-stage-list,
+  .leadgen-signal-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -870,11 +1169,21 @@
 
   .leadgen-workflow,
   .leadgen-ad-preview dl,
+  .leadgen-console-actions,
+  .leadgen-stage-list,
+  .leadgen-signal-grid,
+  .leadgen-console-metrics,
   .leadgen-pipeline-controls,
   .leadgen-health-grid,
+  .leadgen-data-row,
   .leadgen-play-row,
   .leadgen-review-row {
     grid-template-columns: 1fr;
+  }
+
+  .leadgen-mini-metrics {
+    justify-content: flex-start;
+    text-align: left;
   }
 }
 
@@ -918,6 +1227,82 @@
 [data-theme="dark"] .leadgen-workflow-step span {
   background: #F4F5F7;
   color: #0B0D10;
+}
+
+[data-theme="dark"] .leadgen-console-main,
+[data-theme="dark"] .leadgen-next-card,
+[data-theme="dark"] .leadgen-signal-panel,
+[data-theme="dark"] .leadgen-data-board,
+[data-theme="dark"] .leadgen-stage,
+[data-theme="dark"] .leadgen-signal-grid div,
+[data-theme="dark"] .leadgen-console-metrics div {
+  background: #0F1217;
+  border-color: #353B45;
+}
+
+[data-theme="dark"] .leadgen-stage,
+[data-theme="dark"] .leadgen-signal-grid div,
+[data-theme="dark"] .leadgen-console-metrics div {
+  background: #11151B;
+}
+
+[data-theme="dark"] .leadgen-stage.is-active {
+  border-color: #F4F5F7;
+  background: #18202B;
+}
+
+[data-theme="dark"] .leadgen-stage__icon,
+[data-theme="dark"] .leadgen-next-card__icon {
+  background: #F4F5F7;
+  color: #0B0D10;
+}
+
+[data-theme="dark"] .leadgen-console-main h2,
+[data-theme="dark"] .leadgen-next-card h3,
+[data-theme="dark"] .leadgen-stage strong,
+[data-theme="dark"] .leadgen-stage em,
+[data-theme="dark"] .leadgen-data-row strong,
+[data-theme="dark"] .leadgen-console-metrics dd,
+[data-theme="dark"] .leadgen-signal-grid strong {
+  color: #F4F5F7;
+}
+
+[data-theme="dark"] .leadgen-console-main p,
+[data-theme="dark"] .leadgen-next-card p,
+[data-theme="dark"] .leadgen-stage span,
+[data-theme="dark"] .leadgen-data-row span,
+[data-theme="dark"] .leadgen-console-metrics dt,
+[data-theme="dark"] .leadgen-signal-grid span,
+[data-theme="dark"] .leadgen-zip-field span {
+  color: #B4BAC4;
+}
+
+[data-theme="dark"] .leadgen-data-row {
+  border-top-color: #353B45;
+}
+
+[data-theme="dark"] .leadgen-status-chip {
+  background: #11151B;
+  border-color: #353B45;
+  color: #B4BAC4;
+}
+
+[data-theme="dark"] .leadgen-status-chip--good {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.42);
+  color: #86efac;
+}
+
+[data-theme="dark"] .leadgen-status-chip--wait {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.42);
+  color: #fcd34d;
+}
+
+[data-theme="dark"] .leadgen-status-chip--bad {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.42);
+  color: #fca5a5;
 }
 
 /* Customer-visible discovery map */

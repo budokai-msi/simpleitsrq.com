@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import {
-  Shield, ShieldCheck, Mail, Loader2, AlertTriangle, Send, CheckCircle,
+  Shield, ShieldCheck, Mail, Loader2, AlertTriangle, CheckCircle,
   ArrowRight, Globe, Search, Info,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
@@ -30,7 +30,7 @@ export default function ExposureScan() {
   const [report, setReport] = useState(null);
 
   useSEO({
-    title: "Free External Exposure Scan — DNS, SPF, DMARC, Subdomain Audit | Simple IT SRQ",
+    title: "Free External Exposure Scan - DNS, SPF, DMARC, Subdomain Audit | Simple IT SRQ",
     description:
       "Free passive-OSINT scan of your domain. Checks MX, SPF, DMARC, DKIM, IPv6, and exposed subdomains from Certificate Transparency logs. Plain-English grade and recommendations. No signup required to get the preview.",
     canonical: `${SITE_URL}/exposure-scan`,
@@ -66,7 +66,7 @@ export default function ExposureScan() {
         throw new Error(
           data.error === "invalid_domain" ? "That doesn't look like a valid domain."
           : data.error === "email_invalid" ? "That email address doesn't look right."
-          : data.error === "rate_limited"  ? "Too many scans from this network — wait an hour and try again."
+          : data.error === "rate_limited"  ? "Too many scans from this network - wait an hour and try again."
           : "Scan failed. Try again in a minute."
         );
       }
@@ -83,106 +83,120 @@ export default function ExposureScan() {
 
   return (
     <main id="main">
-      <section className="section" aria-labelledby="scan-title">
-        <div className="container" style={{ maxWidth: 900 }}>
-          <div className="section-head">
-            <span className="eyebrow">
-              <Shield size={14} style={{ display: "inline", marginRight: 6 }} />
-              Free Exposure Scan
-            </span>
-            <h1 id="scan-title" className="display">
-              See what attackers see about your company
-            </h1>
-            <p className="lede">
-              Enter your domain. We check the same public DNS + Certificate
-              Transparency data that ransomware scanners use to pick targets —
-              and grade your email authentication (SPF / DMARC / DKIM), exposed
-              subdomains, and modern-readiness. Report in 10 seconds. No signup
-              required; we do ask for email so we can send you a copy.
-            </p>
+      <section className="section exposure-scan-page" aria-labelledby="scan-title">
+        <div className="container">
+          <div className="exposure-scan-hero">
+            <div className="exposure-scan-copy">
+              <span className="eyebrow">
+                <Shield size={14} aria-hidden="true" />
+                Free Exposure Scan
+              </span>
+              <h1 id="scan-title" className="display">
+                See what attackers can already see.
+              </h1>
+              <p className="lede">
+                Run a passive outside-in check of a business domain. We grade
+                email authentication, exposed subdomains, DNS records, and
+                modern-readiness without touching your servers.
+              </p>
+              <div className="exposure-scan-trust" aria-label="Scan guarantees">
+                <span><CheckCircle size={15} aria-hidden="true" /> No port scans</span>
+                <span><CheckCircle size={15} aria-hidden="true" /> Public records only</span>
+                <span><CheckCircle size={15} aria-hidden="true" /> Report in about 10 seconds</span>
+              </div>
+            </div>
+
+            {status !== "ok" && (
+              <div className="exposure-scan-card">
+                <div className="exposure-scan-card__head">
+                  <div>
+                    <span className="eyebrow">Run scan</span>
+                    <h2>Check a domain</h2>
+                  </div>
+                  <span className="exposure-scan-badge">Passive OSINT</span>
+                </div>
+
+                <form onSubmit={handleSubmit} className="exposure-scan-form" noValidate>
+                  <label className="field">
+                    <span className="field-label">Business domain *</span>
+                    <input
+                      type="text"
+                      value={domain}
+                      onChange={(e) => setDomain(e.target.value)}
+                      placeholder="yourcompany.com"
+                      required
+                      autoComplete="url"
+                      disabled={scanning}
+                    />
+                  </label>
+                  <div className="exposure-scan-form__grid">
+                    <label className="field">
+                      <span className="field-label">Your name</span>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        maxLength={120}
+                        autoComplete="name"
+                        disabled={scanning}
+                      />
+                    </label>
+                    <label className="field">
+                      <span className="field-label">Email for the report *</span>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        maxLength={320}
+                        autoComplete="email"
+                        disabled={scanning}
+                      />
+                    </label>
+                  </div>
+
+                  {error && (
+                    <div role="alert" className="exposure-scan-alert">
+                      <AlertTriangle size={16} aria-hidden="true" />
+                      {error}
+                    </div>
+                  )}
+
+                  <button type="submit" className="btn btn-primary btn-lg" disabled={scanning}>
+                    {scanning ? (
+                      <><Loader2 size={18} className="spin" /> Scanning {domain.trim() || "domain"}...</>
+                    ) : (
+                      <><Search size={16} /> Run free scan</>
+                    )}
+                  </button>
+
+                  <p className="exposure-scan-fineprint">
+                    Safe to run against any domain you own. No authenticated
+                    requests, no server login, and no traffic beyond public DNS
+                    and Certificate Transparency lookups.
+                  </p>
+                </form>
+              </div>
+            )}
           </div>
 
           {status !== "ok" && (
-            <div className="form-shell" style={{ marginTop: 16 }}>
-              <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }} noValidate>
-                <label className="field">
-                  <span className="field-label">Your domain *</span>
-                  <input
-                    type="text"
-                    value={domain}
-                    onChange={(e) => setDomain(e.target.value)}
-                    placeholder="yourcompany.com"
-                    required
-                    autoComplete="url"
-                    disabled={scanning}
-                  />
-                </label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                  <label className="field">
-                    <span className="field-label">Your name</span>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      maxLength={120}
-                      autoComplete="name"
-                      disabled={scanning}
-                    />
-                  </label>
-                  <label className="field">
-                    <span className="field-label">Email (where to send the report) *</span>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      maxLength={320}
-                      autoComplete="email"
-                      disabled={scanning}
-                    />
-                  </label>
-                </div>
-
-                {error && (
-                  <div
-                    role="alert"
-                    style={{
-                      padding: "12px 14px",
-                      borderRadius: 8,
-                      background: "rgba(220, 38, 38, 0.08)",
-                      border: "1px solid rgba(220, 38, 38, 0.3)",
-                      color: "#dc2626",
-                      fontSize: "0.9rem",
-                      display: "flex",
-                      gap: 8,
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-lg"
-                  disabled={scanning}
-                  style={{ justifySelf: "start" }}
-                >
-                  {scanning ? (
-                    <><Loader2 size={18} className="spin" /> Scanning {domain.trim() || "domain"}…</>
-                  ) : (
-                    <><Search size={16} /> Run my free scan</>
-                  )}
-                </button>
-
-                <p style={{ fontSize: "0.82rem", color: "var(--syn-text-muted, #6b7280)", marginTop: 4, lineHeight: 1.5 }}>
-                  We run public DNS + Certificate Transparency lookups — the same
-                  passive checks any scanner on the internet can run against your
-                  domain. No port scans, no authenticated requests, nothing that
-                  touches your servers. Safe to run against any domain you own.
-                </p>
-              </form>
+            <div className="exposure-check-grid" aria-label="Exposure scan checks">
+              <article>
+                <Mail size={18} aria-hidden="true" />
+                <h2>Email spoofing</h2>
+                <p>SPF, DMARC, DKIM selectors, and MX records.</p>
+              </article>
+              <article>
+                <Globe size={18} aria-hidden="true" />
+                <h2>Public exposure</h2>
+                <p>Certificate Transparency subdomains and visible DNS.</p>
+              </article>
+              <article>
+                <ShieldCheck size={18} aria-hidden="true" />
+                <h2>Plain-English fixes</h2>
+                <p>A grade, prioritized findings, and what to fix first.</p>
+              </article>
             </div>
           )}
 
@@ -192,17 +206,17 @@ export default function ExposureScan() {
 
           <AdUnit format="auto" className="ad-in-article" />
 
-          <div style={{ marginTop: 40, padding: "20px 24px", borderRadius: 12, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
-            <h2 className="title-2" style={{ marginTop: 0, display: "flex", alignItems: "center", gap: 8 }}>
-              <Info size={18} color="#111827" /> What this scan checks
+          <div className="exposure-details-card">
+            <h2 className="title-2">
+              <Info size={18} aria-hidden="true" /> What this scan checks
             </h2>
-            <ul style={{ margin: "8px 0 0", paddingLeft: 20, lineHeight: 1.7 }}>
-              <li><strong>MX records</strong> — can your domain receive email at all?</li>
-              <li><strong>SPF</strong> — can attackers forge mail claiming to be from you?</li>
-              <li><strong>DMARC</strong> — are you telling Gmail/Outlook what to do with spoofed mail?</li>
-              <li><strong>DKIM</strong> — is your outgoing mail cryptographically signed? (we check the common SaaS selectors)</li>
-              <li><strong>Subdomain exposure</strong> — every cert ever issued for your domain is public in CT logs. We list what's there so you can decide if anything is accidentally internet-facing.</li>
-              <li><strong>Modern readiness</strong> — IPv6 presence, nameserver setup.</li>
+            <ul>
+              <li><strong>MX records</strong> - can your domain receive email at all?</li>
+              <li><strong>SPF</strong> - can attackers forge mail claiming to be from you?</li>
+              <li><strong>DMARC</strong> - are you telling Gmail/Outlook what to do with spoofed mail?</li>
+              <li><strong>DKIM</strong> - is your outgoing mail cryptographically signed? We check the common SaaS selectors.</li>
+              <li><strong>Subdomain exposure</strong> - Certificate Transparency records reveal public subdomains.</li>
+              <li><strong>Modern readiness</strong> - IPv6 presence and nameserver setup.</li>
             </ul>
           </div>
         </div>
