@@ -227,144 +227,208 @@ export default function ExposureScan() {
 
 function ReportView({ report, onNew }) {
   const gradeColor = GRADE_COLORS[report.grade] || "#6b7280";
+  const findings = report.findings || [];
+  const records = report.records || {};
+  const subdomains = report.subdomains || [];
+  const urgentFindings = findings.filter((f) => ["critical", "high"].includes(f.severity)).length;
+  const emailAuthReady = Boolean(records.spf && records.dmarc && records.dkimSelectors?.length);
+  const dnsRows = [
+    { label: "A", value: records.a?.length ? records.a.join(", ") : "none", tone: records.a?.length ? "ok" : "muted" },
+    { label: "AAAA", value: records.aaaa?.length ? records.aaaa.join(", ") : "none (IPv6 missing)", tone: records.aaaa?.length ? "ok" : "muted" },
+    { label: "MX", value: records.mx?.length ? records.mx.join(", ") : "none - cannot receive email", tone: records.mx?.length ? "ok" : "bad" },
+    { label: "SPF", value: records.spf || "missing", tone: records.spf ? "ok" : "bad" },
+    { label: "DMARC", value: records.dmarc || "missing", tone: records.dmarc ? "ok" : "bad" },
+    { label: "DKIM", value: records.dkimSelectors?.length ? records.dkimSelectors.join(", ") : "none from common selectors", tone: records.dkimSelectors?.length ? "ok" : "muted" },
+    { label: "NS", value: records.ns?.length ? records.ns.join(", ") : "none", tone: records.ns?.length ? "ok" : "muted" },
+  ];
+  const fixOrder = findings.slice(0, 4);
 
   return (
-    <div style={{ marginTop: 16 }}>
-      {/* Grade header */}
-      <div className="form-shell" style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 72, fontWeight: 800, color: gradeColor, lineHeight: 1 }}>{report.grade}</div>
-            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "#6b7280", marginTop: 4 }}>Grade</div>
+    <div className="exposure-report">
+      <section className="exposure-report-hero" style={{ "--grade-color": gradeColor }}>
+        <div className="exposure-grade-card">
+          <span className="exposure-grade-card__label">Exposure grade</span>
+          <strong>{report.grade}</strong>
+          <span>{report.domain}</span>
+        </div>
+        <div className="exposure-report-summary">
+          <div className="exposure-report-summary__title">
+            <Globe size={18} aria-hidden="true" />
+            <h2>{report.domain}</h2>
           </div>
-          <div style={{ flex: 1, minWidth: 280 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <Globe size={16} color="#111827" />
-              <strong style={{ fontSize: 16 }}>{report.domain}</strong>
-            </div>
-            <p style={{ margin: 0, lineHeight: 1.6, fontSize: 15 }}>{report.gradeNarrative}</p>
+          <p>{report.gradeNarrative}</p>
+          <div className="exposure-report-actions">
+            <a href="/book" className="btn btn-primary">
+              Fix these findings <ArrowRight size={15} aria-hidden="true" />
+            </a>
+            <button type="button" className="btn btn-secondary" onClick={onNew}>
+              <Search size={14} aria-hidden="true" /> Scan another domain
+            </button>
           </div>
         </div>
+      </section>
+
+      <section className="exposure-report-metrics" aria-label="Scan summary">
+        <article>
+          <span>Total findings</span>
+          <strong>{findings.length}</strong>
+          <em>{urgentFindings} urgent</em>
+        </article>
+        <article>
+          <span>Email auth</span>
+          <strong>{emailAuthReady ? "Ready" : "Needs work"}</strong>
+          <em>SPF, DMARC, DKIM</em>
+        </article>
+        <article>
+          <span>Subdomains</span>
+          <strong>{subdomains.length}</strong>
+          <em>visible in public cert logs</em>
+        </article>
+        <article>
+          <span>Mail routing</span>
+          <strong>{records.mx?.length ? "MX found" : "No MX"}</strong>
+          <em>{records.mx?.length || 0} mail records</em>
+        </article>
+      </section>
+
+      <div className="exposure-report-grid">
+        <section className="exposure-panel exposure-panel--primary">
+          <div className="exposure-panel__head">
+            <div>
+              <h2>Fix order</h2>
+              <p>Start here. This is the shortest path from scary report to cleaner domain posture.</p>
+            </div>
+            <ShieldCheck size={20} aria-hidden="true" />
+          </div>
+          {fixOrder.length ? (
+            <ol className="exposure-fix-list">
+              {fixOrder.map((finding, index) => {
+                const s = SEVERITY_STYLE[finding.severity] || SEVERITY_STYLE.info;
+                return (
+                  <li key={finding.area + "-" + finding.title + "-" + index}>
+                    <span style={{ "--severity-color": s.border }}>{index + 1}</span>
+                    <div>
+                      <strong>{finding.title}</strong>
+                      <em>{s.label} - {finding.area}</em>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <div className="exposure-clear-state">
+              <CheckCircle size={20} aria-hidden="true" />
+              <strong>No findings. The public DNS and email posture looks clean.</strong>
+            </div>
+          )}
+        </section>
+
+        <section className="exposure-panel">
+          <div className="exposure-panel__head">
+            <div>
+              <h2>Business impact</h2>
+              <p>What a non-technical owner should take away from this scan.</p>
+            </div>
+          </div>
+          <div className="exposure-impact-list">
+            <div>
+              <strong>{records.dmarc ? "Spoofing policy exists" : "Spoofing policy is missing"}</strong>
+              <span>{records.dmarc ? "Your domain tells receivers how to handle spoofed mail." : "Attackers may have an easier time impersonating your domain."}</span>
+            </div>
+            <div>
+              <strong>{subdomains.length ? "Public assets found" : "No public subdomains returned"}</strong>
+              <span>{subdomains.length ? "Review these names for old apps, forgotten portals, and vendor systems." : "Certificate Transparency did not return a visible subdomain list."}</span>
+            </div>
+            <div>
+              <strong>{records.mx?.length ? "Email routing is visible" : "Email routing needs attention"}</strong>
+              <span>{records.mx?.length ? "Mail records exist; the next concern is authentication quality." : "No MX records means normal business email may not route correctly."}</span>
+            </div>
+          </div>
+        </section>
       </div>
 
-      {/* Findings */}
-      {report.findings?.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h2 className="title-2" style={{ margin: "0 0 12px", fontSize: 18 }}>Findings</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {report.findings.map((f, i) => {
-              const s = SEVERITY_STYLE[f.severity] || SEVERITY_STYLE.info;
+      <section className="exposure-panel exposure-findings-panel">
+        <div className="exposure-panel__head">
+          <div>
+            <h2>Findings</h2>
+            <p>Prioritized by severity, with the exact area that triggered each result.</p>
+          </div>
+        </div>
+        {findings.length ? (
+          <div className="exposure-findings-list">
+            {findings.map((finding, index) => {
+              const s = SEVERITY_STYLE[finding.severity] || SEVERITY_STYLE.info;
               return (
-                <div key={i} style={{
-                  padding: "16px 18px",
-                  borderRadius: 10,
-                  background: s.bg,
-                  border: `1px solid ${s.border}40`,
-                  borderLeft: `4px solid ${s.border}`,
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
-                      padding: "3px 8px", borderRadius: 4,
-                      background: s.border, color: "#fff", textTransform: "uppercase",
-                    }}>{s.label}</span>
-                    <span style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>{f.area}</span>
+                <article key={finding.area + "-" + finding.title + "-" + index} className="exposure-finding" style={{ "--severity-color": s.border, "--severity-bg": s.bg }}>
+                  <div className="exposure-finding__meta">
+                    <span>{s.label}</span>
+                    <em>{finding.area}</em>
                   </div>
-                  <h3 style={{ margin: "0 0 6px", fontSize: 15 }}>{f.title}</h3>
-                  <p style={{ margin: 0, lineHeight: 1.55, fontSize: 14, color: "#374151" }}>{f.detail}</p>
-                </div>
+                  <h3>{finding.title}</h3>
+                  <p>{finding.detail}</p>
+                </article>
               );
             })}
           </div>
-        </div>
-      )}
-
-      {report.findings?.length === 0 && (
-        <div style={{
-          padding: "16px 18px",
-          borderRadius: 10,
-          background: "rgba(16, 124, 16, 0.08)",
-          border: "1px solid rgba(16, 124, 16, 0.3)",
-          borderLeft: "4px solid #107C10",
-          marginBottom: 24,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <CheckCircle size={20} color="#107C10" />
-            <strong>No findings — your domain is well-configured.</strong>
+        ) : (
+          <div className="exposure-clear-state">
+            <CheckCircle size={20} aria-hidden="true" />
+            <strong>No findings - your domain is well-configured.</strong>
           </div>
-        </div>
-      )}
+        )}
+      </section>
 
-      {/* DNS records summary */}
-      <div className="form-shell" style={{ marginBottom: 24 }}>
-        <h2 className="title-2" style={{ margin: "0 0 12px", fontSize: 16 }}>What your DNS looks like</h2>
-        <div style={{ fontFamily: "ui-monospace, Menlo, monospace", fontSize: 13, lineHeight: 1.8, color: "#374151" }}>
-          <div><strong style={{ color: "#111827" }}>A:</strong>    {report.records.a?.length > 0 ? report.records.a.join(", ") : <em style={{ color: "#6b7280" }}>none</em>}</div>
-          <div><strong style={{ color: "#111827" }}>AAAA:</strong> {report.records.aaaa?.length > 0 ? report.records.aaaa.join(", ") : <em style={{ color: "#6b7280" }}>none (IPv6 missing)</em>}</div>
-          <div><strong style={{ color: "#111827" }}>MX:</strong>   {report.records.mx?.length > 0 ? report.records.mx.join(", ") : <em style={{ color: "#dc2626" }}>none — can't receive email</em>}</div>
-          <div style={{ wordBreak: "break-all" }}><strong style={{ color: "#111827" }}>SPF:</strong>  {report.records.spf || <em style={{ color: "#dc2626" }}>missing</em>}</div>
-          <div style={{ wordBreak: "break-all" }}><strong style={{ color: "#111827" }}>DMARC:</strong> {report.records.dmarc || <em style={{ color: "#dc2626" }}>missing</em>}</div>
-          <div><strong style={{ color: "#111827" }}>DKIM:</strong> {report.records.dkimSelectors?.length > 0 ? report.records.dkimSelectors.join(", ") : <em style={{ color: "#6b7280" }}>none (common selectors checked)</em>}</div>
-          <div><strong style={{ color: "#111827" }}>NS:</strong>   {report.records.ns?.join(", ") || <em style={{ color: "#6b7280" }}>none</em>}</div>
-        </div>
+      <div className="exposure-report-grid">
+        <section className="exposure-panel">
+          <div className="exposure-panel__head">
+            <div>
+              <h2>DNS evidence</h2>
+              <p>The public records behind the grade.</p>
+            </div>
+          </div>
+          <div className="exposure-dns-table">
+            {dnsRows.map((row) => (
+              <div key={row.label} className={"exposure-dns-row exposure-dns-row--" + row.tone}>
+                <strong>{row.label}</strong>
+                <span>{row.value}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="exposure-panel">
+          <div className="exposure-panel__head">
+            <div>
+              <h2>Public subdomains</h2>
+              <p>Names visible through Certificate Transparency.</p>
+            </div>
+            <span className="exposure-count-pill">{subdomains.length}</span>
+          </div>
+          {subdomains.length ? (
+            <div className="exposure-subdomain-list">
+              {subdomains.slice(0, 80).map((subdomain) => <code key={subdomain}>{subdomain}</code>)}
+              {subdomains.length > 80 ? <span className="exposure-subdomain-more">+{subdomains.length - 80} more in the emailed report</span> : null}
+            </div>
+          ) : (
+            <p className="exposure-empty-copy">No public subdomains were returned by the scan.</p>
+          )}
+        </section>
       </div>
 
-      {/* Subdomains */}
-      {report.subdomains?.length > 0 && (
-        <div className="form-shell" style={{ marginBottom: 24 }}>
-          <h2 className="title-2" style={{ margin: "0 0 6px", fontSize: 16 }}>
-            Subdomains visible in Certificate Transparency ({report.subdomains.length})
-          </h2>
-          <p style={{ margin: "0 0 10px", fontSize: 12, color: "#6b7280" }}>
-            These are every subdomain that's ever had a TLS certificate issued for it. Every scanner on the internet can pull this same list. Review for anything that shouldn't be discoverable.
+      <section className="exposure-repair-cta">
+        <div>
+          <span><ShieldCheck size={18} aria-hidden="true" /> Fix this properly</span>
+          <h2>Turn the report into a cleaned-up domain.</h2>
+          <p>
+            Simple IT SRQ fixes DNS, SPF, DMARC, DKIM, mail routing, and stale
+            public exposure for Florida small businesses. One-time cleanup,
+            plain-language proof, no retainer required.
           </p>
-          <div style={{
-            fontFamily: "ui-monospace, Menlo, monospace",
-            fontSize: 12,
-            lineHeight: 1.6,
-            color: "#374151",
-            maxHeight: 280,
-            overflowY: "auto",
-            padding: "8px 12px",
-            background: "#f9fafb",
-            borderRadius: 8,
-            border: "1px solid #e5e7eb",
-          }}>
-            {report.subdomains.map((s) => <div key={s}>{s}</div>)}
-          </div>
         </div>
-      )}
-
-      {/* CTA */}
-      <div style={{
-        padding: "24px",
-        borderRadius: 12,
-        background: "linear-gradient(180deg, #111827 0%, #000000 100%)",
-        color: "#fff",
-        marginBottom: 16,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-          <ShieldCheck size={20} />
-          <strong style={{ fontSize: 14, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.9 }}>Fix this properly</strong>
-        </div>
-        <h3 style={{ margin: "0 0 8px", fontSize: 20 }}>Want these findings fixed?</h3>
-        <p style={{ margin: "0 0 16px", fontSize: 14, lineHeight: 1.55, opacity: 0.95 }}>
-          We fix DNS + email authentication for Florida small businesses. One-time flat fee, no retainer.
-          Reply to the email we just sent, or book a free consult.
-        </p>
-        <a href="/book" className="btn" style={{
-          background: "#fff", color: "#111827", fontWeight: 600,
-          display: "inline-flex", alignItems: "center", gap: 8,
-        }}>
-          Book a free consult <ArrowRight size={14} />
+        <a href="/book" className="btn">
+          Book a cleanup call <ArrowRight size={15} aria-hidden="true" />
         </a>
-      </div>
-
-      <div style={{ textAlign: "center", marginTop: 24 }}>
-        <button type="button" className="btn btn-secondary" onClick={onNew} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-          <Search size={14} /> Scan another domain
-        </button>
-      </div>
+      </section>
     </div>
   );
 }

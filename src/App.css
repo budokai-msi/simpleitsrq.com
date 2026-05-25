@@ -8178,6 +8178,384 @@ select:focus-visible {
   line-height: 1.7;
 }
 
+.exposure-report {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.exposure-report-hero,
+.exposure-report-metrics,
+.exposure-panel,
+.exposure-repair-cta {
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--syn-surface, #fff);
+}
+
+.exposure-report-hero {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+  padding: 18px;
+}
+
+.exposure-grade-card {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 180px;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--grade-color) 48%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--grade-color) 9%, var(--syn-surface, #fff));
+  text-align: center;
+}
+
+.exposure-grade-card__label,
+.exposure-report-metrics span,
+.exposure-panel__head p,
+.exposure-finding__meta em,
+.exposure-impact-list span,
+.exposure-empty-copy {
+  color: var(--text-muted, #6b7280);
+}
+
+.exposure-grade-card__label,
+.exposure-report-metrics span,
+.exposure-finding__meta,
+.exposure-count-pill {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.exposure-grade-card strong {
+  color: var(--grade-color);
+  font-size: 5rem;
+  line-height: 0.95;
+}
+
+.exposure-grade-card > span:last-child {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--text-1, #111827);
+  font-weight: 700;
+}
+
+.exposure-report-summary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.exposure-report-summary__title,
+.exposure-report-actions,
+.exposure-panel__head,
+.exposure-repair-cta > span,
+.exposure-repair-cta a,
+.exposure-clear-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exposure-report-summary__title h2,
+.exposure-panel__head h2,
+.exposure-repair-cta h2 {
+  margin: 0;
+  color: var(--text-1, #111827);
+}
+
+.exposure-report-summary p {
+  margin: 8px 0 0;
+  max-width: 760px;
+  color: var(--text-2, #4b5563);
+  line-height: 1.6;
+}
+
+.exposure-report-actions {
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.exposure-report-actions .btn,
+.exposure-repair-cta .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exposure-report-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+.exposure-report-metrics article {
+  min-width: 0;
+  padding: 16px;
+  border-right: 1px solid var(--syn-border, #e5e7eb);
+}
+
+.exposure-report-metrics article:last-child {
+  border-right: 0;
+}
+
+.exposure-report-metrics strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-1, #111827);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.exposure-report-metrics em {
+  display: block;
+  margin-top: 5px;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.exposure-report-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.78fr);
+  gap: 16px;
+}
+
+.exposure-panel {
+  padding: 18px;
+}
+
+.exposure-panel--primary {
+  border-color: rgba(17, 24, 39, 0.28);
+}
+
+.exposure-panel__head {
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.exposure-panel__head p {
+  margin: 4px 0 0;
+  line-height: 1.45;
+}
+
+.exposure-fix-list,
+.exposure-impact-list,
+.exposure-findings-list,
+.exposure-dns-table,
+.exposure-subdomain-list {
+  display: grid;
+  gap: 10px;
+}
+
+.exposure-fix-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exposure-fix-list li {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.exposure-fix-list li > span {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--severity-color, #111827);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.exposure-fix-list strong,
+.exposure-impact-list strong,
+.exposure-finding h3,
+.exposure-dns-row strong {
+  display: block;
+  color: var(--text-1, #111827);
+}
+
+.exposure-fix-list em {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.8rem;
+  font-style: normal;
+}
+
+.exposure-impact-list div {
+  padding: 12px 0;
+  border-top: 1px solid var(--syn-border, #e5e7eb);
+}
+
+.exposure-impact-list div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.exposure-impact-list span {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.exposure-finding {
+  padding: 15px;
+  border: 1px solid color-mix(in srgb, var(--severity-color) 34%, transparent);
+  border-left: 4px solid var(--severity-color);
+  border-radius: 8px;
+  background: var(--severity-bg, rgba(17, 24, 39, 0.04));
+}
+
+.exposure-finding__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.exposure-finding__meta span {
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--severity-color);
+  color: #fff;
+}
+
+.exposure-finding h3 {
+  margin: 0 0 5px;
+  font-size: 1rem;
+}
+
+.exposure-finding p {
+  margin: 0;
+  color: var(--text-2, #4b5563);
+  line-height: 1.55;
+}
+
+.exposure-clear-state {
+  padding: 14px;
+  border: 1px solid rgba(16, 124, 16, 0.28);
+  border-radius: 8px;
+  background: rgba(16, 124, 16, 0.08);
+  color: #107c10;
+}
+
+.exposure-dns-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--syn-surface-muted, #f8fafc);
+}
+
+.exposure-dns-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-2, #4b5563);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.exposure-dns-row--bad {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.06);
+}
+
+.exposure-dns-row--muted {
+  opacity: 0.82;
+}
+
+.exposure-count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 999px;
+  color: var(--text-1, #111827);
+}
+
+.exposure-subdomain-list {
+  max-height: 360px;
+  overflow: auto;
+  padding-right: 3px;
+}
+
+.exposure-subdomain-list code,
+.exposure-subdomain-more {
+  display: block;
+  padding: 8px 10px;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--syn-surface-muted, #f8fafc);
+  color: var(--text-2, #4b5563);
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+
+.exposure-subdomain-more {
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.exposure-repair-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  background: #111827;
+  color: #fff;
+}
+
+.exposure-repair-cta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.exposure-repair-cta h2 {
+  margin-top: 8px;
+  color: #fff;
+}
+
+.exposure-repair-cta p {
+  max-width: 720px;
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.84);
+  line-height: 1.55;
+}
+
+.exposure-repair-cta .btn {
+  flex: 0 0 auto;
+  background: #fff;
+  color: #111827;
+  border-color: #fff;
+}
+
 [data-theme="dark"] .exposure-scan-trust span,
 [data-theme="dark"] .exposure-scan-badge,
 [data-theme="dark"] .exposure-scan-card,
@@ -8190,19 +8568,83 @@ select:focus-visible {
 [data-theme="dark"] .exposure-scan-trust span,
 [data-theme="dark"] .exposure-scan-card__head h2,
 [data-theme="dark"] .exposure-check-grid h2,
-[data-theme="dark"] .exposure-check-grid svg {
+[data-theme="dark"] .exposure-check-grid svg,
+[data-theme="dark"] .exposure-report-summary__title h2,
+[data-theme="dark"] .exposure-panel__head h2,
+[data-theme="dark"] .exposure-report-metrics strong,
+[data-theme="dark"] .exposure-fix-list strong,
+[data-theme="dark"] .exposure-impact-list strong,
+[data-theme="dark"] .exposure-finding h3,
+[data-theme="dark"] .exposure-dns-row strong,
+[data-theme="dark"] .exposure-grade-card > span:last-child,
+[data-theme="dark"] .exposure-count-pill {
   color: #F4F5F7;
 }
 
 [data-theme="dark"] .exposure-check-grid p,
-[data-theme="dark"] .exposure-scan-fineprint {
+[data-theme="dark"] .exposure-scan-fineprint,
+[data-theme="dark"] .exposure-report-summary p,
+[data-theme="dark"] .exposure-panel__head p,
+[data-theme="dark"] .exposure-report-metrics em,
+[data-theme="dark"] .exposure-fix-list em,
+[data-theme="dark"] .exposure-impact-list span,
+[data-theme="dark"] .exposure-finding p,
+[data-theme="dark"] .exposure-dns-row span,
+[data-theme="dark"] .exposure-empty-copy {
   color: #B4BAC4;
+}
+
+[data-theme="dark"] .exposure-report-hero,
+[data-theme="dark"] .exposure-report-metrics,
+[data-theme="dark"] .exposure-panel,
+[data-theme="dark"] .exposure-grade-card,
+[data-theme="dark"] .exposure-dns-row,
+[data-theme="dark"] .exposure-subdomain-list code,
+[data-theme="dark"] .exposure-subdomain-more,
+[data-theme="dark"] .exposure-count-pill {
+  background: #0F1217;
+  border-color: #353B45;
+}
+
+[data-theme="dark"] .exposure-grade-card {
+  background: #11151B;
+}
+
+[data-theme="dark"] .exposure-report-metrics article,
+[data-theme="dark"] .exposure-impact-list div {
+  border-color: #353B45;
+}
+
+[data-theme="dark"] .exposure-dns-row,
+[data-theme="dark"] .exposure-subdomain-list code,
+[data-theme="dark"] .exposure-subdomain-more {
+  background: #11151B;
 }
 
 @media (max-width: 900px) {
   .exposure-scan-hero,
-  .exposure-check-grid {
+  .exposure-check-grid,
+  .exposure-report-hero,
+  .exposure-report-grid {
     grid-template-columns: 1fr;
+  }
+
+  .exposure-report-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .exposure-report-metrics article:nth-child(2) {
+    border-right: 0;
+  }
+
+  .exposure-report-metrics article:nth-child(1),
+  .exposure-report-metrics article:nth-child(2) {
+    border-bottom: 1px solid var(--syn-border, #e5e7eb);
+  }
+
+  .exposure-repair-cta {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
@@ -8213,5 +8655,19 @@ select:focus-visible {
 
   .exposure-scan-card {
     padding: 16px;
+  }
+
+  .exposure-report-metrics,
+  .exposure-dns-row {
+    grid-template-columns: 1fr;
+  }
+
+  .exposure-report-metrics article {
+    border-right: 0;
+    border-bottom: 1px solid var(--syn-border, #e5e7eb);
+  }
+
+  .exposure-report-metrics article:last-child {
+    border-bottom: 0;
   }
 }
