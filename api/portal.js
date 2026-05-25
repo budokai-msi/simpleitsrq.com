@@ -34,10 +34,9 @@ import { isAdminEmail } from "./_lib/admin.js";
 // 60s budget instead of the 10s Hobby default.
 export const config = { maxDuration: 60 };
 
-const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
-// See note in api/contact.js — default goes to Gmail while simpleitsrq.com
-// has no MX records. Override via CONTACT_TO_EMAIL once inbound mail is live.
-const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
+const SUPPORT_EMAIL = "hello@simpleitsrq.com";
+const TICKET_FROM = `Simple IT SRQ <${SUPPORT_EMAIL}>`;
+const CONTACT_TO_DEFAULT = SUPPORT_EMAIL;
 
 const escapeHtml = (s = "") =>
   String(s)
@@ -115,7 +114,7 @@ async function sendReplyNotification({ ticket, message, authorType }) {
     await resend.emails.send({
       from: TICKET_FROM,
       to: [to],
-      replyTo: authorType === "agent" ? supportInbox : ticket.email,
+      replyTo: SUPPORT_EMAIL,
       subject,
       text,
       html,

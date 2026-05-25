@@ -22,9 +22,9 @@ import { clientIp, rateLimit } from "./_lib/security.js";
 import { getSession } from "./_lib/session.js";
 import { requireCsrf } from "./_lib/csrf.js";
 
-const TICKET_FROM = "Simple IT SRQ Support <support@simpleitsrq.com>";
-// See api/contact.js — hello@simpleitsrq.com forwards to Gmail via ImprovMX.
-const CONTACT_TO_DEFAULT = "hello@simpleitsrq.com";
+const SUPPORT_EMAIL = "hello@simpleitsrq.com";
+const TICKET_FROM = `Simple IT SRQ <${SUPPORT_EMAIL}>`;
+const CONTACT_TO_DEFAULT = SUPPORT_EMAIL;
 const TURNSTILE_VERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
@@ -247,6 +247,7 @@ export async function POST(request) {
     `---`,
     `Submitted via simpleitsrq.com/support`,
     `Ticket ID: ${ticketId}`,
+    `Reply in portal: https://simpleitsrq.com/portal`,
     `Submitter IP: ${ip}`,
   ].join("\n");
 
@@ -271,7 +272,7 @@ export async function POST(request) {
         <h3 style="margin:20px 0 8px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em">Description</h3>
         <div style="white-space:pre-wrap;padding:14px 16px;background:#f7f7f8;border-radius:8px;font-size:14px;line-height:1.55">${escapeHtml(description)}</div>
         <p style="margin-top:22px;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px">
-          Ticket <strong>${escapeHtml(ticketId)}</strong> - submitted via simpleitsrq.com/support - IP ${escapeHtml(ip)}
+          Ticket <strong>${escapeHtml(ticketId)}</strong> - submitted via simpleitsrq.com/support - <a href="https://simpleitsrq.com/portal">reply in the portal</a> - IP ${escapeHtml(ip)}
         </p>
       </div>
     </div>
@@ -290,7 +291,7 @@ export async function POST(request) {
     const { data, error } = await resend.emails.send({
       from: TICKET_FROM,
       to: [contactTo],
-      replyTo: email,
+      replyTo: SUPPORT_EMAIL,
       subject: mailSubject,
       text: textBody,
       html: htmlBody,
