@@ -130,6 +130,16 @@ export async function POST(request) {
   const csrf = requireCsrf(request);
   if (csrf) return csrf;
 
+  let session;
+  try {
+    session = await getSession(request);
+  } catch (err) {
+    console.warn("[ticket] getSession failed", err);
+  }
+  if (!session?.user?.id || !session?.user?.email) {
+    return json(401, { ok: false, error: "auth_required" });
+  }
+
   // 1. Vercel BotID — non-blocking. Log the result but don't reject real
   //    users whose browsers fail client-side verification (common on iOS
   //    Safari). Turnstile + honeypot + rate-limit still catch actual bots.
@@ -173,10 +183,12 @@ export async function POST(request) {
   // 5. Honeypot
   if (body._hp) return json(200, { ok: true, ticketId: generateTicketId() });
 
-  const name        = stripHeaderCtrl(String(body.name || "").slice(0, 200));
-  const company     = stripHeaderCtrl(String(body.company || "").slice(0, 200));
-  const email       = stripHeaderCtrl(String(body.email || "").slice(0, 320));
-  const phone       = stripHeaderCtrl(String(body.phone || "").slice(0, 50));
+  const accountName = stripHeaderCtrl(String(session.user.name || "").slice(0, 200));
+  const accountEmail = stripHeaderCtrl(String(session.user.email || "").slice(0, 320));
+  const name        = stripHeaderCtrl(String(body.name || accountName || "").slice(0, 200));
+  const company     = stripHeaderCtrl(String(body.company || session.user.company || "").slice(0, 200));
+  const email       = accountEmail;
+  const phone       = stripHeaderCtrl(String(body.phone || session.user.phone || "").slice(0, 50));
   const priorityRaw = String(body.priority || "normal").trim().toLowerCase();
   const priority    = ALLOWED_PRIORITIES.has(priorityRaw) ? priorityRaw : "normal";
   const category    = stripHeaderCtrl(String(body.category || "Other").slice(0, 200));
@@ -193,16 +205,9 @@ export async function POST(request) {
   const priorityLabel = PRIORITY_LABELS[priority];
   const priorityColor = PRIORITY_COLORS[priority];
 
-  // Persist to Neon. If the submitter is signed in we link the ticket to
-  // them; otherwise the row carries the email so it can be matched later
-  // when they first sign in.
-  let currentUserId = null;
-  try {
-    const session = await getSession(request);
-    if (session) currentUserId = session.user.id;
-  } catch (err) {
-    console.warn("[ticket] getSession failed", err);
-  }
+  // Persist to Neon under the signed-in portal user so ticket history,
+  // replies, and status controls stay attached to the right account.
+  const currentUserId = session.user.id;
 
   try {
     await sql`

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import {
-  LifeBuoy, AlertTriangle, Zap, AlertCircle, Loader2, Send, CheckCircle2, HelpCircle,
+  LifeBuoy, AlertTriangle, Zap, AlertCircle, Loader2, Send, CheckCircle2, HelpCircle, LogIn,
 } from "lucide-react";
 import { useSEO } from "../lib/seo";
 import LeadCaptureCTA from "../components/LeadCaptureCTA";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { csrfFetch } from "../lib/csrf";
+import { useAuth } from "../lib/authContext.js";
 
 const PRIORITIES = [
   { value: "low",      label: "Low - general question",                Icon: HelpCircle },
@@ -42,6 +43,7 @@ const ERROR_MESSAGES = {
   invalid_body: "Something went wrong with that request. Please try again.",
   invalid_json: "Something went wrong with that request. Please try again.",
   captcha_required: "Please complete the security check before submitting.",
+  auth_required: "Please sign in before filing a support ticket.",
 };
 
 const initialForm = {
@@ -55,6 +57,13 @@ const initialForm = {
   description: "",
   _hp: "",
 };
+
+function providerLabel(provider) {
+  if (provider === "google") return "Continue with Google";
+  if (provider === "github") return "Continue with GitHub";
+  if (provider === "auth0") return "Continue with SSO";
+  return "Sign in";
+}
 
 export default function Support() {
   useSEO({
@@ -74,6 +83,7 @@ export default function Support() {
   const [errorMsg, setErrorMsg] = useState("");
   const [ticketId, setTicketId] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
+  const { user, loading, login, providers } = useAuth();
 
   const { containerRef: turnstileRef, reset: resetTurnstile } =
     useTurnstile(setTurnstileToken);
@@ -94,6 +104,13 @@ export default function Support() {
     e.preventDefault();
     if (status === "submitting") return;
 
+    if (!user) {
+      errorHaptic();
+      setStatus("error");
+      setErrorMsg(ERROR_MESSAGES.auth_required);
+      return;
+    }
+
     if (TURNSTILE_SITE_KEY && !turnstileToken) {
       errorHaptic();
       setStatus("error");
@@ -109,7 +126,13 @@ export default function Support() {
       const r = await csrfFetch("/api/ticket", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, turnstileToken }),
+        body: JSON.stringify({
+          ...form,
+          name: form.name || user.name || "",
+          company: form.company || user.company || "",
+          phone: form.phone || user.phone || "",
+          turnstileToken,
+        }),
       });
       const data = await r.json().catch(() => ({}));
 
@@ -135,6 +158,8 @@ export default function Support() {
   };
 
   const submitting = status === "submitting";
+  const accountName = user?.name || "";
+  const accountEmail = user?.email || "";
 
   return (
     <main id="main">
@@ -149,18 +174,59 @@ export default function Support() {
           </div>
 
           <div className="form-shell" style={{ maxWidth: "760px", margin: "0 auto" }}>
-            <form
-              className={`form${status === "success" ? " is-success" : ""}`}
-              onSubmit={handleSubmit}
-              aria-label="Support ticket form"
-              noValidate
-            >
+            {loading ? (
+              <section className="form" aria-live="polite">
+                <p className="form-note">Checking your sign-in...</p>
+              </section>
+            ) : !user ? (
+              <section className="form support-auth-gate" aria-labelledby="support-signin-title">
+                <div className="form-banner" role="status">
+                  <LogIn size={18} />
+                  <span>Sign in first so your ticket is tied to your client portal account.</span>
+                </div>
+                <h2 id="support-signin-title" className="title-3" style={{ marginTop: 0 }}>Sign in to file a support ticket</h2>
+                <p className="form-note">
+                  Tickets are only accepted from signed-in client accounts so replies, status, and history stay attached to the right customer.
+                </p>
+                <div className="portal-actions portal-actions--row">
+                  {providers.length ? providers.map((provider) => (
+                    <button
+                      type="button"
+                      key={provider}
+                      className="btn btn-primary"
+                      onClick={() => login(provider, "/support")}
+                    >
+                      <LogIn size={16} /> {providerLabel(provider)}
+                    </button>
+                  )) : (
+                    <button type="button" className="btn btn-primary" onClick={() => login("google", "/support")}>
+                      <LogIn size={16} /> Continue with Google
+                    </button>
+                  )}
+                </div>
+                <p className="form-note">
+                  Critical incident during business hours? Call <a href="tel:+14072421456">(407) 242-1456</a>.
+                </p>
+              </section>
+            ) : (
+              <>
+                <form
+                  className={`form${status === "success" ? " is-success" : ""}`}
+                  onSubmit={handleSubmit}
+                  aria-label="Support ticket form"
+                  noValidate
+                >
+              <div className="form-banner" role="status">
+                <CheckCircle2 size={18} />
+                <span>Signed in as {accountName ? `${accountName} - ` : ""}{accountEmail}. This ticket will appear in your portal.</span>
+              </div>
               <div className="row-2">
                 <label>
                   <span>Your name</span>
                   <input
                     type="text" name="name" value={form.name} onChange={update("name")}
                     required aria-required="true" autoComplete="name"
+                    placeholder={accountName || "Your name"}
                     disabled={submitting}
                   />
                 </label>
@@ -168,25 +234,23 @@ export default function Support() {
                   <span>Company</span>
                   <input
                     type="text" name="company" value={form.company} onChange={update("company")}
-                    autoComplete="organization" disabled={submitting}
+                    autoComplete="organization" placeholder={user.company || "Company"}
+                    disabled={submitting}
                   />
                 </label>
               </div>
               <div className="row-2">
                 <label>
-                  <span>Email</span>
-                  <input
-                    type="email" name="email" value={form.email} onChange={update("email")}
-                    required aria-required="true" autoComplete="email"
-                    inputMode="email" disabled={submitting}
-                  />
-                </label>
-                <label>
                   <span>Phone</span>
                   <input
                     type="tel" name="phone" value={form.phone} onChange={update("phone")}
-                    autoComplete="tel" inputMode="tel" disabled={submitting}
+                    autoComplete="tel" inputMode="tel" placeholder={user.phone || "(optional)"}
+                    disabled={submitting}
                   />
+                </label>
+                <label>
+                  <span>Account email</span>
+                  <input type="email" value={accountEmail} disabled readOnly />
                 </label>
               </div>
               <div className="row-2">
@@ -287,28 +351,30 @@ export default function Support() {
                   <span>{errorMsg}</span>
                 </div>
               )}
-            </form>
+                </form>
 
-            {status === "success" && (
-              <div className="form-success-overlay" role="status" aria-live="polite">
-                <div className="form-success-card">
-                  <div className="success-check">
-                    <CheckCircle2 size={56} />
+                {status === "success" && (
+                  <div className="form-success-overlay" role="status" aria-live="polite">
+                    <div className="form-success-card">
+                      <div className="success-check">
+                        <CheckCircle2 size={56} />
+                      </div>
+                      <h3>Ticket filed</h3>
+                      {ticketId && (
+                        <p style={{ fontSize: "1rem" }}>
+                          Your ticket ID is <strong>{ticketId}</strong>. Keep it for reference.
+                        </p>
+                      )}
+                      <p>
+                        A Simple IT SRQ engineer will reach out during business hours. For critical incidents, call <a href="tel:+14072421456">(407) 242-1456</a>.
+                      </p>
+                      <button type="button" className="btn btn-secondary" onClick={reset}>
+                        File another ticket
+                      </button>
+                    </div>
                   </div>
-                  <h3>Ticket filed</h3>
-                  {ticketId && (
-                    <p style={{ fontSize: "1rem" }}>
-                      Your ticket ID is <strong>{ticketId}</strong>. Keep it for reference.
-                    </p>
-                  )}
-                  <p>
-                    A Simple IT SRQ engineer will reach out during business hours. For critical incidents, call <a href="tel:+14072421456">(407) 242-1456</a>.
-                  </p>
-                  <button type="button" className="btn btn-secondary" onClick={reset}>
-                    File another ticket
-                  </button>
-                </div>
-              </div>
+                )}
+              </>
             )}
           </div>
           <div style={{ maxWidth: 800, margin: "48px auto 0" }}>
