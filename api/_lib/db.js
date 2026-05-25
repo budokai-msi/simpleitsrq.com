@@ -6,13 +6,32 @@
 
 import { neon } from "@neondatabase/serverless";
 
-const url = process.env.DATABASE_URL;
+const DB_URL_KEYS = [
+  "DATABASE_URL",
+  "POSTGRES_PRISMA_URL",
+  "POSTGRES_URL",
+  "DATABASE_URL_UNPOOLED",
+  "POSTGRES_URL_NON_POOLING",
+  "POSTGRES_URL_NO_SSL",
+];
+
+export function pickDatabaseUrl(env = process.env) {
+  for (const key of DB_URL_KEYS) {
+    const value = String(env[key] || "").trim();
+    if (value) return { key, url: value };
+  }
+  return { key: null, url: "" };
+}
+
+const { key: urlKey, url } = pickDatabaseUrl();
 if (!url && process.env.NODE_ENV === "production") {
-  console.error("[db] DATABASE_URL is not set in production");
+  console.error(`[db] no database URL is set in production; checked ${DB_URL_KEYS.join(", ")}`);
+} else if (url && process.env.NODE_ENV === "production" && urlKey !== "DATABASE_URL") {
+  console.warn(`[db] DATABASE_URL is empty; using ${urlKey}`);
 }
 
 /**
- * Tagged-template SQL client bound to `DATABASE_URL`.
+ * Tagged-template SQL client bound to the first configured Neon/Postgres URL.
  *
  * Usage: ``sql`SELECT * FROM users WHERE id = ${id}` `` — parameters are
  * passed safely, never interpolated. Returns a Promise of the row array.

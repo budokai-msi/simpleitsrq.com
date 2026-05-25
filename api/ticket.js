@@ -215,9 +215,8 @@ export async function POST(request) {
       )
     `;
   } catch (err) {
-    // Non-fatal: the email still sends even if the DB write fails, so the
-    // client never gets a confusing error after a successful submission.
     console.error("[ticket] db insert failed", err);
+    return json(500, { ok: false, error: "storage_failed" });
   }
 
   const mailSubject =

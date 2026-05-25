@@ -37,6 +37,7 @@ const ERROR_MESSAGES = {
   bot_detected: "We couldn't verify your browser. Please refresh the page and try again.",
   rate_limited: "Too many submissions in a short window. Please wait a few minutes and try again.",
   send_failed: "We couldn't file the ticket right now. Please try again in a moment.",
+  storage_failed: "We couldn't save the ticket in the portal. Please call (407) 242-1456 so it does not get missed.",
   network_error: "Network hiccup. Check your connection and try again.",
   invalid_body: "Something went wrong with that request. Please try again.",
   invalid_json: "Something went wrong with that request. Please try again.",

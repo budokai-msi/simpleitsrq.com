@@ -1,9 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "../lib/Link";
 import { useAuth } from "../lib/authContext.js";
+import { csrfFetch } from "../lib/csrf";
 import { useSEO } from "../lib/seo";
 
 const STRIPE_BILLING_URL = "https://billing.stripe.com/p/login/5kQ7sE7oL9OEgIM2nPak000";
+const TICKET_STATUSES = ["open", "in_progress", "waiting", "resolved", "closed"];
+const TICKET_PRIORITIES = ["low", "normal", "high", "critical"];
+
+function labelize(value = "") {
+  return String(value).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 function GoogleGlyph() {
   return (
@@ -41,6 +48,17 @@ function fmtDate(iso) {
     month: "short",
     day: "numeric",
     year: "numeric",
+  });
+}
+
+function fmtDateTime(iso) {
+  if (!iso) return "Pending";
+  return new Date(iso).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 
@@ -96,6 +114,280 @@ function PortalList({ title, rows, empty }) {
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+function AdminTicketConsole() {
+  const [bucket, setBucket] = useState("open");
+  const [searchInput, setSearchInput] = useState("");
+  const [query, setQuery] = useState("");
+  const [tickets, setTickets] = useState([]);
+  const [selectedCode, setSelectedCode] = useState("");
+  const [detail, setDetail] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [draft, setDraft] = useState({ status: "open", priority: "normal" });
+  const [reply, setReply] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState("");
+
+  const loadTickets = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const params = new URLSearchParams({ action: "tickets", status: bucket });
+      if (query) params.set("q", query);
+      const res = await fetch(`/api/portal?${params.toString()}`, { credentials: "same-origin" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "ticket_list_failed");
+      const nextTickets = data.tickets || [];
+      setTickets(nextTickets);
+      setSelectedCode((current) => {
+        if (!nextTickets.length) return "";
+        if (current && nextTickets.some((ticket) => ticket.code === current)) return current;
+        return nextTickets[0].code;
+      });
+    } catch (err) {
+      setTickets([]);
+      setSelectedCode("");
+      setError(err?.message || "Ticket list failed.");
+    } finally {
+      setLoading(false);
+    }
+  }, [bucket, query]);
+
+  const loadTicket = useCallback(async (code) => {
+    if (!code) {
+      setDetail(null);
+      setMessages([]);
+      return;
+    }
+    setDetailLoading(true);
+    setError("");
+    try {
+      const params = new URLSearchParams({ action: "ticket", code });
+      const res = await fetch(`/api/portal?${params.toString()}`, { credentials: "same-origin" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "ticket_load_failed");
+      setDetail(data.ticket || null);
+      setMessages(data.messages || []);
+      setDraft({
+        status: data.ticket?.status || "open",
+        priority: data.ticket?.priority || "normal",
+      });
+    } catch (err) {
+      setDetail(null);
+      setMessages([]);
+      setError(err?.message || "Ticket failed to load.");
+    } finally {
+      setDetailLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve().then(() => {
+      if (!cancelled) loadTickets();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [loadTickets]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.resolve().then(() => {
+      if (!cancelled) loadTicket(selectedCode);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [loadTicket, selectedCode]);
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    setQuery(searchInput.trim());
+  };
+
+  const saveTicket = async () => {
+    if (!detail?.code || busy) return;
+    setBusy("save");
+    setError("");
+    try {
+      const res = await csrfFetch("/api/portal?action=ticket", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: detail.code, status: draft.status, priority: draft.priority }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "ticket_update_failed");
+      await Promise.all([loadTickets(), loadTicket(detail.code)]);
+    } catch (err) {
+      setError(err?.message || "Ticket update failed.");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const sendReply = async () => {
+    const body = reply.trim();
+    if (!detail?.code || !body || busy) return;
+    setBusy("reply");
+    setError("");
+    try {
+      const res = await csrfFetch("/api/portal?action=ticket-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: detail.code, body }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "reply_failed");
+      setReply("");
+      await Promise.all([loadTickets(), loadTicket(detail.code)]);
+    } catch (err) {
+      setError(err?.message || "Reply failed.");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  return (
+    <section className="portal-card portal-ticket-console">
+      <div className="portal-console-head">
+        <div>
+          <h2>Admin ticket desk</h2>
+          <p className="portal-muted">All submitted support tickets, replies, status, and priority controls.</p>
+        </div>
+        <div className="portal-ticket-tabs" aria-label="Ticket status bucket">
+          <button type="button" className={bucket === "open" ? "is-active" : ""} onClick={() => setBucket("open")}>Open</button>
+          <button type="button" className={bucket === "closed" ? "is-active" : ""} onClick={() => setBucket("closed")}>Closed</button>
+        </div>
+      </div>
+
+      <form className="portal-ticket-search" onSubmit={submitSearch}>
+        <input
+          type="search"
+          value={searchInput}
+          onChange={(event) => setSearchInput(event.target.value)}
+          placeholder="Search subject, customer, company, email, or code"
+          aria-label="Search tickets"
+        />
+        <button type="submit" className="btn btn-secondary">Search</button>
+        {query && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              setSearchInput("");
+              setQuery("");
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </form>
+
+      {error && <div className="portal-alert" role="alert">Ticket console issue: {error}</div>}
+
+      <div className="portal-ticket-layout">
+        <div className="portal-ticket-list" aria-label="Tickets">
+          {loading ? (
+            <p className="portal-muted">Loading tickets...</p>
+          ) : tickets.length ? (
+            tickets.map((ticket) => (
+              <button
+                type="button"
+                key={ticket.code}
+                className={`portal-ticket-item${selectedCode === ticket.code ? " is-active" : ""}`}
+                onClick={() => setSelectedCode(ticket.code)}
+              >
+                <strong>{ticket.subject || "Untitled ticket"}</strong>
+                <span>{ticket.code} - {ticket.submitter?.name || ticket.submitter?.email || "Unknown customer"}</span>
+                <small>{labelize(ticket.priority)} - {labelize(ticket.status)} - {fmtDateTime(ticket.createdAt)}</small>
+              </button>
+            ))
+          ) : (
+            <p className="portal-muted">No {bucket} tickets found.</p>
+          )}
+        </div>
+
+        <div className="portal-ticket-detail" aria-live="polite">
+          {detailLoading ? (
+            <p className="portal-muted">Loading ticket...</p>
+          ) : detail ? (
+            <>
+              <div className="portal-ticket-detail-head">
+                <div>
+                  <span>{detail.code}</span>
+                  <h3>{detail.subject}</h3>
+                  <p>{detail.submitter?.name || "Unknown"} - {detail.submitter?.email || "No email"}</p>
+                </div>
+                <strong>{labelize(detail.status)}</strong>
+              </div>
+
+              <div className="portal-ticket-meta">
+                <div><span>Company</span><strong>{detail.submitter?.company || "-"}</strong></div>
+                <div><span>Phone</span><strong>{detail.submitter?.phone || "-"}</strong></div>
+                <div><span>Category</span><strong>{detail.category || "-"}</strong></div>
+                <div><span>Opened</span><strong>{fmtDateTime(detail.createdAt)}</strong></div>
+              </div>
+
+              <div className="portal-ticket-description">
+                <span>Description</span>
+                <p>{detail.description}</p>
+              </div>
+
+              <div className="portal-ticket-controls">
+                <label>
+                  <span>Status</span>
+                  <select value={draft.status} onChange={(event) => setDraft((d) => ({ ...d, status: event.target.value }))}>
+                    {TICKET_STATUSES.map((status) => <option key={status} value={status}>{labelize(status)}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span>Priority</span>
+                  <select value={draft.priority} onChange={(event) => setDraft((d) => ({ ...d, priority: event.target.value }))}>
+                    {TICKET_PRIORITIES.map((priority) => <option key={priority} value={priority}>{labelize(priority)}</option>)}
+                  </select>
+                </label>
+                <button type="button" className="btn btn-primary" disabled={busy === "save"} onClick={saveTicket}>
+                  {busy === "save" ? "Saving..." : "Save disposition"}
+                </button>
+              </div>
+
+              <div className="portal-ticket-messages">
+                <h4>Conversation</h4>
+                {messages.length ? messages.map((message) => (
+                  <div className={`portal-ticket-message portal-ticket-message--${message.author}`} key={message.id}>
+                    <div>
+                      <strong>{message.authorName || labelize(message.author)}</strong>
+                      <span>{fmtDateTime(message.createdAt)}</span>
+                    </div>
+                    <p>{message.body}</p>
+                  </div>
+                )) : <p className="portal-muted">No replies yet.</p>}
+              </div>
+
+              <div className="portal-ticket-reply">
+                <textarea
+                  rows="5"
+                  value={reply}
+                  onChange={(event) => setReply(event.target.value)}
+                  placeholder="Write a reply to the customer"
+                  aria-label="Ticket reply"
+                />
+                <button type="button" className="btn btn-primary" disabled={!reply.trim() || busy === "reply"} onClick={sendReply}>
+                  {busy === "reply" ? "Sending..." : "Send reply"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <p className="portal-muted">Select a ticket to inspect it.</p>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
@@ -167,17 +459,20 @@ function Dashboard({ user, logout }) {
       </section>
 
       {user.isAdmin ? (
-        <section className="portal-card">
-          <h2>Admin operations</h2>
-          <p className="portal-muted">
-            Internal dashboard for affiliate clicks, leadgen, content drafts, AdSense, and OpSec. Hidden from public navigation.
-          </p>
-          <div className="portal-actions portal-actions--row">
-            <Link className="btn btn-primary" to="/portal/ops">Open ops dashboard</Link>
-            <Link className="btn btn-secondary" to="/portal/ops?tab=affiliate">Affiliate signals</Link>
-            <Link className="btn btn-secondary" to="/portal/leadgen">Leadgen workspace</Link>
-          </div>
-        </section>
+        <>
+          <AdminTicketConsole />
+          <section className="portal-card">
+            <h2>Admin operations</h2>
+            <p className="portal-muted">
+              Internal dashboard for affiliate clicks, leadgen, content drafts, AdSense, and OpSec. Hidden from public navigation.
+            </p>
+            <div className="portal-actions portal-actions--row">
+              <Link className="btn btn-primary" to="/portal/ops">Open ops dashboard</Link>
+              <Link className="btn btn-secondary" to="/portal/ops?tab=affiliate">Affiliate signals</Link>
+              <Link className="btn btn-secondary" to="/portal/leadgen">Leadgen workspace</Link>
+            </div>
+          </section>
+        </>
       ) : null}
     </div>
   );

@@ -1,6 +1,14 @@
-$pw = "npg_W0iwnCGDSvd8"
-$pooled   = "postgresql://neondb_owner:$pw@ep-damp-cake-an6lqe3o-pooler.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-$unpooled = "postgresql://neondb_owner:$pw@ep-damp-cake-an6lqe3o.c-6.us-east-1.aws.neon.tech/neondb?sslmode=require"
+$ErrorActionPreference = "Stop"
+
+$pooled = $env:DATABASE_URL
+$unpooled = $env:DATABASE_URL_UNPOOLED
+$pw = $env:POSTGRES_PASSWORD
+
+if (-not $pooled -or -not $unpooled -or -not $pw) {
+  Write-Host "ERROR: Set DATABASE_URL, DATABASE_URL_UNPOOLED, and POSTGRES_PASSWORD before running." -ForegroundColor Red
+  Write-Host "Tip: use scripts/rotate-neon-password.ps1 when NEON_API_KEY is available." -ForegroundColor Yellow
+  exit 1
+}
 
 $updates = @(
   @{ name = "DATABASE_URL";              value = $pooled   },
