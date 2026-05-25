@@ -3645,6 +3645,7 @@ async function handleLeadgenInsights(session) {
 async function handleLeadgenDiscover(session, request) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  const userId = session.user?.id || null;
   let body;
   try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
   const zip = String(body?.zip || "").trim();
@@ -3663,7 +3664,7 @@ async function handleLeadgenDiscover(session, request) {
 
   const rows = await sql`
     INSERT INTO lead_crawl_jobs (kind, status, payload, created_by)
-    VALUES ('osm_zip', 'pending', ${JSON.stringify({ zip })}::jsonb, ${session.userId || null})
+    VALUES ('osm_zip', 'pending', ${JSON.stringify({ zip })}::jsonb, ${userId})
     RETURNING id
   `;
   return json(200, { ok: true, job_id: rows[0].id });
@@ -3677,6 +3678,7 @@ async function handleLeadgenDiscover(session, request) {
 async function handleLeadgenCrawlEmails(session, request) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  const userId = session.user?.id || null;
   let body;
   try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
 
@@ -3708,7 +3710,7 @@ async function handleLeadgenCrawlEmails(session, request) {
   for (const id of ids) {
     const r = await sql`
       INSERT INTO lead_crawl_jobs (kind, status, payload, created_by)
-      VALUES ('website_emails', 'pending', ${JSON.stringify({ business_id: id })}::jsonb, ${session.userId || null})
+      VALUES ('website_emails', 'pending', ${JSON.stringify({ business_id: id })}::jsonb, ${userId})
       RETURNING id
     `;
     inserted.push(r[0].id);
@@ -3728,6 +3730,7 @@ async function handleLeadgenBusinesses(session, url) {
   const subIndustry = (url.searchParams.get("sub_industry") || "").trim();
   const hasWebsite = url.searchParams.get("has_website") === "1";
   const hasEmail = url.searchParams.get("has_email") === "1";
+  const noEmail = url.searchParams.get("no_email") === "1";
   const tag = (url.searchParams.get("tag") || "").trim().toLowerCase();
   const minEmails = Math.max(0, Number(url.searchParams.get("min_emails")) || 0);
   const maxEmails = Math.max(0, Number(url.searchParams.get("max_emails")) || 0);
@@ -3760,7 +3763,15 @@ async function handleLeadgenBusinesses(session, url) {
     FROM lead_businesses b
     WHERE (${!wantsZip}::bool OR b.zip = ${zip})
       AND (${!wantsStatus}::bool OR b.status = ${status})
-      AND (${!wantsQ}::bool OR lower(b.name) LIKE ${like} OR lower(coalesce(b.website,'')) LIKE ${like})
+      AND (${!wantsQ}::bool
+        OR lower(b.name) LIKE ${like}
+        OR lower(coalesce(b.website,'')) LIKE ${like}
+        OR EXISTS (
+          SELECT 1 FROM lead_emails e
+          WHERE e.business_id = b.id
+            AND lower(e.email) LIKE ${like}
+            AND e.opted_out_at IS NULL
+            AND e.bounced_at IS NULL))
       AND (${!wantsGroup}::bool OR b.industry_group = ${industryGroup})
       AND (${!wantsSub}::bool OR b.sub_industry = ${subIndustry})
       AND (${!hasWebsite}::bool OR b.website IS NOT NULL)
@@ -3769,7 +3780,12 @@ async function handleLeadgenBusinesses(session, url) {
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
-      AND (${!wantsTag}::bool OR EXISTS (SELECT 1 FROM unnest(b.tags) t WHERE lower(t) LIKE ${'%' + tag + '%'}))
+      AND (${!noEmail}::bool OR NOT EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+      AND (${!wantsTag}::bool OR EXISTS (SELECT 1 FROM unnest(coalesce(b.tags, '{}'::text[])) t WHERE lower(t) LIKE ${'%' + tag + '%'}))
       AND (${!wantsCreatedAfter}::bool OR b.created_at >= ${createdAfter + 'T00:00:00Z'})
       AND (${!wantsCreatedBefore}::bool OR b.created_at <= ${createdBefore + 'T23:59:59Z'})
     ORDER BY b.id DESC
@@ -3790,7 +3806,15 @@ async function handleLeadgenBusinesses(session, url) {
     FROM lead_businesses b
     WHERE (${!wantsZip}::bool OR b.zip = ${zip})
       AND (${!wantsStatus}::bool OR b.status = ${status})
-      AND (${!wantsQ}::bool OR lower(b.name) LIKE ${like} OR lower(coalesce(b.website,'')) LIKE ${like})
+      AND (${!wantsQ}::bool
+        OR lower(b.name) LIKE ${like}
+        OR lower(coalesce(b.website,'')) LIKE ${like}
+        OR EXISTS (
+          SELECT 1 FROM lead_emails e
+          WHERE e.business_id = b.id
+            AND lower(e.email) LIKE ${like}
+            AND e.opted_out_at IS NULL
+            AND e.bounced_at IS NULL))
       AND (${!wantsGroup}::bool OR b.industry_group = ${industryGroup})
       AND (${!wantsSub}::bool OR b.sub_industry = ${subIndustry})
       AND (${!hasWebsite}::bool OR b.website IS NOT NULL)
@@ -3799,7 +3823,12 @@ async function handleLeadgenBusinesses(session, url) {
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
-      AND (${!wantsTag}::bool OR EXISTS (SELECT 1 FROM unnest(b.tags) t WHERE lower(t) LIKE ${'%' + tag + '%'}))
+      AND (${!noEmail}::bool OR NOT EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+      AND (${!wantsTag}::bool OR EXISTS (SELECT 1 FROM unnest(coalesce(b.tags, '{}'::text[])) t WHERE lower(t) LIKE ${'%' + tag + '%'}))
       AND (${!wantsCreatedAfter}::bool OR b.created_at >= ${createdAfter + 'T00:00:00Z'})
       AND (${!wantsCreatedBefore}::bool OR b.created_at <= ${createdBefore + 'T23:59:59Z'})
   `;
@@ -3924,15 +3953,19 @@ async function handleLeadgenExport(session, url) {
   const format = (url.searchParams.get("format") || "csv").toLowerCase();
   const zip = (url.searchParams.get("zip") || "").trim();
   const status = (url.searchParams.get("status") || "").trim();
+  const q = (url.searchParams.get("q") || "").trim();
   const industryGroup = (url.searchParams.get("industry_group") || "").trim();
   const subIndustry = (url.searchParams.get("sub_industry") || "").trim();
   const hasWebsite = url.searchParams.get("has_website") === "1";
   const hasEmail = url.searchParams.get("has_email") === "1";
+  const noEmail = url.searchParams.get("no_email") === "1";
 
   const wantsZip = /^\d{5}$/.test(zip);
   const wantsStatus = ["active", "rejected", "do_not_contact"].includes(status);
+  const wantsQ = q.length >= 2;
   const wantsGroup = industryGroup.length > 0;
   const wantsSub = subIndustry.length > 0;
+  const like = `%${q.toLowerCase()}%`;
 
   const rows = await sql`
     SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.website,
@@ -3943,10 +3976,24 @@ async function handleLeadgenExport(session, url) {
     FROM lead_businesses b
     WHERE (${!wantsZip}::bool OR b.zip = ${zip})
       AND (${!wantsStatus}::bool OR b.status = ${status})
+      AND (${!wantsQ}::bool
+        OR lower(b.name) LIKE ${like}
+        OR lower(coalesce(b.website,'')) LIKE ${like}
+        OR EXISTS (
+          SELECT 1 FROM lead_emails e
+          WHERE e.business_id = b.id
+            AND lower(e.email) LIKE ${like}
+            AND e.opted_out_at IS NULL
+            AND e.bounced_at IS NULL))
       AND (${!wantsGroup}::bool OR b.industry_group = ${industryGroup})
       AND (${!wantsSub}::bool OR b.sub_industry = ${subIndustry})
       AND (${!hasWebsite}::bool OR b.website IS NOT NULL)
       AND (${!hasEmail}::bool OR EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+      AND (${!noEmail}::bool OR NOT EXISTS (
             SELECT 1 FROM lead_emails e
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
@@ -4186,6 +4233,7 @@ async function handleLeadgenCampaigns(session) {
 async function handleLeadgenCampaignSave(session, request) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  const userId = session.user?.id || null;
   let body;
   try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
 
@@ -4231,7 +4279,7 @@ async function handleLeadgenCampaignSave(session, request) {
       (${fields.name}, 'draft', ${fields.subject_template}, ${fields.body_template},
        ${fields.from_email}, ${fields.reply_to || null},
        ${fields.throttle_per_hour}, ${fields.daily_cap},
-       ${fields.consent_basis}, ${JSON.stringify(fields.segment)}::jsonb, ${session.userId || null})
+       ${fields.consent_basis}, ${JSON.stringify(fields.segment)}::jsonb, ${userId})
     RETURNING id
   `;
   return json(200, { ok: true, id: r[0].id });

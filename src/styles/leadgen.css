@@ -707,6 +707,51 @@
   border-radius: 10px;
 }
 
+.leadgen-discover-command,
+.leadgen-list-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: end;
+  margin: 1rem 0;
+  padding: 18px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 10px;
+}
+
+.leadgen-discover-command h2 {
+  margin: 4px 0 6px;
+  color: var(--text-1, #111827);
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.leadgen-discover-command p,
+.leadgen-list-tools p {
+  margin: 0;
+  max-width: 660px;
+  color: var(--text-2, #4b5563);
+  line-height: 1.5;
+}
+
+.leadgen-discover-actions,
+.leadgen-filter-presets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: end;
+}
+
+.leadgen-list-tools strong {
+  display: block;
+  margin: 4px 0;
+  color: var(--text-1, #111827);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
 .leadgen-pipeline-controls {
   display: grid;
   grid-template-columns: 120px repeat(3, minmax(0, auto));
@@ -1143,6 +1188,8 @@
 @media (max-width: 960px) {
   .leadgen-command-hero,
   .leadgen-command-console,
+  .leadgen-discover-command,
+  .leadgen-list-tools,
   .leadgen-command-grid,
   .leadgen-ops-grid,
   .leadgen-builder-grid,
@@ -1170,6 +1217,8 @@
   .leadgen-workflow,
   .leadgen-ad-preview dl,
   .leadgen-console-actions,
+  .leadgen-discover-actions,
+  .leadgen-filter-presets,
   .leadgen-stage-list,
   .leadgen-signal-grid,
   .leadgen-console-metrics,
@@ -1192,6 +1241,8 @@
 [data-theme="dark"] .leadgen-command-scorecard,
 [data-theme="dark"] .leadgen-workflow-step,
 [data-theme="dark"] .leadgen-pipeline-card,
+[data-theme="dark"] .leadgen-discover-command,
+[data-theme="dark"] .leadgen-list-tools,
 [data-theme="dark"] .leadgen-health-grid div,
 [data-theme="dark"] .leadgen-builder-panel,
 [data-theme="dark"] .leadgen-ad-preview,
@@ -1204,6 +1255,8 @@
 
 [data-theme="dark"] .leadgen-powered-pill,
 [data-theme="dark"] .leadgen-command-hero h2,
+[data-theme="dark"] .leadgen-discover-command h2,
+[data-theme="dark"] .leadgen-list-tools strong,
 [data-theme="dark"] .leadgen-command-scorecard strong,
 [data-theme="dark"] .leadgen-workflow-step h3,
 [data-theme="dark"] .leadgen-health-grid strong,
@@ -1215,6 +1268,8 @@
 }
 
 [data-theme="dark"] .leadgen-command-hero p,
+[data-theme="dark"] .leadgen-discover-command p,
+[data-theme="dark"] .leadgen-list-tools p,
 [data-theme="dark"] .leadgen-workflow-step p,
 [data-theme="dark"] .leadgen-health-grid span,
 [data-theme="dark"] .leadgen-ad-preview p,
