@@ -36,8 +36,11 @@ import { csrfFetch } from "../lib/csrf";
 
 async function getJson(url) {
   const r = await fetch(url, { credentials: "same-origin" });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.ok === false) {
+    throw new Error(j.error || `HTTP ${r.status}`);
+  }
+  return j;
 }
 
 async function postJson(url, body) {
@@ -186,13 +189,13 @@ export default function LeadgenDashboard() {
     return () => { alive = false; clearTimeout(timer); };
   }, []);
 
-  if (statusErr && /401|403|unauthorized|admin/i.test(statusErr)) {
+  if (statusErr && /401|403|unauthorized|unauthenticated|forbidden|admin|leadgen_subscription_required/i.test(statusErr)) {
     return (
       <section className="section admin-affiliates">
         <div className="container">
           <h1 className="title-1">Lead generation</h1>
-          <p className="admin-aff-sub">This area is restricted to administrators.</p>
-          <p><Link to="/portal" className="admin-aff-back">Back to portal</Link></p>
+          <p className="admin-aff-sub">Sign in with an authorized account to open the Leadgen workspace.</p>
+          <p><Link to="/portal" className="admin-aff-back">Sign in to portal</Link></p>
         </div>
       </section>
     );
@@ -220,6 +223,12 @@ export default function LeadgenDashboard() {
             </div>
           </div>
         </header>
+
+        {statusErr ? (
+          <p className="admin-leadgen-err">
+            Leadgen status could not load: {statusErr}
+          </p>
+        ) : null}
 
         <div className="leadgen-kpi-grid">
           <Stat
@@ -613,6 +622,7 @@ function InsightsTab() {
     } catch (e) { setErr(String(e.message || e)); }
     finally { setBusy(false); }
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   if (busy && !data) return <p className="admin-leadgen-ok">Loading insights...</p>;
@@ -768,7 +778,7 @@ function DiscoverTab({ onStatusChange }) {
   const [filter, setFilter] = useState({
     zip: "", status: "active", q: "",
     industry_group: "", sub_industry: "",
-    has_website: false, has_email: false,
+    has_website: false, has_email: false, no_email: false,
     tag: "", min_emails: "", max_emails: "",
     created_after: "", created_before: "",
   });
@@ -781,6 +791,51 @@ function DiscoverTab({ onStatusChange }) {
   const [err, setErr] = useState(null);
 
   const limit = 50;
+  const cleanFilter = () => ({
+    zip: "", status: "active", q: "",
+    industry_group: "", sub_industry: "",
+    has_website: false, has_email: false, no_email: false,
+    tag: "", min_emails: "", max_emails: "",
+    created_after: "", created_before: "",
+  });
+  const activeFilterCount = [
+    filter.zip,
+    filter.q,
+    filter.industry_group,
+    filter.sub_industry,
+    filter.has_website,
+    filter.has_email,
+    filter.no_email,
+    filter.tag,
+    filter.min_emails,
+    filter.max_emails,
+    filter.created_after,
+    filter.created_before,
+    filter.status && filter.status !== "active",
+  ].filter(Boolean).length;
+  const currentZip = filter.zip || zip;
+  const resetFilters = () => {
+    setFilter(cleanFilter());
+    setPage(1);
+    setErr(null);
+  };
+  const applyListPreset = (preset) => {
+    const baseZip = currentZip;
+    setPage(1);
+    setErr(null);
+    if (preset === "ready") {
+      setFilter({ ...cleanFilter(), zip: baseZip, has_website: true, has_email: true });
+      return;
+    }
+    if (preset === "needs_email") {
+      setFilter({ ...cleanFilter(), zip: baseZip, has_website: true, no_email: true });
+      return;
+    }
+    setFilter({ ...cleanFilter(), zip: baseZip });
+  };
+  const emptyCopy = filter.zip
+    ? "No businesses match this view. Clear filters, search a business/email, or run discovery for this zip."
+    : "Enter a zip and discover businesses to start the local prospect list.";
 
   // Build the query string used for both list-load and export so the
   // download always matches the current view exactly.
@@ -794,6 +849,7 @@ function DiscoverTab({ onStatusChange }) {
     if (filter.sub_industry)   url.searchParams.set("sub_industry", filter.sub_industry);
     if (filter.has_website)    url.searchParams.set("has_website", "1");
     if (filter.has_email)      url.searchParams.set("has_email", "1");
+    if (filter.no_email)       url.searchParams.set("no_email", "1");
     if (filter.tag)            url.searchParams.set("tag", filter.tag);
     if (filter.min_emails)     url.searchParams.set("min_emails", filter.min_emails);
     if (filter.max_emails)     url.searchParams.set("max_emails", filter.max_emails);
@@ -820,7 +876,7 @@ function DiscoverTab({ onStatusChange }) {
 
   // Re-load whenever the filter changes. Fetch-on-mount is a legitimate
   // effect use; the lint rule is overly strict here.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
   useEffect(() => { loadList(page); }, [filter, page]);
 
   const queueDiscover = async () => {
@@ -918,41 +974,65 @@ function DiscoverTab({ onStatusChange }) {
 
   return (
     <div className="admin-leadgen-discover">
-      <div className="admin-leadgen-toolbar">
-        <label className="admin-leadgen-field">
-          <span>Zip code</span>
-          <input
-            value={zip}
-            onChange={(e) => setZip(e.target.value)}
-            inputMode="numeric"
-            pattern="\d{5}"
-            placeholder="34207"
-            className="admin-leadgen-input admin-leadgen-input--zip"
-          />
-        </label>
-        <button
-          type="button"
-          onClick={queueDiscover}
-          disabled={busy}
-          className="btn btn-primary"
-        >
-          {busy ? "Queuing..." : "Discover businesses"}
-        </button>
-        <button
-          type="button"
-          onClick={queueEmailCrawls}
-          disabled={busy || !/^\d{5}$/.test(filter.zip)}
-          className="btn btn-secondary"
-          title={!/^\d{5}$/.test(filter.zip) ? "Filter by a zip first" : ""}
-        >
-          Crawl emails for filtered zip
-        </button>
+      <div className="leadgen-discover-command">
+        <div>
+          <span className="leadgen-console-topline">Discovery pipeline</span>
+          <h2>Build a usable prospect list</h2>
+          <p>
+            Pick one local zip, pull public business records, then crawl public contact
+            paths only for the records you can review and export.
+          </p>
+        </div>
+        <div className="leadgen-discover-actions">
+          <label className="admin-leadgen-field">
+            <span>Zip code</span>
+            <input
+              value={zip}
+              onChange={(e) => setZip(e.target.value)}
+              inputMode="numeric"
+              pattern="\d{5}"
+              placeholder="34207"
+              className="admin-leadgen-input admin-leadgen-input--zip"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={queueDiscover}
+            disabled={busy}
+            className="btn btn-primary"
+          >
+            {busy ? "Working..." : "Discover"}
+          </button>
+          <button
+            type="button"
+            onClick={queueEmailCrawls}
+            disabled={busy || !/^\d{5}$/.test(filter.zip)}
+            className="btn btn-secondary"
+            title={!/^\d{5}$/.test(filter.zip) ? "Filter by a zip first" : ""}
+          >
+            Find public emails
+          </button>
+        </div>
       </div>
 
       {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
 
-      <div className="admin-leadgen-filters">
+      <div className="leadgen-list-tools">
+        <div>
+          <span className="leadgen-console-topline">Current view</span>
+          <strong>{total.toLocaleString()} matches</strong>
+          <p>Search covers business names, websites, and deliverable emails.</p>
+        </div>
+        <div className="leadgen-filter-presets" aria-label="Lead list presets">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("all")}>All in zip</button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("ready")}>Ready contacts</button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("needs_email")}>Needs email crawl</button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={resetFilters} disabled={activeFilterCount === 0}>Clear filters</button>
+        </div>
+      </div>
+
+      <div className="admin-leadgen-filters" aria-label="Lead list filters">
         <input
           placeholder="filter zip"
           value={filter.zip}
@@ -998,8 +1078,13 @@ function DiscoverTab({ onStatusChange }) {
         </label>
         <label className="admin-leadgen-check">
           <input type="checkbox" checked={filter.has_email}
-            onChange={(e) => { setFilter((f) => ({ ...f, has_email: e.target.checked })); setPage(1); }} />
+            onChange={(e) => { setFilter((f) => ({ ...f, has_email: e.target.checked, no_email: e.target.checked ? false : f.no_email })); setPage(1); }} />
           Has email
+        </label>
+        <label className="admin-leadgen-check">
+          <input type="checkbox" checked={filter.no_email}
+            onChange={(e) => { setFilter((f) => ({ ...f, no_email: e.target.checked, has_email: e.target.checked ? false : f.has_email })); setPage(1); }} />
+          Needs email
         </label>
         <input
           placeholder="tag"
@@ -1041,12 +1126,12 @@ function DiscoverTab({ onStatusChange }) {
           title="Created before"
         />
         <input
-          placeholder="search name or website"
+          placeholder="search business, website, or email"
           value={filter.q}
           onChange={(e) => { setFilter((f) => ({ ...f, q: e.target.value })); setPage(1); }}
           className="admin-leadgen-input admin-leadgen-input--grow"
         />
-        <span className="admin-leadgen-count">{total} matches</span>
+        <span className="admin-leadgen-count">{activeFilterCount} filters</span>
         <div className="admin-leadgen-export-group">
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("csv")} disabled={total === 0}>Export CSV</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("json")} disabled={total === 0}>Export JSON</button>
@@ -1107,7 +1192,7 @@ function DiscoverTab({ onStatusChange }) {
               </tr>
             ))}
             {rows.length === 0 ? (
-              <tr><td colSpan={8} className="admin-leadgen-empty">No results yet. Discover a zip to get started.</td></tr>
+              <tr><td colSpan={8} className="admin-leadgen-empty">{emptyCopy}</td></tr>
             ) : null}
           </tbody>
         </table>
@@ -1253,6 +1338,7 @@ function CampaignsTab() {
       setList(r.rows || []);
     } catch (e) { setErr(String(e.message || e)); }
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { reload(); }, []);
 
   const newCampaign = () => setEditing({
@@ -1521,6 +1607,7 @@ function JobsTab({ recent }) {
       setRows(r.rows || []);
     } catch (e) { setErr(String(e.message || e)); }
   };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { reload(); }, []);
 
   return (
