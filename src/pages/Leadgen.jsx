@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "../lib/Link";
 import {
-  ArrowRight, Check, MapPin, Database, Mail, Zap, ShieldCheck,
+  ArrowRight, Check, MapPin, Database, Mail, ShieldCheck,
   Filter, Send, BarChart3, Building2,
-  Search, Gauge, Target,
+  Search,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 
@@ -164,6 +164,31 @@ const WORKSPACE_FLOW = [
   },
 ];
 
+const PUBLIC_NICHES = [
+  "All",
+  "Healthcare",
+  "Trades",
+  "Professional Services",
+  "Automotive",
+  "Hospitality",
+  "Personal Services",
+  "Retail",
+  "Food & Drink",
+];
+
+const DEFAULT_SCAN_ROWS = [
+  {
+    name: "Run a scan to load public records",
+    address: "Try 34237, 34236, 34205, 34285, or your target zip",
+    city: "OpenStreetMap",
+    industry_group: "Public source",
+    sub_industry: "No purchased list",
+    website: "",
+    phone: "",
+    source_url: "https://www.openstreetmap.org",
+  },
+];
+
 function Currency({ value }) {
   if (value == null) return <span className="leadgen-tier__price-custom">Custom</span>;
   if (value === 0) return (
@@ -197,6 +222,214 @@ function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "
   );
 }
 
+function csvCell(value) {
+  return `"${String(value ?? "").replace(/"/g, '""')}"`;
+}
+
+function downloadCsv(filename, rows) {
+  const headers = ["status", "name", "industry", "sub_industry", "address", "city", "state", "zip", "website", "phone", "source_url"];
+  const lines = [
+    headers.map(csvCell).join(","),
+    ...rows.map((row) => headers.map((key) => csvCell(row[key])).join(",")),
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function hostFor(url) {
+  if (!url) return "No website";
+  try { return new URL(url).host.replace(/^www\./, ""); } catch { return url; }
+}
+
+function LeadgenScanApp() {
+  const [zip, setZip] = useState("34237");
+  const [niche, setNiche] = useState("Healthcare");
+  const [offer, setOffer] = useState("Managed IT cleanup for small offices");
+  const [dailyCap, setDailyCap] = useState(35);
+  const [scan, setScan] = useState(null);
+  const [review, setReview] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const rows = scan?.rows?.length ? scan.rows : DEFAULT_SCAN_ROWS;
+  const reviewedRows = useMemo(() => (
+    (scan?.rows || []).map((row, index) => ({
+      ...row,
+      status: review[index] || "keep",
+    }))
+  ), [scan, review]);
+  const kept = reviewedRows.filter((row) => row.status === "keep");
+  const maybe = reviewedRows.filter((row) => row.status === "maybe");
+  const rejected = reviewedRows.filter((row) => row.status === "reject");
+  const websites = reviewedRows.filter((row) => row.website).length;
+  const phones = reviewedRows.filter((row) => row.phone).length;
+
+  const runScan = async () => {
+    setBusy(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/leadgen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ zip, niche, limit: 60 }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) {
+        throw new Error(data.message || data.error || `Scan failed (${res.status})`);
+      }
+      setScan(data);
+      setReview(Object.fromEntries((data.rows || []).map((_, index) => [index, index < 20 ? "keep" : "maybe"])));
+    } catch (e) {
+      setErr(String(e.message || e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const exportRows = () => {
+    if (!reviewedRows.length) return;
+    downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, reviewedRows);
+  };
+
+  return (
+    <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
+      <div className="leadgen-app-panel leadgen-app-panel--control">
+        <div className="leadgen-app-topline">
+          <span className="leadgen-app-live"><span /> Live public-record scanner</span>
+          <Link to="/portal/leadgen" className="leadgen-app-portal-link">Open campaign workspace</Link>
+        </div>
+
+        <div className="leadgen-app-title">
+          <h1 className="display">Build a local prospect list before you buy anything.</h1>
+          <p>
+            Pick a zip and niche. Leadgen pulls public business records, shows the source,
+            lets you review the list, and exports the segment for the real campaign workspace.
+          </p>
+        </div>
+
+        <div className="leadgen-app-controls">
+          <label>
+            <span>Zip code</span>
+            <input
+              value={zip}
+              onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
+              inputMode="numeric"
+              placeholder="34237"
+              aria-label="Target zip code"
+            />
+          </label>
+          <label>
+            <span>Niche</span>
+            <select value={niche} onChange={(e) => setNiche(e.target.value)} aria-label="Target niche">
+              {PUBLIC_NICHES.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </label>
+          <label className="leadgen-app-controls__wide">
+            <span>Offer angle</span>
+            <input
+              value={offer}
+              onChange={(e) => setOffer(e.target.value)}
+              placeholder="Wi-Fi cleanup, backups, account lockouts..."
+              aria-label="Offer angle"
+            />
+          </label>
+          <label>
+            <span>Daily cap</span>
+            <input
+              type="number"
+              min="5"
+              max="100"
+              value={dailyCap}
+              onChange={(e) => setDailyCap(e.target.value)}
+              aria-label="Daily send cap"
+            />
+          </label>
+          <button type="button" className="btn btn-primary" onClick={runScan} disabled={busy || !/^\d{5}$/.test(zip)}>
+            <Search size={16} aria-hidden="true" />
+            {busy ? "Scanning..." : "Run scan"}
+          </button>
+        </div>
+
+        {err ? <p className="leadgen-app-error">{err}</p> : null}
+
+        <div className="leadgen-app-kpis" aria-label="Scan metrics">
+          <div><Building2 size={15} /><strong>{scan?.matched ?? "-"}</strong><span>matching records</span></div>
+          <div><Database size={15} /><strong>{websites || "-"}</strong><span>with websites</span></div>
+          <div><Mail size={15} /><strong>{phones || "-"}</strong><span>with phone</span></div>
+          <div><Check size={15} /><strong>{kept.length || "-"}</strong><span>kept after review</span></div>
+        </div>
+
+        <div className="leadgen-app-brief">
+          <div>
+            <span>Campaign brief</span>
+            <strong>{niche} in {zip}</strong>
+            <p>{offer || "Add an offer angle before sending."}</p>
+          </div>
+          <div>
+            <span>Send rule</span>
+            <strong>{dailyCap || 35}/day max</strong>
+            <p>{kept.length ? `${Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35))} sending day estimate for kept rows.` : "Run and review a scan first."}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="leadgen-app-panel leadgen-app-panel--results">
+        <div className="leadgen-app-results-head">
+          <div>
+            <span>{scan ? `${scan.returned} shown / ${scan.matched} matched` : "Ready to scan"}</span>
+            <h2>Review list</h2>
+          </div>
+          <div className="leadgen-app-actions">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export CSV</button>
+            <Link to="/portal/leadgen" className="btn btn-primary btn-sm">Use in workspace</Link>
+          </div>
+        </div>
+
+        <div className="leadgen-review-summary">
+          <span>{kept.length} keep</span>
+          <span>{maybe.length} maybe</span>
+          <span>{rejected.length} reject</span>
+        </div>
+
+        <div className="leadgen-result-list">
+          {rows.map((row, index) => (
+            <article key={`${row.source_id || row.name}-${index}`} className="leadgen-result-row">
+              <div className="leadgen-result-row__main">
+                <strong>{row.name}</strong>
+                <span>{[row.sub_industry || row.industry_group, row.city || row.address, row.zip].filter(Boolean).join(" - ")}</span>
+              </div>
+              <div className="leadgen-result-row__meta">
+                <a href={row.website || row.source_url} target="_blank" rel="noreferrer">{hostFor(row.website || row.source_url)}</a>
+                {row.phone ? <span>{row.phone}</span> : <span>Phone missing</span>}
+              </div>
+              {scan ? (
+                <select
+                  value={review[index] || "keep"}
+                  onChange={(e) => setReview((current) => ({ ...current, [index]: e.target.value }))}
+                  aria-label={`Review status for ${row.name}`}
+                >
+                  <option value="keep">Keep</option>
+                  <option value="maybe">Maybe</option>
+                  <option value="reject">Reject</option>
+                </select>
+              ) : (
+                <span className="leadgen-result-row__placeholder">No scan yet</span>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Leadgen() {
   const [billing, setBilling] = useState("monthly");
 
@@ -215,46 +448,9 @@ export default function Leadgen() {
   return (
     <main id="main" className="leadgen-public">
       <LeadgenCheckoutSuccess />
-      {/* Hero */}
       <section className="section hero hero-clean leadgen-hero">
-        <div className="container leadgen-hero__inner">
-          <div className="leadgen-hero__copy">
-            <h1 className="display">Find local businesses worth calling this week.</h1>
-            <p className="lede">
-              Leadgen is a local prospect radar: one zip, one business type,
-              source records, published website emails, capped sends, and a
-              review step before anything leaves.
-            </p>
-            <div className="hero-ctas">
-              <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
-                Start Growth
-              </LeadgenPlanLink>
-              <Link to="/portal/leadgen" className="btn btn-secondary btn-lg">
-                Open workspace
-              </Link>
-            </div>
-            <div className="leadgen-hero__trust">
-              <span><Check size={14} /> Public source records</span>
-              <span><Check size={14} /> Human review before sending</span>
-              <span><Check size={14} /> Daily send caps</span>
-            </div>
-            <div className="leadgen-hero__offer" aria-label="Growth trial offer">
-              <div>
-                <span>Start</span>
-                <strong>Growth - $19/mo</strong>
-              </div>
-              <div>
-                <span>Target</span>
-                <strong>one zip + one niche</strong>
-              </div>
-              <div>
-                <span>You get</span>
-                <strong>verified contacts</strong>
-              </div>
-            </div>
-          </div>
-
-          <LeadgenDashboardMock />
+        <div className="container">
+          <LeadgenScanApp />
         </div>
       </section>
 
@@ -522,92 +718,6 @@ function LeadgenWorkspaceSection() {
         </div>
       </div>
     </section>
-  );
-}
-
-const MOCK_MAP_PINS = [
-  { name: "Palm Ave Dental", meta: "website found", x: 24, y: 35 },
-  { name: "Bayfront Orthodontics", meta: "2 emails found", x: 44, y: 58 },
-  { name: "Ringling Family Dental", meta: "source verified", x: 61, y: 31 },
-  { name: "Tuttle Dental Studio", meta: "crawl queued", x: 73, y: 66 },
-  { name: "North Trail Smiles", meta: "1 email found", x: 83, y: 43 },
-];
-
-// ---------- dashboard preview mock ----------
-function LeadgenDashboardMock() {
-  return (
-    <div className="leadgen-mock" aria-hidden="true">
-      <div className="leadgen-mock__chrome">
-        <span className="leadgen-mock__dot leadgen-mock__dot--r" />
-        <span className="leadgen-mock__dot leadgen-mock__dot--y" />
-        <span className="leadgen-mock__dot leadgen-mock__dot--g" />
-        <span className="leadgen-mock__title">Local lead test - campaign overview</span>
-      </div>
-      <div className="leadgen-mock__body">
-        <div className="leadgen-mock__query">
-          <div className="leadgen-mock__query-cell">
-            <Search size={14} />
-            <span>34237</span>
-          </div>
-          <div className="leadgen-mock__query-cell">
-            <Target size={14} />
-            <span>Dental practices</span>
-          </div>
-          <div className="leadgen-mock__query-cell leadgen-mock__query-cell--dark">
-            <Gauge size={14} />
-            <span>35/day cap</span>
-          </div>
-        </div>
-        <div className="leadgen-mock__kpis">
-          <div className="leadgen-mock__kpi">
-            <div className="leadgen-mock__kpi-label"><Building2 size={11} /> Businesses</div>
-            <div className="leadgen-mock__kpi-num">142</div>
-            <div className="leadgen-mock__kpi-delta">local records</div>
-          </div>
-          <div className="leadgen-mock__kpi">
-            <div className="leadgen-mock__kpi-label"><Mail size={11} /> Deliverable</div>
-            <div className="leadgen-mock__kpi-num">57</div>
-            <div className="leadgen-mock__kpi-delta">emails found</div>
-          </div>
-          <div className="leadgen-mock__kpi">
-            <div className="leadgen-mock__kpi-label"><Zap size={11} /> Reply rate</div>
-            <div className="leadgen-mock__kpi-num">35/day</div>
-            <div className="leadgen-mock__kpi-delta leadgen-mock__kpi-delta--up">send cap</div>
-          </div>
-        </div>
-        <div className="leadgen-mock-map" aria-label="Animated map preview">
-          <div className="leadgen-mock-map__streets" />
-          {MOCK_MAP_PINS.map((pin, index) => (
-            <div
-              key={pin.name}
-              className={`leadgen-mock-map__pin${pin.x > 70 ? " leadgen-mock-map__pin--right" : ""}`}
-              style={{ left: `${pin.x}%`, top: `${pin.y}%`, "--lg-pin-i": index }}
-            >
-              <span />
-              <strong>{pin.name}</strong>
-              <em>{pin.meta}</em>
-            </div>
-          ))}
-          <div className="leadgen-mock-map__legend">
-            <MapPin size={13} />
-            Pins appear before the crawl starts
-          </div>
-        </div>
-        <div className="leadgen-mock__rows">
-          {[
-            { dot: "#6b7280", name: "Dental practices, 34237", val: "draft ready for review" },
-            { dot: "#6b7280", name: "Contractors, Bradenton", val: "source check running" },
-            { dot: "#9ca3af", name: "Law firms, Sarasota", val: "paused for copy edit" },
-          ].map((r) => (
-            <div key={r.name} className="leadgen-mock__row">
-              <span className="leadgen-mock__row-dot" style={{ background: r.dot }} />
-              <span className="leadgen-mock__row-name">{r.name}</span>
-              <span className="leadgen-mock__row-val">{r.val}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
   );
 }
 

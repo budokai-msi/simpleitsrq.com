@@ -4,6 +4,7 @@ import mdx from '@mdx-js/rollup'
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
 import remarkCityAutolink from './scripts/remark-city-autolink.mjs'
+import { Buffer } from 'node:buffer'
 
 export default defineConfig({
   plugins: [
@@ -33,6 +34,41 @@ export default defineConfig({
     {
       name: 'security-headers',
       configureServer(server) {
+        server.middlewares.use(async (req, res, next) => {
+          const url = new URL(req.url || '/', 'http://localhost');
+          if (url.pathname !== '/api/leadgen') return next();
+
+          const chunks = [];
+          req.on('data', (chunk) => chunks.push(chunk));
+          req.on('end', async () => {
+            try {
+              const mod = await import('./api/leadgen.js');
+              const handler = mod[req.method || 'GET'];
+              if (!handler) {
+                res.statusCode = 405;
+                res.end(JSON.stringify({ ok: false, error: 'method_not_allowed' }));
+                return;
+              }
+
+              const body = ['GET', 'HEAD'].includes(req.method || 'GET')
+                ? undefined
+                : Buffer.concat(chunks);
+              const request = new Request(`http://localhost${req.url}`, {
+                method: req.method,
+                headers: req.headers,
+                body,
+              });
+              const response = await handler(request);
+              res.statusCode = response.status;
+              response.headers.forEach((value, key) => res.setHeader(key, value));
+              res.end(Buffer.from(await response.arrayBuffer()));
+            } catch (err) {
+              res.statusCode = 500;
+              res.setHeader('Content-Type', 'application/json; charset=utf-8');
+              res.end(JSON.stringify({ ok: false, error: 'dev_api_failed', message: String(err?.message || err) }));
+            }
+          });
+        });
         server.middlewares.use((_req, res, next) => {
           res.setHeader('X-Frame-Options', 'SAMEORIGIN');
           res.setHeader('X-Content-Type-Options', 'nosniff');
