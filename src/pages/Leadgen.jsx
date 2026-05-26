@@ -3,7 +3,7 @@ import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, MapPin, Database, Mail, Zap, ShieldCheck,
   Filter, Send, BarChart3, Building2,
-  Calculator, Search, Gauge, Target,
+  Search, Gauge, Target,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 
@@ -309,8 +309,6 @@ export default function Leadgen() {
           </div>
         </div>
       </section>
-
-      <LeadgenROICalculator />
 
       {/* How it works */}
       <section className="section section-alt">
@@ -777,131 +775,3 @@ function LeadgenCheckoutSuccess() {
   );
 }
 
-// ---------- ROI calculator ----------
-// Inputs: avg deal size, close rate. Produces projected pipeline at each
-// tier based on tier volume, a conservative reply rate, close rate, and ACV.
-// Numbers are framed as estimates; the form is read-only beyond the two
-// sliders so prospects can't game it into nonsense.
-const TIER_ESTIMATES = [
-  { id: "growth",  name: "Growth",  monthly: 19, contacts: 500,  replyRate: 0.012 },
-  { id: "pro",     name: "Pro",     monthly: 99, contacts: 5000, replyRate: 0.010 },
-  { id: "free",    name: "Sample", monthly: 0, contacts: 10, replyRate: 0 },
-];
-
-function fmt(n) {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1000)      return `$${Math.round(n / 1000).toLocaleString()}K`;
-  return `$${Math.round(n).toLocaleString()}`;
-}
-
-function LeadgenROICalculator() {
-  const [acv, setAcv] = useState(8000);          // average annual contract value
-  const [closeRate, setCloseRate] = useState(8); // 0-100 percent
-
-  const rows = TIER_ESTIMATES.map((t) => {
-    const replies = t.contacts * t.replyRate;        // monthly replies
-    const closed = replies * (closeRate / 100);      // monthly new customers
-    const annualRev = closed * 12 * acv;             // gross annual book
-    const yearlyCost = t.monthly * 12;
-    const breakEvenCustomers = yearlyCost > 0 ? yearlyCost / acv : 0;
-    return { ...t, replies, closed, annualRev, breakEvenCustomers };
-  });
-
-  return (
-    <section className="section section-alt leadgen-roi">
-      <div className="container">
-        <div className="section-head" style={{ maxWidth: 720 }}>
-          <span className="eyebrow">
-            <Calculator size={14} style={{ display: "inline", marginRight: 6 }} />
-            Deal math
-          </span>
-          <h2 className="title-1">Pressure-test the paid trial before you buy it.</h2>
-          <p className="lede">
-            Drag the sliders. This is a conservative pipeline forecast, not a
-            sales promise. If Growth cannot clear the break-even line, do not
-            buy a bigger plan yet.
-          </p>
-        </div>
-
-        <div className="leadgen-roi__grid">
-          <div className="leadgen-roi__inputs">
-            <label className="leadgen-roi__field">
-              <span className="leadgen-roi__field-label">
-                Average annual contract value
-                <strong>${acv.toLocaleString()}</strong>
-              </span>
-              <input
-                type="range"
-                min="500"
-                max="50000"
-                step="500"
-                value={acv}
-                onChange={(e) => setAcv(Number(e.target.value))}
-                aria-label="Average annual contract value"
-              />
-              <span className="leadgen-roi__field-scale">
-                <span>$500</span><span>$50K</span>
-              </span>
-            </label>
-            <label className="leadgen-roi__field">
-              <span className="leadgen-roi__field-label">
-                Reply-to-customer rate
-                <strong>{closeRate}%</strong>
-              </span>
-              <input
-                type="range"
-                min="1"
-                max="25"
-                step="1"
-                value={closeRate}
-                onChange={(e) => setCloseRate(Number(e.target.value))}
-                aria-label="Reply to customer rate"
-              />
-              <span className="leadgen-roi__field-scale">
-                <span>1%</span><span>25%</span>
-              </span>
-            </label>
-            <p className="leadgen-roi__note">
-              Estimates only. We use deliberately modest reply rates and do
-              not count the free sample as a revenue channel.
-            </p>
-          </div>
-
-          <div className="leadgen-roi__results">
-            {rows.map((r) => (
-              <div key={r.id} className={`leadgen-roi__card leadgen-roi__card--${r.id}`}>
-                <div className="leadgen-roi__card-head">
-                  <span className="leadgen-roi__card-tier">{r.name}</span>
-                  <span className="leadgen-roi__card-roi">
-                    {r.monthly > 0 ? `break-even: ${r.breakEvenCustomers.toFixed(2)} client/yr` : "sample only"}
-                  </span>
-                </div>
-                <div className="leadgen-roi__card-stats">
-                  <div>
-                    <span>Likely replies / mo</span>
-                    <strong>{r.replies > 0 ? r.replies.toFixed(1) : "0"}</strong>
-                  </div>
-                  <div>
-                    <span>Likely customers / mo</span>
-                    <strong>{r.closed.toFixed(1)}</strong>
-                  </div>
-                  <div>
-                    <span>Projected annual book</span>
-                    <strong>{fmt(r.annualRev)}</strong>
-                  </div>
-                </div>
-                <LeadgenPlanLink
-                  tierId={r.id === "free" ? "free" : r.id}
-                  billing="monthly"
-                  className={`btn ${r.id === "growth" ? "btn-primary" : "btn-secondary"} leadgen-roi__cta`}
-                >
-                  {r.id === "growth" ? "Start Growth" : `Choose ${r.name}`}
-                </LeadgenPlanLink>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
