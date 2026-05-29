@@ -3,7 +3,7 @@ import {
   HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
   Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi,
   Loader2, CheckCircle2, AlertCircle, Send, Wrench,
-  Camera, Users, Bot, Sparkles
+  Camera, Users
 } from "lucide-react";
 import { Link } from "../lib/Link";
 import { useState } from "react";
@@ -92,12 +92,12 @@ function Hero() {
 
 function LogosBar() {
   const vendors = [
-    { name: "M365 Copilot", Icon: Bot },
-    { name: "Google Gemini", Icon: Sparkles },
-    { name: "SentinelOne", Icon: Shield },
-    { name: "Entra ID", Icon: Lock },
-    { name: "Fortinet", Icon: Server },
-    { name: "Cisco Meraki", Icon: Wifi },
+    { name: "M365 Copilot", logo: "/brand-logos/m365-copilot.svg", href: "https://www.microsoft.com/microsoft-copilot" },
+    { name: "Google Gemini", logo: "/brand-logos/google-gemini.svg", href: "https://gemini.google.com/" },
+    { name: "SentinelOne", logo: "/brand-logos/sentinelone.svg", href: "https://www.sentinelone.com/" },
+    { name: "Entra ID", logo: "/brand-logos/entra-id.svg", href: "https://www.microsoft.com/security/business/microsoft-entra" },
+    { name: "Fortinet", logo: "/brand-logos/fortinet.svg", href: "https://www.fortinet.com/" },
+    { name: "Cisco Meraki", logo: "/brand-logos/cisco-meraki.svg", href: "https://meraki.cisco.com/" },
   ];
   return (
     <section className="logos-bar" aria-label="Tools and brands we install">
@@ -105,10 +105,25 @@ function LogosBar() {
         <p className="logos-title">The tools we install and support for you</p>
         <div className="logos-row">
           {vendors.map((v) => (
-            <span key={v.name} className="logo-mark">
-              <v.Icon size={16} color="var(--brand)" />
+            <a
+              key={v.name}
+              className="logo-mark"
+              href={v.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${v.name} official site`}
+            >
+              <span className="logo-mark__img-wrap" aria-hidden="true">
+                <img
+                  className="logo-mark__img"
+                  src={v.logo}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
               {v.name}
-            </span>
+            </a>
           ))}
         </div>
       </div>

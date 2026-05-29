@@ -150,7 +150,7 @@ function StatusChip({ status }) {
 // ---------- main ----------
 
 export default function LeadgenDashboard() {
-  const [tab, setTab] = useState("command");
+  const [tab, setTab] = useState("discover");
   const [status, setStatus] = useState(null);
   const [statusErr, setStatusErr] = useState(null);
 
@@ -200,6 +200,15 @@ export default function LeadgenDashboard() {
       </section>
     );
   }
+
+  const integrationExport = (target) => {
+    const base = "/api/portal?action=leadgen-export&format=csv&status=active&has_email=1";
+    if (target === "hubspot") window.location.href = `${base}&limit=2000`;
+    if (target === "mailchimp") window.location.href = `${base}&limit=2000`;
+    if (target === "klaviyo") window.location.href = `${base}&limit=2000`;
+    if (target === "google_ads") window.location.href = `${base}&limit=10000`;
+    if (target === "meta_ads") window.location.href = `${base}&limit=10000`;
+  };
 
   return (
     <section className="section admin-affiliates admin-leadgen">
@@ -255,31 +264,47 @@ export default function LeadgenDashboard() {
           <Stat accent="amber" label="Replied" value={status?.sends?.replied?.toLocaleString?.() ?? status?.sends?.replied} />
         </div>
 
-        <nav className="admin-leadgen-tabs" aria-label="Lead-gen sections">
-          {[
-            ["command", "Command"],
-            ["discover", "Discover"],
-            ["campaigns", "Email"],
-            ["insights", "Reports"],
-            ["jobs", "Jobs"],
-          ].map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id)}
-              className={`admin-leadgen-tab${tab === id ? " is-active" : ""}`}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
+        <div className="leadgen-workspace-shell">
+          <aside className="leadgen-workspace-sidebar" aria-label="Leadgen navigation">
+            <Link to="/portal" className="leadgen-side-home">Home</Link>
+            <nav className="leadgen-side-nav">
+              {[
+                ["discover", "Workspace"],
+                ["command", "Scans"],
+                ["campaigns", "Campaigns"],
+                ["insights", "Reports"],
+                ["jobs", "Jobs"],
+              ].map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setTab(id)}
+                  className={`leadgen-side-nav__item${tab === id ? " is-active" : ""}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </nav>
+            <section className="leadgen-side-integrations" aria-label="Marketing integrations">
+              <h3>Integrations</h3>
+              <p>Push reviewed leads into the tools your team already uses.</p>
+              <div className="leadgen-side-integrations__actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("hubspot")}>Export HubSpot CSV</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("mailchimp")}>Export Mailchimp CSV</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("klaviyo")}>Export Klaviyo CSV</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("google_ads")}>Export Google Ads CSV</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("meta_ads")}>Export Meta Ads CSV</button>
+              </div>
+            </section>
+          </aside>
 
-        <div className="admin-leadgen-tab-body">
-          {tab === "command" && <CommandTab status={status} onSelectTab={setTab} onStatusChange={loadStatus} />}
-          {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
-          {tab === "campaigns" && <CampaignsTab />}
-          {tab === "insights" && <InsightsTab />}
-          {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} />}
+          <div className="admin-leadgen-tab-body leadgen-workspace-main">
+            {tab === "command" && <CommandTab status={status} onSelectTab={setTab} onStatusChange={loadStatus} />}
+            {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
+            {tab === "campaigns" && <CampaignsTab />}
+            {tab === "insights" && <InsightsTab />}
+            {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} />}
+          </div>
         </div>
 
         {statusErr && !/401|403/.test(statusErr) ? (
@@ -977,7 +1002,7 @@ function DiscoverTab({ onStatusChange }) {
       <div className="leadgen-discover-command">
         <div>
           <span className="leadgen-console-topline">Discovery pipeline</span>
-          <h2>Build a usable prospect list</h2>
+          <h2>Start with a zip code and map the market</h2>
           <p>
             Pick one local zip, pull public business records, then crawl public contact
             paths only for the records you can review and export.
@@ -1017,6 +1042,8 @@ function DiscoverTab({ onStatusChange }) {
 
       {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
+
+      <LeadgenMap rows={rows} total={total} busy={busy} />
 
       <div className="leadgen-list-tools">
         <div>
@@ -1138,8 +1165,6 @@ function DiscoverTab({ onStatusChange }) {
           <button type="button" className="btn btn-secondary btn-sm" onClick={reclassify} disabled={busy} title="Backfill industry_group + sub_industry from raw OSM tags">Reclassify</button>
         </div>
       </div>
-
-      <LeadgenMap rows={rows} total={total} busy={busy} />
 
       <div className="admin-aff-card">
         <table className="admin-aff-table">

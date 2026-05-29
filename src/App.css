@@ -1117,6 +1117,20 @@ main, #main {
   color: var(--text-2);
   transition: all 0.3s var(--ease-out);
 }
+.logo-mark__img-wrap {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+}
+.logo-mark__img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  display: block;
+}
 
 [data-theme="dark"] .logos-bar {
   background: #050505;
