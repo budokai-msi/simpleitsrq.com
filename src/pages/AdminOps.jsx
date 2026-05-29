@@ -69,6 +69,33 @@ function fmtDuration(ms) {
   return rem ? `${min}m ${rem}s` : `${min}m`;
 }
 
+function formatJobProgress(row) {
+  const total = Number(row?.total);
+  const progress = Number(row?.progress);
+  if (!Number.isFinite(total) || total <= 0) return row?.status === "done" ? "done" : "-";
+  if (row?.status === "done" && row?.kind === "osm_zip" && progress === 0) return `${fmtNumber(total)} / ${fmtNumber(total)}`;
+  if (!Number.isFinite(progress) || progress < 0) return `0 / ${fmtNumber(total)}`;
+  return `${fmtNumber(progress)} / ${fmtNumber(total)}`;
+}
+
+function formatJobOutput(row) {
+  const result = row?.result || {};
+  if (row?.kind === "osm_zip") {
+    const discovered = Number(result?.discovered ?? row?.total ?? 0);
+    const inserted = Number(result?.inserted ?? 0);
+    const updated = Number(result?.updated ?? 0);
+    if (discovered > 0) return `${fmtNumber(discovered)} discovered · ${fmtNumber(inserted)} new · ${fmtNumber(updated)} refreshed`;
+  }
+  if (row?.kind === "website_emails") {
+    if (result?.skipped) return `Skipped: ${result.skipped}`;
+    const found = Number(result?.found ?? 0);
+    const inserted = Number(result?.inserted ?? 0);
+    return `${fmtNumber(found)} found · ${fmtNumber(inserted)} new`;
+  }
+  if (row?.error) return row.error;
+  return "-";
+}
+
 async function getJson(action, params = {}) {
   const url = new URL("/api/portal", window.location.origin);
   url.searchParams.set("action", action);
@@ -386,17 +413,17 @@ function OpsTab({ data, errors, intel, busy, runAction }) {
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head"><h2>Recent jobs</h2><SignalPill state={errors["admin-status"] ? "bad" : "good"}>{errors["admin-status"] || "admin-status"}</SignalPill></div>
         <Table
-          columns={["ID", "Kind", "Status", "Progress", "Created", "Error"]}
+          columns={["ID", "Kind", "Status", "Progress", "Created", "Output"]}
           rows={admin?.recent_jobs || []}
           empty="No leadgen jobs have run yet."
           renderRow={(row) => (
             <tr key={row.id || row.error}>
               <td>{row.id || "-"}</td>
               <td>{row.kind || "-"}</td>
-              <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "completed" ? "good" : "neutral"}>{row.status || "-"}</SignalPill></td>
-              <td>{fmtNumber(row.progress)} / {fmtNumber(row.total)}</td>
+              <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "done" ? "good" : "neutral"}>{row.status || "-"}</SignalPill></td>
+              <td>{formatJobProgress(row)}</td>
               <td>{fmtTime(row.created_at)}</td>
-              <td>{row.error || ""}</td>
+              <td>{formatJobOutput(row)}</td>
             </tr>
           )}
         />
@@ -755,16 +782,17 @@ function LeadgenTab({ status }) {
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head"><h2>Recent crawl jobs</h2></div>
         <Table
-          columns={["ID", "Kind", "Status", "Progress", "Created"]}
+          columns={["ID", "Kind", "Status", "Progress", "Created", "Output"]}
           rows={status?.recent_jobs || []}
           empty="No leadgen jobs yet."
           renderRow={(row) => (
             <tr key={row.id}>
               <td>{row.id}</td>
               <td>{row.kind}</td>
-              <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "completed" ? "good" : "neutral"}>{row.status}</SignalPill></td>
-              <td>{fmtNumber(row.progress)} / {fmtNumber(row.total)}</td>
+              <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "done" ? "good" : "neutral"}>{row.status}</SignalPill></td>
+              <td>{formatJobProgress(row)}</td>
               <td>{fmtTime(row.created_at)}</td>
+              <td>{formatJobOutput(row)}</td>
             </tr>
           )}
         />

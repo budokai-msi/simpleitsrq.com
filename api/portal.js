@@ -265,7 +265,7 @@ async function handleAdminStatus(session) {
   // Most recent jobs and security events — fingerprint of "what just
   // happened" without dumping the full table.
   const recentJobs = await sql`
-    SELECT id, kind, status, progress, total, error, created_at, finished_at
+    SELECT id, kind, status, progress, total, error, result, payload, created_at, finished_at
     FROM lead_crawl_jobs
     ORDER BY id DESC
     LIMIT 25
@@ -3538,7 +3538,7 @@ async function handleLeadgenStatus(session) {
                COUNT(*) FILTER (WHERE clicked_at IS NOT NULL)::int AS clicked,
                COUNT(*) FILTER (WHERE replied_at IS NOT NULL)::int AS replied
         FROM lead_campaign_sends`,
-    sql`SELECT id, kind, status, progress, total, created_at
+    sql`SELECT id, kind, status, progress, total, result, payload, created_at
         FROM lead_crawl_jobs
         ORDER BY created_at DESC
         LIMIT 20`,
@@ -4492,7 +4492,7 @@ async function handleLeadgenJobs(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
   const rows = await sql`
-    SELECT id, kind, status, progress, total, payload, error,
+    SELECT id, kind, status, progress, total, payload, result, error,
            created_at, started_at, finished_at
     FROM lead_crawl_jobs
     ORDER BY id DESC

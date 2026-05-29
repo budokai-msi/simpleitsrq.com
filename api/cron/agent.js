@@ -1075,11 +1075,23 @@ export async function runLeadgenWorker() {
           ? await processWebsiteEmailsJob(job)
           : (() => { throw new Error(`unknown_kind:${job.kind}`); })();
       jobOut.result = out;
+
+      // Normalize progress semantics:
+      // - osm_zip: processed == discovered, total == discovered
+      // - website_emails: processed one business job, total one business job
+      const normalizedTotal = job.kind === "osm_zip"
+        ? Number(out?.discovered ?? 0)
+        : 1;
+      const normalizedProgress = job.kind === "osm_zip"
+        ? Number(out?.discovered ?? 0)
+        : 1;
+
       await sql`
         UPDATE lead_crawl_jobs
         SET status='done', finished_at=now(),
-            progress=COALESCE(${out?.inserted ?? null}, progress),
-            total=COALESCE(${out?.discovered ?? out?.found ?? null}, total)
+            progress=${normalizedProgress},
+            total=${normalizedTotal},
+            result=${JSON.stringify(out || {})}::jsonb
         WHERE id=${job.id}
       `;
       summary.completed += 1;
