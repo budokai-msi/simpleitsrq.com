@@ -923,6 +923,9 @@ async function handleBehaviorInsights(session) {
     topForms,
     searchTerms,
     contentDepth,
+    situationSummary,
+    situationByScenario,
+    situationRecent,
   ] = await Promise.all([
     sql`
       SELECT ws.id, ws.anon_id, ws.ip, ws.country, ws.region, ws.city,
@@ -1062,6 +1065,51 @@ async function handleBehaviorInsights(session) {
       ORDER BY clicks DESC, exits DESC
       LIMIT 25
     `.catch(() => []),
+    sql`
+      SELECT
+        COUNT(*) FILTER (WHERE kind = 'home_situation_first_interaction')::int AS first_interactions,
+        COUNT(*) FILTER (WHERE kind = 'home_situation_switch')::int AS switches,
+        COUNT(*) FILTER (WHERE kind = 'home_situation_cta_click')::int AS cta_clicks,
+        COUNT(*) FILTER (WHERE kind = 'home_situation_cta_click' AND COALESCE(meta->>'cta_kind','') = 'primary_contact')::int AS primary_cta_clicks,
+        COUNT(*) FILTER (WHERE kind = 'home_situation_cta_click' AND COALESCE(meta->>'cta_kind','') = 'secondary_services')::int AS secondary_cta_clicks
+      FROM engagement_events
+      WHERE ts > now() - interval '14 days'
+        AND (path = '/' OR path LIKE '/?%')
+        AND kind IN (
+          'home_situation_first_interaction',
+          'home_situation_switch',
+          'home_situation_cta_click',
+          'home_situation_scroll_depth'
+        )
+    `.catch(() => []),
+    sql`
+      SELECT
+        COALESCE(meta->>'scenario_id', value_text, 'unknown') AS scenario_id,
+        COUNT(*) FILTER (WHERE kind = 'home_situation_switch')::int AS switches,
+        COUNT(*) FILTER (WHERE kind = 'home_situation_cta_click')::int AS cta_clicks,
+        COUNT(*) FILTER (WHERE kind = 'home_situation_cta_click' AND COALESCE(meta->>'cta_kind','') = 'primary_contact')::int AS primary_clicks,
+        COUNT(*) FILTER (WHERE kind = 'home_situation_cta_click' AND COALESCE(meta->>'cta_kind','') = 'secondary_services')::int AS secondary_clicks
+      FROM engagement_events
+      WHERE ts > now() - interval '14 days'
+        AND (path = '/' OR path LIKE '/?%')
+        AND kind IN ('home_situation_switch', 'home_situation_cta_click')
+      GROUP BY scenario_id
+      ORDER BY cta_clicks DESC, switches DESC
+      LIMIT 12
+    `.catch(() => []),
+    sql`
+      SELECT ts, kind, value_text, meta
+      FROM engagement_events
+      WHERE ts > now() - interval '14 days'
+        AND (path = '/' OR path LIKE '/?%')
+        AND kind IN (
+          'home_situation_first_interaction',
+          'home_situation_switch',
+          'home_situation_cta_click'
+        )
+      ORDER BY ts DESC
+      LIMIT 40
+    `.catch(() => []),
   ]);
 
   const totals = {
@@ -1105,6 +1153,15 @@ async function handleBehaviorInsights(session) {
     topForms,
     searchTerms,
     contentDepth,
+    situationFunnel: situationSummary?.[0] || {
+      first_interactions: 0,
+      switches: 0,
+      cta_clicks: 0,
+      primary_cta_clicks: 0,
+      secondary_cta_clicks: 0,
+    },
+    situationByScenario,
+    situationRecent,
     privacy: {
       note: "Form telemetry stores field/form names and character counts, not raw typed text, passwords, emails, phone numbers, or message bodies.",
     },

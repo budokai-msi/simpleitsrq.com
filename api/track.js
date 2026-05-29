@@ -170,6 +170,8 @@ export async function POST(request) {
       "pageview_enter", "pageview_exit", "scroll_milestone", "dwell_tick",
       "click", "search", "share", "copy", "media_play", "section_view",
       "form_focus", "input_intent",
+      "home_situation_first_interaction", "home_situation_switch",
+      "home_situation_cta_click", "home_situation_scroll_depth",
     ]);
 
     const UUID_RE_ENG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
