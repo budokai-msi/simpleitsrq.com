@@ -112,3 +112,32 @@ export async function GET() {
     limit: MAX_LIMIT,
   });
 }
+
+// Compatibility handler for runtimes that invoke default exports for /api/*
+// routes instead of Web Fetch named methods.
+export default async function handler(req, res) {
+  const method = (req.method || "GET").toUpperCase();
+  let response;
+  if (method === "GET") {
+    response = await GET();
+  } else if (method === "POST") {
+    const body = typeof req.body === "string" ? req.body : JSON.stringify(req.body || {});
+    const request = new Request("https://simpleitsrq.com/api/leadgen", {
+      method: "POST",
+      headers: { "content-type": req.headers?.["content-type"] || "application/json" },
+      body,
+    });
+    response = await POST(request);
+  } else {
+    res.setHeader("Allow", "GET, POST");
+    res.status(405).json({ ok: false, error: "method_not_allowed" });
+    return;
+  }
+
+  const payload = await response.text();
+  res.status(response.status);
+  for (const [key, value] of response.headers.entries()) {
+    res.setHeader(key, value);
+  }
+  res.send(payload);
+}

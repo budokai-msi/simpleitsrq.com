@@ -322,16 +322,51 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
       .then((mod) => {
         if (disposed || !mapRef.current) return;
         const L = mod.default || mod;
+        const isDark = document.documentElement?.getAttribute("data-theme") === "dark";
+        const tileProviders = isDark
+          ? [
+              {
+                url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+                attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+              },
+              {
+                url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                attribution: "&copy; OpenStreetMap contributors",
+              },
+            ]
+          : [
+              {
+                url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                attribution: "&copy; OpenStreetMap contributors",
+              },
+              {
+                url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+              },
+            ];
+        let activeTileIndex = 0;
+        let tileLayer = null;
+
+        const mountTileLayer = () => {
+          const provider = tileProviders[activeTileIndex];
+          tileLayer = L.tileLayer(provider.url, {
+            maxZoom: 19,
+            attribution: provider.attribution,
+          }).addTo(leafletMap);
+          tileLayer.once("tileerror", () => {
+            if (disposed || !leafletMap || activeTileIndex >= tileProviders.length - 1) return;
+            activeTileIndex += 1;
+            leafletMap.removeLayer(tileLayer);
+            mountTileLayer();
+          });
+        };
+
         leafletMap = L.map(mapRef.current, {
           attributionControl: false,
           scrollWheelZoom: false,
           zoomControl: true,
         });
-
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution: "&copy; OpenStreetMap contributors",
-        }).addTo(leafletMap);
+        mountTileLayer();
         L.control.attribution({ prefix: false }).addTo(leafletMap);
 
         const bounds = [];

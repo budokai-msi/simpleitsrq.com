@@ -44,3 +44,20 @@ export async function GET() {
     },
   });
 }
+
+// Compatibility handler for runtimes that invoke default exports for /api/*
+// routes instead of Web Fetch named methods.
+export default async function handler(req, res) {
+  if ((req.method || "GET").toUpperCase() !== "GET") {
+    res.setHeader("Allow", "GET");
+    res.status(405).json({ ok: false, error: "method_not_allowed" });
+    return;
+  }
+  const response = await GET();
+  const body = await response.text();
+  res.status(response.status);
+  for (const [key, value] of response.headers.entries()) {
+    res.setHeader(key, value);
+  }
+  res.send(body);
+}
