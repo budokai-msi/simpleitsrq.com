@@ -1849,3 +1849,89 @@
 [data-theme="dark"] .leadgen-map-popup a {
   color: #f4f5f7;
 }
+
+/* Leadgen dashboard workspace shell */
+.leadgen-workspace-shell {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.leadgen-workspace-sidebar {
+  position: sticky;
+  top: 78px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  padding: 14px;
+}
+.leadgen-side-home {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border, #d1d5db);
+  color: var(--text-2, #4b5563);
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+.leadgen-side-nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.leadgen-side-nav__item {
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: var(--text-2, #4b5563);
+  text-align: left;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 9px 10px;
+}
+.leadgen-side-nav__item.is-active {
+  color: var(--text-1, #111827);
+  border-color: var(--text-1, #111827);
+  background: var(--surface-2, #f8fafc);
+}
+.leadgen-side-integrations {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, #d1d5db);
+}
+.leadgen-side-integrations h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-1, #111827);
+}
+.leadgen-side-integrations p {
+  margin: 6px 0 8px;
+  font-size: 0.8rem;
+  color: var(--text-3, #6b7280);
+}
+.leadgen-side-integrations__actions {
+  display: grid;
+  gap: 8px;
+}
+.leadgen-side-integrations__actions .btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+.leadgen-workspace-main {
+  margin-top: 0;
+}
+
+@media (max-width: 860px) {
+  .leadgen-workspace-shell {
+    grid-template-columns: 1fr;
+  }
+  .leadgen-workspace-sidebar {
+    position: static;
+  }
+  .leadgen-side-nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
