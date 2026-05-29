@@ -6,7 +6,16 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 25 May 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 29 May 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>GitHubs Ban on a Security Researcher: What Small Business Owners in Sarasota Need to Know</title>
+      <link>https://simpleitsrq.com/blog/github-ban-security-researcher-sarasota-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/github-ban-security-researcher-sarasota-small-business</guid>
+      <pubDate>Fri, 29 May 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>A recent GitHub ban on a security researcher has sparked controversy, but what does it mean for small business owners in Sarasota, Bradenton, and Venice? Learn how to protect your business from zero-day exploits and phishing attacks.</description>
+    </item>
     <item>
       <title>What Microsofts Open-Sourced DOS Code Means for Your Small Business</title>
       <link>https://simpleitsrq.com/blog/microsoft-dos-code-sarasota-small-business</link>

@@ -1,9 +1,9 @@
 import {
   Headphones, Server, ShieldCheck, Lock, Cloud,
-  HeartPulse, Scale, Landmark, HardHat, Home as HomeIcon, Shield,
+  Shield,
   Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi,
   Loader2, CheckCircle2, AlertCircle, Send, Wrench,
-  Camera, Users
+  Camera
 } from "lucide-react";
 import { Link } from "../lib/Link";
 import { useState } from "react";
@@ -202,34 +202,88 @@ function Solutions() {
   );
 }
 
-const INDUSTRIES = [
-  { Icon: HeartPulse, name: "Healthcare", badges: ["front desk", "secure access"] },
-  { Icon: Scale, name: "Legal", badges: ["Clio", "secure email"] },
-  { Icon: Landmark, name: "Finance", badges: ["MFA", "backups"] },
-  { Icon: HardHat, name: "Construction", badges: ["field laptops", "jobsite Wi-Fi"] },
-  { Icon: HomeIcon, name: "Real Estate", badges: ["listings", "cameras"] },
-  { Icon: Users, name: "Residential", badges: ["home offices", "seasonal homes"] },
+const SITUATIONS = [
+  {
+    id: "medical",
+    label: "Healthcare offices",
+    Icon: ShieldCheck,
+    pain: "Phones, EHR logins, guest Wi-Fi, and front desk check-in break at the same time.",
+    focus: "Secure access, staff onboarding/offboarding, backup testing, and fast workstation recovery.",
+    outcomes: ["Protected sign-in flow", "Fewer front desk delays", "Documented controls for renewals"],
+    cta: "Book healthcare support",
+  },
+  {
+    id: "legal",
+    label: "Legal and finance",
+    Icon: Lock,
+    pain: "Partner email, document portals, and shared drives become risky after staff or device changes.",
+    focus: "MFA cleanup, mailbox permissions, encryption, and file-share access maps.",
+    outcomes: ["Lower account risk", "Cleaner client data access", "Repeatable audit-ready evidence"],
+    cta: "Book secure office support",
+  },
+  {
+    id: "field",
+    label: "Trades and field teams",
+    Icon: Wifi,
+    pain: "Dispatch, mobile devices, printers, and jobsite Wi-Fi fail under daily load.",
+    focus: "Reliable connectivity, rugged device setup, camera access, and vendor handoffs.",
+    outcomes: ["Fewer call-backs from the field", "Clear office/jobsite sync", "Faster issue triage"],
+    cta: "Book field IT support",
+  },
+  {
+    id: "home",
+    label: "Residential and home office",
+    Icon: Wrench,
+    pain: "Slow laptops, flaky Wi-Fi zones, camera alerts, and family/home-office device conflicts.",
+    focus: "Repair-first visits, network cleanup, secure remote access, and camera/mobile setup.",
+    outcomes: ["Faster daily device use", "Stable whole-home Wi-Fi", "Simple ownership docs for devices"],
+    cta: "Book home IT support",
+  },
 ];
 
 function Industries() {
+  const [activeId, setActiveId] = useState(SITUATIONS[0].id);
+  const active = SITUATIONS.find((item) => item.id === activeId) || SITUATIONS[0];
+
   return (
     <section className="section section-alt" id="industries" aria-labelledby="industries-title">
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
-          <span className="eyebrow">Industries</span>
-          <h2 id="industries-title" className="title-1">Offices and homes we support</h2>
-          <p className="section-sub">Healthcare, legal, financial services, construction, real estate, home offices, and seasonal properties. We document controls when needed, but we do not sell insurance or audits.</p>
+          <span className="eyebrow">Where We Help Most</span>
+          <h2 id="industries-title" className="title-1">Pick your situation. See the exact fix path.</h2>
+          <p className="section-sub">Instead of broad industry cards, choose the environment that matches your team and we show what we stabilize first.</p>
         </div>
-        <div className="industries-grid">
-          {INDUSTRIES.map(({ Icon, name, badges }, i) => (
-            <article key={name} className="industry-card card-hover reveal-up" data-reveal data-reveal-delay={i + 1}>
-              <div className="industry-icon"><Icon size={26} /></div>
-              <h3 className="industry-name">{name}</h3>
-              <div className="badges">
-                {badges.map((b) => <span key={b} className="badge badge-glow">{b}</span>)}
-              </div>
-            </article>
-          ))}
+        <div className="situation-shell reveal-up" data-reveal>
+          <nav className="situation-nav" aria-label="Support situations">
+            {SITUATIONS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`situation-nav__btn${activeId === item.id ? " is-active" : ""}`}
+                onClick={() => setActiveId(item.id)}
+              >
+                <item.Icon size={15} aria-hidden="true" />
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <article className="situation-body" aria-live="polite">
+            <header className="situation-body__head">
+              <span className="situation-body__icon"><active.Icon size={18} /></span>
+              <h3>{active.label}</h3>
+            </header>
+            <p className="situation-copy"><strong>Pain:</strong> {active.pain}</p>
+            <p className="situation-copy"><strong>First focus:</strong> {active.focus}</p>
+            <ul className="situation-outcomes">
+              {active.outcomes.map((outcome) => (
+                <li key={outcome}><Check size={15} aria-hidden="true" /> {outcome}</li>
+              ))}
+            </ul>
+            <div className="situation-actions">
+              <a href="#contact" className="btn btn-primary">{active.cta}</a>
+              <Link to="/services" className="btn btn-secondary">See service details</Link>
+            </div>
+          </article>
         </div>
       </div>
     </section>
