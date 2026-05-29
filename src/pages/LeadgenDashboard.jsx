@@ -1625,6 +1625,7 @@ function Field({ label, children, full }) {
 function JobsTab({ recent }) {
   const [rows, setRows] = useState(recent);
   const [err, setErr] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   const reload = async () => {
     try {
@@ -1661,11 +1662,49 @@ function JobsTab({ recent }) {
     return job?.error || "-";
   };
 
+  const classifyJob = (job) => {
+    const result = job?.result || {};
+    if (job?.status === "failed") return "failed";
+    if (job?.kind === "osm_zip") {
+      const inserted = Number(result?.inserted ?? 0);
+      const updated = Number(result?.updated ?? 0);
+      return inserted > 0 || updated > 0 ? "productive" : "no_signal";
+    }
+    if (job?.kind === "website_emails") {
+      const found = Number(result?.found ?? 0);
+      const inserted = Number(result?.inserted ?? 0);
+      return found > 0 || inserted > 0 ? "productive" : "no_signal";
+    }
+    return "other";
+  };
+
+  const visibleRows = showAll
+    ? rows
+    : rows.filter((job) => ["failed", "productive"].includes(classifyJob(job))).slice(0, 30);
+
+  const stats = rows.reduce((acc, job) => {
+    const kind = classifyJob(job);
+    acc.total += 1;
+    acc[kind] = (acc[kind] || 0) + 1;
+    return acc;
+  }, { total: 0, failed: 0, productive: 0, no_signal: 0, other: 0 });
+
   return (
     <div className="admin-leadgen-jobs">
       <div className="admin-leadgen-section-head">
         <h2 className="title-2">Recent jobs</h2>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={reload}>Refresh</button>
+        <div className="admin-leadgen-jobs__actions">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowAll((v) => !v)}>
+            {showAll ? "Show signal only" : "Show all"}
+          </button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={reload}>Refresh</button>
+        </div>
+      </div>
+      <div className="admin-leadgen-jobs__summary">
+        <div><strong>{stats.failed}</strong><span>Failed</span></div>
+        <div><strong>{stats.productive}</strong><span>Productive</span></div>
+        <div><strong>{stats.no_signal}</strong><span>No signal</span></div>
+        <div><strong>{stats.total}</strong><span>Total</span></div>
       </div>
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
       <div className="admin-aff-card">
@@ -1682,7 +1721,7 @@ function JobsTab({ recent }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((j) => (
+            {visibleRows.map((j) => (
               <tr key={j.id}>
                 <td>{j.id}</td>
                 <td>{j.kind}</td>
@@ -1690,10 +1729,10 @@ function JobsTab({ recent }) {
                 <td style={{ textAlign: "right" }}>{progressLabel(j)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.created_at)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.finished_at)}</td>
-                <td className="admin-leadgen-err-cell">{outputLabel(j)}</td>
+                <td className={`admin-leadgen-output-cell${j.status === "failed" ? " is-failed" : ""}`}>{outputLabel(j)}</td>
               </tr>
             ))}
-            {rows.length === 0 ? (
+            {visibleRows.length === 0 ? (
               <tr><td colSpan={7} className="admin-leadgen-empty">No jobs yet.</td></tr>
             ) : null}
           </tbody>
