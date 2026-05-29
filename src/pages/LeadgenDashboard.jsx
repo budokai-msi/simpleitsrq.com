@@ -1635,6 +1635,32 @@ function JobsTab({ recent }) {
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { reload(); }, []);
 
+  const progressLabel = (job) => {
+    const total = Number(job?.total);
+    const progress = Number(job?.progress);
+    if (!Number.isFinite(total) || total <= 0) return job?.status === "done" ? "done" : "-";
+    if (job?.status === "done" && job?.kind === "osm_zip" && progress === 0) return `${total} / ${total}`;
+    if (!Number.isFinite(progress) || progress < 0) return `0 / ${total}`;
+    return `${progress} / ${total}`;
+  };
+
+  const outputLabel = (job) => {
+    const result = job?.result || {};
+    if (job?.kind === "osm_zip") {
+      const discovered = Number(result?.discovered ?? job?.total ?? 0);
+      const inserted = Number(result?.inserted ?? 0);
+      const updated = Number(result?.updated ?? 0);
+      if (discovered > 0) return `${discovered} discovered · ${inserted} new · ${updated} refreshed`;
+    }
+    if (job?.kind === "website_emails") {
+      if (result?.skipped) return `Skipped: ${result.skipped}`;
+      const found = Number(result?.found ?? 0);
+      const inserted = Number(result?.inserted ?? 0);
+      return `${found} found · ${inserted} new`;
+    }
+    return job?.error || "-";
+  };
+
   return (
     <div className="admin-leadgen-jobs">
       <div className="admin-leadgen-section-head">
@@ -1652,7 +1678,7 @@ function JobsTab({ recent }) {
               <th style={{ textAlign: "right" }}>Progress</th>
               <th>Created</th>
               <th>Finished</th>
-              <th>Error</th>
+              <th>Output</th>
             </tr>
           </thead>
           <tbody>
@@ -1661,10 +1687,10 @@ function JobsTab({ recent }) {
                 <td>{j.id}</td>
                 <td>{j.kind}</td>
                 <td>{j.status}</td>
-                <td style={{ textAlign: "right" }}>{j.progress ?? 0}{j.total ? ` / ${j.total}` : ""}</td>
+                <td style={{ textAlign: "right" }}>{progressLabel(j)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.created_at)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.finished_at)}</td>
-                <td className="admin-leadgen-err-cell">{j.error || ""}</td>
+                <td className="admin-leadgen-err-cell">{outputLabel(j)}</td>
               </tr>
             ))}
             {rows.length === 0 ? (
