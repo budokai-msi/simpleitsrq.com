@@ -1,5 +1,20 @@
 [
   {
+    "slug": "github-ban-security-researcher-sarasota-small-business",
+    "title": "GitHubs Ban on a Security Researcher: What Small Business Owners in Sarasota Need to Know",
+    "date": "2026-05-29",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "A recent GitHub ban on a security researcher has sparked controversy, but what does it mean for small business owners in Sarasota, Bradenton, and Venice? Learn how to protect your business from zero-day exploits and phishing attacks.",
+    "metaDescription": "GitHub bans security researcher, sparking debate on cybersecurity and phishing-resistant MFA",
+    "heroAlt": "A local business technology note about GitHubs Ban on a Security Researcher: What Small Business Owners in Sarasota Need to Know."
+  },
+  {
     "slug": "microsoft-dos-code-sarasota-small-business",
     "title": "What Microsofts Open-Sourced DOS Code Means for Your Small Business",
     "date": "2026-05-25",
