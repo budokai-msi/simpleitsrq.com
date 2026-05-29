@@ -1,0 +1,46 @@
+// GET /api/health
+//
+// Public uptime endpoint for Vercel Cron / external monitors. This reports
+// runtime availability, not security posture: active threats are included as
+// telemetry, but they should not turn a healthy app into an uptime failure.
+
+import { sql } from "./_lib/db.js";
+import { json } from "./_lib/http.js";
+
+export async function GET() {
+  const startedAt = Date.now();
+  const checks = {
+    app: "ok",
+    db: "unknown",
+    criticalEventsLastHour: 0,
+  };
+
+  try {
+    const r = await sql`SELECT 1 AS ping`;
+    checks.db = r.length > 0 ? "connected" : "no_response";
+  } catch (err) {
+    console.error("[health] db ping failed", err);
+    checks.db = "error";
+  }
+
+  try {
+    const r = await sql`
+      SELECT COUNT(*)::int AS cnt FROM security_events
+      WHERE severity = 'critical' AND ts > now() - interval '1 hour'
+    `;
+    checks.criticalEventsLastHour = r[0]?.cnt || 0;
+  } catch {
+    checks.criticalEventsLastHour = -1;
+  }
+
+  const ok = checks.app === "ok" && checks.db === "connected";
+  return json(ok ? 200 : 503, {
+    ok,
+    service: "simpleitsrq-web",
+    checks,
+    uptime: {
+      latencyMs: Date.now() - startedAt,
+      timestamp: new Date().toISOString(),
+    },
+  });
+}

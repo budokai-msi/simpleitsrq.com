@@ -16,6 +16,29 @@ import { timingSafeEqual } from "node:crypto";
 const REPORT_TO = process.env.CONTACT_TO_EMAIL || "hello@simpleitsrq.com";
 const FROM = "Simple IT SRQ Analytics <analytics@simpleitsrq.com>";
 
+function normalizeDnsAnswer(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/^"|"$/g, "")
+    .replace(/\\"/g, '"')
+    .trim();
+}
+
+function dnsMatches(answers, expected) {
+  if (!expected) return true;
+  const normalizedAnswers = answers.map(normalizeDnsAnswer);
+  const required = Array.isArray(expected) ? expected : [expected];
+  return required.every((needle) => {
+    const normalizedNeedle = normalizeDnsAnswer(needle).replace(/\.$/, "");
+    return normalizedAnswers.some((answer) => answer.includes(normalizedNeedle));
+  });
+}
+
+function expectedLabel(expected) {
+  if (!expected) return "(any)";
+  return Array.isArray(expected) ? expected.join(" | ") : expected;
+}
+
 function verifyCron(request) {
   // Vercel sets x-vercel-cron: 1 on genuine cron invocations — this header
   // cannot be spoofed from outside the Vercel edge. Accept either that or a
@@ -234,8 +257,23 @@ export async function GET(request) {
 
   // --- DNS integrity check ---
   const DNS_CHECKS = [
-    { domain: "simpleitsrq.com", type: "CNAME", expected: "cname.vercel-dns.com" },
-    { domain: "simpleitsrq.com", type: "A", expected: null }, // just log what it resolves to
+    {
+      domain: "simpleitsrq.com",
+      type: "NS",
+      expected: ["piotr.ns.cloudflare.com", "rosemary.ns.cloudflare.com"],
+    },
+    {
+      domain: "simpleitsrq.com",
+      type: "MX",
+      expected: ["route1.mx.cloudflare.net", "route2.mx.cloudflare.net", "route3.mx.cloudflare.net"],
+    },
+    {
+      domain: "simpleitsrq.com",
+      type: "TXT",
+      expected: "v=spf1 include:amazonses.com include:_spf.mx.cloudflare.net ~all",
+    },
+    { domain: "simpleitsrq.com", type: "A", expected: null }, // Cloudflare proxy IPs can rotate.
+    { domain: "simpleitsrq.com", type: "AAAA", expected: null }, // Cloudflare proxy IPs can rotate.
   ];
   const dnsResults = [];
   for (const check of DNS_CHECKS) {
@@ -247,24 +285,24 @@ export async function GET(request) {
       const data = await res.json();
       const answers = (data.Answer || []).map((a) => a.data).sort();
       const actual = answers.join(", ") || "(empty)";
-      const match = check.expected ? answers.some((a) => a.includes(check.expected)) : true;
+      const match = dnsMatches(answers, check.expected);
       dnsResults.push({
         domain: check.domain,
         type: check.type,
-        expected: check.expected || "(any)",
+        expected: expectedLabel(check.expected),
         actual,
         match,
       });
       // Persist to DB for history.
       sql`
         INSERT INTO dns_integrity (domain, record_type, expected, actual, match, resolver)
-        VALUES (${check.domain}, ${check.type}, ${check.expected || '(any)'}, ${actual}, ${match}, 'dns.google')
+        VALUES (${check.domain}, ${check.type}, ${expectedLabel(check.expected)}, ${actual}, ${match}, 'dns.google')
       `.catch(() => {});
     } catch (err) {
       dnsResults.push({
         domain: check.domain,
         type: check.type,
-        expected: check.expected || "(any)",
+        expected: expectedLabel(check.expected),
         actual: `ERROR: ${err.message}`,
         match: false,
       });
