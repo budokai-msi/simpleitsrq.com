@@ -6,7 +6,7 @@ import {
   Camera
 } from "lucide-react";
 import { Link } from "../lib/Link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSEO } from "../lib/seo";
 import posts from "../data/posts-meta.json";
 import BlogCover from "../components/BlogCover";
@@ -14,6 +14,7 @@ import GoogleReviews from "../components/GoogleReviews";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { csrfFetch } from "../lib/csrf";
+import { trackEvent } from "../lib/analytics";
 
 function Hero() {
   const paths = [
@@ -242,11 +243,76 @@ const SITUATIONS = [
 ];
 
 function Industries() {
+  const sectionRef = useRef(null);
+  const firstInteractionTrackedRef = useRef(false);
+  const firedDepthRef = useRef(new Set());
+  const initialScenarioRef = useRef(SITUATIONS[0].id);
   const [activeId, setActiveId] = useState(SITUATIONS[0].id);
   const active = SITUATIONS.find((item) => item.id === activeId) || SITUATIONS[0];
+  const activeIndex = SITUATIONS.findIndex((item) => item.id === active.id);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || typeof window === "undefined") return undefined;
+
+    function trackDepthMilestones() {
+      const rect = section.getBoundingClientRect();
+      const viewport = window.innerHeight || document.documentElement.clientHeight || 0;
+      if (viewport <= 0 || rect.height <= 0) return;
+      const visible = Math.max(0, Math.min(rect.bottom, viewport) - Math.max(rect.top, 0));
+      const pct = Math.round((visible / rect.height) * 100);
+      const milestones = [25, 50, 75, 100];
+      for (const milestone of milestones) {
+        if (pct >= milestone && !firedDepthRef.current.has(milestone)) {
+          firedDepthRef.current.add(milestone);
+          trackEvent("home_situation_scroll_depth", {
+            section: "industries",
+            depth_percent: milestone,
+          });
+        }
+      }
+    }
+
+    trackDepthMilestones();
+    window.addEventListener("scroll", trackDepthMilestones, { passive: true });
+    window.addEventListener("resize", trackDepthMilestones);
+    return () => {
+      window.removeEventListener("scroll", trackDepthMilestones);
+      window.removeEventListener("resize", trackDepthMilestones);
+    };
+  }, []);
+
+  const handleScenarioClick = (itemId) => {
+    if (!firstInteractionTrackedRef.current) {
+      firstInteractionTrackedRef.current = true;
+      trackEvent("home_situation_first_interaction", {
+        section: "industries",
+        selected_scenario: itemId,
+      });
+    }
+    if (itemId !== activeId) {
+      trackEvent("home_situation_switch", {
+        section: "industries",
+        from_scenario: activeId,
+        to_scenario: itemId,
+      });
+    }
+    setActiveId(itemId);
+  };
+
+  const handleScenarioCtaClick = (kind) => {
+    const isDefaultScenario = active.id === initialScenarioRef.current;
+    trackEvent("home_situation_cta_click", {
+      section: "industries",
+      cta_kind: kind,
+      scenario_id: active.id,
+      scenario_rank: activeIndex + 1,
+      scenario_is_default: isDefaultScenario ? 1 : 0,
+    });
+  };
 
   return (
-    <section className="section section-alt" id="industries" aria-labelledby="industries-title">
+    <section ref={sectionRef} className="section section-alt" id="industries" aria-labelledby="industries-title">
       <div className="container">
         <div className="section-head reveal-up" data-reveal>
           <span className="eyebrow">Where We Help Most</span>
@@ -260,7 +326,7 @@ function Industries() {
                 key={item.id}
                 type="button"
                 className={`situation-nav__btn${activeId === item.id ? " is-active" : ""}`}
-                onClick={() => setActiveId(item.id)}
+                onClick={() => handleScenarioClick(item.id)}
               >
                 <item.Icon size={15} aria-hidden="true" />
                 {item.label}
@@ -280,8 +346,8 @@ function Industries() {
               ))}
             </ul>
             <div className="situation-actions">
-              <a href="#contact" className="btn btn-primary">{active.cta}</a>
-              <Link to="/services" className="btn btn-secondary">See service details</Link>
+              <a href="#contact" className="btn btn-primary" onClick={() => handleScenarioCtaClick("primary_contact")}>{active.cta}</a>
+              <Link to="/services" className="btn btn-secondary" onClick={() => handleScenarioCtaClick("secondary_services")}>See service details</Link>
             </div>
           </article>
         </div>
