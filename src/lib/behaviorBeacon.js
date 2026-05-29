@@ -279,6 +279,22 @@ export function trackSiteSearch(query, meta = {}) {
   flush();
 }
 
+// Custom engagement event helper for product-specific funnels.
+// This keeps those events in our own engagement_events table so
+// Admin Ops can report on them without depending on GA exports.
+export function trackBehaviorEvent(kind, payload = {}) {
+  if (typeof window === "undefined") return;
+  if (typeof navigator !== "undefined" && navigator.doNotTrack === "1") return;
+  const safeKind = String(kind || "").trim().slice(0, 32);
+  if (!safeKind) return;
+  pushEvent(safeKind, {
+    valueNum: Number.isFinite(Number(payload.valueNum)) ? Number(payload.valueNum) : null,
+    valueText: payload.valueText != null ? String(payload.valueText).slice(0, 500) : null,
+    meta: payload.meta && typeof payload.meta === "object" ? payload.meta : null,
+  });
+  flush();
+}
+
 // Click delegation on document. Fires once per click on internal anchors,
 // outbound links, buttons, and any element with [data-track]. Lightweight
 // enough to attach unconditionally — no per-element listeners.

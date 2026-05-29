@@ -412,6 +412,7 @@ function OpsTab({ data, errors, intel, busy, runAction }) {
 
 function VisitorsTab({ data, errors }) {
   const totals = data?.totals || {};
+  const situationFunnel = data?.situationFunnel || {};
   const engagedRate = totals.sessions14d
     ? Math.round((Number(totals.engaged14d || 0) / Number(totals.sessions14d || 1)) * 100)
     : 0;
@@ -486,6 +487,52 @@ function VisitorsTab({ data, errors }) {
               <td>{fmtNumber(row.engaged_sessions)}</td>
               <td>{row.avg_pages || "-"}</td>
               <td>{row.avg_dwell_sec ? `${row.avg_dwell_sec}s` : "-"}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Homepage situation funnel (14d)</h2><Target size={16} /></div>
+        <div className="ops-metric-grid">
+          <Metric label="First interactions" value={fmtNumber(situationFunnel.first_interactions)} />
+          <Metric label="Scenario switches" value={fmtNumber(situationFunnel.switches)} />
+          <Metric label="CTA clicks" value={fmtNumber(situationFunnel.cta_clicks)} />
+          <Metric label="Primary CTA" value={fmtNumber(situationFunnel.primary_cta_clicks)} hint="Book support" />
+          <Metric label="Secondary CTA" value={fmtNumber(situationFunnel.secondary_cta_clicks)} hint="See services" />
+        </div>
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Scenario performance</h2></div>
+        <Table
+          columns={["Scenario", "Switches", "CTA clicks", "Primary", "Secondary"]}
+          rows={data?.situationByScenario || []}
+          empty="No scenario interaction data yet."
+          renderRow={(row) => (
+            <tr key={row.scenario_id}>
+              <td><strong>{row.scenario_id || "unknown"}</strong></td>
+              <td>{fmtNumber(row.switches)}</td>
+              <td>{fmtNumber(row.cta_clicks)}</td>
+              <td>{fmtNumber(row.primary_clicks)}</td>
+              <td>{fmtNumber(row.secondary_clicks)}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Recent funnel events</h2></div>
+        <Table
+          columns={["Time", "Event", "Scenario", "Detail"]}
+          rows={data?.situationRecent || []}
+          empty="No recent funnel events yet."
+          renderRow={(row, index) => (
+            <tr key={`${row.ts}-${index}`}>
+              <td>{fmtTime(row.ts)}</td>
+              <td>{row.kind || "-"}</td>
+              <td>{row.meta?.scenario_id || row.meta?.selected_scenario || row.value_text || "-"}</td>
+              <td>{row.meta?.cta_kind || (row.meta?.from_scenario && row.meta?.to_scenario ? `${row.meta.from_scenario} → ${row.meta.to_scenario}` : "-")}</td>
             </tr>
           )}
         />

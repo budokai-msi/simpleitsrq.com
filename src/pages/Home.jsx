@@ -15,6 +15,7 @@ import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/h
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics";
+import { trackBehaviorEvent } from "../lib/behaviorBeacon";
 
 function Hero() {
   const paths = [
@@ -269,6 +270,11 @@ function Industries() {
             section: "industries",
             depth_percent: milestone,
           });
+          trackBehaviorEvent("home_situation_scroll_depth", {
+            valueNum: milestone,
+            valueText: "industries",
+            meta: { section: "industries", depth_percent: milestone },
+          });
         }
       }
     }
@@ -289,12 +295,20 @@ function Industries() {
         section: "industries",
         selected_scenario: itemId,
       });
+      trackBehaviorEvent("home_situation_first_interaction", {
+        valueText: itemId,
+        meta: { section: "industries", selected_scenario: itemId },
+      });
     }
     if (itemId !== activeId) {
       trackEvent("home_situation_switch", {
         section: "industries",
         from_scenario: activeId,
         to_scenario: itemId,
+      });
+      trackBehaviorEvent("home_situation_switch", {
+        valueText: itemId,
+        meta: { section: "industries", from_scenario: activeId, to_scenario: itemId },
       });
     }
     setActiveId(itemId);
@@ -308,6 +322,17 @@ function Industries() {
       scenario_id: active.id,
       scenario_rank: activeIndex + 1,
       scenario_is_default: isDefaultScenario ? 1 : 0,
+    });
+    trackBehaviorEvent("home_situation_cta_click", {
+      valueText: active.id,
+      valueNum: activeIndex + 1,
+      meta: {
+        section: "industries",
+        cta_kind: kind,
+        scenario_id: active.id,
+        scenario_rank: activeIndex + 1,
+        scenario_is_default: isDefaultScenario ? 1 : 0,
+      },
     });
   };
 
