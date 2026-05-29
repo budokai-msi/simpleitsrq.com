@@ -1179,10 +1179,10 @@
 
 .leadgen-command-console {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.75fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1.75fr) minmax(260px, 0.7fr);
+  gap: 12px;
   align-items: stretch;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .leadgen-console-main,
@@ -1195,7 +1195,7 @@
 }
 
 .leadgen-console-main {
-  padding: 20px;
+  padding: 16px;
 }
 
 .leadgen-console-topline {
@@ -1207,28 +1207,29 @@
 }
 
 .leadgen-console-main h2 {
-  max-width: 760px;
-  margin: 0.45rem 0 0.55rem;
+  max-width: 680px;
+  margin: 0.35rem 0 0.45rem;
   color: var(--text-1, #111827);
-  font-size: clamp(1.65rem, 2.35vw, 2.35rem);
-  line-height: 1.08;
+  font-size: clamp(1.2rem, 1.7vw, 1.55rem);
+  line-height: 1.2;
   letter-spacing: 0;
 }
 
 .leadgen-console-main p,
 .leadgen-next-card p {
-  max-width: 700px;
+  max-width: 660px;
   color: var(--text-2, #4b5563);
-  line-height: 1.55;
+  font-size: 0.9rem;
+  line-height: 1.48;
   margin: 0;
 }
 
 .leadgen-console-actions {
   display: grid;
-  grid-template-columns: minmax(110px, 130px) repeat(3, minmax(0, auto));
-  gap: 10px;
+  grid-template-columns: minmax(104px, 122px) repeat(3, minmax(0, auto));
+  gap: 8px;
   align-items: end;
-  margin-top: 18px;
+  margin-top: 12px;
 }
 
 .leadgen-console-actions .btn,
@@ -1239,6 +1240,9 @@
   justify-content: center;
   gap: 7px;
   min-width: 0;
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 0.82rem;
 }
 
 .leadgen-zip-field {
@@ -1257,16 +1261,16 @@
 .leadgen-stage-list {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 18px;
+  gap: 7px;
+  margin-top: 12px;
 }
 
 .leadgen-stage {
   min-width: 0;
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 10px;
-  padding: 12px;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 8px;
+  padding: 9px 10px;
   border: 1px solid var(--border, #d1d5db);
   border-radius: 8px;
   background: var(--surface-2, #f8fafc);
@@ -1282,9 +1286,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   background: var(--text-1, #111827);
   color: var(--surface, #fff);
 }
@@ -1299,12 +1303,12 @@
 }
 
 .leadgen-stage strong {
-  font-size: 0.84rem;
+  font-size: 0.78rem;
 }
 
 .leadgen-stage em {
-  margin-top: 2px;
-  font-size: 1.1rem;
+  margin-top: 1px;
+  font-size: 0.96rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -1315,21 +1319,21 @@
 .leadgen-console-metrics dt {
   display: block;
   color: var(--text-3, #6b7280);
-  font-size: 0.8rem;
+  font-size: 0.73rem;
   line-height: 1.35;
 }
 
 .leadgen-next-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 18px;
+  gap: 8px;
+  padding: 14px;
 }
 
 .leadgen-next-card h3 {
   margin: 0;
   color: var(--text-1, #111827);
-  font-size: 1.18rem;
+  font-size: 1.02rem;
   line-height: 1.2;
 }
 
@@ -1341,20 +1345,20 @@
 .leadgen-console-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 6px;
   margin: auto 0 0;
 }
 
 .leadgen-console-metrics div {
-  padding: 10px;
+  padding: 8px;
   border: 1px solid var(--border, #d1d5db);
   border-radius: 8px;
   background: var(--surface-2, #f8fafc);
 }
 
 .leadgen-console-metrics dd {
-  margin: 3px 0 0;
-  font-size: 1.05rem;
+  margin: 2px 0 0;
+  font-size: 0.94rem;
   font-weight: 800;
 }
 
