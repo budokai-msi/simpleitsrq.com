@@ -232,16 +232,12 @@ function StackCalculator() {
             <Link
               to={`/book?source=stack-calculator&seats=${seats}&total=${Math.round(total)}`}
               onClick={handleQuoteClick}
-              className="btn"
+              className="btn btn-primary"
               style={{
                 background: "#fff",
                 color: "#111827",
-                fontWeight: 600,
+                borderColor: "#fff",
                 width: "100%",
-                justifyContent: "center",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
               }}
             >
               <DollarSign size={14} /> Get this priced for my office

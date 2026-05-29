@@ -237,7 +237,7 @@
 [data-theme="dark"] .book-promo-banner__copy { color: #E8EEF6; }
 [data-theme="dark"] .book-promo-banner__code { background: rgba(255,255,255,0.06); }
 
-.btn-sm { padding: 6px 12px; font-size: 0.82rem; min-height: 44px; }
+.btn-sm { min-height: 36px; padding: 0 12px; font-size: 12.5px; }
 
 
 .leadgen-objection__title { font-size: 1rem; font-weight: 700; margin: 8px 0 10px; color: var(--text-1, #111827); line-height: 1.35; }
