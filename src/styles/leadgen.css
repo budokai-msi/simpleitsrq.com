@@ -1179,7 +1179,7 @@
 
 .leadgen-command-console {
   display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(260px, 0.7fr);
+  grid-template-columns: minmax(0, 1.95fr) minmax(250px, 0.65fr);
   gap: 12px;
   align-items: stretch;
   margin-bottom: 12px;
@@ -1195,7 +1195,7 @@
 }
 
 .leadgen-console-main {
-  padding: 16px;
+  padding: 14px;
 }
 
 .leadgen-console-topline {
@@ -1208,9 +1208,9 @@
 
 .leadgen-console-main h2 {
   max-width: 680px;
-  margin: 0.35rem 0 0.45rem;
+  margin: 0.2rem 0 0.4rem;
   color: var(--text-1, #111827);
-  font-size: clamp(1.2rem, 1.7vw, 1.55rem);
+  font-size: clamp(1.08rem, 1.3vw, 1.32rem);
   line-height: 1.2;
   letter-spacing: 0;
 }
@@ -1219,17 +1219,53 @@
 .leadgen-next-card p {
   max-width: 660px;
   color: var(--text-2, #4b5563);
-  font-size: 0.9rem;
-  line-height: 1.48;
+  font-size: 0.84rem;
+  line-height: 1.42;
   margin: 0;
+}
+
+.leadgen-console-focus {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 10px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: var(--surface-2, #f8fafc);
+}
+
+.leadgen-console-focus__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-3, #6b7280);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.leadgen-console-focus strong {
+  display: block;
+  grid-column: 1 / 2;
+  color: var(--text-1, #111827);
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+.leadgen-console-focus .btn {
+  grid-column: 2 / 3;
+  grid-row: 1 / span 2;
 }
 
 .leadgen-console-actions {
   display: grid;
-  grid-template-columns: minmax(104px, 122px) repeat(3, minmax(0, auto));
+  grid-template-columns: minmax(168px, 1fr) repeat(3, minmax(120px, auto));
   gap: 8px;
   align-items: end;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .leadgen-console-actions .btn,
@@ -1240,8 +1276,8 @@
   justify-content: center;
   gap: 7px;
   min-width: 0;
-  min-height: 38px;
-  padding: 0 12px;
+  min-height: 36px;
+  padding: 0 10px;
   font-size: 0.82rem;
 }
 
@@ -1261,16 +1297,16 @@
 .leadgen-stage-list {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 7px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 10px;
 }
 
 .leadgen-stage {
   min-width: 0;
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  gap: 8px;
-  padding: 9px 10px;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 7px;
+  padding: 7px 8px;
   border: 1px solid var(--border, #d1d5db);
   border-radius: 8px;
   background: var(--surface-2, #f8fafc);
@@ -1303,12 +1339,12 @@
 }
 
 .leadgen-stage strong {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
 }
 
 .leadgen-stage em {
   margin-top: 1px;
-  font-size: 0.96rem;
+  font-size: 0.9rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -1319,7 +1355,7 @@
 .leadgen-console-metrics dt {
   display: block;
   color: var(--text-3, #6b7280);
-  font-size: 0.73rem;
+  font-size: 0.69rem;
   line-height: 1.35;
 }
 
@@ -1494,6 +1530,10 @@
   .leadgen-signal-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .leadgen-console-actions {
+    grid-template-columns: minmax(0, 1fr) repeat(3, minmax(110px, auto));
+  }
 }
 
 @media (max-width: 640px) {
@@ -1506,6 +1546,7 @@
   .leadgen-workflow,
   .leadgen-ad-preview dl,
   .leadgen-console-actions,
+  .leadgen-console-focus,
   .leadgen-discover-actions,
   .leadgen-filter-presets,
   .leadgen-stage-list,
@@ -1522,6 +1563,12 @@
   .leadgen-mini-metrics {
     justify-content: flex-start;
     text-align: left;
+  }
+
+  .leadgen-console-focus .btn,
+  .leadgen-console-focus strong {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 
@@ -1577,6 +1624,7 @@
 [data-theme="dark"] .leadgen-next-card,
 [data-theme="dark"] .leadgen-signal-panel,
 [data-theme="dark"] .leadgen-data-board,
+[data-theme="dark"] .leadgen-console-focus,
 [data-theme="dark"] .leadgen-stage,
 [data-theme="dark"] .leadgen-signal-grid div,
 [data-theme="dark"] .leadgen-console-metrics div {
@@ -1617,8 +1665,13 @@
 [data-theme="dark"] .leadgen-data-row span,
 [data-theme="dark"] .leadgen-console-metrics dt,
 [data-theme="dark"] .leadgen-signal-grid span,
+[data-theme="dark"] .leadgen-console-focus__label,
 [data-theme="dark"] .leadgen-zip-field span {
   color: #B4BAC4;
+}
+
+[data-theme="dark"] .leadgen-console-focus strong {
+  color: #F4F5F7;
 }
 
 [data-theme="dark"] .leadgen-data-row {

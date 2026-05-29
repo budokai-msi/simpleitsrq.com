@@ -23,6 +23,7 @@ import {
   BarChart3,
   CheckCircle2,
   Mail,
+  MapPinned,
   Play,
   RefreshCw,
   Search,
@@ -441,6 +442,17 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
             Enter a zip, discover public business records, crawl published
             contact paths, review the list, then launch a capped campaign.
           </p>
+          <div className="leadgen-console-focus" role="status" aria-live="polite">
+            <span className="leadgen-console-focus__label">
+              <MapPinned size={15} aria-hidden="true" />
+              Map + zip workspace
+            </span>
+            <strong>{zip && /^\d{5}$/.test(zip) ? `Targeting ${zip}` : "Pick a 5-digit zip to populate the map and queue jobs"}</strong>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("discover")}>
+              Open map + filters
+              <ArrowRight size={14} aria-hidden="true" />
+            </button>
+          </div>
 
           <div className="leadgen-console-actions" aria-label="Leadgen pipeline controls">
             <label className="leadgen-zip-field">
