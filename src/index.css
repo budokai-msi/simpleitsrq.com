@@ -157,8 +157,10 @@
    * which uses var(--text, #1a1a1a) — invisible in dark mode. */
   --text:             var(--text-1);
   --muted:            var(--text-2);
+  --text-muted:       var(--text-2);
   --accent:           var(--brand);
   --surface-alt:      var(--surface-2);
+  --syn-surface-muted: var(--surface-2);
 }
 
 :root {
@@ -228,7 +230,13 @@ svg:not(.fluent-root svg) { display: block; max-width: 100%; }
 a { color: var(--brand); text-decoration: none; }
 a:hover { color: var(--brand-hover); }
 
-button { font-family: inherit; }
+button {
+  font-family: inherit;
+  letter-spacing: 0;
+}
+button:disabled {
+  cursor: not-allowed;
+}
 input, textarea, select {
   font-family: inherit;
   font-size: 15px;
@@ -642,16 +650,21 @@ body:has(dialog[open][data-blocking-modal]) {
   background: var(--brand-subtle);
   color: var(--brand);
   border: 1px solid color-mix(in srgb, var(--brand) 18%, transparent);
-  box-shadow: none;
-  transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), transform 180ms var(--ease-out);
+  box-shadow: var(--btn-shadow, none);
+  transition:
+    background-color 160ms var(--btn-ease, var(--ease-out)),
+    border-color 160ms var(--btn-ease, var(--ease-out)),
+    box-shadow 180ms var(--btn-ease, var(--ease-out)),
+    transform 140ms var(--btn-ease, var(--ease-out));
 }
 .btn-tonal:hover {
   background: color-mix(in srgb, var(--brand) 14%, var(--brand-subtle));
   border-color: color-mix(in srgb, var(--brand) 28%, transparent);
   color: var(--brand-hover);
+  box-shadow: var(--btn-shadow-hover, none);
   transform: translateY(-1px);
 }
-.btn-tonal:active { transform: scale(0.98); }
+.btn-tonal:active { transform: translateY(0) scale(0.985); }
 
 /* Ghost button — flat, hover-reveal. Use in dense toolbars
  * where filled/outlined would be visually heavy. */
@@ -660,13 +673,19 @@ body:has(dialog[open][data-blocking-modal]) {
   color: var(--text-1);
   border: 1px solid transparent;
   box-shadow: none;
-  transition: background 160ms var(--ease-out), color 160ms var(--ease-out);
+  transition:
+    background-color 160ms var(--btn-ease, var(--ease-out)),
+    color 160ms var(--btn-ease, var(--ease-out)),
+    border-color 160ms var(--btn-ease, var(--ease-out)),
+    transform 140ms var(--btn-ease, var(--ease-out));
 }
 .btn-ghost:hover {
   background: var(--surface-2);
   color: var(--text-1);
+  border-color: var(--border);
+  transform: translateY(-1px);
 }
-.btn-ghost:active { background: var(--surface-3); }
+.btn-ghost:active { background: var(--surface-3); transform: translateY(0) scale(0.985); }
 
 /* Table polish — opt in by adding .table-polish to the wrapper. */
 .table-polish {
@@ -747,4 +766,3 @@ kbd {
  * Use as: <div class="sec-head"><span class="eyebrow eyebrow-brand">Section</span><h2 class="display-2">…</h2><p>…</p></div> */
 .sec-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
 .sec-head p { color: var(--text-2); font-size: 16px; line-height: 1.55; max-width: 60ch; margin: 0; }
-

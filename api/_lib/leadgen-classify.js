@@ -18,6 +18,9 @@ const MAP = {
   "shop:butcher":         ["Food & Drink", "Butcher"],
   "shop:deli":            ["Food & Drink", "Deli"],
   "shop:coffee":          ["Food & Drink", "Coffee shop"],
+  "craft:brewery":        ["Food & Drink", "Brewery"],
+  "craft:distillery":     ["Food & Drink", "Distillery"],
+  "craft:winery":         ["Food & Drink", "Winery"],
 
   // ── Retail ───────────────────────────────────────────────────
   "shop:supermarket":     ["Retail", "Supermarket"],
@@ -115,6 +118,9 @@ const MAP = {
   "craft:contractor":     ["Trades", "Contractor"],
   "craft:builder":        ["Trades", "Builder"],
   "craft:gardener":       ["Trades", "Landscaping"],
+  "craft:exterminator":   ["Trades", "Pest control"],
+  "craft:pest_control":   ["Trades", "Pest control"],
+  "craft:exterminator;pest_control": ["Trades", "Pest control"],
 
   // ── Storage / Logistics ──────────────────────────────────────
   "shop:storage_rental":  ["Storage & Logistics", "Self storage"],

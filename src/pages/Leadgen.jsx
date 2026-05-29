@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import "leaflet/dist/leaflet.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, MapPin, Database, Mail, ShieldCheck,
   Filter, Send, BarChart3, Building2,
-  Search,
+  Search, Info,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 
@@ -176,18 +177,29 @@ const PUBLIC_NICHES = [
   "Food & Drink",
 ];
 
-const DEFAULT_SCAN_ROWS = [
+const SCAN_LIMIT = 80;
+const SCAN_CACHE_TTL = 5 * 60 * 1000;
+
+const SCANNER_CONTEXT = [
   {
-    name: "Run a scan to load public records",
-    address: "Try 34237, 34236, 34205, 34285, or your target zip",
-    city: "OpenStreetMap",
-    industry_group: "Public source",
-    sub_industry: "No purchased list",
-    website: "",
-    phone: "",
-    source_url: "https://www.openstreetmap.org",
+    title: "Public records first",
+    body: "The scan starts from public business records, then keeps the source URL visible so you can audit the list.",
+  },
+  {
+    title: "Review before outreach",
+    body: "Nothing here means 'send now'. Keep, maybe, or reject each business before it reaches a campaign.",
+  },
+  {
+    title: "Cap the test",
+    body: "The daily cap turns a list into a small test instead of a broad spray campaign.",
   },
 ];
+
+const REVIEW_COPY = {
+  keep: "Ready for the first reviewed campaign pass.",
+  maybe: "Worth another look before export or outreach.",
+  reject: "Leave out of this campaign.",
+};
 
 function Currency({ value }) {
   if (value == null) return <span className="leadgen-tier__price-custom">Custom</span>;
@@ -248,17 +260,170 @@ function hostFor(url) {
   try { return new URL(url).host.replace(/^www\./, ""); } catch { return url; }
 }
 
+function sourceFor(row) {
+  if (!row?.source_url) return "Source pending";
+  try { return new URL(row.source_url).host.replace(/^www\./, ""); } catch { return "Source record"; }
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function asPoint(row) {
+  const lat = Number(row?.lat);
+  const lng = Number(row?.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { lat, lng };
+}
+
+function scanKey(zip, niche) {
+  return `${zip}:${niche || "All"}:${SCAN_LIMIT}`;
+}
+
+function rowSearchText(row) {
+  return [
+    row.name,
+    row.address,
+    row.city,
+    row.state,
+    row.zip,
+    row.website,
+    row.phone,
+    row.industry_group,
+    row.sub_industry,
+    row.source_id,
+    row.source_url,
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
+  const mapRef = useRef(null);
+  const [mapError, setMapError] = useState("");
+  const mappedRows = useMemo(() => (
+    rows
+      .map((row, index) => ({ row, index: row.__scanIndex ?? index, point: asPoint(row) }))
+      .filter((item) => item.point)
+  ), [rows]);
+  const centroid = asPoint(scan?.centroid);
+
+  useEffect(() => {
+    if (!mapRef.current || !mappedRows.length) return undefined;
+
+    let disposed = false;
+    let leafletMap = null;
+    setMapError("");
+
+    import("leaflet")
+      .then((mod) => {
+        if (disposed || !mapRef.current) return;
+        const L = mod.default || mod;
+        leafletMap = L.map(mapRef.current, {
+          attributionControl: false,
+          scrollWheelZoom: false,
+          zoomControl: true,
+        });
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(leafletMap);
+        L.control.attribution({ prefix: false }).addTo(leafletMap);
+
+        const bounds = [];
+        mappedRows.forEach(({ row, index, point }) => {
+          bounds.push([point.lat, point.lng]);
+          const marker = L.marker([point.lat, point.lng], {
+            icon: L.divIcon({
+              className: `leadgen-map-pin${index === selectedIndex ? " is-active" : ""}`,
+              html: "<span></span>",
+              iconSize: [30, 30],
+              iconAnchor: [15, 30],
+              popupAnchor: [0, -30],
+            }),
+          }).addTo(leafletMap);
+
+          marker.bindPopup(`
+            <div class="leadgen-map-popup">
+              <strong>${escapeHtml(row.name)}</strong>
+              <span>${escapeHtml([row.sub_industry || row.industry_group, row.city || row.address].filter(Boolean).join(" - "))}</span>
+              <a href="${escapeHtml(row.website || row.source_url || "#")}" target="_blank" rel="noreferrer">${escapeHtml(hostFor(row.website || row.source_url))}</a>
+            </div>
+          `);
+          marker.on("click", () => onSelect(index));
+          if (index === selectedIndex) marker.openPopup();
+        });
+
+        if (bounds.length > 1) {
+          leafletMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+        } else {
+          const only = bounds[0] || [centroid?.lat || 27.3364, centroid?.lng || -82.5307];
+          leafletMap.setView(only, 14);
+        }
+
+        window.setTimeout(() => {
+          if (!disposed && leafletMap) leafletMap.invalidateSize();
+        }, 80);
+      })
+      .catch(() => {
+        if (!disposed) setMapError("Map tiles did not load. The reviewed list is still available below.");
+      });
+
+    return () => {
+      disposed = true;
+      if (leafletMap) leafletMap.remove();
+    };
+  }, [centroid?.lat, centroid?.lng, mappedRows, onSelect, selectedIndex]);
+
+  return (
+    <section className="leadgen-map-card" aria-label="Market map">
+      <div className="leadgen-map-card__head">
+        <div>
+          <span>Market map</span>
+          <strong>{mappedRows.length ? `${mappedRows.length} ${mappedRows.length === 1 ? "business" : "businesses"} plotted` : "No mapped records yet"}</strong>
+        </div>
+        <span>{scan ? "Live OSM coordinates" : "Awaiting scan"}</span>
+      </div>
+      <div className="leadgen-map-shell">
+        <div ref={mapRef} className="leadgen-map" aria-hidden={!mappedRows.length} />
+        {!mappedRows.length || mapError ? (
+          <div className="leadgen-map-empty">
+            <span>{mapError || "Run a scan to plot public business records in this market."}</span>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
 function LeadgenScanApp() {
-  const [zip, setZip] = useState("34237");
-  const [niche, setNiche] = useState("Healthcare");
-  const [offer, setOffer] = useState("Managed IT cleanup for small offices");
+  const scanCacheRef = useRef(new Map());
+  const scanPromisesRef = useRef(new Map());
+  const [zip, setZip] = useState("");
+  const [niche, setNiche] = useState("All");
+  const [industryOptions, setIndustryOptions] = useState(PUBLIC_NICHES);
+  const [offer, setOffer] = useState("");
   const [dailyCap, setDailyCap] = useState(35);
   const [scan, setScan] = useState(null);
   const [review, setReview] = useState({});
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [contactFilter, setContactFilter] = useState("all");
+  const [subIndustryFilter, setSubIndustryFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("contact");
+  const [prefetchState, setPrefetchState] = useState("idle");
+  const [lastScanMeta, setLastScanMeta] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const validZip = /^\d{5}$/.test(zip);
 
-  const rows = scan?.rows?.length ? scan.rows : DEFAULT_SCAN_ROWS;
+  const rows = scan?.rows || [];
   const reviewedRows = useMemo(() => (
     (scan?.rows || []).map((row, index) => ({
       ...row,
@@ -270,22 +435,133 @@ function LeadgenScanApp() {
   const rejected = reviewedRows.filter((row) => row.status === "reject");
   const websites = reviewedRows.filter((row) => row.website).length;
   const phones = reviewedRows.filter((row) => row.phone).length;
+  const subIndustryOptions = useMemo(() => (
+    Array.from(new Set(reviewedRows.map((row) => row.sub_industry).filter(Boolean))).sort((a, b) => a.localeCompare(b))
+  ), [reviewedRows]);
+  const visibleRows = useMemo(() => {
+    const q = deferredSearchTerm.trim().toLowerCase();
+    const statusRank = { keep: 0, maybe: 1, reject: 2 };
+    return reviewedRows
+      .map((row, index) => ({ row: { ...row, __scanIndex: index }, index }))
+      .filter(({ row }) => {
+        if (q && !rowSearchText(row).includes(q)) return false;
+        if (statusFilter !== "all" && row.status !== statusFilter) return false;
+        if (subIndustryFilter !== "all" && row.sub_industry !== subIndustryFilter) return false;
+        if (contactFilter === "website" && !row.website) return false;
+        if (contactFilter === "phone" && !row.phone) return false;
+        if (contactFilter === "missing-website" && row.website) return false;
+        if (contactFilter === "missing-phone" && row.phone) return false;
+        if (contactFilter === "mapped" && !asPoint(row)) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === "name") return a.row.name.localeCompare(b.row.name);
+        if (sortBy === "city") return (a.row.city || "").localeCompare(b.row.city || "") || a.row.name.localeCompare(b.row.name);
+        if (sortBy === "status") return (statusRank[a.row.status] ?? 9) - (statusRank[b.row.status] ?? 9) || a.row.name.localeCompare(b.row.name);
+        if (sortBy === "mapped") return (asPoint(b.row) ? 1 : 0) - (asPoint(a.row) ? 1 : 0) || a.row.name.localeCompare(b.row.name);
+        const ac = (a.row.website ? 2 : 0) + (a.row.phone ? 1 : 0);
+        const bc = (b.row.website ? 2 : 0) + (b.row.phone ? 1 : 0);
+        return bc - ac || a.row.name.localeCompare(b.row.name);
+      });
+  }, [contactFilter, deferredSearchTerm, reviewedRows, sortBy, statusFilter, subIndustryFilter]);
+  const visibleOnlyRows = visibleRows.map(({ row }) => row);
+  const effectiveSelectedIndex = visibleRows.some((item) => item.index === selectedIndex)
+    ? selectedIndex
+    : visibleRows[0]?.index ?? null;
+  const effectivePrefetchState = validZip ? prefetchState : "idle";
+
+  useEffect(() => {
+    let disposed = false;
+    fetch("/api/leadgen")
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (disposed || !Array.isArray(data?.industries)) return;
+        const options = Array.from(new Set(data.industries.filter(Boolean)));
+        if (options.length) setIndustryOptions(options.includes("All") ? options : ["All", ...options]);
+      })
+      .catch(() => {});
+    return () => { disposed = true; };
+  }, []);
+
+  const getScanData = useCallback(async (targetZip, targetNiche) => {
+    const key = scanKey(targetZip, targetNiche);
+    const cached = scanCacheRef.current.get(key);
+    if (cached && Date.now() - cached.savedAt < SCAN_CACHE_TTL) {
+      return { data: cached.data, cached: true };
+    }
+
+    const pending = scanPromisesRef.current.get(key);
+    if (pending) return pending;
+
+    const promise = fetch("/api/leadgen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ zip: targetZip, niche: targetNiche, limit: SCAN_LIMIT }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.ok === false) {
+          throw new Error(data.message || data.error || `Scan failed (${res.status})`);
+        }
+        scanCacheRef.current.set(key, { data, savedAt: Date.now() });
+        return { data, cached: false };
+      })
+      .finally(() => {
+        scanPromisesRef.current.delete(key);
+    });
+    scanPromisesRef.current.set(key, promise);
+    return promise;
+  }, []);
+
+  const applyScan = (data, meta = {}) => {
+    setScan(data);
+    setReview(Object.fromEntries((data.rows || []).map((_, index) => [index, index < 20 ? "keep" : "maybe"])));
+    setSelectedIndex((data.rows || []).length ? 0 : null);
+    setSearchTerm("");
+    setStatusFilter("all");
+    setContactFilter("all");
+    setSubIndustryFilter("all");
+    setSortBy("contact");
+    setLastScanMeta({ ...meta, at: Date.now() });
+  };
+
+  useEffect(() => {
+    if (!validZip) {
+      return undefined;
+    }
+
+    const key = scanKey(zip, niche);
+    const cached = scanCacheRef.current.get(key);
+    if (cached && Date.now() - cached.savedAt < SCAN_CACHE_TTL) {
+      setPrefetchState("ready");
+      return undefined;
+    }
+
+    let disposed = false;
+    const timer = window.setTimeout(() => {
+      setPrefetchState("loading");
+      getScanData(zip, niche)
+        .then(() => {
+          if (!disposed) setPrefetchState("ready");
+        })
+        .catch(() => {
+          if (!disposed) setPrefetchState("idle");
+        });
+    }, 650);
+
+    return () => {
+      disposed = true;
+      window.clearTimeout(timer);
+    };
+  }, [getScanData, niche, validZip, zip]);
 
   const runScan = async () => {
     setBusy(true);
     setErr("");
     try {
-      const res = await fetch("/api/leadgen", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ zip, niche, limit: 60 }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || data.ok === false) {
-        throw new Error(data.message || data.error || `Scan failed (${res.status})`);
-      }
-      setScan(data);
-      setReview(Object.fromEntries((data.rows || []).map((_, index) => [index, index < 20 ? "keep" : "maybe"])));
+      const result = await getScanData(zip, niche);
+      applyScan(result.data, { cached: result.cached });
+      setPrefetchState("ready");
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
@@ -294,8 +570,8 @@ function LeadgenScanApp() {
   };
 
   const exportRows = () => {
-    if (!reviewedRows.length) return;
-    downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, reviewedRows);
+    if (!visibleOnlyRows.length) return;
+    downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, visibleOnlyRows);
   };
 
   return (
@@ -314,6 +590,16 @@ function LeadgenScanApp() {
           </p>
         </div>
 
+        <div className="leadgen-context-strip" aria-label="How to read this scanner">
+          {SCANNER_CONTEXT.map((item) => (
+            <div key={item.title} className="leadgen-context-item" tabIndex="0">
+              <Info size={15} aria-hidden="true" />
+              <strong>{item.title}</strong>
+              <span className="leadgen-context-item__hint">{item.body}</span>
+            </div>
+          ))}
+        </div>
+
         <div className="leadgen-app-controls">
           <label>
             <span>Zip code</span>
@@ -321,14 +607,14 @@ function LeadgenScanApp() {
               value={zip}
               onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
               inputMode="numeric"
-              placeholder="34237"
+              placeholder="Enter any 5-digit zip"
               aria-label="Target zip code"
             />
           </label>
           <label>
             <span>Niche</span>
             <select value={niche} onChange={(e) => setNiche(e.target.value)} aria-label="Target niche">
-              {PUBLIC_NICHES.map((item) => <option key={item} value={item}>{item}</option>)}
+              {industryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
           <label className="leadgen-app-controls__wide">
@@ -336,7 +622,7 @@ function LeadgenScanApp() {
             <input
               value={offer}
               onChange={(e) => setOffer(e.target.value)}
-              placeholder="Wi-Fi cleanup, backups, account lockouts..."
+              placeholder="Example: backup cleanup for busy offices"
               aria-label="Offer angle"
             />
           </label>
@@ -351,10 +637,17 @@ function LeadgenScanApp() {
               aria-label="Daily send cap"
             />
           </label>
-          <button type="button" className="btn btn-primary" onClick={runScan} disabled={busy || !/^\d{5}$/.test(zip)}>
+          <button type="button" className="btn btn-primary" onClick={runScan} disabled={busy || !validZip}>
             <Search size={16} aria-hidden="true" />
-            {busy ? "Scanning..." : "Run scan"}
+            {busy ? "Scanning..." : effectivePrefetchState === "ready" ? "Open scan" : "Run scan"}
           </button>
+        </div>
+
+        <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
+          <span />
+          {effectivePrefetchState === "loading" ? "Prefetching this market..." : null}
+          {effectivePrefetchState === "ready" ? "Scan is warmed and ready." : null}
+          {effectivePrefetchState === "idle" ? "Enter a valid zip to warm the scan." : null}
         </div>
 
         {err ? <p className="leadgen-app-error">{err}</p> : null}
@@ -369,13 +662,13 @@ function LeadgenScanApp() {
         <div className="leadgen-app-brief">
           <div>
             <span>Campaign brief</span>
-            <strong>{niche} in {zip}</strong>
+            <strong>{/^\d{5}$/.test(zip) ? `${niche} in ${zip}` : "Choose a zip and niche"}</strong>
             <p>{offer || "Add an offer angle before sending."}</p>
           </div>
           <div>
             <span>Send rule</span>
             <strong>{dailyCap || 35}/day max</strong>
-            <p>{kept.length ? `${Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35))} sending day estimate for kept rows.` : "Run and review a scan first."}</p>
+            <p>{kept.length ? `${Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35))} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Run and review a scan first."}</p>
           </div>
         </div>
       </div>
@@ -383,7 +676,7 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--results">
         <div className="leadgen-app-results-head">
           <div>
-            <span>{scan ? `${scan.returned} shown / ${scan.matched} matched` : "Ready to scan"}</span>
+            <span>{scan ? `${visibleRows.length} visible / ${scan.matched} matched` : "Ready to scan"}</span>
             <h2>Review list</h2>
           </div>
           <div className="leadgen-app-actions">
@@ -396,11 +689,80 @@ function LeadgenScanApp() {
           <span>{kept.length} keep</span>
           <span>{maybe.length} maybe</span>
           <span>{rejected.length} reject</span>
+          {scan ? <span>{visibleRows.length} visible</span> : null}
         </div>
 
+        <div className="leadgen-result-tools" aria-label="Result search and filters">
+          <label className="leadgen-result-tools__search">
+            <span>Search loaded records</span>
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Name, city, service, phone, website..."
+              aria-label="Search loaded lead records"
+              disabled={!reviewedRows.length}
+            />
+          </label>
+          <label>
+            <span>Status</span>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} disabled={!reviewedRows.length}>
+              <option value="all">All</option>
+              <option value="keep">Keep</option>
+              <option value="maybe">Maybe</option>
+              <option value="reject">Reject</option>
+            </select>
+          </label>
+          <label>
+            <span>Contact</span>
+            <select value={contactFilter} onChange={(e) => setContactFilter(e.target.value)} disabled={!reviewedRows.length}>
+              <option value="all">All</option>
+              <option value="website">Has website</option>
+              <option value="phone">Has phone</option>
+              <option value="missing-website">No website</option>
+              <option value="missing-phone">No phone</option>
+              <option value="mapped">Mapped</option>
+            </select>
+          </label>
+          <label>
+            <span>Sub-industry</span>
+            <select value={subIndustryFilter} onChange={(e) => setSubIndustryFilter(e.target.value)} disabled={!subIndustryOptions.length}>
+              <option value="all">All</option>
+              {subIndustryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Sort</span>
+            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} disabled={!reviewedRows.length}>
+              <option value="contact">Best contact</option>
+              <option value="name">Name</option>
+              <option value="city">City</option>
+              <option value="status">Review status</option>
+              <option value="mapped">Mapped first</option>
+            </select>
+          </label>
+        </div>
+
+        <LeadgenMap rows={visibleOnlyRows} scan={scan} selectedIndex={effectiveSelectedIndex} onSelect={setSelectedIndex} />
+
         <div className="leadgen-result-list">
-          {rows.map((row, index) => (
-            <article key={`${row.source_id || row.name}-${index}`} className="leadgen-result-row">
+          {!rows.length ? (
+            <div className="leadgen-empty-review">
+              <strong>No list yet</strong>
+              <span>Enter a zip code, choose a niche, and run a scan. Results here come from public records with source fields attached.</span>
+            </div>
+          ) : !visibleRows.length ? (
+            <div className="leadgen-empty-review">
+              <strong>No records match these filters</strong>
+              <span>Clear the search or loosen the filters. The original scan is still cached for this zip and niche.</span>
+            </div>
+          ) : visibleRows.map(({ row, index }) => (
+            <article
+              key={`${row.source_id || row.name}-${index}`}
+              className={`leadgen-result-row leadgen-result-row--${review[index] || "keep"}${index === effectiveSelectedIndex ? " is-selected" : ""}`}
+              title={`${REVIEW_COPY[review[index] || "keep"]} Source: ${row.source_url || "not available"}`}
+              onMouseEnter={() => setSelectedIndex(index)}
+              onFocus={() => setSelectedIndex(index)}
+            >
               <div className="leadgen-result-row__main">
                 <strong>{row.name}</strong>
                 <span>{[row.sub_industry || row.industry_group, row.city || row.address, row.zip].filter(Boolean).join(" - ")}</span>
@@ -408,20 +770,19 @@ function LeadgenScanApp() {
               <div className="leadgen-result-row__meta">
                 <a href={row.website || row.source_url} target="_blank" rel="noreferrer">{hostFor(row.website || row.source_url)}</a>
                 {row.phone ? <span>{row.phone}</span> : <span>Phone missing</span>}
+                <span className="leadgen-result-row__source">{sourceFor(row)}</span>
               </div>
-              {scan ? (
-                <select
-                  value={review[index] || "keep"}
-                  onChange={(e) => setReview((current) => ({ ...current, [index]: e.target.value }))}
-                  aria-label={`Review status for ${row.name}`}
-                >
-                  <option value="keep">Keep</option>
-                  <option value="maybe">Maybe</option>
-                  <option value="reject">Reject</option>
-                </select>
-              ) : (
-                <span className="leadgen-result-row__placeholder">No scan yet</span>
-              )}
+              <select
+                className={`leadgen-review-select leadgen-review-select--${review[index] || "keep"}`}
+                value={review[index] || "keep"}
+                onChange={(e) => setReview((current) => ({ ...current, [index]: e.target.value }))}
+                aria-label={`Review status for ${row.name}`}
+                title={REVIEW_COPY[review[index] || "keep"]}
+              >
+                <option value="keep">Keep</option>
+                <option value="maybe">Maybe</option>
+                <option value="reject">Reject</option>
+              </select>
             </article>
           ))}
         </div>
