@@ -84,13 +84,13 @@ function formatJobOutput(row) {
     const discovered = Number(result?.discovered ?? row?.total ?? 0);
     const inserted = Number(result?.inserted ?? 0);
     const updated = Number(result?.updated ?? 0);
-    if (discovered > 0) return `${fmtNumber(discovered)} discovered · ${fmtNumber(inserted)} new · ${fmtNumber(updated)} refreshed`;
+    if (discovered > 0) return `${fmtNumber(discovered)} discovered | ${fmtNumber(inserted)} new | ${fmtNumber(updated)} refreshed`;
   }
   if (row?.kind === "website_emails") {
     if (result?.skipped) return `Skipped: ${result.skipped}`;
     const found = Number(result?.found ?? 0);
     const inserted = Number(result?.inserted ?? 0);
-    return `${fmtNumber(found)} found · ${fmtNumber(inserted)} new`;
+    return `${fmtNumber(found)} found | ${fmtNumber(inserted)} new`;
   }
   if (row?.error) return row.error;
   return "-";
@@ -970,3 +970,4 @@ function OpsecTab({ data, busy, runAction }) {
     </div>
   );
 }
+
