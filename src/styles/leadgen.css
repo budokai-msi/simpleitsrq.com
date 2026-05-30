@@ -306,6 +306,39 @@
   justify-content: center;
   white-space: nowrap;
 }
+.leadgen-quick-markets {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.leadgen-quick-markets > span {
+  color: var(--text-3, #6b7280);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.leadgen-quick-market-btn {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  color: var(--text-1, #111827);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+.leadgen-quick-market-btn:hover,
+.leadgen-quick-market-btn:focus-visible {
+  border-color: var(--text-1, #111827);
+  background: var(--surface-2, #f8fafc);
+  transform: translateY(-1px);
+}
 .leadgen-prefetch {
   display: inline-flex;
   align-items: center;
@@ -1666,7 +1699,8 @@
 [data-theme="dark"] .leadgen-console-metrics dt,
 [data-theme="dark"] .leadgen-signal-grid span,
 [data-theme="dark"] .leadgen-console-focus__label,
-[data-theme="dark"] .leadgen-zip-field span {
+[data-theme="dark"] .leadgen-zip-field span,
+[data-theme="dark"] .leadgen-quick-markets > span {
   color: #B4BAC4;
 }
 
@@ -1700,6 +1734,16 @@
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.42);
   color: #fca5a5;
+}
+[data-theme="dark"] .leadgen-quick-market-btn {
+  border-color: #353B45;
+  background: #11151B;
+  color: #F4F5F7;
+}
+[data-theme="dark"] .leadgen-quick-market-btn:hover,
+[data-theme="dark"] .leadgen-quick-market-btn:focus-visible {
+  border-color: #F4F5F7;
+  background: #18202B;
 }
 
 /* Customer-visible discovery map */
@@ -1969,6 +2013,29 @@
   font-size: 0.8rem;
   color: var(--text-3, #6b7280);
 }
+.leadgen-side-integrations__links {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.leadgen-side-integrations__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 999px;
+  color: var(--text-2, #4b5563);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.leadgen-side-integrations__links a:hover,
+.leadgen-side-integrations__links a:focus-visible {
+  border-color: var(--text-1, #111827);
+  color: var(--text-1, #111827);
+}
 .leadgen-side-integrations__actions {
   display: grid;
   gap: 8px;
@@ -1976,6 +2043,16 @@
 .leadgen-side-integrations__actions .btn {
   width: 100%;
   justify-content: flex-start;
+}
+[data-theme="dark"] .leadgen-side-integrations__links a {
+  border-color: #353B45;
+  color: #B4BAC4;
+  background: #11151B;
+}
+[data-theme="dark"] .leadgen-side-integrations__links a:hover,
+[data-theme="dark"] .leadgen-side-integrations__links a:focus-visible {
+  border-color: #F4F5F7;
+  color: #F4F5F7;
 }
 .leadgen-workspace-main {
   margin-top: 0;

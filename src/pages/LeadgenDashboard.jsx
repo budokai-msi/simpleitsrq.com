@@ -290,6 +290,13 @@ export default function LeadgenDashboard() {
             <section className="leadgen-side-integrations" aria-label="Marketing integrations">
               <h3>Integrations</h3>
               <p>Push reviewed leads into the tools your team already uses.</p>
+              <div className="leadgen-side-integrations__links">
+                <a href="https://www.hubspot.com" target="_blank" rel="noreferrer">HubSpot</a>
+                <a href="https://mailchimp.com" target="_blank" rel="noreferrer">Mailchimp</a>
+                <a href="https://www.klaviyo.com" target="_blank" rel="noreferrer">Klaviyo</a>
+                <a href="https://ads.google.com" target="_blank" rel="noreferrer">Google Ads</a>
+                <a href="https://www.facebook.com/business/ads" target="_blank" rel="noreferrer">Meta Ads</a>
+              </div>
               <div className="leadgen-side-integrations__actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("hubspot")}>Export HubSpot CSV</button>
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("mailchimp")}>Export Mailchimp CSV</button>
