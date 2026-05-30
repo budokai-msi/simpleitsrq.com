@@ -23,6 +23,24 @@ const TIME_WINDOWS = [
   "Whenever — flexible",
 ];
 
+const BOOK_FAQS = [
+  {
+    question: "Is the consultation really free?",
+    answer:
+      "Yes. The first consultation is free, with no obligation, and includes practical recommendations for your office setup.",
+  },
+  {
+    question: "Do you support Sarasota, Bradenton, and Venice businesses?",
+    answer:
+      "Yes. We support local teams across Sarasota County and Manatee County, including remote and hybrid offices.",
+  },
+  {
+    question: "Can we use Google Meet, Zoom, or Microsoft Teams?",
+    answer:
+      "Yes. We can meet on Google Meet, Zoom, or Microsoft Teams based on your team's preference.",
+  },
+];
+
 /**
  * Loads Cal.com's embed script once and renders an inline calendar into
  * the container. Uses the vanilla embed API (no npm dep).
@@ -311,6 +329,7 @@ export default function Book() {
       { name: "Home", url: "https://simpleitsrq.com/" },
       { name: "Book", url: "https://simpleitsrq.com/book" },
     ],
+    faqs: BOOK_FAQS,
   });
 
   const bullets = [
