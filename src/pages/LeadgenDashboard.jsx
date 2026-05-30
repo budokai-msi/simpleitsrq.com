@@ -154,6 +154,13 @@ function daysSinceIso(value) {
   if (ts == null) return null;
   return Math.max(0, Math.floor((Date.now() - ts) / 86_400_000));
 }
+function freshnessLabel(value) {
+  const days = daysSinceIso(value);
+  if (days == null) return "never";
+  if (days === 0) return "today";
+  if (days === 1) return "1 day ago";
+  return `${days} days ago`;
+}
 
 function StatusChip({ status }) {
   const label = status || "unknown";
@@ -166,6 +173,8 @@ export default function LeadgenDashboard() {
   const [tab, setTab] = useState("discover");
   const [status, setStatus] = useState(null);
   const [statusErr, setStatusErr] = useState(null);
+  const [opsStatus, setOpsStatus] = useState(null);
+  const [runtimeHealth, setRuntimeHealth] = useState(null);
   const selectTab = (id, source = "leadgen_sidebar") => {
     trackEvent("select_content", {
       content_type: "leadgen_tab_nav",
@@ -195,9 +204,15 @@ export default function LeadgenDashboard() {
     let timer;
     const tick = async () => {
       try {
-        const r = await getJson("/api/portal?action=leadgen-status");
+        const [r, ops, health] = await Promise.all([
+          getJson("/api/portal?action=leadgen-status"),
+          getJson("/api/portal?action=ops-status").catch(() => null),
+          getJson("/api/health").catch(() => null),
+        ]);
         if (!alive) return;
         setStatus(r);
+        if (ops) setOpsStatus(ops);
+        if (health) setRuntimeHealth(health);
         setStatusErr(null);
       } catch (e) {
         if (!alive) return;
@@ -233,6 +248,18 @@ export default function LeadgenDashboard() {
     if (target === "klaviyo") window.location.href = `${base}&limit=2000`;
     if (target === "google_ads") window.location.href = `${base}&limit=10000`;
     if (target === "meta_ads") window.location.href = `${base}&limit=10000`;
+  };
+  const loadOps = async () => {
+    try {
+      const [ops, health] = await Promise.all([
+        getJson("/api/portal?action=ops-status"),
+        getJson("/api/health"),
+      ]);
+      setOpsStatus(ops);
+      setRuntimeHealth(health);
+    } catch {
+      // Non-blocking: leadgen workflows should continue even if ops telemetry fails.
+    }
   };
 
   return (
@@ -351,7 +378,7 @@ export default function LeadgenDashboard() {
           </aside>
 
           <div className="admin-leadgen-tab-body leadgen-workspace-main">
-            {tab === "command" && <CommandTab status={status} onSelectTab={selectTab} onStatusChange={loadStatus} />}
+            {tab === "command" && <CommandTab status={status} opsStatus={opsStatus} runtimeHealth={runtimeHealth} onSelectTab={selectTab} onStatusChange={loadStatus} onOpsRefresh={loadOps} />}
             {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
             {tab === "campaigns" && <CampaignsTab />}
             {tab === "insights" && <InsightsTab />}
@@ -371,7 +398,7 @@ export default function LeadgenDashboard() {
 // Command tab
 // ============================================================
 
-function CommandTab({ status, onSelectTab, onStatusChange }) {
+function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusChange, onOpsRefresh }) {
   const businesses = status?.businesses?.total ?? 0;
   const withWebsite = status?.businesses?.with_website ?? 0;
   const emails = status?.emails?.deliverable ?? 0;
@@ -472,6 +499,11 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
     return false;
   });
   const staleSignal = noSignalJobs.length >= 4;
+  const threatFeedCount = Number(opsStatus?.osint?.feeds?.length || 0);
+  const threatTotalCidrs = Number(opsStatus?.osint?.totalCidrs || 0);
+  const osintOldest = opsStatus?.osint?.oldestFetch || null;
+  const criticalLastHour = Number(runtimeHealth?.checks?.criticalEventsLastHour ?? 0);
+  const dbHealth = runtimeHealth?.checks?.db || "unknown";
   const stages = [
     {
       icon: Search,
@@ -660,6 +692,24 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
           <div><strong>{pct(emailBusinesses, businesses)}</strong><span>businesses with email</span></div>
           <div><strong>{pct(replies, sent)}</strong><span>reply rate on sent email</span></div>
           <div><strong>{runningJobs}</strong><span>worker jobs running</span></div>
+        </div>
+        <div className="leadgen-signal-grid leadgen-signal-grid--ops">
+          <div><strong>{dbHealth}</strong><span>runtime DB status</span></div>
+          <div><strong>{criticalLastHour}</strong><span>critical security events (1h)</span></div>
+          <div><strong>{threatFeedCount}</strong><span>threat feeds active</span></div>
+          <div><strong>{threatTotalCidrs.toLocaleString()}</strong><span>OSINT CIDR entries · oldest refresh {freshnessLabel(osintOldest)}</span></div>
+        </div>
+        <div className="leadgen-signal-actions">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => {
+              trackEvent("select_content", { content_type: "leadgen_ops_refresh", source: "leadgen_command" });
+              onOpsRefresh?.();
+            }}
+          >
+            Refresh ops status
+          </button>
         </div>
       </section>
 
