@@ -32,6 +32,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { csrfFetch } from "../lib/csrf";
+import { trackEvent } from "../lib/analytics.js";
 
 // ---------- helpers ----------
 
@@ -341,6 +342,12 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
     try {
       const r = await postJson("/api/portal?action=leadgen-run-jobs", {});
       const s = r.summary || {};
+      trackEvent("select_content", {
+        content_type: "leadgen_worker_run",
+        picked: Number(s.picked || 0),
+        completed: Number(s.completed || 0),
+        failed: Number(s.failed || 0),
+      });
       setMsg("Worker ran " + (s.picked || 0) + " jobs: " + (s.completed || 0) + " completed" +
         (s.failed ? ", " + s.failed + " failed" : "") +
         (s.budget_exhausted ? ". Time budget hit; run again to continue." : "."));
@@ -360,6 +367,11 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
     setBusy(true); setErr(null); setMsg(null);
     try {
       const r = await postJson("/api/portal?action=leadgen-discover", { zip });
+      trackEvent("search", {
+        search_term: zip,
+        source: "leadgen_admin_discover",
+        deduped: Boolean(r.deduped),
+      });
       setMsg(r.deduped ? "Zip " + zip + " was already queued. Running worker..." : "Queued discovery job #" + r.job_id + " for " + zip + ". Running worker...");
       await runWorker();
       onSelectTab("discover");
@@ -378,6 +390,12 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
     setBusy(true); setErr(null); setMsg(null);
     try {
       const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip, limit: 100 });
+      trackEvent("select_content", {
+        content_type: "leadgen_email_crawl",
+        source: "leadgen_admin_command",
+        zip,
+        queued: Number(r.queued || 0),
+      });
       setMsg("Queued " + (r.queued || 0) + " email crawl jobs for " + zip + ". Running worker...");
       await runWorker();
       onSelectTab("discover");
@@ -506,7 +524,18 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
           <span className="eyebrow">Next best move</span>
           <h3>{nextMove.title}</h3>
           <p>{nextMove.detail}</p>
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => onSelectTab(nextMove.tab)}>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              trackEvent("select_content", {
+                content_type: "leadgen_next_best_move",
+                destination: nextMove.tab,
+                title: nextMove.title,
+              });
+              onSelectTab(nextMove.tab);
+            }}
+          >
             {nextMove.action}
             <ArrowRight size={15} aria-hidden="true" />
           </button>
