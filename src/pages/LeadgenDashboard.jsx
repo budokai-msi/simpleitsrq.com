@@ -33,6 +33,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics.js";
+import { useSEO } from "../lib/seo";
 
 // ---------- helpers ----------
 
@@ -170,6 +171,13 @@ function StatusChip({ status }) {
 // ---------- main ----------
 
 export default function LeadgenDashboard() {
+  useSEO({
+    title: "Leadgen Command Center | Simple IT SRQ",
+    description: "Admin leadgen workspace for discovery, review, campaigns, and job diagnostics.",
+    canonical: "https://simpleitsrq.com/portal/leadgen",
+    robots: "noindex, nofollow",
+  });
+
   const [tab, setTab] = useState("discover");
   const [status, setStatus] = useState(null);
   const [statusErr, setStatusErr] = useState(null);
@@ -341,11 +349,11 @@ export default function LeadgenDashboard() {
               <h3>Integrations</h3>
               <p>Push reviewed leads into the tools your team already uses.</p>
               <div className="leadgen-side-integrations__links">
-                <a href="https://www.hubspot.com" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "hubspot" })}>HubSpot</a>
-                <a href="https://mailchimp.com" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "mailchimp" })}>Mailchimp</a>
-                <a href="https://www.klaviyo.com" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "klaviyo" })}>Klaviyo</a>
-                <a href="https://ads.google.com" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "google_ads" })}>Google Ads</a>
-                <a href="https://www.facebook.com/business/ads" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "meta_ads" })}>Meta Ads</a>
+                <a href="https://www.hubspot.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "hubspot" })}>HubSpot</a>
+                <a href="https://mailchimp.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "mailchimp" })}>Mailchimp</a>
+                <a href="https://www.klaviyo.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "klaviyo" })}>Klaviyo</a>
+                <a href="https://ads.google.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "google_ads" })}>Google Ads</a>
+                <a href="https://www.facebook.com/business/ads" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "meta_ads" })}>Meta Ads</a>
               </div>
               <div className="leadgen-side-integrations__actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("hubspot")}>Export HubSpot CSV</button>
