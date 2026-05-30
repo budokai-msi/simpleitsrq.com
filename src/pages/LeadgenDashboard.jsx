@@ -1311,6 +1311,7 @@ function LeadgenMap({ rows, total, busy }) {
   const mapRef = useRef(null);
   const layerRef = useRef(null);
   const leafletRef = useRef(null);
+  const [mapState, setMapState] = useState({ ready: false, error: "" });
   const geocodedRows = useMemo(
     () => rows.filter((r) => Number.isFinite(Number(r.lat)) && Number.isFinite(Number(r.lng))),
     [rows]
@@ -1329,16 +1330,49 @@ function LeadgenMap({ rows, total, busy }) {
         zoomControl: true,
         scrollWheelZoom: false,
       }).setView([27.3364, -82.5307], 10);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
+      const providers = [
+        {
+          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        },
+        {
+          url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; CARTO',
+        },
+      ];
+      let tileLayer = null;
+      const attachLayer = (providerIndex) => {
+        const p = providers[providerIndex];
+        tileLayer = L.tileLayer(p.url, {
+          maxZoom: 19,
+          crossOrigin: true,
+          attribution: p.attribution,
+        }).addTo(map);
+        tileLayer.once("tileerror", () => {
+          if (cancelled || providerIndex >= providers.length - 1) {
+            setMapState({ ready: false, error: "Map tiles are temporarily unavailable. Retry in a minute." });
+            return;
+          }
+          map.removeLayer(tileLayer);
+          attachLayer(providerIndex + 1);
+        });
+      };
+      attachLayer(0);
       layerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
+      setMapState({ ready: true, error: "" });
+      const resizeObserver = new ResizeObserver(() => map.invalidateSize());
+      resizeObserver.observe(containerRef.current);
+      map._leadgenResizeObserver = resizeObserver;
+      setTimeout(() => map.invalidateSize(), 120);
     }
 
     setupMap();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      const map = mapRef.current;
+      if (map?._leadgenResizeObserver) map._leadgenResizeObserver.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -1364,9 +1398,9 @@ function LeadgenMap({ rows, total, busy }) {
       const title = document.createElement("strong");
       title.textContent = row.name || "Unnamed business";
       const meta = document.createElement("span");
-      meta.textContent = [row.industry_group || row.industry, row.zip].filter(Boolean).join(" · ");
+      meta.textContent = [row.industry_group || row.industry, row.zip].filter(Boolean).join(" | ");
       const contact = document.createElement("span");
-      contact.textContent = `${row.deliverable_emails || 0} email${Number(row.deliverable_emails) === 1 ? "" : "s"} found${row.website ? ` · ${hostFor(row.website)}` : ""}`;
+      contact.textContent = `${row.deliverable_emails || 0} email${Number(row.deliverable_emails) === 1 ? "" : "s"} found${row.website ? ` | ${hostFor(row.website)}` : ""}`;
       const source = document.createElement("a");
       source.href = row.source_url || "#";
       source.target = "_blank";
@@ -1397,7 +1431,9 @@ function LeadgenMap({ rows, total, busy }) {
       </div>
       <div className="leadgen-map-shell">
         <div ref={containerRef} className="leadgen-map" />
-        {!geocodedRows.length ? (
+        {mapState.error ? (
+          <div className="leadgen-map-empty">{mapState.error}</div>
+        ) : !geocodedRows.length ? (
           <div className="leadgen-map-empty">
             {busy ? "Waiting for the discovery crawl to finish..." : "Discover a zip or adjust filters to show mapped businesses."}
           </div>
