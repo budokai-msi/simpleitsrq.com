@@ -204,6 +204,23 @@ export default function BlogIndex() {
               </button>
             </div>
           )}
+          <section className="blog-convert-cta" aria-label="Next step">
+            <div>
+              <span className="eyebrow">Need help implementing this?</span>
+              <h2 className="title-2">Turn ideas into working systems this week.</h2>
+              <p>
+                Book a local IT strategy call, or run a focused leadgen test in your market.
+              </p>
+            </div>
+            <div className="blog-convert-cta__actions">
+              <Link to="/book" className="btn btn-primary btn-lg">
+                Book strategy call <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+              <Link to="/leadgen" className="btn btn-secondary btn-lg">
+                Try leadgen <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
+          </section>
         </div>
       </section>
     </main>

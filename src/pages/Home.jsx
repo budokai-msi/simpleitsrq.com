@@ -53,9 +53,27 @@ function Hero() {
             the work, document what changed, and keep the next step obvious.
           </p>
           <div className="home-hero__actions">
-            <a href="#contact" className="btn btn-primary btn-lg">Book IT support</a>
-            <Link to="/services" className="btn btn-secondary btn-lg">See services</Link>
-            <Link to="/leadgen" className="btn btn-secondary btn-lg">Leadgen</Link>
+            <a
+              href="#contact"
+              className="btn btn-primary btn-lg"
+              onClick={() => trackEvent("generate_lead", { source: "home_hero_contact" })}
+            >
+              Book IT support <ArrowRight size={16} aria-hidden="true" />
+            </a>
+            <Link
+              to="/services"
+              className="btn btn-secondary btn-lg"
+              onClick={() => trackEvent("select_content", { content_type: "home_hero_services" })}
+            >
+              See services <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+            <Link
+              to="/leadgen"
+              className="btn btn-secondary btn-lg"
+              onClick={() => trackEvent("generate_lead", { source: "home_hero_leadgen" })}
+            >
+              Leadgen <ArrowRight size={16} aria-hidden="true" />
+            </Link>
           </div>
           <ul className="home-hero__proof" aria-label="What we support">
             <li><MapPin size={15} /> Sarasota, Bradenton, Venice</li>

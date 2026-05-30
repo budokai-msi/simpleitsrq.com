@@ -4391,6 +4391,40 @@ main, #main {
 .ad-in-feed    { grid-column: 1 / -1; min-height: 120px; margin: 8px 0; }
 
 .blog-load-more { display: flex; justify-content: center; margin-top: 40px; }
+.blog-convert-cta {
+  margin-top: 34px;
+  padding: 20px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 10px;
+  background: var(--surface, #fff);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px 20px;
+}
+.blog-convert-cta p {
+  margin: 6px 0 0;
+  color: var(--text-2);
+}
+.blog-convert-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+@media (max-width: 860px) {
+  .blog-convert-cta {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .blog-convert-cta__actions {
+    justify-content: flex-start;
+  }
+}
+[data-theme="dark"] .blog-convert-cta {
+  background: #0F1217;
+  border-color: #353B45;
+}
 
 /* ── Testimonials (self-hiding when empty) ───────────────── */
 .testimonials-section { background: var(--surface-alt, #f7f7f8); }
