@@ -7106,6 +7106,14 @@ select:focus-visible {
 .admin-leadgen .leadgen-console-metrics {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+.admin-leadgen .leadgen-signal-grid--ops {
+  margin-top: 10px;
+}
+.admin-leadgen .leadgen-signal-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
 .admin-leadgen .admin-aff-table {
   table-layout: fixed;
 }
