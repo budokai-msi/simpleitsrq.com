@@ -206,6 +206,22 @@ export default function Services() {
             <span><MapPin size={14} /> Local Sarasota / Bradenton engineering team</span>
             <span><ShieldCheck size={14} /> Fixed scope - written deliverables - clear handoff notes</span>
           </div>
+          <div className="services-hero-actions">
+            <a
+              href="#services-catalog"
+              className="btn btn-primary btn-lg"
+              onClick={() => track("services_hero_cta_click", { action: "browse_catalog" })}
+            >
+              Browse service catalog <ArrowRight size={16} />
+            </a>
+            <Link
+              to="/book"
+              className="btn btn-secondary btn-lg"
+              onClick={() => track("services_hero_cta_click", { action: "book_consultation" })}
+            >
+              Book consultation <ArrowRight size={16} />
+            </Link>
+          </div>
           <div className="services-stat-band" role="list" aria-label="Service catalog at a glance">
             <div role="listitem" className="services-stat">
               <div className="services-stat__num">{services.length}</div>
@@ -245,7 +261,7 @@ export default function Services() {
         </div>
       </section>
 
-      <section className="section">
+      <section id="services-catalog" className="section">
         <div className="container">
           <div className="services-grid">
             {filtered.map((svc) => (
