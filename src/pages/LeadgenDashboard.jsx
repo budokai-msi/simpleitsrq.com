@@ -205,6 +205,10 @@ export default function LeadgenDashboard() {
 
   const integrationExport = (target) => {
     const base = "/api/portal?action=leadgen-export&format=csv&status=active&has_email=1";
+    trackEvent("select_content", {
+      content_type: "leadgen_integration_export",
+      destination: target,
+    });
     if (target === "hubspot") window.location.href = `${base}&limit=2000`;
     if (target === "mailchimp") window.location.href = `${base}&limit=2000`;
     if (target === "klaviyo") window.location.href = `${base}&limit=2000`;
@@ -303,6 +307,26 @@ export default function LeadgenDashboard() {
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("klaviyo")}>Export Klaviyo CSV</button>
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("google_ads")}>Export Google Ads CSV</button>
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("meta_ads")}>Export Meta Ads CSV</button>
+              </div>
+            </section>
+            <section className="leadgen-side-revenue" aria-label="Revenue actions">
+              <h3>Next step</h3>
+              <p>Move this list into a live campaign with onboarding and copy support.</p>
+              <div className="leadgen-side-revenue__actions">
+                <Link
+                  to="/book?topic=leadgen-onboarding"
+                  className="btn btn-primary btn-sm"
+                  onClick={() => trackEvent("generate_lead", { source: "leadgen_sidebar_onboarding" })}
+                >
+                  Book onboarding
+                </Link>
+                <Link
+                  to="/leadgen"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => trackEvent("generate_lead", { source: "leadgen_sidebar_demo" })}
+                >
+                  Open product demo
+                </Link>
               </div>
             </section>
           </aside>
