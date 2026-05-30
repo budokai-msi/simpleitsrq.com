@@ -697,7 +697,7 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
           <div><strong>{dbHealth}</strong><span>runtime DB status</span></div>
           <div><strong>{criticalLastHour}</strong><span>critical security events (1h)</span></div>
           <div><strong>{threatFeedCount}</strong><span>threat feeds active</span></div>
-          <div><strong>{threatTotalCidrs.toLocaleString()}</strong><span>OSINT CIDR entries · oldest refresh {freshnessLabel(osintOldest)}</span></div>
+          <div><strong>{threatTotalCidrs.toLocaleString()}</strong><span>OSINT CIDR entries | oldest refresh {freshnessLabel(osintOldest)}</span></div>
         </div>
         <div className="leadgen-signal-actions">
           <button
@@ -1867,13 +1867,13 @@ function JobsTab({ recent }) {
       const discovered = Number(result?.discovered ?? job?.total ?? 0);
       const inserted = Number(result?.inserted ?? 0);
       const updated = Number(result?.updated ?? 0);
-      if (discovered > 0) return `${discovered} discovered | ${inserted} new | ${updated} refreshed`;
+      if (discovered > 0) return `${discovered} discovered - ${inserted} new - ${updated} refreshed`;
     }
     if (job?.kind === "website_emails") {
       if (result?.skipped) return `Skipped: ${result.skipped}`;
       const found = Number(result?.found ?? 0);
       const inserted = Number(result?.inserted ?? 0);
-      return `${found} found | ${inserted} new`;
+      return `${found} found - ${inserted} new`;
     }
     return job?.error || "-";
   };
@@ -1987,7 +1987,12 @@ function JobsTab({ recent }) {
               <tr key={j.id}>
                 <td>{j.id}</td>
                 <td>{j.kind}</td>
-                <td><StatusChip status={j.status} /></td>
+                <td>
+                  <StatusChip status={j.status} />
+                  <span className={`leadgen-status-chip leadgen-status-chip--${classifyJob(j)}`}>
+                    {classifyJob(j).replace("_", " ")}
+                  </span>
+                </td>
                 <td style={{ textAlign: "right" }}>{progressLabel(j)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.created_at)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.finished_at)}</td>
