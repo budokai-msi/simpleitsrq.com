@@ -6,7 +6,7 @@ import {
 import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
-import { track } from "../lib/analytics";
+import { track, trackEvent } from "../lib/analytics";
 import { Link } from "../lib/Link";
 
 // Full Cal.com path, e.g. "simpleitsrq/free-consultation". Set via Vercel
@@ -342,14 +342,14 @@ export default function Book() {
             <a
               href={CAL_LINK ? "#book-calendar" : "#book-request"}
               className="btn btn-primary btn-lg"
-              onClick={() => track("book_hero_cta_click", { action: CAL_LINK ? "open_calendar" : "open_request_form" })}
+              onClick={() => trackEvent("generate_lead", { source: CAL_LINK ? "book_hero_open_calendar" : "book_hero_open_request_form" })}
             >
               {CAL_LINK ? "Open calendar" : "Request consultation"} <ArrowRight size={16} />
             </a>
             <Link
               to="/services"
               className="btn btn-secondary btn-lg"
-              onClick={() => track("book_hero_cta_click", { action: "view_services" })}
+              onClick={() => trackEvent("select_content", { content_type: "book_hero_view_services" })}
             >
               View service catalog <ArrowRight size={16} />
             </Link>
