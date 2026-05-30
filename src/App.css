@@ -6066,6 +6066,12 @@ select:focus-visible {
   align-items: center;
   gap: 6px;
 }
+.services-hero-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 
 /* Tab filter row */
 .services-tabs-wrap { padding-top: 8px; padding-bottom: 8px; }
@@ -6250,10 +6256,20 @@ select:focus-visible {
 
 .services-outro { padding-top: 32px; padding-bottom: 64px; }
 
+.book-hero-actions {
+  margin: 0 auto 18px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
 @media (max-width: 720px) {
   .services-grid { grid-template-columns: 1fr; }
   .services-tabs { width: 100%; }
   .services-tab { flex: 1; }
+  .services-hero-actions .btn { width: 100%; }
+  .book-hero-actions .btn { width: 100%; }
 }
 
 /* ============================================================

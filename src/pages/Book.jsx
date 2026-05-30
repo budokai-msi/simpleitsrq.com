@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Calendar, Clock, Video, ShieldCheck, Check, Mail, Loader2,
-  AlertTriangle, Send,
+  AlertTriangle, Send, ArrowRight,
 } from "lucide-react";
 import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { track } from "../lib/analytics";
+import { Link } from "../lib/Link";
 
 // Full Cal.com path, e.g. "simpleitsrq/free-consultation". Set via Vercel
 // env var VITE_CALCOM_CAL_LINK. When unset the page falls back to the
@@ -337,6 +338,22 @@ export default function Book() {
               Workspace, or Microsoft 365.
             </p>
           </div>
+          <div className="book-hero-actions" aria-label="Booking actions">
+            <a
+              href={CAL_LINK ? "#book-calendar" : "#book-request"}
+              className="btn btn-primary btn-lg"
+              onClick={() => track("book_hero_cta_click", { action: CAL_LINK ? "open_calendar" : "open_request_form" })}
+            >
+              {CAL_LINK ? "Open calendar" : "Request consultation"} <ArrowRight size={16} />
+            </a>
+            <Link
+              to="/services"
+              className="btn btn-secondary btn-lg"
+              onClick={() => track("book_hero_cta_click", { action: "view_services" })}
+            >
+              View service catalog <ArrowRight size={16} />
+            </Link>
+          </div>
           <ul
             className="feature-list"
             style={{ display: "flex", flexWrap: "wrap", gap: "1rem 2rem", justifyContent: "center", margin: "0 0 2rem", padding: 0, listStyle: "none" }}
@@ -349,7 +366,9 @@ export default function Book() {
             ))}
           </ul>
 
-          {CAL_LINK ? <BookingEmbed calLink={CAL_LINK} /> : <ConsultationForm />}
+          <div id={CAL_LINK ? "book-calendar" : "book-request"}>
+            {CAL_LINK ? <BookingEmbed calLink={CAL_LINK} /> : <ConsultationForm />}
+          </div>
         </div>
       </section>
     </main>
