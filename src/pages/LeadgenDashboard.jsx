@@ -1910,6 +1910,15 @@ function JobsTab({ recent }) {
     return acc;
   }, { total: 0, failed: 0, productive: 0, no_signal: 0, other: 0 });
   const productiveRate = stats.total > 0 ? Math.round((stats.productive / stats.total) * 100) : 0;
+  const dayAgo = Date.now() - 86_400_000;
+  const netNew24h = rows.reduce((acc, job) => {
+    const finished = parseIso(job?.finished_at || job?.created_at);
+    if (!finished || finished < dayAgo) return acc;
+    const result = job?.result || {};
+    if (job?.kind === "osm_zip") return acc + Number(result?.inserted ?? 0);
+    if (job?.kind === "website_emails") return acc + Number(result?.inserted ?? 0);
+    return acc;
+  }, 0);
   const latestProductive = rows
     .filter((job) => classifyJob(job) === "productive")
     .sort((a, b) => (parseIso(b.finished_at || b.created_at) || 0) - (parseIso(a.finished_at || a.created_at) || 0))[0];
@@ -1959,6 +1968,7 @@ function JobsTab({ recent }) {
       </div>
       <div className="admin-leadgen-jobs__health">
         <span>Signal rate: {productiveRate}%</span>
+        <span>Net-new (24h): {netNew24h}</span>
         <span>
           Last productive job: {latestProductiveDays == null ? "none yet" : latestProductiveDays === 0 ? "today" : `${latestProductiveDays} day${latestProductiveDays === 1 ? "" : "s"} ago`}
         </span>

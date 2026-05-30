@@ -1702,6 +1702,34 @@
   vertical-align: top;
 }
 
+.admin-leadgen .admin-aff-table {
+  table-layout: fixed;
+}
+
+.admin-leadgen .admin-aff-table th,
+.admin-leadgen .admin-aff-table td {
+  overflow-wrap: anywhere;
+}
+
+.admin-leadgen .admin-aff-table th:nth-child(1),
+.admin-leadgen .admin-aff-table td:nth-child(1) { width: 52px; }
+.admin-leadgen .admin-aff-table th:nth-child(2),
+.admin-leadgen .admin-aff-table td:nth-child(2) { width: 124px; }
+.admin-leadgen .admin-aff-table th:nth-child(3),
+.admin-leadgen .admin-aff-table td:nth-child(3) { width: 120px; }
+.admin-leadgen .admin-aff-table th:nth-child(4),
+.admin-leadgen .admin-aff-table td:nth-child(4) { width: 110px; }
+.admin-leadgen .admin-aff-table th:nth-child(5),
+.admin-leadgen .admin-aff-table td:nth-child(5),
+.admin-leadgen .admin-aff-table th:nth-child(6),
+.admin-leadgen .admin-aff-table td:nth-child(6) { width: 172px; }
+
+.admin-leadgen .admin-aff-stat-hint {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
 .admin-leadgen .admin-leadgen-output-cell {
   color: var(--text-2);
   font-size: 12px;
@@ -1742,6 +1770,12 @@
 
   .admin-leadgen .leadgen-console-actions {
     grid-template-columns: minmax(0, 1fr) repeat(3, minmax(110px, auto));
+  }
+}
+
+@media (max-width: 1080px) {
+  .admin-leadgen .leadgen-command-console {
+    grid-template-columns: 1fr;
   }
 }
 
