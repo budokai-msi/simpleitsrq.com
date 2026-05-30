@@ -6,7 +6,7 @@ import {
 import { services, audienceFilter } from "../data/services";
 import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
-import { track } from "../lib/analytics";
+import { trackEvent } from "../lib/analytics";
 
 // Reservation / waitlist CTA. When a
 // service has a buyLink, we render a hard Buy/Reserve button that opens the
@@ -23,7 +23,7 @@ function BuyCta({ svc }) {
       <Link
         to={svc.buyLink || "/book"}
         className="btn btn-primary svc-buy-btn"
-        onClick={() => track("services_buy_click", { slug: svc.slug, kind: "consult" })}
+        onClick={() => trackEvent("generate_lead", { source: "services_consult_click", service_slug: svc.slug })}
       >
         Book a free call <ArrowRight size={16} />
       </Link>
@@ -37,7 +37,13 @@ function BuyCta({ svc }) {
         href={svc.buyLink}
         className="btn btn-primary svc-buy-btn"
         rel="noopener"
-        onClick={() => track("services_buy_click", { slug: svc.slug, kind: isStripe ? "stripe" : "external" })}
+        onClick={() => trackEvent("begin_checkout", {
+          source: "services_buy_click",
+          service_slug: svc.slug,
+          checkout_kind: isStripe ? "stripe" : "external",
+          value: typeof svc.price === "number" ? svc.price : undefined,
+          currency: "USD",
+        })}
       >
         {svc.price === 0 ? "Reserve now" : `Buy now — $${svc.price}${svc.priceSuffix || ""}`}
         <ArrowRight size={16} />
@@ -67,7 +73,7 @@ function BuyCta({ svc }) {
         }),
       });
       if (res.ok) {
-        track("services_waitlist_signup", { slug: svc.slug });
+        trackEvent("generate_lead", { source: "services_waitlist_signup", service_slug: svc.slug });
         setStatus("sent");
       } else {
         setStatus("error");
@@ -210,14 +216,14 @@ export default function Services() {
             <a
               href="#services-catalog"
               className="btn btn-primary btn-lg"
-              onClick={() => track("services_hero_cta_click", { action: "browse_catalog" })}
+              onClick={() => trackEvent("select_content", { content_type: "services_hero_cta", action: "browse_catalog" })}
             >
               Browse service catalog <ArrowRight size={16} />
             </a>
             <Link
               to="/book"
               className="btn btn-secondary btn-lg"
-              onClick={() => track("services_hero_cta_click", { action: "book_consultation" })}
+              onClick={() => trackEvent("generate_lead", { source: "services_hero_book_consultation" })}
             >
               Book consultation <ArrowRight size={16} />
             </Link>
@@ -252,7 +258,7 @@ export default function Services() {
                 role="tab"
                 aria-selected={tab === t}
                 className={`services-tab${tab === t ? " is-active" : ""}`}
-                onClick={() => { setTab(t); track("services_tab_filter", { tab: t }); }}
+                onClick={() => { setTab(t); trackEvent("select_content", { content_type: "services_tab_filter", tab: t }); }}
               >
                 {t}
               </button>
