@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Share2, Link as LinkIcon, Check } from "lucide-react";
-import { track } from "../lib/analytics";
+import { trackEvent } from "../lib/analytics";
 
 // Web Share API button with clipboard fallback. On mobile this opens the
 // system share sheet (iOS, Android, Mac Safari). On browsers without
@@ -19,13 +19,13 @@ export default function ShareButton({ title, url, slug, className = "" }) {
     try {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
         await navigator.share({ title: fullTitle, url: fullUrl });
-        track("share_click", { channel: "native", slug });
+        trackEvent("share", { method: "native", content_type: "blog_post", content_id: slug });
         return;
       }
       if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(fullUrl);
         setState("copied");
-        track("share_click", { channel: "clipboard", slug });
+        trackEvent("share", { method: "clipboard", content_type: "blog_post", content_id: slug });
         setTimeout(() => setState("idle"), 1800);
         return;
       }
@@ -40,7 +40,7 @@ export default function ShareButton({ title, url, slug, className = "" }) {
       document.execCommand("copy");
       document.body.removeChild(ta);
       setState("copied");
-      track("share_click", { channel: "execCommand", slug });
+      trackEvent("share", { method: "execCommand", content_type: "blog_post", content_id: slug });
       setTimeout(() => setState("idle"), 1800);
     } catch (err) {
       // AbortError fires when the user dismisses the share sheet — not

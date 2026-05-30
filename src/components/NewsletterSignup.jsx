@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Mail, Loader2, CheckCircle2, AlertCircle, ArrowRight, FileText } from "lucide-react";
 import { Link } from "../lib/Link";
 import { csrfFetch } from "../lib/csrf";
-import { track } from "../lib/analytics";
+import { trackEvent } from "../lib/analytics";
 
 // Newsletter signup with double-opt-in. Posts to the existing
 // /api/contact { kind: "newsletter_subscribe" } handler — backend
@@ -39,7 +39,11 @@ export default function NewsletterSignup({
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
-        track("newsletter_signup", { source, alreadyConfirmed: !!data.alreadyConfirmed });
+        trackEvent("sign_up", {
+          method: "newsletter_email",
+          source,
+          already_confirmed: Boolean(data.alreadyConfirmed),
+        });
         setStatus(data.alreadyConfirmed ? "already" : "sent");
       } else {
         setStatus("error");

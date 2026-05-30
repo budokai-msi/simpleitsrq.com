@@ -20,7 +20,7 @@
 // extension — the current implementation splits evenly.
 
 import { useEffect, useState } from "react";
-import { track } from "./analytics.js";
+import { trackEvent } from "./analytics.js";
 
 const STORAGE_KEY = "srq_ab_v1";
 const ANON_KEY = "srq_anon";
@@ -94,7 +94,7 @@ export function useExperiment(experimentId, variants) {
       all[experimentId] = { v, ts: Date.now() };
       writeAll(all);
       setVariant(v);
-      track("experiment_assigned", { experiment_id: experimentId, variant: v });
+      trackEvent("experiment_assigned", { experiment_id: experimentId, variant: v });
     });
 
     return () => { cancelled = true; };
@@ -114,13 +114,13 @@ export function recordConversion(experimentId, goal = "primary") {
   const key = `${experimentId}:${goal}`;
   const fired = all.__fired || {};
   if (fired[key]) {
-    track("experiment_repeat_conversion", { experiment_id: experimentId, variant: v, goal });
+    trackEvent("experiment_repeat_conversion", { experiment_id: experimentId, variant: v, goal });
     return;
   }
   fired[key] = Date.now();
   all.__fired = fired;
   writeAll(all);
-  track("experiment_conversion", { experiment_id: experimentId, variant: v, goal });
+  trackEvent("experiment_conversion", { experiment_id: experimentId, variant: v, goal });
 }
 
 // For the admin/portal dashboard — read every assignment + conversion
