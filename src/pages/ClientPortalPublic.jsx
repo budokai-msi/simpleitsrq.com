@@ -483,6 +483,7 @@ export default function ClientPortalPublic() {
     title: "Client Portal | Simple IT SRQ",
     description: "Sign in to see your Simple IT SRQ support tickets, invoices, and account details.",
     canonical: "https://simpleitsrq.com/portal",
+    robots: "noindex, nofollow",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
       { name: "Home", url: "https://simpleitsrq.com/" },
