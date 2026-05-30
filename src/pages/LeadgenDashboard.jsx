@@ -166,6 +166,14 @@ export default function LeadgenDashboard() {
   const [tab, setTab] = useState("discover");
   const [status, setStatus] = useState(null);
   const [statusErr, setStatusErr] = useState(null);
+  const selectTab = (id, source = "leadgen_sidebar") => {
+    trackEvent("select_content", {
+      content_type: "leadgen_tab_nav",
+      destination: id,
+      source,
+    });
+    setTab(id);
+  };
 
   // Refresh the top-of-page counts. Extracted so post-action handlers
   // (queueDiscover, queueEmailCrawls) can pull fresh numbers immediately
@@ -295,7 +303,7 @@ export default function LeadgenDashboard() {
                 <button
                   key={id}
                   type="button"
-                  onClick={() => setTab(id)}
+                  onClick={() => selectTab(id, "leadgen_sidebar")}
                   className={`leadgen-side-nav__item${tab === id ? " is-active" : ""}`}
                 >
                   {label}
@@ -325,14 +333,14 @@ export default function LeadgenDashboard() {
               <p>Move this list into a live campaign with onboarding and copy support.</p>
               <div className="leadgen-side-revenue__actions">
                 <Link
-                  to="/book?topic=leadgen-onboarding"
+                  to="/book?topic=leadgen-onboarding&promo=LEADGEN25&utm_source=leadgen_dashboard&utm_medium=sidebar&utm_campaign=onboarding"
                   className="btn btn-primary btn-sm"
                   onClick={() => trackEvent("generate_lead", { source: "leadgen_sidebar_onboarding" })}
                 >
                   Book onboarding
                 </Link>
                 <Link
-                  to="/leadgen"
+                  to="/leadgen?utm_source=leadgen_dashboard&utm_medium=sidebar&utm_campaign=product_demo"
                   className="btn btn-secondary btn-sm"
                   onClick={() => trackEvent("generate_lead", { source: "leadgen_sidebar_demo" })}
                 >
@@ -343,7 +351,7 @@ export default function LeadgenDashboard() {
           </aside>
 
           <div className="admin-leadgen-tab-body leadgen-workspace-main">
-            {tab === "command" && <CommandTab status={status} onSelectTab={setTab} onStatusChange={loadStatus} />}
+            {tab === "command" && <CommandTab status={status} onSelectTab={selectTab} onStatusChange={loadStatus} />}
             {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
             {tab === "campaigns" && <CampaignsTab />}
             {tab === "insights" && <InsightsTab />}
