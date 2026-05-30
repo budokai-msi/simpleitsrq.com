@@ -202,6 +202,21 @@ const REVIEW_COPY = {
   reject: "Leave out of this campaign.",
 };
 
+const LEADGEN_FAQS = [
+  {
+    q: "Can I search any U.S. zip code?",
+    a: "Yes. Enter any 5-digit U.S. zip code, pick an industry niche, and run the scan.",
+  },
+  {
+    q: "Is this hard-coded to Sarasota, Bradenton, or Venice?",
+    a: "No. Those are examples. The scanner and filters are dynamic and work by zip and niche.",
+  },
+  {
+    q: "What happens if the map does not load?",
+    a: "You can still review, filter, and export the full result list. Mapping is optional to the workflow.",
+  },
+];
+
 function Currency({ value }) {
   if (value == null) return <span className="leadgen-tier__price-custom">Custom</span>;
   if (value === 0) return (
@@ -313,12 +328,25 @@ function rowSearchText(row) {
 function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
   const mapRef = useRef(null);
   const [mapError, setMapError] = useState("");
+  const [themeMode, setThemeMode] = useState(
+    document.documentElement?.getAttribute("data-theme") === "dark" ? "dark" : "light",
+  );
   const mappedRows = useMemo(() => (
     rows
       .map((row, index) => ({ row, index: row.__scanIndex ?? index, point: asPoint(row) }))
       .filter((item) => item.point)
   ), [rows]);
   const centroid = asPoint(scan?.centroid);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!root) return undefined;
+    const observer = new MutationObserver(() => {
+      setThemeMode(root.getAttribute("data-theme") === "dark" ? "dark" : "light");
+    });
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current || !mappedRows.length) return undefined;
@@ -331,16 +359,16 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
       .then((mod) => {
         if (disposed || !mapRef.current) return;
         const L = mod.default || mod;
-        const isDark = document.documentElement?.getAttribute("data-theme") === "dark";
+        const isDark = themeMode === "dark";
         const tileProviders = isDark
           ? [
               {
-                url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-                attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
-              },
-              {
                 url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 attribution: "&copy; OpenStreetMap contributors",
+              },
+              {
+                url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+                attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
               },
             ]
           : [
@@ -421,7 +449,7 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
       disposed = true;
       if (leafletMap) leafletMap.remove();
     };
-  }, [centroid?.lat, centroid?.lng, mappedRows, onSelect, selectedIndex]);
+  }, [centroid?.lat, centroid?.lng, mappedRows, onSelect, selectedIndex, themeMode]);
 
   return (
     <section className="leadgen-map-card" aria-label="Market map">
@@ -436,7 +464,10 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
         <div ref={mapRef} className="leadgen-map" aria-hidden={!mappedRows.length} />
         {!mappedRows.length || mapError ? (
           <div className="leadgen-map-empty">
-            <span>{mapError || "Run a scan to plot public business records in this market."}</span>
+            <span>
+              {mapError || "Run a scan to plot public business records in this market."}
+              {mapError ? " You can still use the reviewed list, filters, and export below." : ""}
+            </span>
           </div>
         ) : null}
       </div>
@@ -885,6 +916,7 @@ export default function Leadgen() {
       { name: "Home", url: `${SITE_URL}/` },
       { name: "Leadgen", url: `${SITE_URL}/leadgen` },
     ],
+    faqs: LEADGEN_FAQS,
   });
 
   return (
