@@ -177,6 +177,20 @@ function ServiceCard({ svc }) {
 }
 
 const TABS = ["All", "Residential", "Business"];
+const SERVICES_FAQS = [
+  {
+    q: "Do you publish fixed prices before we book?",
+    a: "Yes. Services on this page include published scope and price so you can choose without waiting on a quote call.",
+  },
+  {
+    q: "Do you support Sarasota, Bradenton, and Venice businesses?",
+    a: "Yes. We support Sarasota, Bradenton, Venice, Lakewood Ranch, and nearby areas in our normal service window.",
+  },
+  {
+    q: "What if I need work that is not listed as a productized service?",
+    a: "Book a consultation and we will scope custom work such as multi-site projects, server replacements, or recovery engagements.",
+  },
+];
 
 export default function Services() {
   useSEO({
@@ -188,6 +202,7 @@ export default function Services() {
       { name: "Home", url: "https://simpleitsrq.com/" },
       { name: "Services", url: "https://simpleitsrq.com/services" },
     ],
+    faqs: SERVICES_FAQS,
   });
 
   const [tab, setTab] = useState("All");
@@ -287,7 +302,13 @@ export default function Services() {
             state. Book a free call and we'll quote it after a real
             conversation.
           </p>
-          <Link to="/book" className="btn btn-primary btn-lg">Book a free 30-min call</Link>
+          <Link
+            to="/book"
+            className="btn btn-primary btn-lg"
+            onClick={() => trackEvent("generate_lead", { source: "services_outro_book_call" })}
+          >
+            Book a free 30-min call
+          </Link>
         </div>
       </section>
     </main>
