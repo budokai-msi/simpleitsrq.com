@@ -513,6 +513,7 @@ function LeadgenScanApp() {
     ? selectedIndex
     : visibleRows[0]?.index ?? null;
   const effectivePrefetchState = validZip ? prefetchState : "idle";
+  const zipHint = zip && !validZip ? "Enter a valid 5-digit US zip to scan this market." : "";
 
   useEffect(() => {
     let disposed = false;
@@ -619,6 +620,13 @@ function LeadgenScanApp() {
     }
   };
 
+  const onScanKeyDown = (event) => {
+    if (event.key !== "Enter") return;
+    if (busy || !validZip) return;
+    event.preventDefault();
+    runScan();
+  };
+
   const exportRows = () => {
     if (!visibleOnlyRows.length) return;
     trackEvent("select_content", {
@@ -669,6 +677,7 @@ function LeadgenScanApp() {
             <input
               value={zip}
               onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
+              onKeyDown={onScanKeyDown}
               inputMode="numeric"
               placeholder="Enter any 5-digit zip"
               aria-label="Target zip code"
@@ -685,6 +694,7 @@ function LeadgenScanApp() {
             <input
               value={offer}
               onChange={(e) => setOffer(e.target.value)}
+              onKeyDown={onScanKeyDown}
               placeholder="Example: backup cleanup for busy offices"
               aria-label="Offer angle"
             />
@@ -697,6 +707,7 @@ function LeadgenScanApp() {
               max="100"
               value={dailyCap}
               onChange={(e) => setDailyCap(e.target.value)}
+              onKeyDown={onScanKeyDown}
               aria-label="Daily send cap"
             />
           </label>
@@ -705,6 +716,7 @@ function LeadgenScanApp() {
             {busy ? "Scanning..." : effectivePrefetchState === "ready" ? "Open scan" : "Run scan"}
           </button>
         </div>
+        {zipHint ? <p className="leadgen-app-error" style={{ marginTop: 8 }}>{zipHint}</p> : null}
 
         <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
           <span />

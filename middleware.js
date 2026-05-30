@@ -89,11 +89,9 @@ function generateNonce() {
 }
 
 function buildCsp(nonce) {
-  // This mirrors the static CSP previously set in vercel.json EXCEPT for the
-  // three style-src* directives: `'unsafe-inline'` is replaced with a
-  // per-request `'nonce-<value>'`. style-src-attr still uses 'unsafe-inline'
-  // because CSP3 nonces only cover <style> elements, not `style="…"`
-  // attributes, and Fluent + some third-party embeds set those at runtime.
+  // style-src/style-src-elem are nonce-bound only (no 'unsafe-inline').
+  // style-src-attr stays 'unsafe-inline' because nonces do not apply to
+  // style="..." attributes and third-party embeds still use inline attrs.
   const nonceSrc = nonce ? `'nonce-${nonce}'` : "";
   return [
     "default-src 'self'",
@@ -103,8 +101,8 @@ function buildCsp(nonce) {
     // load and (confusingly) sometimes surfaces it as a DNS / 'host not
     // found' error in DevTools rather than a CSP violation.
     "script-src 'self' 'sha256-s73Ww6tYLJKgSSJJXa6U6kUJkLc849Yhy8mrH2QxT8I=' https://va.vercel-scripts.com https://static.cloudflareinsights.com https://challenges.cloudflare.com https://vercel.live https://app.cal.com https://embed.cal.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googleadservices.com https://tpc.googlesyndication.com https://googleads.g.doubleclick.net https://embed.tawk.to https://*.tawk.to https://www.clarity.ms https://www.google.com https://*.adtrafficquality.google",
-    `style-src 'self' 'unsafe-inline' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com`,
-    `style-src-elem 'self' 'unsafe-inline' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com https://fonts.googleapis.com`,
+    `style-src 'self' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com`,
+    `style-src-elem 'self' ${nonceSrc} https://vercel.live https://app.cal.com https://pagead2.googlesyndication.com https://fonts.googleapis.com`,
     "style-src-attr 'unsafe-inline'",
     "font-src 'self' data: https://vercel.live https://assets.vercel.com https://fonts.gstatic.com",
     "img-src 'self' data: https://vercel.live https://vercel.com https://cal.com https://app.cal.com https://www.google-analytics.com https://www.googletagmanager.com https://lh3.googleusercontent.com https://avatars.githubusercontent.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com https://tpc.googlesyndication.com https://*.tawk.to https://*.googleusercontent.com https://*.adtrafficquality.google https://c.clarity.ms https://tile.openstreetmap.org https://*.tile.openstreetmap.org",
