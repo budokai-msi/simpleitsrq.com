@@ -1663,13 +1663,13 @@ function JobsTab({ recent }) {
       const discovered = Number(result?.discovered ?? job?.total ?? 0);
       const inserted = Number(result?.inserted ?? 0);
       const updated = Number(result?.updated ?? 0);
-      if (discovered > 0) return `${discovered} discovered · ${inserted} new · ${updated} refreshed`;
+      if (discovered > 0) return `${discovered} discovered | ${inserted} new | ${updated} refreshed`;
     }
     if (job?.kind === "website_emails") {
       if (result?.skipped) return `Skipped: ${result.skipped}`;
       const found = Number(result?.found ?? 0);
       const inserted = Number(result?.inserted ?? 0);
-      return `${found} found · ${inserted} new`;
+      return `${found} found | ${inserted} new`;
     }
     return job?.error || "-";
   };
