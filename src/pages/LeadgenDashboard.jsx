@@ -378,6 +378,11 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
   const [err, setErr] = useState(null);
+  const marketPresets = [
+    { label: "Sarasota healthcare", zip: "34232" },
+    { label: "Bradenton trades", zip: "34207" },
+    { label: "Venice services", zip: "34293" },
+  ];
 
   const runWorker = async () => {
     setBusy(true); setErr(null); setMsg(null);
@@ -547,6 +552,26 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
               <Play size={16} aria-hidden="true" />
               Run jobs
             </button>
+          </div>
+          <div className="leadgen-console-presets" aria-label="Quick market presets">
+            <span>Quick markets</span>
+            {marketPresets.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                className="leadgen-quick-market-btn"
+                onClick={() => {
+                  setZip(preset.zip);
+                  trackEvent("search", {
+                    search_term: preset.zip,
+                    source: "leadgen_admin_market_preset",
+                    market: preset.label,
+                  });
+                }}
+              >
+                {preset.label}
+              </button>
+            ))}
           </div>
 
           {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}

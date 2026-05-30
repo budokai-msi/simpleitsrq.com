@@ -7076,6 +7076,20 @@ select:focus-visible {
   gap: 10px;
   align-items: end;
 }
+.admin-leadgen .leadgen-console-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.admin-leadgen .leadgen-console-presets > span {
+  color: var(--text-3, #6b7280);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 .admin-leadgen .leadgen-stage-list {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
