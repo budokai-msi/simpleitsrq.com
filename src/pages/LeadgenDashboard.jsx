@@ -1667,6 +1667,7 @@ function JobsTab({ recent }) {
   const [rows, setRows] = useState(recent);
   const [err, setErr] = useState(null);
   const [showAll, setShowAll] = useState(false);
+  const [kindFilter, setKindFilter] = useState("all");
 
   const reload = async () => {
     try {
@@ -1719,9 +1720,14 @@ function JobsTab({ recent }) {
     return "other";
   };
 
+  const scopedRows = rows.filter((job) => {
+    if (kindFilter === "all") return true;
+    return job.kind === kindFilter;
+  });
+
   const visibleRows = showAll
-    ? rows
-    : rows.filter((job) => ["failed", "productive"].includes(classifyJob(job))).slice(0, 30);
+    ? scopedRows
+    : scopedRows.filter((job) => ["failed", "productive"].includes(classifyJob(job))).slice(0, 30);
 
   const stats = rows.reduce((acc, job) => {
     const kind = classifyJob(job);
@@ -1735,6 +1741,29 @@ function JobsTab({ recent }) {
       <div className="admin-leadgen-section-head">
         <h2 className="title-2">Recent jobs</h2>
         <div className="admin-leadgen-jobs__actions">
+          <div className="admin-leadgen-jobs__filters" role="tablist" aria-label="Job kind filters">
+            <button
+              type="button"
+              className={`btn btn-sm ${kindFilter === "all" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => setKindFilter("all")}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${kindFilter === "osm_zip" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => setKindFilter("osm_zip")}
+            >
+              Discovery
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${kindFilter === "website_emails" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => setKindFilter("website_emails")}
+            >
+              Email crawl
+            </button>
+          </div>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowAll((v) => !v)}>
             {showAll ? "Show signal only" : "Show all"}
           </button>
@@ -1766,7 +1795,7 @@ function JobsTab({ recent }) {
               <tr key={j.id}>
                 <td>{j.id}</td>
                 <td>{j.kind}</td>
-                <td>{j.status}</td>
+                <td><StatusChip status={j.status} /></td>
                 <td style={{ textAlign: "right" }}>{progressLabel(j)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.created_at)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.finished_at)}</td>
@@ -1774,7 +1803,7 @@ function JobsTab({ recent }) {
               </tr>
             ))}
             {visibleRows.length === 0 ? (
-              <tr><td colSpan={7} className="admin-leadgen-empty">No jobs yet.</td></tr>
+              <tr><td colSpan={7} className="admin-leadgen-empty">No matching jobs. Try another kind filter or show all.</td></tr>
             ) : null}
           </tbody>
         </table>
