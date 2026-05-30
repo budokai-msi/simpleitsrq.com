@@ -45,16 +45,27 @@ export async function GET() {
   });
 }
 
+// Some uptime services send HEAD for health probes. Mirror GET status
+// while returning an empty body for compatibility.
+export async function HEAD() {
+  const response = await GET();
+  return new Response(null, {
+    status: response.status,
+    headers: response.headers,
+  });
+}
+
 // Compatibility handler for runtimes that invoke default exports for /api/*
 // routes instead of Web Fetch named methods.
 export default async function handler(req, res) {
-  if ((req.method || "GET").toUpperCase() !== "GET") {
-    res.setHeader("Allow", "GET");
+  const method = (req.method || "GET").toUpperCase();
+  if (method !== "GET" && method !== "HEAD") {
+    res.setHeader("Allow", "GET, HEAD");
     res.status(405).json({ ok: false, error: "method_not_allowed" });
     return;
   }
-  const response = await GET();
-  const body = await response.text();
+  const response = method === "HEAD" ? await HEAD() : await GET();
+  const body = method === "HEAD" ? "" : await response.text();
   res.status(response.status);
   for (const [key, value] of response.headers.entries()) {
     res.setHeader(key, value);

@@ -7,6 +7,7 @@ import {
   Search, Info,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
+import { trackEvent } from "../lib/analytics.js";
 
 const TIERS = [
   {
@@ -220,15 +221,23 @@ function Currency({ value }) {
 function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "btn btn-primary", children }) {
   const tier = TIERS.find((t) => t.id === tierId) || TIERS[1];
   const stripeUrl = billing === "annual" ? tier.stripeAnnual : tier.stripeMonthly;
+  const onPlanClick = () => {
+    trackEvent("begin_checkout", {
+      plan: tier.id,
+      billing_cycle: billing,
+      value: tier.id === "free" ? 0 : (billing === "annual" ? tier.annual : tier.monthly),
+      source: "leadgen_pricing",
+    });
+  };
   if (stripeUrl) {
     return (
-      <a href={stripeUrl} className={className} rel="noopener">
+      <a href={stripeUrl} className={className} rel="noopener" onClick={onPlanClick}>
         {children || tier.cta} <ArrowRight size={16} />
       </a>
     );
   }
   return (
-    <Link to={tier.ctaHref} className={className}>
+    <Link to={tier.ctaHref} className={className} onClick={onPlanClick}>
       {children || tier.cta} <ArrowRight size={16} />
     </Link>
   );
@@ -597,6 +606,12 @@ function LeadgenScanApp() {
       const result = await getScanData(zip, niche);
       applyScan(result.data, { cached: result.cached });
       setPrefetchState("ready");
+      trackEvent("search", {
+        search_term: `${zip}:${niche}`,
+        source: "leadgen_scanner",
+        result_count: Number(result?.data?.matched || 0),
+        cached: Boolean(result?.cached),
+      });
     } catch (e) {
       setErr(String(e.message || e));
     } finally {
@@ -606,6 +621,13 @@ function LeadgenScanApp() {
 
   const exportRows = () => {
     if (!visibleOnlyRows.length) return;
+    trackEvent("select_content", {
+      content_type: "leadgen_export",
+      source: "leadgen_scanner",
+      zip,
+      niche,
+      count: visibleOnlyRows.length,
+    });
     downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, visibleOnlyRows);
   };
 
@@ -614,7 +636,13 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
           <span className="leadgen-app-live"><span /> Live public-record scanner</span>
-          <Link to="/portal/leadgen" className="leadgen-app-portal-link">Open campaign workspace</Link>
+          <Link
+            to="/portal/leadgen"
+            className="leadgen-app-portal-link"
+            onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_toplink" })}
+          >
+            Open campaign workspace
+          </Link>
         </div>
 
         <div className="leadgen-app-title">
@@ -716,7 +744,13 @@ function LeadgenScanApp() {
           </div>
           <div className="leadgen-app-actions">
             <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export CSV</button>
-            <Link to="/portal/leadgen" className="btn btn-primary btn-sm">Use in workspace</Link>
+            <Link
+              to="/portal/leadgen"
+              className="btn btn-primary btn-sm"
+              onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_results" })}
+            >
+              Use in workspace
+            </Link>
           </div>
         </div>
 
@@ -1012,6 +1046,12 @@ export default function Leadgen() {
                         href={stripeUrl}
                         className={`btn ${t.highlight ? "btn-primary" : "btn-secondary"} leadgen-tier__cta`}
                         rel="noopener"
+                        onClick={() => trackEvent("begin_checkout", {
+                          plan: t.id,
+                          billing_cycle: billing,
+                          value: billing === "annual" ? t.annual : t.monthly,
+                          source: "leadgen_pricing_tier",
+                        })}
                       >
                         {t.cta} <ArrowRight size={14} />
                       </a>
@@ -1021,6 +1061,7 @@ export default function Leadgen() {
                     <Link
                       to={t.ctaHref}
                       className={`btn ${t.highlight ? "btn-primary" : "btn-secondary"} leadgen-tier__cta`}
+                      onClick={() => trackEvent("generate_lead", { source: `leadgen_pricing_${t.id}` })}
                     >
                       {t.cta} <ArrowRight size={14} />
                     </Link>
@@ -1053,7 +1094,11 @@ export default function Leadgen() {
             <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
               Start Growth
             </LeadgenPlanLink>
-            <Link to="/book?topic=leadgen-demo" className="btn btn-secondary btn-lg">
+            <Link
+              to="/book?topic=leadgen-demo"
+              className="btn btn-secondary btn-lg"
+              onClick={() => trackEvent("generate_lead", { source: "leadgen_final_cta_demo" })}
+            >
               Review my first niche
             </Link>
           </div>
@@ -1092,10 +1137,18 @@ function LeadgenWorkspaceSection() {
             run the queue, and see whether the market responds.
           </p>
           <div className="hero-ctas">
-            <Link to="/portal/leadgen" className="btn btn-primary">
+            <Link
+              to="/portal/leadgen"
+              className="btn btn-primary"
+              onClick={() => trackEvent("generate_lead", { source: "leadgen_workspace_cta" })}
+            >
               Open workspace <ArrowRight size={16} />
             </Link>
-            <Link to="/book?topic=leadgen-demo" className="btn btn-secondary">
+            <Link
+              to="/book?topic=leadgen-demo"
+              className="btn btn-secondary"
+              onClick={() => trackEvent("generate_lead", { source: "leadgen_workspace_demo" })}
+            >
               Review a niche
             </Link>
           </div>
