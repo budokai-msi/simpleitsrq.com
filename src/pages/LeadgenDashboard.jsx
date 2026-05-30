@@ -144,6 +144,17 @@ function nextLeadgenMove({ businesses, emailBusinesses, campaignQueue, queuedJob
   };
 }
 
+function parseIso(value) {
+  const t = Date.parse(value || "");
+  return Number.isFinite(t) ? t : null;
+}
+
+function daysSinceIso(value) {
+  const ts = parseIso(value);
+  if (ts == null) return null;
+  return Math.max(0, Math.floor((Date.now() - ts) / 86_400_000));
+}
+
 function StatusChip({ status }) {
   const label = status || "unknown";
   return <span className={`leadgen-status-chip leadgen-status-chip--${statusTone(label)}`}>{label}</span>;
@@ -295,11 +306,11 @@ export default function LeadgenDashboard() {
               <h3>Integrations</h3>
               <p>Push reviewed leads into the tools your team already uses.</p>
               <div className="leadgen-side-integrations__links">
-                <a href="https://www.hubspot.com" target="_blank" rel="noreferrer">HubSpot</a>
-                <a href="https://mailchimp.com" target="_blank" rel="noreferrer">Mailchimp</a>
-                <a href="https://www.klaviyo.com" target="_blank" rel="noreferrer">Klaviyo</a>
-                <a href="https://ads.google.com" target="_blank" rel="noreferrer">Google Ads</a>
-                <a href="https://www.facebook.com/business/ads" target="_blank" rel="noreferrer">Meta Ads</a>
+                <a href="https://www.hubspot.com" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "hubspot" })}>HubSpot</a>
+                <a href="https://mailchimp.com" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "mailchimp" })}>Mailchimp</a>
+                <a href="https://www.klaviyo.com" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "klaviyo" })}>Klaviyo</a>
+                <a href="https://ads.google.com" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "google_ads" })}>Google Ads</a>
+                <a href="https://www.facebook.com/business/ads" target="_blank" rel="noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "meta_ads" })}>Meta Ads</a>
               </div>
               <div className="leadgen-side-integrations__actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("hubspot")}>Export HubSpot CSV</button>
@@ -440,6 +451,14 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
   const queuedJobs = jobCount("queued", status?.job_counts);
   const runningJobs = jobCount("running", status?.job_counts);
   const nextMove = nextLeadgenMove({ businesses, emailBusinesses, campaignQueue, queuedJobs });
+  const noSignalJobs = recentJobs.filter((job) => {
+    const result = job?.result || {};
+    if (job?.status === "failed") return false;
+    if (job?.kind === "osm_zip") return Number(result?.inserted ?? 0) <= 0 && Number(result?.updated ?? 0) <= 0;
+    if (job?.kind === "website_emails") return Number(result?.found ?? 0) <= 0 && Number(result?.inserted ?? 0) <= 0;
+    return false;
+  });
+  const staleSignal = noSignalJobs.length >= 4;
   const stages = [
     {
       icon: Search,
@@ -555,6 +574,11 @@ function CommandTab({ status, onSelectTab, onStatusChange }) {
           <span className="eyebrow">Next best move</span>
           <h3>{nextMove.title}</h3>
           <p>{nextMove.detail}</p>
+          {staleSignal ? (
+            <p className="leadgen-next-card__warn">
+              Recent jobs are finishing with little or no new signal. Try a fresh zip + industry pair before launching campaigns.
+            </p>
+          ) : null}
           <button
             type="button"
             className="btn btn-primary btn-sm"
@@ -1802,6 +1826,13 @@ function JobsTab({ recent }) {
     acc[kind] = (acc[kind] || 0) + 1;
     return acc;
   }, { total: 0, failed: 0, productive: 0, no_signal: 0, other: 0 });
+  const productiveRate = stats.total > 0 ? Math.round((stats.productive / stats.total) * 100) : 0;
+  const latestProductive = rows
+    .filter((job) => classifyJob(job) === "productive")
+    .sort((a, b) => (parseIso(b.finished_at || b.created_at) || 0) - (parseIso(a.finished_at || a.created_at) || 0))[0];
+  const latestProductiveDays = daysSinceIso(latestProductive?.finished_at || latestProductive?.created_at);
+  const stalePipeline = stats.total >= 6 && stats.productive === 0;
+  const staleRecentSignal = latestProductiveDays != null && latestProductiveDays >= 7;
 
   return (
     <div className="admin-leadgen-jobs">
@@ -1843,6 +1874,17 @@ function JobsTab({ recent }) {
         <div><strong>{stats.no_signal}</strong><span>No signal</span></div>
         <div><strong>{stats.total}</strong><span>Total</span></div>
       </div>
+      <div className="admin-leadgen-jobs__health">
+        <span>Signal rate: {productiveRate}%</span>
+        <span>
+          Last productive job: {latestProductiveDays == null ? "none yet" : latestProductiveDays === 0 ? "today" : `${latestProductiveDays} day${latestProductiveDays === 1 ? "" : "s"} ago`}
+        </span>
+      </div>
+      {stalePipeline || staleRecentSignal ? (
+        <p className="admin-leadgen-jobs__alert">
+          Pipeline is trending stale. Discover a new zip/industry combo, then run email crawl only on fresh websites to increase net-new leads.
+        </p>
+      ) : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
       <div className="admin-aff-card">
         <table className="admin-aff-table">

@@ -7312,6 +7312,44 @@ select:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+.admin-leadgen-jobs__health {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+.admin-leadgen-jobs__health span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 999px;
+  background: var(--surface-2, #f8fafc);
+  color: var(--text-2, #4b5563);
+  font-size: 12px;
+  font-weight: 700;
+}
+.admin-leadgen-jobs__alert {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--warning, #ca8a04) 42%, var(--border, #d1d5db));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--warning, #ca8a04) 10%, var(--surface, #fff));
+  color: var(--text-2, #4b5563);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.admin-leadgen .leadgen-next-card__warn {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--warning, #ca8a04) 36%, var(--border, #d1d5db));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--warning, #ca8a04) 8%, var(--surface, #fff));
+  color: var(--text-2, #4b5563);
+  font-size: 12px;
+  line-height: 1.4;
+}
 .admin-leadgen-output-cell {
   color: var(--text-2);
   font-size: 12px;
