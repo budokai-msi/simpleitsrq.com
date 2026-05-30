@@ -217,6 +217,12 @@ const LEADGEN_FAQS = [
   },
 ];
 
+const QUICK_MARKETS = [
+  { label: "Sarasota healthcare", zip: "34239", niche: "Healthcare", offer: "HIPAA-aware IT support for independent practices" },
+  { label: "Bradenton trades", zip: "34208", niche: "Trades", offer: "Fast dispatch IT and phone setup for field teams" },
+  { label: "Venice services", zip: "34285", niche: "Professional Services", offer: "Secure email + backup hygiene for local offices" },
+];
+
 function Currency({ value }) {
   if (value == null) return <span className="leadgen-tier__price-custom">Custom</span>;
   if (value === 0) return (
@@ -670,6 +676,21 @@ function LeadgenScanApp() {
     downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, visibleOnlyRows);
   };
 
+  const applyQuickMarket = (preset) => {
+    setZip(preset.zip);
+    setNiche(preset.niche);
+    setOffer(preset.offer);
+    setDailyCap(35);
+    setErr("");
+    trackEvent("select_content", {
+      content_type: "leadgen_quick_market",
+      source: "leadgen_scanner",
+      label: preset.label,
+      zip: preset.zip,
+      niche: preset.niche,
+    });
+  };
+
   return (
     <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
       <div className="leadgen-app-panel leadgen-app-panel--control">
@@ -746,6 +767,20 @@ function LeadgenScanApp() {
             <Search size={16} aria-hidden="true" />
             {busy ? "Scanning..." : effectivePrefetchState === "ready" ? "Open scan" : "Run scan"}
           </button>
+        </div>
+
+        <div className="leadgen-quick-markets" aria-label="Quick market presets">
+          <span>Quick start</span>
+          {QUICK_MARKETS.map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              className="leadgen-quick-market-btn"
+              onClick={() => applyQuickMarket(preset)}
+            >
+              {preset.label}
+            </button>
+          ))}
         </div>
         {zipHint ? <p className="leadgen-app-error" style={{ marginTop: 8 }}>{zipHint}</p> : null}
 
