@@ -2044,6 +2044,13 @@
   width: 100%;
   justify-content: flex-start;
 }
+[data-theme="dark"] .leadgen-side-integrations__actions .btn {
+  border-color: #353B45;
+}
+[data-theme="dark"] .leadgen-side-integrations__actions .btn:hover,
+[data-theme="dark"] .leadgen-side-integrations__actions .btn:focus-visible {
+  border-color: #F4F5F7;
+}
 [data-theme="dark"] .leadgen-side-integrations__links a {
   border-color: #353B45;
   color: #B4BAC4;
@@ -2053,6 +2060,38 @@
 [data-theme="dark"] .leadgen-side-integrations__links a:focus-visible {
   border-color: #F4F5F7;
   color: #F4F5F7;
+}
+.leadgen-side-revenue {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, #d1d5db);
+}
+.leadgen-side-revenue h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-1, #111827);
+}
+.leadgen-side-revenue p {
+  margin: 6px 0 8px;
+  font-size: 0.8rem;
+  color: var(--text-3, #6b7280);
+}
+.leadgen-side-revenue__actions {
+  display: grid;
+  gap: 8px;
+}
+.leadgen-side-revenue__actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+[data-theme="dark"] .leadgen-side-revenue {
+  border-top-color: #353B45;
+}
+[data-theme="dark"] .leadgen-side-revenue h3 {
+  color: #F4F5F7;
+}
+[data-theme="dark"] .leadgen-side-revenue p {
+  color: #B4BAC4;
 }
 .leadgen-workspace-main {
   margin-top: 0;
