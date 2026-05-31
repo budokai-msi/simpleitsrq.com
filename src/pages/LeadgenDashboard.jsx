@@ -171,6 +171,26 @@ function fmtDuration(startIso, endIso) {
   const minRem = mins % 60;
   return `${hrs}h ${minRem}m`;
 }
+function normalizedGeoPoints(rows, cap = 120) {
+  const pts = rows
+    .slice(0, cap)
+    .map((r) => ({ lat: Number(r.lat), lng: Number(r.lng), row: r }))
+    .filter((r) => Number.isFinite(r.lat) && Number.isFinite(r.lng));
+  if (!pts.length) return [];
+  const lats = pts.map((p) => p.lat);
+  const lngs = pts.map((p) => p.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const latSpan = Math.max(0.0001, maxLat - minLat);
+  const lngSpan = Math.max(0.0001, maxLng - minLng);
+  return pts.map((p) => ({
+    x: ((p.lng - minLng) / lngSpan) * 100,
+    y: (1 - (p.lat - minLat) / latSpan) * 100,
+    label: p.row?.name || "Business",
+  }));
+}
 function freshnessLabel(value) {
   const days = daysSinceIso(value);
   if (days == null) return "never";
@@ -1542,6 +1562,7 @@ function LeadgenMap({ rows, total, busy }) {
     () => rows.filter((r) => Number.isFinite(Number(r.lat)) && Number.isFinite(Number(r.lng))),
     [rows]
   );
+  const fallbackPoints = useMemo(() => normalizedGeoPoints(geocodedRows), [geocodedRows]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1663,6 +1684,13 @@ function LeadgenMap({ rows, total, busy }) {
       </div>
       <div className="leadgen-map-shell">
         <div ref={containerRef} className="leadgen-map" />
+        {mapState.error && fallbackPoints.length ? (
+          <div className="leadgen-map-fallback" aria-label="Fallback map using local coordinates">
+            {fallbackPoints.map((p, i) => (
+              <span key={`${p.label}-${i}`} className="leadgen-map-fallback__dot" style={{ left: `${p.x}%`, top: `${p.y}%` }} title={p.label} />
+            ))}
+          </div>
+        ) : null}
         {mapState.error ? (
           <div className="leadgen-map-empty">{mapState.error}</div>
         ) : !geocodedRows.length ? (
