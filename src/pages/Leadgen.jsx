@@ -647,6 +647,8 @@ function LeadgenScanApp() {
   }, [getScanData, niche, validZip, zip]);
 
   const runScan = async () => {
+    const startedAt = performance.now();
+    const startedWithWarmCache = effectivePrefetchState === "ready";
     setBusy(true);
     setErr("");
     try {
@@ -658,9 +660,17 @@ function LeadgenScanApp() {
         source: "leadgen_scanner",
         result_count: Number(result?.data?.matched || 0),
         cached: Boolean(result?.cached),
+        prefetched: startedWithWarmCache || Boolean(result?.cached),
+        latency_ms: Math.round(performance.now() - startedAt),
       });
     } catch (e) {
       setErr(String(e.message || e));
+      trackEvent("exception", {
+        description: String(e?.message || e),
+        fatal: false,
+        source: "leadgen_scanner",
+        prefetched: startedWithWarmCache,
+      });
     } finally {
       setBusy(false);
     }
@@ -795,6 +805,8 @@ function LeadgenScanApp() {
               onClick={() => applyQuickMarket(preset)}
               onMouseEnter={() => prefetchMarket(preset)}
               onFocus={() => prefetchMarket(preset)}
+              title={preset.offer}
+              aria-label={`${preset.label}: ${preset.offer}`}
             >
               {preset.label}
             </button>
