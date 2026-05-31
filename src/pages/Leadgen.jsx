@@ -889,6 +889,13 @@ function LeadgenScanApp() {
               >
                 Review with us
               </Link>
+              <Link
+                to="/portal/leadgen?utm_source=leadgen_page&utm_medium=scanner_strip&utm_campaign=workspace_handoff"
+                className="btn btn-secondary btn-sm"
+                onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_workspace", kept_count: kept.length })}
+              >
+                Open workspace
+              </Link>
             </div>
           </div>
         ) : null}
@@ -1202,26 +1209,22 @@ export default function Leadgen() {
                   const stripeUrl = billing === "annual" ? t.stripeAnnual : t.stripeMonthly;
                   if (stripeUrl) {
                     return (
-                      <a
-                        href={stripeUrl}
+                      <LeadgenPlanLink
+                        tierId={t.id}
+                        billing={billing}
                         className={`btn ${t.highlight ? "btn-primary" : "btn-secondary"} leadgen-tier__cta`}
-                        rel="noopener noreferrer"
-                        onClick={() => trackEvent("begin_checkout", {
-                          plan: t.id,
-                          billing_cycle: billing,
-                          value: billing === "annual" ? t.annual : t.monthly,
-                          source: "leadgen_pricing_tier",
-                        })}
+                        source={`leadgen_pricing_${t.id}`}
+                        context="pricing_table"
                       >
                         {t.cta} <ArrowRight size={14} />
-                      </a>
+                      </LeadgenPlanLink>
                     );
                   }
                   return (
                     <Link
                       to={t.ctaHref}
                       className={`btn ${t.highlight ? "btn-primary" : "btn-secondary"} leadgen-tier__cta`}
-                      onClick={() => trackEvent("generate_lead", { source: `leadgen_pricing_${t.id}` })}
+                      onClick={() => trackEvent("generate_lead", { source: `leadgen_pricing_${t.id}`, context: "pricing_table" })}
                     >
                       {t.cta} <ArrowRight size={14} />
                     </Link>
