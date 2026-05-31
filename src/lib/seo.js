@@ -170,6 +170,7 @@ export function breadcrumbSchema(items) {
 export function useSEO({
   title, description, canonical, image,
   post, breadcrumbs, products,
+  productBasePath,
   organization, localBusiness, faqs,
   // Per-page robots override. Defaults to "index, follow" (set in
   // index.html). Pass "noindex, nofollow" for admin-only pages so
@@ -213,7 +214,7 @@ export function useSEO({
       removeJsonLd("jsonld-breadcrumb");
     }
     if (products && products.length) {
-      injectJsonLd("jsonld-products", productListSchema(products));
+      injectJsonLd("jsonld-products", productListSchema(products, { basePath: productBasePath }));
     } else {
       removeJsonLd("jsonld-products");
     }
@@ -232,7 +233,7 @@ export function useSEO({
     } else {
       removeJsonLd("jsonld-faq");
     }
-  }, [title, description, canonical, image, robots, post, breadcrumbs, products, organization, localBusiness, faqs]);
+  }, [title, description, canonical, image, robots, post, breadcrumbs, products, productBasePath, organization, localBusiness, faqs]);
 }
 
 // Build an ItemList of Product+Offer entries for offer-style pages. Google
@@ -240,7 +241,7 @@ export function useSEO({
 // panel enrichment. Only include products that have a real buyLink or that
 // we explicitly mark as coming soon — hiding draft products keeps us out of
 // Merchant Center disapproval.
-export function productListSchema(products) {
+export function productListSchema(products, { basePath = "/tools" } = {}) {
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -253,7 +254,7 @@ export function productListSchema(products) {
         description: p.description || p.tagline,
         brand: { "@type": "Brand", name: SITE_NAME },
         image: `${SITE_URL}/og-image.png`,
-        url: `${SITE_URL}/tools#${p.slug}`,
+        url: `${SITE_URL}${basePath}#${p.slug}`,
         offers: {
           "@type": "Offer",
           price: String(p.price),
