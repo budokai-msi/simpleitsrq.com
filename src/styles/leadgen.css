@@ -1441,6 +1441,17 @@
   gap: 8px;
 }
 
+.admin-leadgen .leadgen-revenue-rail {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-leadgen .leadgen-revenue-rail .btn {
+  min-width: 0;
+}
+
 .admin-leadgen .leadgen-console-focus__label {
   display: inline-flex;
   align-items: center;
@@ -2041,6 +2052,10 @@
   .admin-leadgen .leadgen-console-actions {
     grid-template-columns: minmax(0, 1fr) repeat(3, minmax(112px, 1fr));
   }
+
+  .admin-leadgen .leadgen-revenue-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 1080px) {
@@ -2060,6 +2075,7 @@
   .leadgen-ad-preview dl,
   .admin-leadgen .leadgen-console-actions,
   .admin-leadgen .leadgen-console-focus,
+  .admin-leadgen .leadgen-revenue-rail,
   .leadgen-discover-actions,
   .leadgen-filter-presets,
   .admin-leadgen .leadgen-stage-list,
