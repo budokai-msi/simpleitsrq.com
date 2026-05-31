@@ -1558,6 +1558,7 @@ function LeadgenMap({ rows, total, busy }) {
   const layerRef = useRef(null);
   const leafletRef = useRef(null);
   const [mapState, setMapState] = useState({ ready: false, error: "" });
+  const fallbackLoggedRef = useRef(false);
   const geocodedRows = useMemo(
     () => rows.filter((r) => Number.isFinite(Number(r.lat)) && Number.isFinite(Number(r.lng))),
     [rows]
@@ -1600,6 +1601,14 @@ function LeadgenMap({ rows, total, busy }) {
           tileFailures += 1;
           if (tileFailures < 4) return;
           if (cancelled || providerIndex >= providers.length - 1) {
+            if (!fallbackLoggedRef.current) {
+              trackEvent("exception", {
+                source: "leadgen_dashboard_map_tiles",
+                fatal: false,
+                context: "discover_map",
+              });
+              fallbackLoggedRef.current = true;
+            }
             setMapState({
               ready: false,
               error: "Map tiles are blocked or unavailable on this network. Discovery list, filters, and exports still work.",

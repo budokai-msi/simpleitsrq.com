@@ -372,6 +372,7 @@ function normalizedGeoPoints(rows, cap = 120) {
 
 function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
   const mapRef = useRef(null);
+  const fallbackLoggedRef = useRef(false);
   const [mapError, setMapError] = useState("");
   const [themeMode, setThemeMode] = useState(
     document.documentElement?.getAttribute("data-theme") === "dark" ? "dark" : "light",
@@ -442,6 +443,14 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
             tileFailures += 1;
             if (tileFailures < 4) return;
             if (disposed || !leafletMap || activeTileIndex >= tileProviders.length - 1) {
+              if (!fallbackLoggedRef.current) {
+                trackEvent("exception", {
+                  source: "leadgen_public_map_tiles",
+                  fatal: false,
+                  context: "scanner_map",
+                });
+                fallbackLoggedRef.current = true;
+              }
               setMapError("Live map tiles are blocked on this network/browser. Review list and export still work.");
               return;
             }
