@@ -132,6 +132,7 @@ function LogosBar() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${v.name} official site`}
+              onClick={() => trackEvent("select_content", { content_type: "vendor_logo_click", destination: v.name, source: "home_logos_bar" })}
             >
               <span className="logo-mark__img-wrap" aria-hidden="true">
                 <img
@@ -205,7 +206,14 @@ function Solutions() {
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (
-            <a key={title} href="#contact" className="solution-card reveal-up" data-reveal data-reveal-delay={Math.min(i + 1, 5)}>
+            <a
+              key={title}
+              href="#contact"
+              className="solution-card reveal-up"
+              data-reveal
+              data-reveal-delay={Math.min(i + 1, 5)}
+              onClick={() => trackEvent("generate_lead", { source: "home_solution_card", solution: title })}
+            >
               <div className="solution-card-head">
                 <span className="solution-card-icon"><Icon size={18} /></span>
                 <h3 className="solution-card-title">{title}</h3>

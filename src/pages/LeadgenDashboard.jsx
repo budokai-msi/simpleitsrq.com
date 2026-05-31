@@ -2043,6 +2043,20 @@ function JobsTab({ recent }) {
     }
     return job?.error || "-";
   };
+  const netNewLabel = (job) => {
+    const result = job?.result || {};
+    if (job?.kind === "osm_zip") {
+      const inserted = Number(result?.inserted ?? 0);
+      const updated = Number(result?.updated ?? 0);
+      return `${inserted} new / ${updated} refreshed`;
+    }
+    if (job?.kind === "website_emails") {
+      const inserted = Number(result?.inserted ?? 0);
+      const found = Number(result?.found ?? 0);
+      return `${inserted} new / ${found} found`;
+    }
+    return "-";
+  };
   const kindLabel = (kind) => (kind === "osm_zip" ? "Discovery" : kind === "website_emails" ? "Email crawl" : kind);
 
   const classifyJob = (job) => {
@@ -2162,6 +2176,7 @@ function JobsTab({ recent }) {
               <th>Kind</th>
               <th>Status</th>
               <th style={{ textAlign: "right" }}>Progress</th>
+              <th style={{ textAlign: "right" }}>Net-new</th>
               <th>Started</th>
               <th>Duration</th>
               <th>Output</th>
@@ -2179,6 +2194,7 @@ function JobsTab({ recent }) {
                   </span>
                 </td>
                 <td style={{ textAlign: "right" }}>{progressLabel(j)}</td>
+                <td style={{ textAlign: "right" }}>{netNewLabel(j)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.created_at)}</td>
                 <td className="admin-leadgen-muted">{fmtDuration(j.created_at, j.finished_at)}</td>
                 <td
@@ -2190,7 +2206,7 @@ function JobsTab({ recent }) {
               </tr>
             ))}
             {visibleRows.length === 0 ? (
-              <tr><td colSpan={7} className="admin-leadgen-empty">No matching jobs. Try another kind filter or show all.</td></tr>
+              <tr><td colSpan={8} className="admin-leadgen-empty">No matching jobs. Try another kind filter or show all.</td></tr>
             ) : null}
           </tbody>
         </table>
