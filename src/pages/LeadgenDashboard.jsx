@@ -582,6 +582,11 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
       active: Number(replies) > 0,
     },
   ];
+  const revenueReady = {
+    canReview: reviewQueue.length > 0,
+    canCampaign: reviewQueue.length > 0 || campaignQueue.length > 0,
+    canExport: emailBusinesses > 0,
+  };
 
   return (
     <div className="leadgen-command">
@@ -667,6 +672,52 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
                 {preset.label}
               </button>
             ))}
+          </div>
+          <div className="leadgen-revenue-rail" aria-label="Revenue path actions">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={queueDiscover}
+              disabled={busy}
+            >
+              1. Discover market
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => {
+                trackEvent("select_content", { content_type: "leadgen_revenue_path", destination: "discover_review" });
+                onSelectTab("discover");
+              }}
+              disabled={!revenueReady.canReview}
+              title={!revenueReady.canReview ? "Run discovery and crawl emails first" : ""}
+            >
+              2. Review list
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => {
+                trackEvent("select_content", { content_type: "leadgen_revenue_path", destination: "campaigns" });
+                onSelectTab("campaigns");
+              }}
+              disabled={!revenueReady.canCampaign}
+              title={!revenueReady.canCampaign ? "No review-ready records yet" : ""}
+            >
+              3. Launch campaign
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => {
+                trackEvent("select_content", { content_type: "leadgen_revenue_path", destination: "hubspot_export" });
+                window.location.href = "/api/portal?action=leadgen-export&format=csv&status=active&has_email=1&limit=2000";
+              }}
+              disabled={!revenueReady.canExport}
+              title={!revenueReady.canExport ? "Need deliverable emails to export" : ""}
+            >
+              4. Export to CRM
+            </button>
           </div>
 
           {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
