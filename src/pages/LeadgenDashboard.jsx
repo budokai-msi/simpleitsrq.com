@@ -2031,18 +2031,19 @@ function JobsTab({ recent }) {
       const discovered = Number(result?.discovered ?? job?.total ?? 0);
       const inserted = Number(result?.inserted ?? 0);
       const updated = Number(result?.updated ?? 0);
-      if (inserted > 0 || updated > 0) return `${inserted} new, ${updated} refreshed (${discovered} discovered)`;
-      if (discovered > 0) return `${discovered} discovered, no net-new updates`;
+      if (inserted > 0 || updated > 0) return `${inserted} net-new, ${updated} refreshed, ${discovered} discovered`;
+      if (discovered > 0) return `${discovered} discovered, no net-new signal`;
     }
     if (job?.kind === "website_emails") {
       if (result?.skipped) return `Skipped: ${result.skipped}`;
       const found = Number(result?.found ?? 0);
       const inserted = Number(result?.inserted ?? 0);
-      if (found > 0 || inserted > 0) return `${found} found, ${inserted} new`;
+      if (found > 0 || inserted > 0) return `${found} found, ${inserted} net-new`;
       return "No contact emails found";
     }
     return job?.error || "-";
   };
+  const kindLabel = (kind) => (kind === "osm_zip" ? "Discovery" : kind === "website_emails" ? "Email crawl" : kind);
 
   const classifyJob = (job) => {
     const result = job?.result || {};
@@ -2170,7 +2171,7 @@ function JobsTab({ recent }) {
             {visibleRows.map((j) => (
               <tr key={j.id}>
                 <td>{j.id}</td>
-                <td>{j.kind}</td>
+                <td>{kindLabel(j.kind)}</td>
                 <td>
                   <StatusChip status={j.status} />
                   <span className={`leadgen-status-chip leadgen-status-chip--${classifyJob(j)}`}>
@@ -2180,7 +2181,12 @@ function JobsTab({ recent }) {
                 <td style={{ textAlign: "right" }}>{progressLabel(j)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.created_at)}</td>
                 <td className="admin-leadgen-muted">{fmtDuration(j.created_at, j.finished_at)}</td>
-                <td className={`admin-leadgen-output-cell${j.status === "failed" ? " is-failed" : ""}`}>{outputLabel(j)}</td>
+                <td
+                  className={`admin-leadgen-output-cell${j.status === "failed" ? " is-failed" : ""}`}
+                  title={outputLabel(j)}
+                >
+                  {outputLabel(j)}
+                </td>
               </tr>
             ))}
             {visibleRows.length === 0 ? (

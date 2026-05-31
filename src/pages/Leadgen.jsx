@@ -256,6 +256,7 @@ function LeadgenPlanLink({
   onClick,
   source = "leadgen_pricing",
   context = null,
+  ctaId = null,
 }) {
   const tier = TIERS.find((t) => t.id === tierId) || TIERS[1];
   const stripeUrl = billing === "annual" ? tier.stripeAnnual : tier.stripeMonthly;
@@ -271,13 +272,13 @@ function LeadgenPlanLink({
   };
   if (stripeUrl) {
     return (
-      <a href={stripeUrl} className={className} rel="noopener noreferrer" onClick={onPlanClick}>
+      <a href={stripeUrl} className={className} rel="noopener noreferrer" data-leadgen-cta={ctaId || source} onClick={onPlanClick}>
         {children || tier.cta} <ArrowRight size={16} />
       </a>
     );
   }
   return (
-    <Link to={tier.ctaHref} className={className} onClick={onPlanClick}>
+    <Link to={tier.ctaHref} className={className} data-leadgen-cta={ctaId || source} onClick={onPlanClick}>
       {children || tier.cta} <ArrowRight size={16} />
     </Link>
   );
@@ -815,6 +816,7 @@ function LeadgenScanApp() {
             <Link
               to={scannerWorkspaceLink}
               className="leadgen-app-portal-link"
+              data-leadgen-cta="scanner_top_workspace"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_toplink" })}
             >
             Open campaign workspace
@@ -950,6 +952,7 @@ function LeadgenScanApp() {
                 className="btn btn-primary btn-sm"
                 source="leadgen_scanner_ready_growth"
                 context="scanner_conversion_strip"
+                ctaId="scanner_strip_growth"
                 onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_growth", kept_count: kept.length })}
               >
                 Start Growth
@@ -957,6 +960,7 @@ function LeadgenScanApp() {
               <Link
                 to={scannerDemoLink}
                 className="btn btn-secondary btn-sm"
+                data-leadgen-cta="scanner_strip_demo"
                 onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_demo", kept_count: kept.length })}
               >
                 Review with us
@@ -964,6 +968,7 @@ function LeadgenScanApp() {
               <Link
                 to={scannerWorkspaceLink}
                 className="btn btn-secondary btn-sm"
+                data-leadgen-cta="scanner_strip_workspace"
                 onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_workspace", kept_count: kept.length })}
               >
                 Open workspace
@@ -984,6 +989,7 @@ function LeadgenScanApp() {
             <Link
               to={scannerResultWorkspaceLink}
               className="btn btn-primary btn-sm"
+              data-leadgen-cta="scanner_results_workspace"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_results" })}
             >
               Use in workspace
@@ -1101,6 +1107,7 @@ export default function Leadgen() {
   const [billing, setBilling] = useState("monthly");
   const scrollMilestonesRef = useRef(new Set());
   const sectionViewRef = useRef(new Set());
+  const firstCtaRef = useRef(false);
 
   useSEO({
     title: "Get Local Leads | Simple IT SRQ",
@@ -1135,6 +1142,23 @@ export default function Leadgen() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const onClick = (event) => {
+      if (firstCtaRef.current) return;
+      const target = event.target instanceof Element ? event.target.closest("[data-leadgen-cta]") : null;
+      if (!target) return;
+      const cta = target.getAttribute("data-leadgen-cta");
+      if (!cta) return;
+      firstCtaRef.current = true;
+      trackEvent("select_content", {
+        content_type: "leadgen_first_cta_click",
+        destination: cta,
+      });
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
   }, []);
 
   useEffect(() => {
@@ -1330,6 +1354,7 @@ export default function Leadgen() {
                         className={`btn ${t.highlight ? "btn-primary" : "btn-secondary"} leadgen-tier__cta`}
                         source={`leadgen_pricing_${t.id}`}
                         context="pricing_table"
+                        ctaId={`pricing_${t.id}_${billing}`}
                       >
                         {t.cta} <ArrowRight size={14} />
                       </LeadgenPlanLink>
@@ -1339,6 +1364,7 @@ export default function Leadgen() {
                     <Link
                       to={t.ctaHref}
                       className={`btn ${t.highlight ? "btn-primary" : "btn-secondary"} leadgen-tier__cta`}
+                      data-leadgen-cta={`pricing_${t.id}_${billing}`}
                       onClick={() => trackEvent("generate_lead", { source: `leadgen_pricing_${t.id}`, context: "pricing_table" })}
                     >
                       {t.cta} <ArrowRight size={14} />
@@ -1375,12 +1401,14 @@ export default function Leadgen() {
               className="btn btn-primary btn-lg"
               source="leadgen_final_cta_growth"
               context="final_cta"
+              ctaId="final_cta_growth"
             >
               Start Growth
             </LeadgenPlanLink>
             <Link
               to={BOOK_DEMO_URL}
               className="btn btn-secondary btn-lg"
+              data-leadgen-cta="final_cta_demo"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_final_cta_demo" })}
             >
               Review my first niche
