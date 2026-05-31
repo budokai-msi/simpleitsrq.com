@@ -1,9 +1,12 @@
 import { json } from "./_lib/http.js";
 import { discoverBusinessesByZip } from "./_lib/leadgen-osm.js";
 import { INDUSTRY_OPTIONS } from "./_lib/leadgen-classify.js";
-import { clientIp, rateLimit } from "./_lib/security.js";
+import { clientIp, isHostileGeo, logThreatActor, rateLimit } from "./_lib/security.js";
 
 const MAX_LIMIT = 80;
+const SCAN_WINDOW_SECONDS = 600;
+const SCAN_WINDOW_MAX = 8;
+const ALLOWED_NICHES = new Set(["All", ...INDUSTRY_OPTIONS]);
 
 function cleanText(value, max = 240) {
   return String(value || "").trim().slice(0, max);
@@ -35,26 +38,44 @@ function rowForClient(row) {
 }
 
 export async function POST(request) {
+  if (isHostileGeo(request)) {
+    logThreatActor(request, { threatClass: "hostile_geo_leadgen_scan", path: "/api/leadgen" }).catch(() => {});
+    return json(403, { ok: false, error: "forbidden", message: "Scan is unavailable for this request." });
+  }
+
   const ip = clientIp(request);
-  const rl = await rateLimit({ ip, bucket: "public_leadgen_scan", windowSeconds: 600, max: 8 });
+  const rl = await rateLimit({ ip, bucket: "public_leadgen_scan", windowSeconds: SCAN_WINDOW_SECONDS, max: SCAN_WINDOW_MAX });
   if (!rl.ok) {
     return json(429, {
       ok: false,
       error: "rate_limited",
       message: "Too many scans from this connection. Wait a few minutes and try again.",
+      retry_after_seconds: SCAN_WINDOW_SECONDS,
     });
   }
 
   const body = await parseBody(request);
   const zip = cleanText(body.zip, 5);
   const niche = cleanText(body.niche || "All", 80);
-  const limit = Math.min(MAX_LIMIT, Math.max(10, Number(body.limit) || 40));
+  const requestedLimit = Number(body.limit);
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.min(MAX_LIMIT, Math.max(10, Math.floor(requestedLimit)))
+    : 40;
 
   if (!/^\d{5}$/.test(zip)) {
     return json(400, {
       ok: false,
       error: "invalid_zip",
       message: "Enter a 5-digit US zip code.",
+    });
+  }
+
+  if (!ALLOWED_NICHES.has(niche)) {
+    return json(400, {
+      ok: false,
+      error: "invalid_niche",
+      message: "Choose a supported niche filter.",
+      industries: INDUSTRY_OPTIONS,
     });
   }
 
@@ -110,6 +131,10 @@ export async function GET() {
     ok: true,
     industries: ["All", ...INDUSTRY_OPTIONS],
     limit: MAX_LIMIT,
+    rate_limit: {
+      window_seconds: SCAN_WINDOW_SECONDS,
+      max_requests: SCAN_WINDOW_MAX,
+    },
   });
 }
 
@@ -124,7 +149,14 @@ export default async function handler(req, res) {
     const body = typeof req.body === "string" ? req.body : JSON.stringify(req.body || {});
     const request = new Request("https://simpleitsrq.com/api/leadgen", {
       method: "POST",
-      headers: { "content-type": req.headers?.["content-type"] || "application/json" },
+      headers: {
+        "content-type": req.headers?.["content-type"] || "application/json",
+        "x-real-ip": req.headers?.["x-real-ip"] || "",
+        "x-forwarded-for": req.headers?.["x-forwarded-for"] || "",
+        "origin": req.headers?.origin || "",
+        "user-agent": req.headers?.["user-agent"] || "",
+        "x-vercel-ip-country": req.headers?.["x-vercel-ip-country"] || "",
+      },
       body,
     });
     response = await POST(request);
