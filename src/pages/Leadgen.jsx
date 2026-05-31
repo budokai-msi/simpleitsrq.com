@@ -248,7 +248,7 @@ function Currency({ value }) {
   );
 }
 
-function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "btn btn-primary", children }) {
+function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "btn btn-primary", children, onClick }) {
   const tier = TIERS.find((t) => t.id === tierId) || TIERS[1];
   const stripeUrl = billing === "annual" ? tier.stripeAnnual : tier.stripeMonthly;
   const onPlanClick = () => {
@@ -258,6 +258,7 @@ function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "
       value: tier.id === "free" ? 0 : (billing === "annual" ? tier.annual : tier.monthly),
       source: "leadgen_pricing",
     });
+    if (typeof onClick === "function") onClick();
   };
   if (stripeUrl) {
     return (
@@ -842,6 +843,36 @@ function LeadgenScanApp() {
             <p>{kept.length ? `${Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35))} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Run and review a scan first."}</p>
           </div>
         </div>
+
+        {scan && kept.length >= 5 ? (
+          <div className="leadgen-conversion-strip" role="region" aria-label="Next best conversion actions">
+            <div>
+              <span>Ready to launch</span>
+              <strong>{kept.length} reviewed businesses ready for a first campaign pass</strong>
+              <p>
+                At {dailyCap || 35}/day, this is about {Math.max(1, Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)))} send day
+                {Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)) === 1 ? "" : "s"}.
+              </p>
+            </div>
+            <div className="leadgen-conversion-strip__actions">
+              <LeadgenPlanLink
+                tierId="growth"
+                billing="monthly"
+                className="btn btn-primary btn-sm"
+                onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_growth", kept_count: kept.length })}
+              >
+                Start Growth
+              </LeadgenPlanLink>
+              <Link
+                to={BOOK_DEMO_URL}
+                className="btn btn-secondary btn-sm"
+                onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_demo", kept_count: kept.length })}
+              >
+                Review with us
+              </Link>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="leadgen-app-panel leadgen-app-panel--results">

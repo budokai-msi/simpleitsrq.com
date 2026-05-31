@@ -435,6 +435,42 @@
   font-size: 0.9rem;
   line-height: 1.45;
 }
+.leadgen-conversion-strip {
+  margin-top: 12px;
+  border: 1px solid var(--lg-border);
+  border-radius: 8px;
+  background: var(--lg-panel-soft);
+  padding: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+.leadgen-conversion-strip span {
+  display: block;
+  color: var(--lg-faint);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.leadgen-conversion-strip strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--lg-text);
+  font-size: 0.96rem;
+}
+.leadgen-conversion-strip p {
+  margin: 6px 0 0;
+  color: var(--lg-muted);
+  font-size: 0.86rem;
+}
+.leadgen-conversion-strip__actions {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
 .leadgen-app-results-head {
   justify-content: space-between;
   padding: 18px;
@@ -603,6 +639,7 @@
   .leadgen-context-strip,
   .leadgen-app-kpis,
   .leadgen-app-brief { grid-template-columns: 1fr 1fr; }
+  .leadgen-conversion-strip { grid-template-columns: 1fr; }
   .leadgen-result-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .leadgen-result-row { grid-template-columns: 1fr; }
   .leadgen-result-row select { max-width: 180px; }
