@@ -2758,12 +2758,6 @@ main, #main {
   }
 }
 
-/* ----- Buttons: micro-interactions ----- */
-.btn {
-  position: relative;
-  will-change: transform;
-}
-
 /* ----- Spinner ----- */
 .spin { animation: spin 900ms linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
