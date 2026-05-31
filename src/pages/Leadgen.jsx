@@ -398,6 +398,7 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
               },
             ];
         let activeTileIndex = 0;
+        let tileFailures = 0;
         let tileLayer = null;
 
         const mountTileLayer = () => {
@@ -406,8 +407,13 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
             maxZoom: 19,
             attribution: provider.attribution,
           }).addTo(leafletMap);
-          tileLayer.once("tileerror", () => {
-            if (disposed || !leafletMap || activeTileIndex >= tileProviders.length - 1) return;
+          tileLayer.on("tileerror", () => {
+            tileFailures += 1;
+            if (tileFailures < 4) return;
+            if (disposed || !leafletMap || activeTileIndex >= tileProviders.length - 1) {
+              setMapError("Live map tiles are blocked on this network/browser. Review list and export still work.");
+              return;
+            }
             activeTileIndex += 1;
             leafletMap.removeLayer(tileLayer);
             mountTileLayer();
@@ -458,7 +464,9 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
         }, 80);
       })
       .catch(() => {
-        if (!disposed) setMapError("Map tiles did not load. The reviewed list is still available below.");
+        if (!disposed) {
+          setMapError("Map runtime failed to initialize. You can still use filters, reviewed list, and export.");
+        }
       });
 
     return () => {

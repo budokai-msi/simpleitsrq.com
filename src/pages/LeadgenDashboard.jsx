@@ -1456,6 +1456,7 @@ function LeadgenMap({ rows, total, busy }) {
         },
       ];
       let tileLayer = null;
+      let tileFailures = 0;
       const attachLayer = (providerIndex) => {
         const p = providers[providerIndex];
         tileLayer = L.tileLayer(p.url, {
@@ -1463,9 +1464,14 @@ function LeadgenMap({ rows, total, busy }) {
           crossOrigin: true,
           attribution: p.attribution,
         }).addTo(map);
-        tileLayer.once("tileerror", () => {
+        tileLayer.on("tileerror", () => {
+          tileFailures += 1;
+          if (tileFailures < 4) return;
           if (cancelled || providerIndex >= providers.length - 1) {
-            setMapState({ ready: false, error: "Map tiles are temporarily unavailable. Retry in a minute." });
+            setMapState({
+              ready: false,
+              error: "Map tiles are blocked or unavailable on this network. Discovery list, filters, and exports still work.",
+            });
             return;
           }
           map.removeLayer(tileLayer);
