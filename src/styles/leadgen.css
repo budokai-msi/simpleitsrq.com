@@ -1247,6 +1247,102 @@
   background: var(--surface-2, #f8fafc);
 }
 
+.admin-leadgen {
+  padding: 32px 0 64px;
+}
+
+.admin-leadgen-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-2, #f8fafc);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 10px;
+  margin: 8px 0 16px;
+}
+
+.admin-leadgen-tab {
+  border: 0;
+  background: transparent;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2, #4b5563);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-leadgen-tab:hover {
+  color: var(--text-1, #111827);
+}
+
+.admin-leadgen-tab.is-active {
+  background: var(--surface, #fff);
+  color: var(--text-1, #111827);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--border, #d1d5db) 72%, transparent);
+}
+
+.admin-leadgen-tab-body {
+  margin-top: 8px;
+}
+
+.admin-leadgen .admin-leadgen-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-leadgen .admin-leadgen-count {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--text-3, #6b7280);
+}
+
+.admin-leadgen .admin-leadgen-input {
+  appearance: none;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-1, #111827);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  min-width: 0;
+}
+
+.admin-leadgen .admin-leadgen-input:focus {
+  outline: none;
+  border-color: var(--text-1, #111827);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-1, #111827) 15%, transparent);
+}
+
+.admin-leadgen .admin-leadgen-input--zip {
+  width: 110px;
+}
+
+.admin-leadgen .admin-leadgen-input--grow {
+  flex: 1;
+  min-width: 200px;
+}
+
+.admin-leadgen .admin-leadgen-input--sm {
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.admin-leadgen .admin-leadgen-textarea {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  width: 100%;
+  resize: vertical;
+}
+
 .admin-leadgen .leadgen-command-console {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
@@ -1642,6 +1738,100 @@
   margin: 8px 0;
 }
 
+/* Consolidated form/table controls previously defined in App.css */
+.admin-leadgen .admin-leadgen-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-2, #4b5563);
+}
+
+.admin-leadgen .admin-leadgen-field > span {
+  font-weight: 500;
+}
+
+.admin-leadgen .admin-leadgen-field--full {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+}
+
+.admin-leadgen .admin-leadgen-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 760px;
+}
+
+.admin-leadgen .admin-leadgen-row-actions {
+  text-align: right;
+  white-space: nowrap;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.admin-leadgen .admin-leadgen-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.admin-leadgen .admin-leadgen-tag-btn {
+  background: transparent;
+  border: 1px dashed transparent;
+  padding: 2px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 60px;
+  text-align: left;
+}
+
+.admin-leadgen .admin-leadgen-tag-btn:hover {
+  border-color: var(--border-strong, #6b7280);
+  background: var(--surface-2, #f8fafc);
+}
+
+.admin-leadgen .admin-leadgen-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2, #4b5563);
+  border: 1px solid var(--border, #d1d5db);
+  background: var(--surface-2, #f8fafc);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+
+.admin-leadgen .admin-leadgen-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2, #4b5563);
+}
+
+.admin-leadgen .admin-leadgen-check input {
+  margin: 0;
+}
+
+.admin-leadgen .admin-leadgen-export-group {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.admin-leadgen .admin-leadgen-ai-panel {
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: var(--surface-2, #f8fafc);
+  padding: 12px;
+}
+
 .admin-leadgen .admin-leadgen-jobs__actions {
   display: inline-flex;
   align-items: center;
@@ -1803,6 +1993,10 @@
 
   .admin-leadgen .admin-leadgen-jobs__summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-leadgen .admin-leadgen-grid {
+    grid-template-columns: 1fr;
   }
 
   .admin-leadgen .leadgen-console-actions {
