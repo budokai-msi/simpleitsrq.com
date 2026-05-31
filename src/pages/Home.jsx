@@ -549,12 +549,23 @@ function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (status === "submitting") return;
+    trackEvent("generate_lead", {
+      source: "home_contact_submit_attempt",
+      has_phone: form.phone ? 1 : 0,
+      has_company: form.company ? 1 : 0,
+      message_length: String(form.message || "").trim().length,
+    });
 
     // If Turnstile is configured (prod) but no token yet, prompt the user.
     if (TURNSTILE_SITE_KEY && !turnstileToken) {
       errorHaptic();
       setStatus("error");
       setErrorMsg(ERROR_MESSAGES.captcha_required);
+      trackEvent("exception", {
+        source: "home_contact_submit",
+        fatal: false,
+        reason: "captcha_required",
+      });
       return;
     }
 
@@ -573,12 +584,24 @@ function Contact() {
       if (r.ok && data.ok) {
         successHaptic();
         setStatus("success");
+        trackEvent("generate_lead", {
+          source: "home_contact_submit_success",
+          has_phone: form.phone ? 1 : 0,
+          has_company: form.company ? 1 : 0,
+        });
         return;
       }
 
       errorHaptic();
       setStatus("error");
-      setErrorMsg(ERROR_MESSAGES[data?.error] || "Something went wrong. Please try again in a moment.");
+      const errorCode = data?.error || "send_failed";
+      setErrorMsg(ERROR_MESSAGES[errorCode] || "Something went wrong. Please try again in a moment.");
+      trackEvent("exception", {
+        source: "home_contact_submit",
+        fatal: false,
+        reason: errorCode,
+        http_status: r.status,
+      });
       // Turnstile tokens are single-use — get a fresh one for the retry.
       setTurnstileToken("");
       resetTurnstile();
@@ -586,6 +609,11 @@ function Contact() {
       errorHaptic();
       setStatus("error");
       setErrorMsg(ERROR_MESSAGES.network_error);
+      trackEvent("exception", {
+        source: "home_contact_submit",
+        fatal: false,
+        reason: "network_error",
+      });
       setTurnstileToken("");
       resetTurnstile();
     }
