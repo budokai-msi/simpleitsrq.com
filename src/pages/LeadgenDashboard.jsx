@@ -1850,6 +1850,8 @@ function JobsTab({ recent }) {
   const [err, setErr] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const [kindFilter, setKindFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
 
   const reload = async () => {
     try {
@@ -1907,9 +1909,16 @@ function JobsTab({ recent }) {
     return job.kind === kindFilter;
   });
 
-  const visibleRows = showAll
+  const filteredRows = showAll
     ? scopedRows
     : scopedRows.filter((job) => ["failed", "productive"].includes(classifyJob(job))).slice(0, 30);
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const visibleRows = filteredRows.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [showAll, kindFilter, rows.length]);
 
   const stats = rows.reduce((acc, job) => {
     const kind = classifyJob(job);
@@ -1980,6 +1989,7 @@ function JobsTab({ recent }) {
         <span>
           Last productive job: {latestProductiveDays == null ? "none yet" : latestProductiveDays === 0 ? "today" : `${latestProductiveDays} day${latestProductiveDays === 1 ? "" : "s"} ago`}
         </span>
+        <span>Showing {visibleRows.length} of {filteredRows.length}</span>
       </div>
       {stalePipeline || staleRecentSignal ? (
         <p className="admin-leadgen-jobs__alert">
@@ -2022,6 +2032,25 @@ function JobsTab({ recent }) {
             ) : null}
           </tbody>
         </table>
+      </div>
+      <div className="admin-leadgen-pager">
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          disabled={safePage <= 1}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+        >
+          Prev
+        </button>
+        <span>Page {safePage} of {totalPages}</span>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          disabled={safePage >= totalPages}
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

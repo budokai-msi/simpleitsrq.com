@@ -1249,7 +1249,7 @@
 
 .admin-leadgen .leadgen-command-console {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.75fr);
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
   gap: 14px;
   align-items: stretch;
   margin-bottom: 14px;
@@ -1332,7 +1332,7 @@
 
 .admin-leadgen .leadgen-console-actions {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) repeat(3, minmax(132px, auto));
+  grid-template-columns: minmax(220px, 1.25fr) repeat(3, minmax(130px, 1fr));
   gap: 10px;
   align-items: end;
   margin-top: 12px;
@@ -1366,7 +1366,7 @@
 
 .admin-leadgen .leadgen-stage-list {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-top: 12px;
 }
@@ -1740,7 +1740,7 @@
 }
 
 .admin-leadgen .admin-aff-table {
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .admin-leadgen .admin-aff-table th,
@@ -1759,7 +1759,7 @@
 .admin-leadgen .admin-aff-table th:nth-child(5),
 .admin-leadgen .admin-aff-table td:nth-child(5),
 .admin-leadgen .admin-aff-table th:nth-child(6),
-.admin-leadgen .admin-aff-table td:nth-child(6) { width: 172px; }
+.admin-leadgen .admin-aff-table td:nth-child(6) { width: 156px; }
 
 .admin-leadgen .admin-aff-stat-hint {
   font-size: 11px;
@@ -1806,7 +1806,7 @@
   }
 
   .admin-leadgen .leadgen-console-actions {
-    grid-template-columns: minmax(0, 1fr) repeat(3, minmax(110px, auto));
+    grid-template-columns: minmax(0, 1fr) repeat(3, minmax(112px, 1fr));
   }
 }
 
