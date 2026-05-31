@@ -486,7 +486,13 @@ function BlogPreview() {
           ))}
         </div>
         <div className="blog-cta-row">
-          <Link to="/blog" className="btn btn-secondary btn-lg">View all posts</Link>
+          <Link
+            to="/blog"
+            className="btn btn-secondary btn-lg"
+            onClick={() => trackEvent("select_content", { content_type: "home_blog_index_cta", source: "home_blog_section" })}
+          >
+            View all posts
+          </Link>
         </div>
       </div>
     </section>
@@ -501,8 +507,20 @@ function CtaBanner() {
           <h2 className="title-2">Need a real fix this week?</h2>
           <p>Send the issue, the location, and the deadline. We will tell you whether it is a repair visit, a managed support fit, or something you should not pay us for.</p>
           <div className="cta-actions">
-            <Link to="/book" className="btn btn-primary btn-lg">Book a time</Link>
-            <Link to="/support" className="btn btn-secondary btn-lg">Existing client support</Link>
+            <Link
+              to="/book"
+              className="btn btn-primary btn-lg"
+              onClick={() => trackEvent("generate_lead", { source: "home_bottom_cta_book" })}
+            >
+              Book a time
+            </Link>
+            <Link
+              to="/support"
+              className="btn btn-secondary btn-lg"
+              onClick={() => trackEvent("select_content", { content_type: "home_bottom_cta_support", source: "home_bottom_cta" })}
+            >
+              Existing client support
+            </Link>
           </div>
         </div>
       </div>
