@@ -158,6 +158,19 @@ function daysSinceIso(value) {
   if (ts == null) return null;
   return Math.max(0, Math.floor((Date.now() - ts) / 86_400_000));
 }
+function fmtDuration(startIso, endIso) {
+  const start = parseIso(startIso);
+  const end = parseIso(endIso);
+  if (start == null || end == null || end < start) return "-";
+  const secs = Math.round((end - start) / 1000);
+  if (secs < 60) return `${secs}s`;
+  const mins = Math.floor(secs / 60);
+  const rem = secs % 60;
+  if (mins < 60) return `${mins}m ${rem}s`;
+  const hrs = Math.floor(mins / 60);
+  const minRem = mins % 60;
+  return `${hrs}h ${minRem}m`;
+}
 function freshnessLabel(value) {
   const days = daysSinceIso(value);
   if (days == null) return "never";
@@ -1981,13 +1994,15 @@ function JobsTab({ recent }) {
       const discovered = Number(result?.discovered ?? job?.total ?? 0);
       const inserted = Number(result?.inserted ?? 0);
       const updated = Number(result?.updated ?? 0);
-      if (discovered > 0) return `${discovered} discovered - ${inserted} new - ${updated} refreshed`;
+      if (inserted > 0 || updated > 0) return `${inserted} new, ${updated} refreshed (${discovered} discovered)`;
+      if (discovered > 0) return `${discovered} discovered, no net-new updates`;
     }
     if (job?.kind === "website_emails") {
       if (result?.skipped) return `Skipped: ${result.skipped}`;
       const found = Number(result?.found ?? 0);
       const inserted = Number(result?.inserted ?? 0);
-      return `${found} found - ${inserted} new`;
+      if (found > 0 || inserted > 0) return `${found} found, ${inserted} new`;
+      return "No contact emails found";
     }
     return job?.error || "-";
   };
@@ -2109,8 +2124,8 @@ function JobsTab({ recent }) {
               <th>Kind</th>
               <th>Status</th>
               <th style={{ textAlign: "right" }}>Progress</th>
-              <th>Created</th>
-              <th>Finished</th>
+              <th>Started</th>
+              <th>Duration</th>
               <th>Output</th>
             </tr>
           </thead>
@@ -2127,7 +2142,7 @@ function JobsTab({ recent }) {
                 </td>
                 <td style={{ textAlign: "right" }}>{progressLabel(j)}</td>
                 <td className="admin-leadgen-muted">{fmtTime(j.created_at)}</td>
-                <td className="admin-leadgen-muted">{fmtTime(j.finished_at)}</td>
+                <td className="admin-leadgen-muted">{fmtDuration(j.created_at, j.finished_at)}</td>
                 <td className={`admin-leadgen-output-cell${j.status === "failed" ? " is-failed" : ""}`}>{outputLabel(j)}</td>
               </tr>
             ))}
