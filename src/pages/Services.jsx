@@ -36,7 +36,7 @@ function BuyCta({ svc }) {
       <a
         href={svc.buyLink}
         className="btn btn-primary svc-buy-btn"
-        rel="noopener"
+        rel="noopener noreferrer"
         onClick={() => trackEvent("begin_checkout", {
           source: "services_buy_click",
           service_slug: svc.slug,
