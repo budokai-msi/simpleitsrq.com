@@ -1389,7 +1389,7 @@
 
 .admin-leadgen .leadgen-command-console {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.85fr);
   gap: 12px;
   align-items: stretch;
   margin-bottom: 12px;
@@ -1405,7 +1405,7 @@
 }
 
 .admin-leadgen .leadgen-console-main {
-  padding: 14px;
+  padding: 16px;
 }
 
 .admin-leadgen .leadgen-console-topline {
@@ -1490,7 +1490,7 @@
 
 .admin-leadgen .leadgen-console-actions {
   display: grid;
-  grid-template-columns: minmax(180px, 1.1fr) repeat(3, minmax(112px, 1fr));
+  grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(124px, 1fr));
   gap: 10px;
   align-items: end;
   margin-top: 10px;
@@ -1567,12 +1567,12 @@
 }
 
 .admin-leadgen .leadgen-stage strong {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
 }
 
 .admin-leadgen .leadgen-stage em {
   margin-top: 1px;
-  font-size: 0.86rem;
+  font-size: 0.94rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -1583,7 +1583,7 @@
 .admin-leadgen .leadgen-console-metrics dt {
   display: block;
   color: var(--text-3, #6b7280);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   line-height: 1.35;
 }
 
@@ -2012,13 +2012,13 @@
 .admin-leadgen-jobs .admin-aff-table thead th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
   background: var(--surface, #fff);
 }
 
 .admin-leadgen-jobs .admin-aff-table td {
-  font-size: 11.5px;
-  line-height: 1.3;
+  font-size: 12.5px;
+  line-height: 1.4;
 }
 
 .admin-leadgen-jobs .admin-aff-table tbody tr:nth-child(even) {
@@ -2029,22 +2029,22 @@
   background: color-mix(in srgb, var(--surface-2, #f8fafc) 90%, var(--text-1, #111827) 10%);
 }
 
-.admin-leadgen .admin-aff-table th:nth-child(1),
-.admin-leadgen .admin-aff-table td:nth-child(1) { width: 52px; }
-.admin-leadgen .admin-aff-table th:nth-child(2),
-.admin-leadgen .admin-aff-table td:nth-child(2) { width: 124px; }
-.admin-leadgen .admin-aff-table th:nth-child(3),
-.admin-leadgen .admin-aff-table td:nth-child(3) { width: 120px; }
-.admin-leadgen .admin-aff-table th:nth-child(4),
-.admin-leadgen .admin-aff-table td:nth-child(4) { width: 110px; }
-.admin-leadgen .admin-aff-table th:nth-child(5),
-.admin-leadgen .admin-aff-table td:nth-child(5) { width: 128px; }
-.admin-leadgen .admin-aff-table th:nth-child(6),
-.admin-leadgen .admin-aff-table td:nth-child(6) { width: 156px; }
-.admin-leadgen .admin-aff-table th:nth-child(7),
-.admin-leadgen .admin-aff-table td:nth-child(7) { width: 112px; }
-.admin-leadgen .admin-aff-table th:nth-child(8),
-.admin-leadgen .admin-aff-table td:nth-child(8) { width: 320px; }
+.admin-leadgen-jobs .admin-aff-table th:nth-child(1),
+.admin-leadgen-jobs .admin-aff-table td:nth-child(1) { width: 52px; }
+.admin-leadgen-jobs .admin-aff-table th:nth-child(2),
+.admin-leadgen-jobs .admin-aff-table td:nth-child(2) { width: 124px; }
+.admin-leadgen-jobs .admin-aff-table th:nth-child(3),
+.admin-leadgen-jobs .admin-aff-table td:nth-child(3) { width: 136px; }
+.admin-leadgen-jobs .admin-aff-table th:nth-child(4),
+.admin-leadgen-jobs .admin-aff-table td:nth-child(4) { width: 112px; }
+.admin-leadgen-jobs .admin-aff-table th:nth-child(5),
+.admin-leadgen-jobs .admin-aff-table td:nth-child(5) { width: 132px; }
+.admin-leadgen-jobs .admin-aff-table th:nth-child(6),
+.admin-leadgen-jobs .admin-aff-table td:nth-child(6) { width: 164px; }
+.admin-leadgen-jobs .admin-aff-table th:nth-child(7),
+.admin-leadgen-jobs .admin-aff-table td:nth-child(7) { width: 112px; }
+.admin-leadgen-jobs .admin-aff-table th:nth-child(8),
+.admin-leadgen-jobs .admin-aff-table td:nth-child(8) { width: 360px; }
 
 .admin-leadgen .admin-aff-stat-hint {
   font-size: 11px;
@@ -2054,12 +2054,14 @@
 
 .admin-leadgen .admin-leadgen-output-cell {
   color: var(--text-2);
-  font-size: 12px;
-  max-width: 320px;
+  font-size: 12.5px;
+  max-width: 360px;
   overflow-wrap: anywhere;
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   line-height: 1.35;
 }
 

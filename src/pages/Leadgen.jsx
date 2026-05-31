@@ -1018,6 +1018,15 @@ function LeadgenScanApp() {
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onBlur={() => {
+                if (!searchTerm.trim()) return;
+                trackEvent("select_content", {
+                  content_type: "leadgen_result_search",
+                  source: "leadgen_scanner",
+                  query_length: searchTerm.trim().length,
+                  visible_count: visibleRows.length,
+                });
+              }}
               placeholder="Name, city, service, phone, website..."
               aria-label="Search loaded lead records"
               disabled={!reviewedRows.length}
@@ -1025,7 +1034,20 @@ function LeadgenScanApp() {
           </label>
           <label>
             <span>Status</span>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} disabled={!reviewedRows.length}>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                const next = e.target.value;
+                setStatusFilter(next);
+                trackEvent("select_content", {
+                  content_type: "leadgen_result_filter",
+                  source: "leadgen_scanner",
+                  filter_key: "status",
+                  filter_value: next,
+                });
+              }}
+              disabled={!reviewedRows.length}
+            >
               <option value="all">All</option>
               <option value="keep">Keep</option>
               <option value="maybe">Maybe</option>
@@ -1034,7 +1056,20 @@ function LeadgenScanApp() {
           </label>
           <label>
             <span>Contact</span>
-            <select value={contactFilter} onChange={(e) => setContactFilter(e.target.value)} disabled={!reviewedRows.length}>
+            <select
+              value={contactFilter}
+              onChange={(e) => {
+                const next = e.target.value;
+                setContactFilter(next);
+                trackEvent("select_content", {
+                  content_type: "leadgen_result_filter",
+                  source: "leadgen_scanner",
+                  filter_key: "contact",
+                  filter_value: next,
+                });
+              }}
+              disabled={!reviewedRows.length}
+            >
               <option value="all">All</option>
               <option value="website">Has website</option>
               <option value="phone">Has phone</option>
@@ -1045,14 +1080,39 @@ function LeadgenScanApp() {
           </label>
           <label>
             <span>Sub-industry</span>
-            <select value={subIndustryFilter} onChange={(e) => setSubIndustryFilter(e.target.value)} disabled={!subIndustryOptions.length}>
+            <select
+              value={subIndustryFilter}
+              onChange={(e) => {
+                const next = e.target.value;
+                setSubIndustryFilter(next);
+                trackEvent("select_content", {
+                  content_type: "leadgen_result_filter",
+                  source: "leadgen_scanner",
+                  filter_key: "sub_industry",
+                  filter_value: next,
+                });
+              }}
+              disabled={!subIndustryOptions.length}
+            >
               <option value="all">All</option>
               {subIndustryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
           <label>
             <span>Sort</span>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} disabled={!reviewedRows.length}>
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                const next = e.target.value;
+                setSortBy(next);
+                trackEvent("select_content", {
+                  content_type: "leadgen_result_sort",
+                  source: "leadgen_scanner",
+                  sort_key: next,
+                });
+              }}
+              disabled={!reviewedRows.length}
+            >
               <option value="contact">Best contact</option>
               <option value="name">Name</option>
               <option value="city">City</option>
