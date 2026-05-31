@@ -345,7 +345,7 @@ export default function LeadgenDashboard() {
             </div>
             <div className="leadgen-admin-hero__actions">
               <span className="leadgen-powered-pill">Customer workspace</span>
-              <Link to="/leadgen" className="btn btn-secondary btn-sm" target="_blank" rel="noopener">
+              <Link to="/leadgen" className="btn btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">
                 View product page
               </Link>
             </div>
@@ -892,7 +892,7 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
                 </div>
                 <div className="leadgen-mini-metrics">
                   <span>{row.deliverable_emails} email{Number(row.deliverable_emails) === 1 ? "" : "s"}</span>
-                  {row.website ? <a href={row.website} target="_blank" rel="noreferrer">{hostFor(row.website)}</a> : <span>No website</span>}
+                  {row.website ? <a href={row.website} target="_blank" rel="noopener noreferrer">{hostFor(row.website)}</a> : <span>No website</span>}
                 </div>
               </article>
             )) : <p className="admin-leadgen-empty">No records yet. Discover a zip to populate the review queue.</p>}
@@ -1509,7 +1509,7 @@ function DiscoverTab({ onStatusChange }) {
                 <td>{r.zip || "-"}</td>
                 <td>
                   {r.website ? (
-                    <a href={r.website} target="_blank" rel="noreferrer">
+                    <a href={r.website} target="_blank" rel="noopener noreferrer">
                       {hostFor(r.website)}
                     </a>
                   ) : "-"}
