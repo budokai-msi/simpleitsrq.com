@@ -1294,26 +1294,38 @@
 }
 
 .admin-leadgen-tab {
-  border: 0;
+  border: 1px solid transparent;
   background: transparent;
-  padding: 8px 16px;
+  min-height: 34px;
+  padding: 0 14px;
   font: inherit;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1;
   color: var(--text-2, #4b5563);
   cursor: pointer;
   border-radius: 8px;
-  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, border-color 160ms ease, transform 140ms ease;
 }
 
 .admin-leadgen-tab:hover {
   color: var(--text-1, #111827);
+  border-color: color-mix(in srgb, var(--border, #d1d5db) 82%, transparent);
+  background: color-mix(in srgb, var(--surface, #fff) 86%, var(--surface-2, #f8fafc) 14%);
+  transform: translateY(-1px);
+}
+
+.admin-leadgen-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand, #111827) 18%, transparent);
 }
 
 .admin-leadgen-tab.is-active {
   background: var(--surface, #fff);
   color: var(--text-1, #111827);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--border, #d1d5db) 72%, transparent);
+  border-color: color-mix(in srgb, var(--border, #d1d5db) 78%, transparent);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  transform: none;
 }
 
 .admin-leadgen-tab-body {
@@ -2026,9 +2038,13 @@
 .admin-leadgen .admin-aff-table th:nth-child(4),
 .admin-leadgen .admin-aff-table td:nth-child(4) { width: 110px; }
 .admin-leadgen .admin-aff-table th:nth-child(5),
-.admin-leadgen .admin-aff-table td:nth-child(5),
+.admin-leadgen .admin-aff-table td:nth-child(5) { width: 128px; }
 .admin-leadgen .admin-aff-table th:nth-child(6),
 .admin-leadgen .admin-aff-table td:nth-child(6) { width: 156px; }
+.admin-leadgen .admin-aff-table th:nth-child(7),
+.admin-leadgen .admin-aff-table td:nth-child(7) { width: 112px; }
+.admin-leadgen .admin-aff-table th:nth-child(8),
+.admin-leadgen .admin-aff-table td:nth-child(8) { width: 320px; }
 
 .admin-leadgen .admin-aff-stat-hint {
   font-size: 11px;
@@ -2288,6 +2304,15 @@
 }
 [data-theme="dark"] .admin-leadgen-jobs .admin-aff-table thead th {
   background: #0F1217;
+}
+[data-theme="dark"] .admin-leadgen-tab:hover {
+  border-color: #4b5563;
+  background: #18202B;
+}
+[data-theme="dark"] .admin-leadgen-tab.is-active {
+  border-color: #6b7280;
+  background: #11151B;
+  color: #F4F5F7;
 }
 [data-theme="dark"] .admin-leadgen-jobs .admin-aff-table tbody tr:nth-child(even) {
   background: #11151B;
