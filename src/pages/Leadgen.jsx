@@ -1170,7 +1170,7 @@ export default function Leadgen() {
   }, []);
 
   useEffect(() => {
-    const ids = ["pricing", "workspace", "final-cta"];
+    const ids = ["pricing", "workspace", "faq", "final-cta"];
     const nodes = ids.map((id) => document.getElementById(id)).filter(Boolean);
     if (!nodes.length) return undefined;
     const observer = new IntersectionObserver((entries) => {
@@ -1311,6 +1311,34 @@ export default function Leadgen() {
       <LeadgenTestimonials />
 
       <LeadgenLimits />
+
+      <section id="faq" className="section" aria-labelledby="leadgen-faq-title">
+        <div className="container" style={{ maxWidth: 820 }}>
+          <div className="section-head">
+            <span className="eyebrow">FAQ</span>
+            <h2 id="leadgen-faq-title" className="title-1">What people ask before starting.</h2>
+          </div>
+          <div className="faq-list">
+            {LEADGEN_FAQS.map((item) => (
+              <details
+                key={item.q}
+                className="faq-item"
+                onToggle={(e) => {
+                  if (e.currentTarget.open) {
+                    trackEvent("select_content", {
+                      content_type: "leadgen_faq_open",
+                      destination: item.q,
+                    });
+                  }
+                }}
+              >
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Pricing */}
       <section id="pricing" className="section">
