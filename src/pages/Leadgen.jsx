@@ -17,7 +17,7 @@ const TIERS = [
     annual: 15,
     blurb: "The focused paid test: one local niche, reviewed before sending.",
     cta: "Start Growth",
-    ctaHref: "/book?topic=leadgen-growth",
+    ctaHref: "/book?topic=leadgen-growth&utm_source=leadgen_page&utm_medium=pricing_card&utm_campaign=growth",
     stripeMonthly: import.meta.env.VITE_LEADGEN_GROWTH_MONTHLY_URL,
     stripeAnnual: import.meta.env.VITE_LEADGEN_GROWTH_ANNUAL_URL,
     highlight: true,
@@ -39,7 +39,7 @@ const TIERS = [
     annual: 0,
     blurb: "A small inspection sample. Useful, but not the product.",
     cta: "Request sample",
-    ctaHref: "/book?topic=leadgen-free",
+    ctaHref: "/book?topic=leadgen-free&utm_source=leadgen_page&utm_medium=pricing_card&utm_campaign=sample",
     stripeMonthly: null,
     stripeAnnual: null,
     highlight: false,
@@ -59,7 +59,7 @@ const TIERS = [
     annual: 79,
     blurb: "For repeat campaigns across several territories or niches.",
     cta: "Start Pro",
-    ctaHref: "/book?topic=leadgen-pro",
+    ctaHref: "/book?topic=leadgen-pro&utm_source=leadgen_page&utm_medium=pricing_card&utm_campaign=pro",
     stripeMonthly: import.meta.env.VITE_LEADGEN_PRO_MONTHLY_URL,
     stripeAnnual: import.meta.env.VITE_LEADGEN_PRO_ANNUAL_URL,
     highlight: false,
@@ -223,6 +223,8 @@ const QUICK_MARKETS = [
   { label: "Venice services", zip: "34285", niche: "Professional Services", offer: "Secure email + backup hygiene for local offices" },
 ];
 
+const BOOK_DEMO_URL = "/book?topic=leadgen-demo&utm_source=leadgen_page&utm_medium=cta&utm_campaign=demo";
+
 function Currency({ value }) {
   if (value == null) return <span className="leadgen-tier__price-custom">Custom</span>;
   if (value === 0) return (
@@ -252,7 +254,7 @@ function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "
   };
   if (stripeUrl) {
     return (
-      <a href={stripeUrl} className={className} rel="noopener" onClick={onPlanClick}>
+      <a href={stripeUrl} className={className} rel="noopener noreferrer" onClick={onPlanClick}>
         {children || tier.cta} <ArrowRight size={16} />
       </a>
     );
@@ -696,11 +698,11 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
           <span className="leadgen-app-live"><span /> Live public-record scanner</span>
-          <Link
-            to="/portal/leadgen"
-            className="leadgen-app-portal-link"
-            onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_toplink" })}
-          >
+            <Link
+              to="/portal/leadgen?utm_source=leadgen_page&utm_medium=scanner&utm_campaign=workspace_handoff"
+              className="leadgen-app-portal-link"
+              onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_toplink" })}
+            >
             Open campaign workspace
           </Link>
         </div>
@@ -1124,7 +1126,7 @@ export default function Leadgen() {
                       <a
                         href={stripeUrl}
                         className={`btn ${t.highlight ? "btn-primary" : "btn-secondary"} leadgen-tier__cta`}
-                        rel="noopener"
+                        rel="noopener noreferrer"
                         onClick={() => trackEvent("begin_checkout", {
                           plan: t.id,
                           billing_cycle: billing,
@@ -1174,7 +1176,7 @@ export default function Leadgen() {
               Start Growth
             </LeadgenPlanLink>
             <Link
-              to="/book?topic=leadgen-demo"
+              to={BOOK_DEMO_URL}
               className="btn btn-secondary btn-lg"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_final_cta_demo" })}
             >
@@ -1217,14 +1219,14 @@ function LeadgenWorkspaceSection() {
           </p>
           <div className="hero-ctas">
             <Link
-              to="/portal/leadgen"
+              to="/portal/leadgen?utm_source=leadgen_page&utm_medium=workspace_section&utm_campaign=workspace_handoff"
               className="btn btn-primary"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_workspace_cta" })}
             >
               Open workspace <ArrowRight size={16} />
             </Link>
             <Link
-              to="/book?topic=leadgen-demo"
+              to={BOOK_DEMO_URL}
               className="btn btn-secondary"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_workspace_demo" })}
             >
