@@ -224,6 +224,13 @@ const QUICK_MARKETS = [
 ];
 
 const BOOK_DEMO_URL = "/book?topic=leadgen-demo&utm_source=leadgen_page&utm_medium=cta&utm_campaign=demo";
+const LEADGEN_PRODUCTS = TIERS.filter((tier) => tier.id !== "free").map((tier) => ({
+  slug: `leadgen-${tier.id}`,
+  title: `Leadgen ${tier.name}`,
+  description: tier.blurb,
+  price: tier.monthly,
+  buyLink: tier.stripeMonthly || tier.ctaHref,
+}));
 
 function Currency({ value }) {
   if (value == null) return <span className="leadgen-tier__price-custom">Custom</span>;
@@ -693,6 +700,13 @@ function LeadgenScanApp() {
     });
   };
 
+  const prefetchMarket = useCallback((preset) => {
+    if (!preset?.zip || !/^\d{5}$/.test(preset.zip)) return;
+    getScanData(preset.zip, preset.niche || "All")
+      .then(() => setPrefetchState((current) => (current === "idle" ? "ready" : current)))
+      .catch(() => {});
+  }, [getScanData]);
+
   return (
     <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
       <div className="leadgen-app-panel leadgen-app-panel--control">
@@ -779,6 +793,8 @@ function LeadgenScanApp() {
               type="button"
               className="leadgen-quick-market-btn"
               onClick={() => applyQuickMarket(preset)}
+              onMouseEnter={() => prefetchMarket(preset)}
+              onFocus={() => prefetchMarket(preset)}
             >
               {preset.label}
             </button>
@@ -825,7 +841,7 @@ function LeadgenScanApp() {
           <div className="leadgen-app-actions">
             <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export CSV</button>
             <Link
-              to="/portal/leadgen"
+              to="/portal/leadgen?utm_source=leadgen_page&utm_medium=scanner_results&utm_campaign=workspace_handoff"
               className="btn btn-primary btn-sm"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_results" })}
             >
@@ -953,6 +969,7 @@ export default function Leadgen() {
       { name: "Home", url: `${SITE_URL}/` },
       { name: "Leadgen", url: `${SITE_URL}/leadgen` },
     ],
+    products: LEADGEN_PRODUCTS,
     faqs: LEADGEN_FAQS,
   });
 
