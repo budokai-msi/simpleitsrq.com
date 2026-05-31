@@ -1099,6 +1099,8 @@ function LeadgenScanApp() {
 
 export default function Leadgen() {
   const [billing, setBilling] = useState("monthly");
+  const scrollMilestonesRef = useRef(new Set());
+  const sectionViewRef = useRef(new Set());
 
   useSEO({
     title: "Get Local Leads | Simple IT SRQ",
@@ -1114,6 +1116,46 @@ export default function Leadgen() {
     productBasePath: "/leadgen",
     faqs: LEADGEN_FAQS,
   });
+
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement;
+      const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
+      const depth = Math.round((window.scrollY / maxScroll) * 100);
+      for (const mark of [25, 50, 75, 100]) {
+        if (depth >= mark && !scrollMilestonesRef.current.has(mark)) {
+          scrollMilestonesRef.current.add(mark);
+          trackEvent("select_content", {
+            content_type: "leadgen_scroll_depth",
+            destination: `depth_${mark}`,
+          });
+        }
+      }
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const ids = ["pricing", "workspace", "final-cta"];
+    const nodes = ids.map((id) => document.getElementById(id)).filter(Boolean);
+    if (!nodes.length) return undefined;
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const id = entry.target.id;
+        if (!id || sectionViewRef.current.has(id)) continue;
+        sectionViewRef.current.add(id);
+        trackEvent("select_content", {
+          content_type: "leadgen_section_view",
+          destination: id,
+        });
+      }
+    }, { threshold: 0.35 });
+    for (const node of nodes) observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <main id="main" className="leadgen-public">
@@ -1319,7 +1361,7 @@ export default function Leadgen() {
       </section>
 
       {/* Final CTA */}
-      <section className="section section-alt leadgen-final-cta">
+      <section id="final-cta" className="section section-alt leadgen-final-cta">
         <div className="container" style={{ maxWidth: 720, textAlign: "center" }}>
           <h2 className="title-1">Start with one local list.</h2>
           <p className="lede" style={{ marginTop: 12 }}>
@@ -1368,7 +1410,7 @@ function LeadgenProofStrip() {
 
 function LeadgenWorkspaceSection() {
   return (
-    <section className="section section-alt leadgen-workspace">
+    <section id="workspace" className="section section-alt leadgen-workspace">
       <div className="container leadgen-workspace__grid">
         <div className="leadgen-workspace__copy">
           <span className="eyebrow">Actual workspace</span>
