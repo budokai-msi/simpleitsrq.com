@@ -69,10 +69,13 @@ function hostFor(url) {
   try { return new URL(url).host.replace(/^www\./, ""); } catch { return url; }
 }
 
-function Stat({ label, value, hint, accent }) {
+function Stat({ label, value, hint, accent, badge }) {
   return (
     <div className={`leadgen-kpi${accent ? ` leadgen-kpi--${accent}` : ""}`}>
-      <span className="leadgen-kpi__label">{label}</span>
+      <span className="leadgen-kpi__label">
+        {label}
+        {badge ? <em className="leadgen-kpi__badge">{badge}</em> : null}
+      </span>
       <span className="leadgen-kpi__value">{value ?? "-"}</span>
       {hint ? <span className="leadgen-kpi__hint">{hint}</span> : null}
     </div>
@@ -270,6 +273,29 @@ export default function LeadgenDashboard() {
     }
   };
 
+  const recentJobs = status?.recent_jobs || [];
+  const dayAgo = Date.now() - 86_400_000;
+  const netNewBusinesses24h = recentJobs.reduce((acc, job) => {
+    const finished = parseIso(job?.finished_at || job?.created_at);
+    if (!finished || finished < dayAgo || job?.kind !== "osm_zip") return acc;
+    return acc + Number(job?.result?.inserted ?? 0);
+  }, 0);
+  const netNewEmails24h = recentJobs.reduce((acc, job) => {
+    const finished = parseIso(job?.finished_at || job?.created_at);
+    if (!finished || finished < dayAgo || job?.kind !== "website_emails") return acc;
+    return acc + Number(job?.result?.inserted ?? 0);
+  }, 0);
+  const lastDiscoveryJob = recentJobs
+    .filter((job) => job?.kind === "osm_zip")
+    .sort((a, b) => (parseIso(b?.finished_at || b?.created_at) || 0) - (parseIso(a?.finished_at || a?.created_at) || 0))[0];
+  const lastEmailJob = recentJobs
+    .filter((job) => job?.kind === "website_emails")
+    .sort((a, b) => (parseIso(b?.finished_at || b?.created_at) || 0) - (parseIso(a?.finished_at || a?.created_at) || 0))[0];
+  const discoveryFreshness = freshnessLabel(lastDiscoveryJob?.finished_at || lastDiscoveryJob?.created_at);
+  const emailFreshness = freshnessLabel(lastEmailJob?.finished_at || lastEmailJob?.created_at);
+  const pipelineState = netNewBusinesses24h + netNewEmails24h > 0 ? "active today" : "no new today";
+  const healthClass = netNewBusinesses24h + netNewEmails24h > 0 ? "leadgen-status-chip--productive" : "leadgen-status-chip--no_signal";
+
   return (
     <section className="section admin-affiliates admin-leadgen">
       <div className="container">
@@ -305,12 +331,14 @@ export default function LeadgenDashboard() {
             label="Businesses"
             value={status?.businesses?.total?.toLocaleString?.() ?? status?.businesses?.total}
             hint={`${(status?.businesses?.with_website ?? 0).toLocaleString?.() ?? 0} with website`}
+            badge={`+${netNewBusinesses24h} 24h`}
           />
           <Stat
             accent="teal"
             label="Deliverable emails"
             value={status?.emails?.deliverable?.toLocaleString?.() ?? status?.emails?.deliverable}
             hint={`across ${(status?.emails?.businesses_with_email ?? 0).toLocaleString?.() ?? 0} biz`}
+            badge={`+${netNewEmails24h} 24h`}
           />
           <Stat
             accent="violet"
@@ -322,6 +350,11 @@ export default function LeadgenDashboard() {
           <Stat label="Opened"  value={status?.sends?.opened?.toLocaleString?.() ?? status?.sends?.opened} />
           <Stat label="Clicked" value={status?.sends?.clicked?.toLocaleString?.() ?? status?.sends?.clicked} />
           <Stat accent="amber" label="Replied" value={status?.sends?.replied?.toLocaleString?.() ?? status?.sends?.replied} />
+        </div>
+        <div className="leadgen-kpi-health" role="status" aria-live="polite">
+          <span className={`leadgen-status-chip ${healthClass}`}>Pipeline {pipelineState}</span>
+          <span>Discovery refreshed {discoveryFreshness}</span>
+          <span>Email crawl refreshed {emailFreshness}</span>
         </div>
 
         <div className="leadgen-workspace-shell">
@@ -563,6 +596,20 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
             Enter a zip, discover public business records, crawl published
             contact paths, review the list, then launch a capped campaign.
           </p>
+          <div className="leadgen-console-health" role="status" aria-live="polite">
+            <span className={`leadgen-status-chip ${dbHealth === "connected" ? "leadgen-status-chip--good" : "leadgen-status-chip--bad"}`}>
+              DB {dbHealth === "connected" ? "connected" : dbHealth}
+            </span>
+            <span className={`leadgen-status-chip ${criticalLastHour > 0 ? "leadgen-status-chip--bad" : "leadgen-status-chip--good"}`}>
+              {criticalLastHour} critical events / hour
+            </span>
+            <span className={`leadgen-status-chip ${threatFeedCount > 0 ? "leadgen-status-chip--good" : "leadgen-status-chip--wait"}`}>
+              {threatFeedCount} threat feeds ({compactNumber(threatTotalCidrs)} CIDRs)
+            </span>
+            <span className="leadgen-status-chip leadgen-status-chip--other">
+              Oldest feed sync {freshnessLabel(osintOldest)}
+            </span>
+          </div>
           <div className="leadgen-console-focus" role="status" aria-live="polite">
             <span className="leadgen-console-focus__label">
               <MapPinned size={15} aria-hidden="true" />
