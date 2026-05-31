@@ -137,12 +137,12 @@ function renderInline(s) {
   // Markdown links.
   out = out.replace(
     /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
-    (_m, text, url) => `<a href="${url}" target="_blank" rel="noopener" class="aic-link">${text}</a>`
+    (_m, text, url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="aic-link">${text}</a>`
   );
   // Bare URLs that weren't already wrapped (skip if preceded by `"` from an attr).
   out = out.replace(
     /(^|[\s(])(https?:\/\/[^\s<)"]+)/g,
-    (_m, lead, url) => `${lead}<a href="${url}" target="_blank" rel="noopener" class="aic-link">${url}</a>`
+    (_m, lead, url) => `${lead}<a href="${url}" target="_blank" rel="noopener noreferrer" class="aic-link">${url}</a>`
   );
   return out;
 }
@@ -538,7 +538,7 @@ export default function AIChat() {
                           <a
                             href={rendered[i].stripeUrl}
                             target="_blank"
-                            rel="noopener"
+                            rel="noopener noreferrer"
                             className="aic-callout"
                           >
                             <span className="aic-callout-emoji" aria-hidden="true">$</span>
