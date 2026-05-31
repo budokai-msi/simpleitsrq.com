@@ -1133,6 +1133,32 @@ export default function Leadgen() {
   });
 
   useEffect(() => {
+    const hints = [
+      "https://checkout.stripe.com",
+      "https://js.stripe.com",
+      "https://tile.openstreetmap.org",
+      "https://basemaps.cartocdn.com",
+      "https://server.arcgisonline.com",
+    ];
+    const nodes = [];
+    for (const href of hints) {
+      const preconnect = document.createElement("link");
+      preconnect.rel = "preconnect";
+      preconnect.href = href;
+      preconnect.crossOrigin = "anonymous";
+      document.head.appendChild(preconnect);
+      nodes.push(preconnect);
+
+      const dns = document.createElement("link");
+      dns.rel = "dns-prefetch";
+      dns.href = href;
+      document.head.appendChild(dns);
+      nodes.push(dns);
+    }
+    return () => nodes.forEach((n) => n.remove());
+  }, []);
+
+  useEffect(() => {
     const onScroll = () => {
       const doc = document.documentElement;
       const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
@@ -1358,13 +1384,25 @@ export default function Leadgen() {
               role="tab"
               aria-selected={billing === "monthly"}
               className={`leadgen-billing-btn${billing === "monthly" ? " is-active" : ""}`}
-              onClick={() => setBilling("monthly")}
+              onClick={() => {
+                setBilling("monthly");
+                trackEvent("select_content", {
+                  content_type: "leadgen_billing_toggle",
+                  destination: "monthly",
+                });
+              }}
             >Monthly</button>
             <button
               role="tab"
               aria-selected={billing === "annual"}
               className={`leadgen-billing-btn${billing === "annual" ? " is-active" : ""}`}
-              onClick={() => setBilling("annual")}
+              onClick={() => {
+                setBilling("annual");
+                trackEvent("select_content", {
+                  content_type: "leadgen_billing_toggle",
+                  destination: "annual",
+                });
+              }}
             >
               Annual <span className="leadgen-billing-save">Save up to {Math.max(...TIERS.filter(t => t.monthly > 0).map(t => Math.round((1 - t.annual / t.monthly) * 100)))}%</span>
             </button>
