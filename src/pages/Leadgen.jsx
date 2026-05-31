@@ -1077,6 +1077,7 @@ export default function Leadgen() {
       { name: "Leadgen", url: `${SITE_URL}/leadgen` },
     ],
     products: LEADGEN_PRODUCTS,
+    productBasePath: "/leadgen",
     faqs: LEADGEN_FAQS,
   });
 
