@@ -620,6 +620,11 @@ function Contact() {
   };
 
   const submitting = status === "submitting";
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(form.email || "").trim());
+  const formReady =
+    String(form.name || "").trim().length > 1 &&
+    emailLooksValid &&
+    String(form.message || "").trim().length > 9;
 
   return (
     <section className="section" id="contact" aria-labelledby="contact-title">
@@ -715,7 +720,7 @@ function Contact() {
               <button
                 type="submit"
                 className="btn btn-primary btn-lg btn-submit"
-                disabled={submitting}
+                disabled={submitting || !formReady}
                 onPointerDown={tapHaptic}
               >
                 {submitting ? (
@@ -728,6 +733,9 @@ function Contact() {
               <p className="form-note">
                 We'll reply during business hours. No spam, ever.
               </p>
+              {!formReady && status !== "success" ? (
+                <p className="form-note">Add name, valid email, and a short message to send.</p>
+              ) : null}
 
               {status === "error" && (
                 <div className="form-banner form-banner-error" role="alert">
