@@ -773,13 +773,47 @@ function LeadgenScanApp() {
       .catch(() => {});
   }, [getScanData]);
 
+  const scannerContextParams = useMemo(() => {
+    const params = new URLSearchParams();
+    if (/^\d{5}$/.test(zip)) params.set("zip", zip);
+    if (niche && niche !== "All") params.set("niche", niche);
+    if (kept.length) params.set("kept", String(kept.length));
+    if (dailyCap) params.set("daily_cap", String(dailyCap));
+    return params;
+  }, [zip, niche, kept.length, dailyCap]);
+
+  const scannerWorkspaceLink = useMemo(() => {
+    const params = new URLSearchParams(scannerContextParams);
+    params.set("utm_source", "leadgen_page");
+    params.set("utm_medium", "scanner");
+    params.set("utm_campaign", "workspace_handoff");
+    return `/portal/leadgen?${params.toString()}`;
+  }, [scannerContextParams]);
+
+  const scannerResultWorkspaceLink = useMemo(() => {
+    const params = new URLSearchParams(scannerContextParams);
+    params.set("utm_source", "leadgen_page");
+    params.set("utm_medium", "scanner_results");
+    params.set("utm_campaign", "workspace_handoff");
+    return `/portal/leadgen?${params.toString()}`;
+  }, [scannerContextParams]);
+
+  const scannerDemoLink = useMemo(() => {
+    const params = new URLSearchParams(scannerContextParams);
+    params.set("topic", "leadgen-demo");
+    params.set("utm_source", "leadgen_page");
+    params.set("utm_medium", "cta");
+    params.set("utm_campaign", "demo");
+    return `/book?${params.toString()}`;
+  }, [scannerContextParams]);
+
   return (
     <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
           <span className="leadgen-app-live"><span /> Live public-record scanner</span>
             <Link
-              to="/portal/leadgen?utm_source=leadgen_page&utm_medium=scanner&utm_campaign=workspace_handoff"
+              to={scannerWorkspaceLink}
               className="leadgen-app-portal-link"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_toplink" })}
             >
@@ -921,14 +955,14 @@ function LeadgenScanApp() {
                 Start Growth
               </LeadgenPlanLink>
               <Link
-                to={BOOK_DEMO_URL}
+                to={scannerDemoLink}
                 className="btn btn-secondary btn-sm"
                 onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_demo", kept_count: kept.length })}
               >
                 Review with us
               </Link>
               <Link
-                to="/portal/leadgen?utm_source=leadgen_page&utm_medium=scanner_strip&utm_campaign=workspace_handoff"
+                to={scannerWorkspaceLink}
                 className="btn btn-secondary btn-sm"
                 onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_workspace", kept_count: kept.length })}
               >
@@ -948,7 +982,7 @@ function LeadgenScanApp() {
           <div className="leadgen-app-actions">
             <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export CSV</button>
             <Link
-              to="/portal/leadgen?utm_source=leadgen_page&utm_medium=scanner_results&utm_campaign=workspace_handoff"
+              to={scannerResultWorkspaceLink}
               className="btn btn-primary btn-sm"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_results" })}
             >
