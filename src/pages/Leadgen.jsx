@@ -485,7 +485,7 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
             <div class="leadgen-map-popup">
               <strong>${escapeHtml(row.name)}</strong>
               <span>${escapeHtml([row.sub_industry || row.industry_group, row.city || row.address].filter(Boolean).join(" - "))}</span>
-              <a href="${escapeHtml(row.website || row.source_url || "#")}" target="_blank" rel="noreferrer">${escapeHtml(hostFor(row.website || row.source_url))}</a>
+              <a href="${escapeHtml(row.website || row.source_url || "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(hostFor(row.website || row.source_url))}</a>
             </div>
           `);
           marker.on("click", () => onSelect(index));
@@ -1040,7 +1040,7 @@ function LeadgenScanApp() {
                 <span>{[row.sub_industry || row.industry_group, row.city || row.address, row.zip].filter(Boolean).join(" - ")}</span>
               </div>
               <div className="leadgen-result-row__meta">
-                <a href={row.website || row.source_url} target="_blank" rel="noreferrer">{hostFor(row.website || row.source_url)}</a>
+                <a href={row.website || row.source_url} target="_blank" rel="noopener noreferrer">{hostFor(row.website || row.source_url)}</a>
                 {row.phone ? <span>{row.phone}</span> : <span>Phone missing</span>}
                 <span className="leadgen-result-row__source">{sourceFor(row)}</span>
               </div>
