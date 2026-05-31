@@ -349,6 +349,26 @@ function rowSearchText(row) {
     row.source_url,
   ].filter(Boolean).join(" ").toLowerCase();
 }
+function normalizedGeoPoints(rows, cap = 120) {
+  const pts = rows
+    .slice(0, cap)
+    .map((r) => ({ point: asPoint(r), row: r }))
+    .filter((r) => r.point);
+  if (!pts.length) return [];
+  const lats = pts.map((p) => p.point.lat);
+  const lngs = pts.map((p) => p.point.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const latSpan = Math.max(0.0001, maxLat - minLat);
+  const lngSpan = Math.max(0.0001, maxLng - minLng);
+  return pts.map((p) => ({
+    x: ((p.point.lng - minLng) / lngSpan) * 100,
+    y: (1 - (p.point.lat - minLat) / latSpan) * 100,
+    label: p.row?.name || "Business",
+  }));
+}
 
 function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
   const mapRef = useRef(null);
@@ -361,6 +381,7 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
       .map((row, index) => ({ row, index: row.__scanIndex ?? index, point: asPoint(row) }))
       .filter((item) => item.point)
   ), [rows]);
+  const fallbackPoints = useMemo(() => normalizedGeoPoints(rows), [rows]);
   const centroid = asPoint(scan?.centroid);
 
   useEffect(() => {
@@ -415,6 +436,7 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
           tileLayer = L.tileLayer(provider.url, {
             maxZoom: 19,
             attribution: provider.attribution,
+            crossOrigin: true,
           }).addTo(leafletMap);
           tileLayer.on("tileerror", () => {
             tileFailures += 1;
@@ -495,6 +517,13 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
       </div>
       <div className="leadgen-map-shell">
         <div ref={mapRef} className="leadgen-map" aria-hidden={!mappedRows.length} />
+        {mapError && fallbackPoints.length ? (
+          <div className="leadgen-map-fallback" aria-label="Fallback map using local coordinates">
+            {fallbackPoints.map((p, i) => (
+              <span key={`${p.label}-${i}`} className="leadgen-map-fallback__dot" style={{ left: `${p.x}%`, top: `${p.y}%` }} title={p.label} />
+            ))}
+          </div>
+        ) : null}
         {!mappedRows.length || mapError ? (
           <div className="leadgen-map-empty">
             <span>
