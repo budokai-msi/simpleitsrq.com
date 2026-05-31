@@ -248,7 +248,15 @@ function Currency({ value }) {
   );
 }
 
-function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "btn btn-primary", children, onClick }) {
+function LeadgenPlanLink({
+  tierId = "growth",
+  billing = "monthly",
+  className = "btn btn-primary",
+  children,
+  onClick,
+  source = "leadgen_pricing",
+  context = null,
+}) {
   const tier = TIERS.find((t) => t.id === tierId) || TIERS[1];
   const stripeUrl = billing === "annual" ? tier.stripeAnnual : tier.stripeMonthly;
   const onPlanClick = () => {
@@ -256,7 +264,8 @@ function LeadgenPlanLink({ tierId = "growth", billing = "monthly", className = "
       plan: tier.id,
       billing_cycle: billing,
       value: tier.id === "free" ? 0 : (billing === "annual" ? tier.annual : tier.monthly),
-      source: "leadgen_pricing",
+      source,
+      ...(context ? { context } : {}),
     });
     if (typeof onClick === "function") onClick();
   };
@@ -867,6 +876,8 @@ function LeadgenScanApp() {
                 tierId="growth"
                 billing="monthly"
                 className="btn btn-primary btn-sm"
+                source="leadgen_scanner_ready_growth"
+                context="scanner_conversion_strip"
                 onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_growth", kept_count: kept.length })}
               >
                 Start Growth
@@ -1240,7 +1251,13 @@ export default function Leadgen() {
             throttling to stay safe, and a one-business-day review before launch.
           </p>
           <div className="hero-ctas" style={{ justifyContent: "center", marginTop: 24 }}>
-            <LeadgenPlanLink tierId="growth" billing="monthly" className="btn btn-primary btn-lg">
+            <LeadgenPlanLink
+              tierId="growth"
+              billing="monthly"
+              className="btn btn-primary btn-lg"
+              source="leadgen_final_cta_growth"
+              context="final_cta"
+            >
               Start Growth
             </LeadgenPlanLink>
             <Link
