@@ -1891,6 +1891,12 @@ main, #main {
   body:has(.mobile-action-bar) {
     padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
   }
+  body[data-cookie-consent="open"] .mobile-action-bar {
+    display: none;
+  }
+  body[data-cookie-consent="open"]:has(.mobile-action-bar) {
+    padding-bottom: 0;
+  }
   body[data-nav-menu="open"] .mobile-action-bar {
     display: none;
   }
@@ -3837,6 +3843,9 @@ main, #main {
     min-width: 0;
     padding: 7px 10px;
     font-size: 12px;
+  }
+  body[data-cookie-consent="open"] .cookie-consent {
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   }
 }
 
