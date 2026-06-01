@@ -487,6 +487,8 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
   const [err, setErr] = useState(null);
+  const normalizedZip = String(zip || "").replace(/\D/g, "").slice(0, 5);
+  const isValidZip = /^\d{5}$/.test(normalizedZip);
   const marketPresets = [
     { label: "Sarasota healthcare", zip: "34232" },
     { label: "Bradenton trades", zip: "34207" },
@@ -516,19 +518,19 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
   };
 
   const queueDiscover = async () => {
-    if (!/^\d{5}$/.test(zip)) {
+    if (!isValidZip) {
       setErr("Enter a 5-digit US zip code.");
       return;
     }
     setBusy(true); setErr(null); setMsg(null);
     try {
-      const r = await postJson("/api/portal?action=leadgen-discover", { zip });
+      const r = await postJson("/api/portal?action=leadgen-discover", { zip: normalizedZip });
       trackEvent("search", {
-        search_term: zip,
+        search_term: normalizedZip,
         source: "leadgen_admin_discover",
         deduped: Boolean(r.deduped),
       });
-      setMsg(r.deduped ? "Zip " + zip + " was already queued. Running worker..." : "Queued discovery job #" + r.job_id + " for " + zip + ". Running worker...");
+      setMsg(r.deduped ? "Zip " + normalizedZip + " was already queued. Running worker..." : "Queued discovery job #" + r.job_id + " for " + normalizedZip + ". Running worker...");
       await runWorker();
       onSelectTab("discover");
     } catch (e) {
@@ -539,20 +541,20 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
   };
 
   const queueEmailCrawls = async () => {
-    if (!/^\d{5}$/.test(zip)) {
+    if (!isValidZip) {
       setErr("Enter the zip you want to crawl for published emails.");
       return;
     }
     setBusy(true); setErr(null); setMsg(null);
     try {
-      const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip, limit: 100 });
+      const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip: normalizedZip, limit: 100 });
       trackEvent("select_content", {
         content_type: "leadgen_email_crawl",
         source: "leadgen_admin_command",
-        zip,
+        zip: normalizedZip,
         queued: Number(r.queued || 0),
       });
-      setMsg("Queued " + (r.queued || 0) + " email crawl jobs for " + zip + ". Running worker...");
+      setMsg("Queued " + (r.queued || 0) + " email crawl jobs for " + normalizedZip + ". Running worker...");
       await runWorker();
       onSelectTab("discover");
     } catch (e) {
@@ -665,7 +667,16 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
               <span>Target zip</span>
               <input
                 value={zip}
-                onChange={(e) => setZip(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value.replace(/\D/g, "").slice(0, 5);
+                  setZip(next);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !busy && isValidZip) {
+                    e.preventDefault();
+                    queueDiscover();
+                  }
+                }}
                 inputMode="numeric"
                 pattern="\d{5}"
                 placeholder="34237"
@@ -673,11 +684,11 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
                 aria-label="Zip code"
               />
             </label>
-            <button type="button" className="btn btn-primary" onClick={queueDiscover} disabled={busy}>
+            <button type="button" className="btn btn-primary" onClick={queueDiscover} disabled={busy || !isValidZip} title={!isValidZip ? "Enter a 5-digit zip to run discovery" : ""}>
               <Search size={16} aria-hidden="true" />
               Discover
             </button>
-            <button type="button" className="btn btn-secondary" onClick={queueEmailCrawls} disabled={busy}>
+            <button type="button" className="btn btn-secondary" onClick={queueEmailCrawls} disabled={busy || !isValidZip} title={!isValidZip ? "Enter a 5-digit zip first" : ""}>
               <Mail size={16} aria-hidden="true" />
               Crawl emails
             </button>
@@ -686,6 +697,9 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
               Run jobs
             </button>
           </div>
+          {!isValidZip ? (
+            <p className="admin-aff-stat-hint" aria-live="polite">Use a valid 5-digit zip. Example: 34237.</p>
+          ) : null}
           <div className="leadgen-console-presets" aria-label="Quick market presets">
             <span>Quick markets</span>
             {marketPresets.map((preset) => (
