@@ -1946,6 +1946,21 @@ function CampaignsTab({ seed, onSeedApplied }) {
       else setErr(`Test failed: ${r.error}${r.permanent ? " (permanent)" : ""}`);
     } catch (e) { setErr(String(e.message || e)); }
   };
+  const duplicateCampaign = (campaign) => {
+    const clone = makeDraft({
+      ...campaign,
+      name: `${campaign.name || "Campaign"} copy`,
+      status: "draft",
+    });
+    setEditing(clone);
+    setMsg(`Cloned "${campaign.name || "campaign"}" into a new draft.`);
+    setErr(null);
+    trackEvent("select_content", {
+      content_type: "leadgen_campaign_duplicate",
+      source: "leadgen_campaigns_table",
+      campaign_id: campaign.id,
+    });
+  };
   const filteredList = list.filter((c) => {
     if (statusFilter !== "all" && c.status !== statusFilter) return false;
     if (!query.trim()) return true;
@@ -2101,6 +2116,7 @@ function CampaignsTab({ seed, onSeedApplied }) {
                 <td style={{ textAlign: "right" }}>{pct(c.replied, c.sent)}</td>
                 <td className="admin-leadgen-row-actions">
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(c)}>Edit</button>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => duplicateCampaign(c)}>Duplicate</button>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => sendTest(c.id)}>Test send</button>
                   {["draft", "paused", "scheduled"].includes(c.status) ? (
                     <button
