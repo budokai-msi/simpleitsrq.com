@@ -1967,8 +1967,17 @@
   border-radius: 8px;
   background: color-mix(in srgb, var(--warning, #ca8a04) 10%, var(--surface, #fff));
   color: var(--text-2, #4b5563);
+  display: grid;
+  gap: 10px;
   font-size: 12.5px;
   line-height: 1.4;
+}
+
+.admin-leadgen .admin-leadgen-jobs__alert-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .admin-leadgen .leadgen-next-card__warn {

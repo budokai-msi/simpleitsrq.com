@@ -456,7 +456,7 @@ export default function LeadgenDashboard() {
             {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
             {tab === "campaigns" && <CampaignsTab />}
             {tab === "insights" && <InsightsTab />}
-            {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} />}
+            {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} onSelectTab={selectTab} />}
           </div>
         </div>
 
@@ -2003,7 +2003,7 @@ function Field({ label, children, full }) {
 // Jobs tab
 // ============================================================
 
-function JobsTab({ recent }) {
+function JobsTab({ recent, onSelectTab }) {
   const [rows, setRows] = useState(recent);
   const [err, setErr] = useState(null);
   const [showAll, setShowAll] = useState(false);
@@ -2167,9 +2167,33 @@ function JobsTab({ recent }) {
         <span>Showing {visibleRows.length} of {filteredRows.length}</span>
       </div>
       {stalePipeline || staleRecentSignal ? (
-        <p className="admin-leadgen-jobs__alert">
-          Pipeline is trending stale. Discover a new zip/industry combo, then run email crawl only on fresh websites to increase net-new leads.
-        </p>
+        <div className="admin-leadgen-jobs__alert" role="alert">
+          <span>
+            Pipeline is trending stale. Discover a new zip or market, then crawl email only on fresh websites to increase net-new leads.
+          </span>
+          <div className="admin-leadgen-jobs__alert-actions">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => {
+                trackEvent("select_content", { content_type: "leadgen_stale_jobs_recovery", destination: "discover" });
+                onSelectTab?.("discover", "jobs_alert");
+              }}
+            >
+              Open Discover
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => {
+                trackEvent("select_content", { content_type: "leadgen_stale_jobs_recovery", destination: "campaigns" });
+                onSelectTab?.("campaigns", "jobs_alert");
+              }}
+            >
+              Open Campaigns
+            </button>
+          </div>
+        </div>
       ) : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
       <div className="admin-aff-card">
