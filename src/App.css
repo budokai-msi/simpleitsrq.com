@@ -2516,10 +2516,13 @@ main, #main {
 [data-theme="dark"] .blog-card-title { color: var(--text-1); }
 [data-theme="dark"] .blog-card-title a:hover { color: var(--brand); }
 [data-theme="dark"] .blog-card-category { color: var(--brand); }
-[data-theme="dark"] .blog-card-excerpt { color: var(--text-2); }
+[data-theme="dark"] .blog-card-excerpt { color: #d0d7e2; }
 [data-theme="dark"] .blog-card-meta {
   color: var(--text-3);
   border-top-color: var(--border);
+}
+[data-theme="dark"] .section-sub {
+  color: #c9d2df;
 }
 [data-theme="dark"] .blog-filter {
   background: var(--surface);
@@ -6015,7 +6018,7 @@ select:focus-visible {
  * heavy color change — a "soft greying" without hiding content. */
 .glossary-card:visited h2,
 .glossary-card:visited h3,
-.blog-card:visited h3 {
+.blog-card a:visited h3 {
   opacity: 0.78;
 }
 
