@@ -1861,6 +1861,7 @@ function CampaignsTab({ seed, onSeedApplied }) {
   const [msg, setMsg] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState("reply_rate");
 
   const makeDraft = (seedInput = {}) => ({
     name: seedInput?.name || "",
@@ -1957,6 +1958,24 @@ function CampaignsTab({ seed, onSeedApplied }) {
     if (d <= 0) return "0%";
     return `${Math.round((n / d) * 100)}%`;
   };
+  const ratio = (num, den) => {
+    const n = Number(num || 0);
+    const d = Number(den || 0);
+    if (d <= 0) return 0;
+    return n / d;
+  };
+  const sortedList = [...filteredList].sort((a, b) => {
+    if (sortBy === "sent_desc") return Number(b.sent || 0) - Number(a.sent || 0);
+    if (sortBy === "open_rate") return ratio(b.opened, b.sent) - ratio(a.opened, a.sent);
+    if (sortBy === "name_asc") return String(a.name || "").localeCompare(String(b.name || ""));
+    return ratio(b.replied, b.sent) - ratio(a.replied, a.sent);
+  });
+  const topReplyCampaign = [...list]
+    .filter((c) => Number(c.sent || 0) > 0)
+    .sort((a, b) => ratio(b.replied, b.sent) - ratio(a.replied, a.sent))[0];
+  const topOpenCampaign = [...list]
+    .filter((c) => Number(c.sent || 0) > 0)
+    .sort((a, b) => ratio(b.opened, b.sent) - ratio(a.opened, a.sent))[0];
 
   if (editing) {
     return (
@@ -1984,11 +2003,25 @@ function CampaignsTab({ seed, onSeedApplied }) {
             <option value="done">done</option>
           </select>
           <input className="admin-leadgen-input admin-leadgen-input--sm" placeholder="Search campaign" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <select className="admin-leadgen-input admin-leadgen-input--sm" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+            <option value="reply_rate">Sort: Reply rate</option>
+            <option value="open_rate">Sort: Open rate</option>
+            <option value="sent_desc">Sort: Sent volume</option>
+            <option value="name_asc">Sort: Name</option>
+          </select>
           <button type="button" onClick={newCampaign} className="btn btn-primary">+ New campaign</button>
         </div>
       </div>
       {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
+      <div className="admin-leadgen-jobs__health">
+        <span>
+          Top reply rate: {topReplyCampaign ? `${topReplyCampaign.name} (${pct(topReplyCampaign.replied, topReplyCampaign.sent)})` : "none yet"}
+        </span>
+        <span>
+          Top open rate: {topOpenCampaign ? `${topOpenCampaign.name} (${pct(topOpenCampaign.opened, topOpenCampaign.sent)})` : "none yet"}
+        </span>
+      </div>
 
       <div className="admin-aff-card">
         <table className="admin-aff-table">
@@ -2006,7 +2039,7 @@ function CampaignsTab({ seed, onSeedApplied }) {
             </tr>
           </thead>
           <tbody>
-            {filteredList.map((c) => (
+            {sortedList.map((c) => (
               <tr key={c.id}>
                 {(() => {
                   const readiness = campaignReadiness(c);
@@ -2050,7 +2083,7 @@ function CampaignsTab({ seed, onSeedApplied }) {
                 })()}
               </tr>
             ))}
-            {filteredList.length === 0 ? (
+            {sortedList.length === 0 ? (
               <tr><td colSpan={9} className="admin-leadgen-empty">No campaigns match this view. Clear filters or create a new campaign.</td></tr>
             ) : null}
           </tbody>
