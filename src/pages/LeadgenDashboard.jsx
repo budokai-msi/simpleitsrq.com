@@ -1995,6 +1995,31 @@ function CampaignsTab({ seed, onSeedApplied }) {
   const aggregateSent = list.reduce((acc, c) => acc + Number(c.sent || 0), 0);
   const aggregateOpened = list.reduce((acc, c) => acc + Number(c.opened || 0), 0);
   const aggregateReplied = list.reduce((acc, c) => acc + Number(c.replied || 0), 0);
+  const aggregateOpenRate = ratio(aggregateOpened, aggregateSent);
+  const aggregateReplyRate = ratio(aggregateReplied, aggregateSent);
+  const optimizationHint = aggregateSent < 50
+    ? {
+        text: "Need more send volume before optimization signals are stable.",
+        action: "Increase sends",
+        run: () => setSortBy("sent_desc"),
+      }
+    : aggregateOpenRate < 0.2
+      ? {
+          text: "Open rate is low. Prioritize subject-line iterations from the top open-rate performer.",
+          action: "Clone top open winner",
+          run: () => cloneTopPerformer("open"),
+        }
+      : aggregateReplyRate < 0.03
+        ? {
+            text: "Open rate is healthy but reply rate is low. Iterate body copy from the top reply performer.",
+            action: "Clone top reply winner",
+            run: () => cloneTopPerformer("reply"),
+          }
+        : {
+            text: "Campaign performance is healthy. Scale winning templates and monitor deliverability.",
+            action: "Sort by sent volume",
+            run: () => setSortBy("sent_desc"),
+          };
   const pauseAllRunning = async () => {
     if (runningCount <= 0) {
       setErr("No running campaigns to pause.");
@@ -2083,6 +2108,14 @@ function CampaignsTab({ seed, onSeedApplied }) {
         <span>
           Top open rate: {topOpenCampaign ? `${topOpenCampaign.name} (${pct(topOpenCampaign.opened, topOpenCampaign.sent)})` : "none yet"}
         </span>
+      </div>
+      <div className="admin-leadgen-jobs__alert" role="status" aria-live="polite">
+        <span>{optimizationHint.text}</span>
+        <div className="admin-leadgen-jobs__alert-actions">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={optimizationHint.run}>
+            {optimizationHint.action}
+          </button>
+        </div>
       </div>
       <div className="admin-leadgen-jobs__actions" style={{ marginBottom: 10 }}>
         <button type="button" className="btn btn-secondary btn-sm" onClick={() => cloneTopPerformer("reply")} disabled={!topReplyCampaign}>
