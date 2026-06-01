@@ -311,15 +311,16 @@ export default function LeadgenDashboard() {
   };
 
   const recentJobs = status?.recent_jobs || [];
-  const dayAgo = Date.now() - 86_400_000;
+  const statusAsOf = parseIso(status?.generated_at) || 0;
+  const dayAgo = statusAsOf - 86_400_000;
   const netNewBusinesses24h = recentJobs.reduce((acc, job) => {
     const finished = parseIso(job?.finished_at || job?.created_at);
-    if (!finished || finished < dayAgo || job?.kind !== "osm_zip") return acc;
+    if (!statusAsOf || !finished || finished < dayAgo || job?.kind !== "osm_zip") return acc;
     return acc + Number(job?.result?.inserted ?? 0);
   }, 0);
   const netNewEmails24h = recentJobs.reduce((acc, job) => {
     const finished = parseIso(job?.finished_at || job?.created_at);
-    if (!finished || finished < dayAgo || job?.kind !== "website_emails") return acc;
+    if (!statusAsOf || !finished || finished < dayAgo || job?.kind !== "website_emails") return acc;
     return acc + Number(job?.result?.inserted ?? 0);
   }, 0);
   const lastDiscoveryJob = recentJobs
@@ -330,7 +331,7 @@ export default function LeadgenDashboard() {
     .sort((a, b) => (parseIso(b?.finished_at || b?.created_at) || 0) - (parseIso(a?.finished_at || a?.created_at) || 0))[0];
   const discoveryFreshness = freshnessLabel(lastDiscoveryJob?.finished_at || lastDiscoveryJob?.created_at);
   const emailFreshness = freshnessLabel(lastEmailJob?.finished_at || lastEmailJob?.created_at);
-  const pipelineState = netNewBusinesses24h + netNewEmails24h > 0 ? "active today" : "no new today";
+  const pipelineState = netNewBusinesses24h + netNewEmails24h > 0 ? "fresh leads added today" : "lead database ready";
   const healthClass = netNewBusinesses24h + netNewEmails24h > 0 ? "leadgen-status-chip--productive" : "leadgen-status-chip--no_signal";
 
   return (
@@ -388,15 +389,15 @@ export default function LeadgenDashboard() {
           <Stat label="Clicked" value={status?.sends?.clicked?.toLocaleString?.() ?? status?.sends?.clicked} />
           <Stat accent="amber" label="Replied" value={status?.sends?.replied?.toLocaleString?.() ?? status?.sends?.replied} />
         </div>
-        <div className="leadgen-kpi-health" role="status" aria-live="polite">
-          <span className={`leadgen-status-chip ${healthClass}`}>Pipeline {pipelineState}</span>
-          <span>Discovery refreshed {discoveryFreshness}</span>
-          <span>Email crawl refreshed {emailFreshness}</span>
+        <div className="leadgen-workspace-status" role="status" aria-live="polite">
+          <span className={`leadgen-status-chip ${healthClass}`}>{pipelineState}</span>
+          <span>Market scan {discoveryFreshness}</span>
+          <span>Email crawl {emailFreshness}</span>
         </div>
 
         <div className="leadgen-workspace-shell">
           <aside className="leadgen-workspace-sidebar" aria-label="Leadgen navigation">
-            <Link to="/portal" className="leadgen-side-home">Home</Link>
+            <Link to="/portal" className="leadgen-side-home">Portal</Link>
             <nav className="leadgen-side-nav">
               {[
                 ["discover", "Workspace"],
@@ -416,8 +417,7 @@ export default function LeadgenDashboard() {
               ))}
             </nav>
             <section className="leadgen-side-integrations" aria-label="Marketing integrations">
-              <h3>Integrations</h3>
-              <p>Push reviewed leads into the tools your team already uses.</p>
+              <h3>Destinations</h3>
               <div className="leadgen-side-integrations__links">
                 <a href="https://www.hubspot.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "hubspot" })}>HubSpot</a>
                 <a href="https://mailchimp.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "mailchimp" })}>Mailchimp</a>
@@ -426,16 +426,12 @@ export default function LeadgenDashboard() {
                 <a href="https://www.facebook.com/business/ads" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "meta_ads" })}>Meta Ads</a>
               </div>
               <div className="leadgen-side-integrations__actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("hubspot")}>Export HubSpot CSV</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("mailchimp")}>Export Mailchimp CSV</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("klaviyo")}>Export Klaviyo CSV</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("google_ads")}>Export Google Ads CSV</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("meta_ads")}>Export Meta Ads CSV</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("hubspot")}>Export ready CSV</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => selectTab("campaigns", "leadgen_sidebar")}>Build campaign</button>
               </div>
             </section>
             <section className="leadgen-side-revenue" aria-label="Revenue actions">
-              <h3>Next step</h3>
-              <p>Move this list into a live campaign with onboarding and copy support.</p>
+              <h3>Handoff</h3>
               <div className="leadgen-side-revenue__actions">
                 <Link
                   to="/book?topic=leadgen-onboarding&promo=LEADGEN25&utm_source=leadgen_dashboard&utm_medium=sidebar&utm_campaign=onboarding"
@@ -1181,6 +1177,7 @@ function DiscoverTab({ onStatusChange }) {
   const [err, setErr] = useState(null);
 
   const limit = 50;
+  const validStatuses = new Set(["", "active", "rejected", "do_not_contact"]);
   const cleanFilter = () => ({
     zip: "", status: "active", q: "",
     industry_group: "", sub_industry: "",
@@ -1188,22 +1185,49 @@ function DiscoverTab({ onStatusChange }) {
     tag: "", min_emails: "", max_emails: "",
     created_after: "", created_before: "",
   });
+  const cleanDigits = (value, max = 5) => String(value || "").replace(/\D/g, "").slice(0, max);
+  const cleanTag = (value) => {
+    const raw = String(value || "");
+    if (raw.includes("@")) return "";
+    return raw.toLowerCase().replace(/[^a-z0-9 _-]/g, "").trim().slice(0, 48);
+  };
+  const normalizeListFilter = (source = filter) => {
+    const hasEmail = Boolean(source.has_email);
+    const noEmail = hasEmail ? false : Boolean(source.no_email);
+    return {
+      ...cleanFilter(),
+      zip: cleanDigits(source.zip),
+      status: validStatuses.has(source.status) ? source.status : "active",
+      q: String(source.q || "").trim().slice(0, 120),
+      industry_group: String(source.industry_group || "").trim().slice(0, 80),
+      sub_industry: String(source.sub_industry || "").trim().slice(0, 80),
+      has_website: Boolean(source.has_website),
+      has_email: hasEmail,
+      no_email: noEmail,
+      tag: cleanTag(source.tag),
+      min_emails: cleanDigits(source.min_emails, 4),
+      max_emails: cleanDigits(source.max_emails, 4),
+      created_after: /^\d{4}-\d{2}-\d{2}$/.test(source.created_after || "") ? source.created_after : "",
+      created_before: /^\d{4}-\d{2}-\d{2}$/.test(source.created_before || "") ? source.created_before : "",
+    };
+  };
+  const normalizedFilter = normalizeListFilter(filter);
   const activeFilterCount = [
-    filter.zip,
-    filter.q,
-    filter.industry_group,
-    filter.sub_industry,
-    filter.has_website,
-    filter.has_email,
-    filter.no_email,
-    filter.tag,
-    filter.min_emails,
-    filter.max_emails,
-    filter.created_after,
-    filter.created_before,
-    filter.status && filter.status !== "active",
+    normalizedFilter.zip,
+    normalizedFilter.q,
+    normalizedFilter.industry_group,
+    normalizedFilter.sub_industry,
+    normalizedFilter.has_website,
+    normalizedFilter.has_email,
+    normalizedFilter.no_email,
+    normalizedFilter.tag,
+    normalizedFilter.min_emails,
+    normalizedFilter.max_emails,
+    normalizedFilter.created_after,
+    normalizedFilter.created_before,
+    normalizedFilter.status && normalizedFilter.status !== "active",
   ].filter(Boolean).length;
-  const currentZip = filter.zip || zip;
+  const currentZip = normalizedFilter.zip || cleanDigits(zip);
   const resetFilters = () => {
     setFilter(cleanFilter());
     setPage(1);
@@ -1229,29 +1253,30 @@ function DiscoverTab({ onStatusChange }) {
 
   // Build the query string used for both list-load and export so the
   // download always matches the current view exactly.
-  const buildQuery = (extra = {}) => {
+  const buildQuery = (extra = {}, sourceFilter = filter) => {
+    const f = normalizeListFilter(sourceFilter);
     const url = new URL("/api/portal", window.location.origin);
     url.searchParams.set("action", extra.action || "leadgen-businesses");
-    if (filter.zip)            url.searchParams.set("zip", filter.zip);
-    if (filter.status)         url.searchParams.set("status", filter.status);
-    if (filter.q)              url.searchParams.set("q", filter.q);
-    if (filter.industry_group) url.searchParams.set("industry_group", filter.industry_group);
-    if (filter.sub_industry)   url.searchParams.set("sub_industry", filter.sub_industry);
-    if (filter.has_website)    url.searchParams.set("has_website", "1");
-    if (filter.has_email)      url.searchParams.set("has_email", "1");
-    if (filter.no_email)       url.searchParams.set("no_email", "1");
-    if (filter.tag)            url.searchParams.set("tag", filter.tag);
-    if (filter.min_emails)     url.searchParams.set("min_emails", filter.min_emails);
-    if (filter.max_emails)     url.searchParams.set("max_emails", filter.max_emails);
-    if (filter.created_after)  url.searchParams.set("created_after", filter.created_after);
-    if (filter.created_before) url.searchParams.set("created_before", filter.created_before);
+    if (f.zip)            url.searchParams.set("zip", f.zip);
+    if (f.status)         url.searchParams.set("status", f.status);
+    if (f.q)              url.searchParams.set("q", f.q);
+    if (f.industry_group) url.searchParams.set("industry_group", f.industry_group);
+    if (f.sub_industry)   url.searchParams.set("sub_industry", f.sub_industry);
+    if (f.has_website)    url.searchParams.set("has_website", "1");
+    if (f.has_email)      url.searchParams.set("has_email", "1");
+    if (f.no_email)       url.searchParams.set("no_email", "1");
+    if (f.tag)            url.searchParams.set("tag", f.tag);
+    if (f.min_emails)     url.searchParams.set("min_emails", f.min_emails);
+    if (f.max_emails)     url.searchParams.set("max_emails", f.max_emails);
+    if (f.created_after)  url.searchParams.set("created_after", f.created_after);
+    if (f.created_before) url.searchParams.set("created_before", f.created_before);
     if (extra.format)          url.searchParams.set("format", extra.format);
     return url;
   };
 
-  const loadList = async (overridePage) => {
+  const loadList = async (overridePage, sourceFilter = filter) => {
     const p = overridePage ?? page;
-    const url = buildQuery();
+    const url = buildQuery({}, sourceFilter);
     url.searchParams.set("page", String(p));
     url.searchParams.set("limit", String(limit));
     try {
@@ -1259,8 +1284,12 @@ function DiscoverTab({ onStatusChange }) {
       setRows(r.rows || []);
       setTotal(r.total || 0);
       setFacets(r.facets || { groups: [], subs: [] });
+      setErr(null);
     } catch (e) {
-      setErr(String(e.message || e));
+      const message = String(e.message || e);
+      setErr(message === "HTTP 500"
+        ? "The lead list failed to reload. I kept the screen usable; refresh or clear filters, then run discovery again."
+        : message);
     }
   };
 
@@ -1270,26 +1299,30 @@ function DiscoverTab({ onStatusChange }) {
   useEffect(() => { loadList(page); }, [filter, page]);
 
   const queueDiscover = async () => {
-    if (!/^\d{5}$/.test(zip)) {
+    const normalizedZip = cleanDigits(zip);
+    if (!/^\d{5}$/.test(normalizedZip)) {
       setErr("Enter a 5-digit US zip code.");
       return;
     }
+    const nextFilter = { ...cleanFilter(), zip: normalizedZip, status: "active" };
     setBusy(true); setErr(null); setMsg(null);
     try {
-      const r = await postJson("/api/portal?action=leadgen-discover", { zip });
+      const r = await postJson("/api/portal?action=leadgen-discover", { zip: normalizedZip });
       if (r.deduped) {
         setMsg(`Already queued as job #${r.job_id}. Running pending jobs...`);
       } else {
-        setMsg(`Queued OSM crawl for ${zip} (job #${r.job_id}). Running...`);
+        setMsg(`Queued public business scan for ${normalizedZip}. Running now...`);
       }
-      setFilter((f) => ({ ...f, zip }));
+      setZip(normalizedZip);
+      setPage(1);
+      setFilter(nextFilter);
       // Drain the queue inline so the operator sees results immediately
       // instead of waiting until the next 11:15 UTC cron tick.
       const run = await postJson("/api/portal?action=leadgen-run-jobs", {});
       const s = run.summary || {};
-      setMsg(`OSM crawl finished: ${s.completed || 0}/${s.picked || 0} jobs ok` +
-             (s.failed ? `, ${s.failed} failed` : "") + ". Refreshing list.");
-      await loadList();
+      setMsg(`Scan finished for ${normalizedZip}. Loading businesses and map pins...` +
+             (s.failed ? ` ${s.failed} job failed.` : ""));
+      await loadList(1, nextFilter);
       if (onStatusChange) await onStatusChange();
     } catch (e) {
       setErr(String(e.message || e));
@@ -1299,14 +1332,15 @@ function DiscoverTab({ onStatusChange }) {
   };
 
   const queueEmailCrawls = async () => {
-    if (!/^\d{5}$/.test(filter.zip)) {
+    const targetZip = normalizeListFilter(filter).zip;
+    if (!/^\d{5}$/.test(targetZip)) {
       setErr("Filter by a 5-digit zip first, then queue.");
       return;
     }
     setBusy(true); setErr(null); setMsg(null);
     try {
-      const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip: filter.zip, limit: 100 });
-      setMsg(`Queued ${r.queued} email-crawl jobs for ${filter.zip}. Running...`);
+      const r = await postJson("/api/portal?action=leadgen-crawl-emails", { zip: targetZip, limit: 100 });
+      setMsg(`Queued ${r.queued} public email crawls for ${targetZip}. Running...`);
       const run = await postJson("/api/portal?action=leadgen-run-jobs", {});
       const s = run.summary || {};
       setMsg(`Email crawl finished: ${s.completed || 0}/${s.picked || 0} jobs ok` +
@@ -1366,22 +1400,20 @@ function DiscoverTab({ onStatusChange }) {
     <div className="admin-leadgen-discover">
       <div className="leadgen-discover-command">
         <div>
-          <span className="leadgen-console-topline">Discovery pipeline</span>
-          <h2>Start with a zip code and map the market</h2>
-          <p>
-            Pick one local zip, pull public business records, then crawl public contact
-            paths only for the records you can review and export.
-          </p>
+          <span className="leadgen-console-topline">Discovery</span>
+          <h2>Map a local market by zip.</h2>
+          <p>Scan public business records, review the list, then enrich only the leads worth contacting.</p>
         </div>
         <div className="leadgen-discover-actions">
           <label className="admin-leadgen-field">
             <span>Zip code</span>
             <input
               value={zip}
-              onChange={(e) => setZip(e.target.value)}
+              onChange={(e) => setZip(cleanDigits(e.target.value))}
               inputMode="numeric"
               pattern="\d{5}"
               placeholder="34207"
+              autoComplete="postal-code"
               className="admin-leadgen-input admin-leadgen-input--zip"
             />
           </label>
@@ -1391,16 +1423,16 @@ function DiscoverTab({ onStatusChange }) {
             disabled={busy}
             className="btn btn-primary"
           >
-            {busy ? "Working..." : "Discover"}
+            {busy ? "Scanning..." : "Scan zip"}
           </button>
           <button
             type="button"
             onClick={queueEmailCrawls}
-            disabled={busy || !/^\d{5}$/.test(filter.zip)}
+            disabled={busy || !/^\d{5}$/.test(currentZip)}
             className="btn btn-secondary"
-            title={!/^\d{5}$/.test(filter.zip) ? "Filter by a zip first" : ""}
+            title={!/^\d{5}$/.test(currentZip) ? "Filter by a zip first" : ""}
           >
-            Find public emails
+            Find emails
           </button>
         </div>
       </div>
@@ -1412,9 +1444,9 @@ function DiscoverTab({ onStatusChange }) {
 
       <div className="leadgen-list-tools">
         <div>
-          <span className="leadgen-console-topline">Current view</span>
-          <strong>{total.toLocaleString()} matches</strong>
-          <p>Search covers business names, websites, and deliverable emails.</p>
+          <span className="leadgen-console-topline">Lead list</span>
+          <strong>{total.toLocaleString()} businesses</strong>
+          <p>{currentZip ? `Filtered to ZIP ${currentZip}.` : "Scan a zip to populate the map and lead table."}</p>
         </div>
         <div className="leadgen-filter-presets" aria-label="Lead list presets">
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("all")}>All in zip</button>
@@ -1424,110 +1456,148 @@ function DiscoverTab({ onStatusChange }) {
         </div>
       </div>
 
-      <div className="admin-leadgen-filters" aria-label="Lead list filters">
-        <input
-          placeholder="filter zip"
-          value={filter.zip}
-          onChange={(e) => { setFilter((f) => ({ ...f, zip: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input admin-leadgen-input--zip"
-        />
-        <select
-          value={filter.industry_group}
-          onChange={(e) => { setFilter((f) => ({ ...f, industry_group: e.target.value, sub_industry: "" })); setPage(1); }}
-          className="admin-leadgen-input"
-        >
-          <option value="">All industries</option>
-          {(facets.groups || []).map((g) => (
-            <option key={g.industry_group} value={g.industry_group}>{g.industry_group} ({g.n})</option>
-          ))}
-        </select>
-        <select
-          value={filter.sub_industry}
-          onChange={(e) => { setFilter((f) => ({ ...f, sub_industry: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input"
-          disabled={!filter.industry_group}
-          title={!filter.industry_group ? "Pick an industry first" : ""}
-        >
-          <option value="">All sub-industries</option>
-          {(facets.subs || []).map((s) => (
-            <option key={s.sub_industry} value={s.sub_industry}>{s.sub_industry} ({s.n})</option>
-          ))}
-        </select>
-        <select
-          value={filter.status}
-          onChange={(e) => { setFilter((f) => ({ ...f, status: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input"
-        >
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="rejected">Rejected</option>
-          <option value="do_not_contact">Do not contact</option>
-        </select>
-        <label className="admin-leadgen-check">
-          <input type="checkbox" checked={filter.has_website}
-            onChange={(e) => { setFilter((f) => ({ ...f, has_website: e.target.checked })); setPage(1); }} />
-          Has website
-        </label>
-        <label className="admin-leadgen-check">
-          <input type="checkbox" checked={filter.has_email}
-            onChange={(e) => { setFilter((f) => ({ ...f, has_email: e.target.checked, no_email: e.target.checked ? false : f.no_email })); setPage(1); }} />
-          Has email
-        </label>
-        <label className="admin-leadgen-check">
-          <input type="checkbox" checked={filter.no_email}
-            onChange={(e) => { setFilter((f) => ({ ...f, no_email: e.target.checked, has_email: e.target.checked ? false : f.has_email })); setPage(1); }} />
-          Needs email
-        </label>
-        <input
-          placeholder="tag"
-          value={filter.tag}
-          onChange={(e) => { setFilter((f) => ({ ...f, tag: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input admin-leadgen-input--zip"
-          title="Filter by tag"
-        />
-        <input
-          placeholder="min emails"
-          type="number"
-          min={0}
-          value={filter.min_emails}
-          onChange={(e) => { setFilter((f) => ({ ...f, min_emails: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input admin-leadgen-input--zip"
-          title="Minimum deliverable emails"
-        />
-        <input
-          placeholder="max emails"
-          type="number"
-          min={0}
-          value={filter.max_emails}
-          onChange={(e) => { setFilter((f) => ({ ...f, max_emails: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input admin-leadgen-input--zip"
-          title="Maximum deliverable emails"
-        />
-        <input
-          type="date"
-          value={filter.created_after}
-          onChange={(e) => { setFilter((f) => ({ ...f, created_after: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input"
-          title="Created after"
-        />
-        <input
-          type="date"
-          value={filter.created_before}
-          onChange={(e) => { setFilter((f) => ({ ...f, created_before: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input"
-          title="Created before"
-        />
-        <input
-          placeholder="search business, website, or email"
-          value={filter.q}
-          onChange={(e) => { setFilter((f) => ({ ...f, q: e.target.value })); setPage(1); }}
-          className="admin-leadgen-input admin-leadgen-input--grow"
-        />
-        <span className="admin-leadgen-count">{activeFilterCount} filters</span>
-        <div className="admin-leadgen-export-group">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("csv")} disabled={total === 0}>Export CSV</button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("json")} disabled={total === 0}>Export JSON</button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={reclassify} disabled={busy} title="Backfill industry_group + sub_industry from raw OSM tags">Reclassify</button>
+      <div className="admin-leadgen-filters leadgen-filter-panel" aria-label="Lead list filters">
+        <div className="leadgen-filter-row leadgen-filter-row--primary">
+          <label className="admin-leadgen-field admin-leadgen-field--search">
+            <span>Search</span>
+            <input
+              placeholder="business, website, or email"
+              value={filter.q}
+              onChange={(e) => { setFilter((f) => ({ ...f, q: e.target.value })); setPage(1); }}
+              autoComplete="off"
+              className="admin-leadgen-input admin-leadgen-input--grow"
+            />
+          </label>
+          <label className="admin-leadgen-field admin-leadgen-field--compact">
+            <span>Zip</span>
+            <input
+              placeholder="34207"
+              value={filter.zip}
+              onChange={(e) => { setFilter((f) => ({ ...f, zip: cleanDigits(e.target.value) })); setPage(1); }}
+              inputMode="numeric"
+              autoComplete="postal-code"
+              className="admin-leadgen-input admin-leadgen-input--zip"
+            />
+          </label>
+          <label className="admin-leadgen-field admin-leadgen-field--select">
+            <span>Industry</span>
+            <select
+              value={filter.industry_group}
+              onChange={(e) => { setFilter((f) => ({ ...f, industry_group: e.target.value, sub_industry: "" })); setPage(1); }}
+              className="admin-leadgen-input"
+            >
+              <option value="">All industries</option>
+              {(facets.groups || []).map((g) => (
+                <option key={g.industry_group} value={g.industry_group}>{g.industry_group} ({g.n})</option>
+              ))}
+            </select>
+          </label>
+          <label className="admin-leadgen-field admin-leadgen-field--select">
+            <span>Status</span>
+            <select
+              value={filter.status}
+              onChange={(e) => { setFilter((f) => ({ ...f, status: e.target.value })); setPage(1); }}
+              className="admin-leadgen-input"
+            >
+              <option value="">All statuses</option>
+              <option value="active">Active</option>
+              <option value="rejected">Rejected</option>
+              <option value="do_not_contact">Do not contact</option>
+            </select>
+          </label>
+        </div>
+        <div className="leadgen-filter-row leadgen-filter-row--secondary">
+          <label className="admin-leadgen-check">
+            <input type="checkbox" checked={filter.has_website}
+              onChange={(e) => { setFilter((f) => ({ ...f, has_website: e.target.checked })); setPage(1); }} />
+            Website
+          </label>
+          <label className="admin-leadgen-check">
+            <input type="checkbox" checked={filter.has_email}
+              onChange={(e) => { setFilter((f) => ({ ...f, has_email: e.target.checked, no_email: e.target.checked ? false : f.no_email })); setPage(1); }} />
+            Email found
+          </label>
+          <label className="admin-leadgen-check">
+            <input type="checkbox" checked={filter.no_email}
+              onChange={(e) => { setFilter((f) => ({ ...f, no_email: e.target.checked, has_email: e.target.checked ? false : f.has_email })); setPage(1); }} />
+            Needs crawl
+          </label>
+          <details className="leadgen-advanced-filters">
+            <summary>Advanced</summary>
+            <div className="leadgen-advanced-filters__grid">
+              <label className="admin-leadgen-field">
+                <span>Sub-industry</span>
+                <select
+                  value={filter.sub_industry}
+                  onChange={(e) => { setFilter((f) => ({ ...f, sub_industry: e.target.value })); setPage(1); }}
+                  className="admin-leadgen-input"
+                  disabled={!filter.industry_group}
+                  title={!filter.industry_group ? "Pick an industry first" : ""}
+                >
+                  <option value="">All sub-industries</option>
+                  {(facets.subs || []).map((s) => (
+                    <option key={s.sub_industry} value={s.sub_industry}>{s.sub_industry} ({s.n})</option>
+                  ))}
+                </select>
+              </label>
+              <label className="admin-leadgen-field">
+                <span>Tag</span>
+                <input
+                  placeholder="reviewed"
+                  value={filter.tag}
+                  onChange={(e) => { setFilter((f) => ({ ...f, tag: cleanTag(e.target.value) })); setPage(1); }}
+                  autoComplete="off"
+                  className="admin-leadgen-input"
+                />
+              </label>
+              <label className="admin-leadgen-field">
+                <span>Min emails</span>
+                <input
+                  placeholder="0"
+                  inputMode="numeric"
+                  value={filter.min_emails}
+                  onChange={(e) => { setFilter((f) => ({ ...f, min_emails: cleanDigits(e.target.value, 4) })); setPage(1); }}
+                  autoComplete="off"
+                  className="admin-leadgen-input"
+                />
+              </label>
+              <label className="admin-leadgen-field">
+                <span>Max emails</span>
+                <input
+                  placeholder="100"
+                  inputMode="numeric"
+                  value={filter.max_emails}
+                  onChange={(e) => { setFilter((f) => ({ ...f, max_emails: cleanDigits(e.target.value, 4) })); setPage(1); }}
+                  autoComplete="off"
+                  className="admin-leadgen-input"
+                />
+              </label>
+              <label className="admin-leadgen-field">
+                <span>After</span>
+                <input
+                  type="date"
+                  value={filter.created_after}
+                  onChange={(e) => { setFilter((f) => ({ ...f, created_after: e.target.value })); setPage(1); }}
+                  className="admin-leadgen-input"
+                />
+              </label>
+              <label className="admin-leadgen-field">
+                <span>Before</span>
+                <input
+                  type="date"
+                  value={filter.created_before}
+                  onChange={(e) => { setFilter((f) => ({ ...f, created_before: e.target.value })); setPage(1); }}
+                  className="admin-leadgen-input"
+                />
+              </label>
+            </div>
+          </details>
+          <span className="admin-leadgen-count">{activeFilterCount} active</span>
+          <div className="admin-leadgen-export-group">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("csv")} disabled={total === 0}>Export CSV</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("json")} disabled={total === 0}>Export JSON</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={reclassify} disabled={busy} title="Backfill industry_group + sub_industry from raw OSM tags">Reclassify</button>
+          </div>
         </div>
       </div>
 
@@ -1888,9 +1958,12 @@ function CampaignsTab({ seed, onSeedApplied }) {
   useEffect(() => { reload(); }, []);
   useEffect(() => {
     if (!seed) return;
-    setEditing(makeDraft(seed));
-    setMsg("Campaign draft prefilled from Command tab. Review copy and save.");
-    onSeedApplied?.();
+    const timer = window.setTimeout(() => {
+      setEditing(makeDraft(seed));
+      setMsg("Campaign draft prefilled from Command tab. Review copy and save.");
+      onSeedApplied?.();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [seed, onSeedApplied]);
 
   const newCampaign = () => setEditing(makeDraft());
@@ -2475,10 +2548,6 @@ function JobsTab({ recent, onSelectTab }) {
   const safePage = Math.min(page, totalPages);
   const visibleRows = filteredRows.slice((safePage - 1) * pageSize, safePage * pageSize);
 
-  useEffect(() => {
-    setPage(1);
-  }, [showAll, showFailuresOnly, kindFilter, rows.length]);
-
   const stats = rows.reduce((acc, job) => {
     const kind = classifyJob(job);
     acc.total += 1;
@@ -2486,10 +2555,14 @@ function JobsTab({ recent, onSelectTab }) {
     return acc;
   }, { total: 0, failed: 0, productive: 0, no_signal: 0, other: 0 });
   const productiveRate = stats.total > 0 ? Math.round((stats.productive / stats.total) * 100) : 0;
-  const dayAgo = Date.now() - 86_400_000;
+  const latestJobTs = rows.reduce((latest, job) => {
+    const finished = parseIso(job?.finished_at || job?.created_at) || 0;
+    return Math.max(latest, finished);
+  }, 0);
+  const dayAgo = latestJobTs - 86_400_000;
   const netNew24h = rows.reduce((acc, job) => {
     const finished = parseIso(job?.finished_at || job?.created_at);
-    if (!finished || finished < dayAgo) return acc;
+    if (!latestJobTs || !finished || finished < dayAgo) return acc;
     const result = job?.result || {};
     if (job?.kind === "osm_zip") return acc + Number(result?.inserted ?? 0);
     if (job?.kind === "website_emails") return acc + Number(result?.inserted ?? 0);

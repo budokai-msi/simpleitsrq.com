@@ -3513,10 +3513,22 @@ async function handleGithubHealth(session) {
 // in api/cron/agent.js so we stay well under serverless time limits.
 
 const LEADGEN_VALID_KINDS = new Set(["osm_zip", "website_emails"]);
+let leadgenTaxonomyReady = false;
+
+async function ensureLeadgenTaxonomyColumns() {
+  if (leadgenTaxonomyReady) return;
+  await sql`ALTER TABLE lead_businesses ADD COLUMN IF NOT EXISTS industry_group text`;
+  await sql`ALTER TABLE lead_businesses ADD COLUMN IF NOT EXISTS sub_industry   text`;
+  await sql`ALTER TABLE lead_businesses ADD COLUMN IF NOT EXISTS tags           text[] NOT NULL DEFAULT '{}'`;
+  await sql`CREATE INDEX IF NOT EXISTS lead_businesses_group_idx ON lead_businesses (industry_group, status)`;
+  await sql`CREATE INDEX IF NOT EXISTS lead_businesses_tags_gin  ON lead_businesses USING gin (tags)`;
+  leadgenTaxonomyReady = true;
+}
 
 async function handleLeadgenStatus(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  await ensureLeadgenTaxonomyColumns();
 
   // Aggregate counts in one round-trip per table. These power the
   // dashboard top-line numbers.
@@ -3591,6 +3603,7 @@ async function handleLeadgenStatus(session) {
 
   return json(200, {
     ok: true,
+    generated_at: new Date().toISOString(),
     businesses: biz[0] || {},
     emails: emails[0] || {},
     campaigns: camps[0] || {},
@@ -3607,6 +3620,7 @@ async function handleLeadgenStatus(session) {
 async function handleLeadgenInsights(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  await ensureLeadgenTaxonomyColumns();
 
   const [
     totalRow,
@@ -3779,6 +3793,7 @@ async function handleLeadgenCrawlEmails(session, request) {
 async function handleLeadgenBusinesses(session, url) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  await ensureLeadgenTaxonomyColumns();
 
   const zip = (url.searchParams.get("zip") || "").trim();
   const status = (url.searchParams.get("status") || "").trim();
@@ -3842,7 +3857,10 @@ async function handleLeadgenBusinesses(session, url) {
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
-      AND (${!wantsTag}::bool OR EXISTS (SELECT 1 FROM unnest(coalesce(b.tags, '{}'::text[])) t WHERE lower(t) LIKE ${'%' + tag + '%'}))
+      AND (${!wantsTag}::bool OR EXISTS (
+            SELECT 1
+            FROM unnest(coalesce(b.tags, '{}'::text[])) AS tag_value(tag)
+            WHERE lower(tag_value.tag) LIKE ${'%' + tag + '%'}))
       AND (${!wantsCreatedAfter}::bool OR b.created_at >= ${createdAfter + 'T00:00:00Z'})
       AND (${!wantsCreatedBefore}::bool OR b.created_at <= ${createdBefore + 'T23:59:59Z'})
     ORDER BY b.id DESC
@@ -3885,7 +3903,10 @@ async function handleLeadgenBusinesses(session, url) {
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
-      AND (${!wantsTag}::bool OR EXISTS (SELECT 1 FROM unnest(coalesce(b.tags, '{}'::text[])) t WHERE lower(t) LIKE ${'%' + tag + '%'}))
+      AND (${!wantsTag}::bool OR EXISTS (
+            SELECT 1
+            FROM unnest(coalesce(b.tags, '{}'::text[])) AS tag_value(tag)
+            WHERE lower(tag_value.tag) LIKE ${'%' + tag + '%'}))
       AND (${!wantsCreatedAfter}::bool OR b.created_at >= ${createdAfter + 'T00:00:00Z'})
       AND (${!wantsCreatedBefore}::bool OR b.created_at <= ${createdBefore + 'T23:59:59Z'})
   `;
@@ -3983,6 +4004,7 @@ async function handleLeadgenBusinessUpdate(session, request) {
 async function handleLeadgenReclassify(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  await ensureLeadgenTaxonomyColumns();
   const { classifyIndustry } = await import("./_lib/leadgen-classify.js");
   const rows = await sql`
     SELECT id, industry FROM lead_businesses
@@ -4007,6 +4029,7 @@ async function handleLeadgenReclassify(session) {
 async function handleLeadgenExport(session, url) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  await ensureLeadgenTaxonomyColumns();
   const format = (url.searchParams.get("format") || "csv").toLowerCase();
   const zip = (url.searchParams.get("zip") || "").trim();
   const status = (url.searchParams.get("status") || "").trim();
@@ -4509,6 +4532,7 @@ async function handleLeadgenRunJobs(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
   try {
+    await ensureLeadgenTaxonomyColumns();
     const summary = await runLeadgenWorker();
     return json(200, { ok: true, summary });
   } catch (err) {
