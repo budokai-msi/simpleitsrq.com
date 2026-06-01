@@ -1932,6 +1932,10 @@ function CampaignsTab({ seed, onSeedApplied }) {
   const sendTest = async (id) => {
     const to = prompt("Send a test of this template to which email?");
     if (!to) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(to).trim())) {
+      setErr("Enter a valid recipient email for test send.");
+      return;
+    }
     setMsg(""); setErr("");
     try {
       const r = await postJson("/api/portal?action=leadgen-campaign-test", { id, to });
@@ -1977,8 +1981,20 @@ function CampaignsTab({ seed, onSeedApplied }) {
           <tbody>
             {list.map((c) => (
               <tr key={c.id}>
+                {(() => {
+                  const readiness = campaignReadiness(c);
+                  const canStart = ["draft", "paused", "scheduled"].includes(c.status) && readiness.isReady;
+                  return (
+                    <>
                 <td>{c.name}</td>
-                <td className="admin-leadgen-muted">{c.status}</td>
+                <td className="admin-leadgen-muted">
+                  {c.status}
+                  <div>
+                    <span className={`leadgen-status-chip ${readiness.isReady ? "leadgen-status-chip--good" : "leadgen-status-chip--bad"}`}>
+                      checklist {readiness.score}/6
+                    </span>
+                  </div>
+                </td>
                 <td style={{ textAlign: "right" }}>{c.total_sends}</td>
                 <td style={{ textAlign: "right" }}>{c.sent}</td>
                 <td style={{ textAlign: "right" }}>{c.opened}</td>
@@ -1987,11 +2003,22 @@ function CampaignsTab({ seed, onSeedApplied }) {
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(c)}>Edit</button>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => sendTest(c.id)}>Test send</button>
                   {["draft", "paused", "scheduled"].includes(c.status) ? (
-                    <button type="button" className="btn btn-primary btn-sm" onClick={() => start(c.id)}>Start</button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={() => start(c.id)}
+                      disabled={!canStart}
+                      title={!canStart ? readiness.errors[0] : "Start this campaign now"}
+                    >
+                      Start
+                    </button>
                   ) : c.status === "running" ? (
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => setStatus(c.id, "paused")}>Pause</button>
                   ) : null}
                 </td>
+                    </>
+                  );
+                })()}
               </tr>
             ))}
             {list.length === 0 ? (
