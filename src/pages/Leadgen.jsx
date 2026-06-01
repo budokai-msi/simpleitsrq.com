@@ -1070,6 +1070,23 @@ function LeadgenScanApp() {
             <h2>Review list</h2>
           </div>
           <div className="leadgen-app-actions">
+            {scan && kept.length >= 5 ? (
+              <LeadgenPlanLink
+                tierId={recommendedTierId}
+                billing={recommendedBilling}
+                className="btn btn-primary btn-sm"
+                source="leadgen_scanner_results_recommended"
+                context="results_header"
+                ctaId="scanner_results_recommended"
+                onClick={() => trackEvent("generate_lead", {
+                  source: "leadgen_scanner_results_recommended",
+                  kept_count: kept.length,
+                  recommended_tier: recommendedTier.id,
+                })}
+              >
+                {`Start ${recommendedTier.name}`}
+              </LeadgenPlanLink>
+            ) : null}
             <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export CSV</button>
             <Link
               to={scannerResultWorkspaceLink}
