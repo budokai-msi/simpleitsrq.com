@@ -1819,6 +1819,41 @@ Would it be worth a 15-minute call next week to see what is slowing
 [Your name]
 Simple IT SRQ | https://simpleitsrq.com`;
 
+const REQUIRED_TEMPLATE_TOKENS = ["{{business_name}}", "{{city}}"];
+
+function campaignReadiness(campaign) {
+  const seg = campaign?.segment || {};
+  const name = String(campaign?.name || "").trim();
+  const fromEmail = String(campaign?.from_email || "").trim();
+  const subject = String(campaign?.subject_template || "").trim();
+  const body = String(campaign?.body_template || "").trim();
+  const zip = String(seg?.zip || "").replace(/\D/g, "").slice(0, 5);
+  const dailyCap = Number(campaign?.daily_cap);
+  const throttle = Number(campaign?.throttle_per_hour);
+  const minConfidence = Number(seg?.min_confidence);
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fromEmail);
+  const missingTokens = REQUIRED_TEMPLATE_TOKENS.filter((token) => !body.includes(token) && !subject.includes(token));
+  const errors = [];
+  if (name.length < 3) errors.push("Campaign name should be at least 3 characters.");
+  if (!emailOk) errors.push("From email must be a valid sender address.");
+  if (!/^\d{5}$/.test(zip)) errors.push("Segment zip must be a valid 5-digit zip.");
+  if (!subject) errors.push("Subject template is required.");
+  if (subject.length > 140) errors.push("Subject should be 140 characters or less.");
+  if (body.length < 60) errors.push("Body template is too short.");
+  if (!Number.isFinite(dailyCap) || dailyCap < 1 || dailyCap > 5000) errors.push("Daily cap must be between 1 and 5000.");
+  if (!Number.isFinite(throttle) || throttle < 1 || throttle > 500) errors.push("Throttle per hour must be between 1 and 500.");
+  if (!Number.isFinite(minConfidence) || minConfidence < 0 || minConfidence > 1) errors.push("Min confidence must be between 0 and 1.");
+  if (missingTokens.length) errors.push(`Template should include tokens for context: ${missingTokens.join(", ")}.`);
+  const score =
+    (name.length >= 3 ? 1 : 0) +
+    (emailOk ? 1 : 0) +
+    (/^\d{5}$/.test(zip) ? 1 : 0) +
+    (subject.length > 0 && subject.length <= 140 ? 1 : 0) +
+    (body.length >= 60 ? 1 : 0) +
+    (missingTokens.length === 0 ? 1 : 0);
+  return { errors, score, isReady: errors.length === 0 };
+}
+
 function CampaignsTab({ seed, onSeedApplied }) {
   const [list, setList] = useState([]);
   const [editing, setEditing] = useState(null);
@@ -1858,6 +1893,11 @@ function CampaignsTab({ seed, onSeedApplied }) {
   const newCampaign = () => setEditing(makeDraft());
 
   const save = async () => {
+    const readiness = campaignReadiness(editing);
+    if (!readiness.isReady) {
+      setErr(readiness.errors[0]);
+      return;
+    }
     setErr(null); setMsg(null);
     const payload = {
       ...editing,
@@ -1970,6 +2010,7 @@ function CampaignEditor({ campaign, onChange, onSave, onCancel, err }) {
   const setSegment = (patch) => onChange({ ...c, segment: { ...(c.segment || {}), ...patch } });
 
   const seg = c.segment || {};
+  const readiness = campaignReadiness(c);
 
   // ── AI panel state ──────────────────────────────────────────
   // Calls /api/portal?action=leadgen-ai which proxies Groq's free
@@ -2059,7 +2100,7 @@ function CampaignEditor({ campaign, onChange, onSave, onCancel, err }) {
           <input className="admin-leadgen-input" type="number" min={1} max={5000} value={c.daily_cap ?? 200} onChange={(e) => set({ daily_cap: e.target.value })} />
         </Field>
         <Field label="Segment: zip">
-          <input className="admin-leadgen-input" value={seg.zip || ""} onChange={(e) => setSegment({ zip: e.target.value })} placeholder="34207" />
+          <input className="admin-leadgen-input" value={seg.zip || ""} onChange={(e) => setSegment({ zip: e.target.value.replace(/\D/g, "").slice(0, 5) })} placeholder="34207" />
         </Field>
         <Field label="Segment: min email confidence">
           <input className="admin-leadgen-input" type="number" step="0.1" min={0} max={1} value={seg.min_confidence ?? 0.7} onChange={(e) => setSegment({ min_confidence: Number(e.target.value) })} />
@@ -2079,9 +2120,14 @@ function CampaignEditor({ campaign, onChange, onSave, onCancel, err }) {
       </Field>
 
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
+      {!readiness.isReady ? (
+        <p className="admin-leadgen-err">Campaign checklist: {readiness.errors[0]}</p>
+      ) : (
+        <p className="admin-leadgen-ok">Campaign checklist: ready ({readiness.score}/6).</p>
+      )}
 
       <div className="admin-leadgen-actions">
-        <button type="button" className="btn btn-primary" onClick={onSave}>Save</button>
+        <button type="button" className="btn btn-primary" onClick={onSave} disabled={!readiness.isReady} title={!readiness.isReady ? "Fix checklist items before saving" : ""}>Save</button>
         <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>
       </div>
     </div>
