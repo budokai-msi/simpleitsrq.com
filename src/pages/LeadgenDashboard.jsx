@@ -2011,6 +2011,15 @@ function CampaignsTab({ seed, onSeedApplied }) {
       setErr(String(e.message || e));
     }
   };
+  const cloneTopPerformer = (kind = "reply") => {
+    const winner = kind === "open" ? topOpenCampaign : topReplyCampaign;
+    if (!winner) {
+      setErr(`No ${kind}-rate winner available to clone yet.`);
+      return;
+    }
+    duplicateCampaign(winner);
+    setMsg(`Created draft from top ${kind}-rate campaign: ${winner.name}.`);
+  };
 
   if (editing) {
     return (
@@ -2074,6 +2083,14 @@ function CampaignsTab({ seed, onSeedApplied }) {
         <span>
           Top open rate: {topOpenCampaign ? `${topOpenCampaign.name} (${pct(topOpenCampaign.opened, topOpenCampaign.sent)})` : "none yet"}
         </span>
+      </div>
+      <div className="admin-leadgen-jobs__actions" style={{ marginBottom: 10 }}>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={() => cloneTopPerformer("reply")} disabled={!topReplyCampaign}>
+          Clone top reply winner
+        </button>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={() => cloneTopPerformer("open")} disabled={!topOpenCampaign}>
+          Clone top open winner
+        </button>
       </div>
 
       <div className="admin-aff-card">
