@@ -115,8 +115,8 @@ function CoverageMap() {
 
 export default function ServiceArea() {
   useSEO({
-    title: "Service Area | IT Support for Sarasota, Bradenton, Venice, Lakewood Ranch, and Nokomis",
-    description: "Simple IT SRQ covers all of Sarasota County and Manatee County — Bradenton, Sarasota, Lakewood Ranch, Venice, and Nokomis. Local IT support, computer repair, security cameras, and enterprise IT for businesses and homes. Flat monthly pricing for businesses.",
+    title: "Sarasota, Bradenton & Venice IT Support | Simple IT SRQ",
+    description: "Local IT support, computer repair, security cameras, and managed service plans across Sarasota County, Manatee County, Venice, and Lakewood Ranch.",
     canonical: `${SITE_URL}/service-area`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [

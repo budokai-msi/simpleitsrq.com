@@ -792,8 +792,8 @@ function Contact() {
 
 export default function Home() {
   useSEO({
-    title: "Simple IT SRQ | Local IT Support, Computer Repair, and Security Cameras - Sarasota and Bradenton",
-    description: "Local IT support, helpdesk, computer repair, security cameras, and enterprise IT (Active Directory, migrations, upgrades) for businesses and homes in Sarasota, Bradenton, and Venice. Flat monthly pricing for businesses, no-contract repair for residential. Email hello@simpleitsrq.com.",
+    title: "Sarasota IT Support, Repair & Leadgen | Simple IT SRQ",
+    description: "Local IT support, computer repair, security cameras, Microsoft 365, and local lead campaigns for Sarasota, Bradenton, Venice, and Lakewood Ranch.",
     canonical: "https://simpleitsrq.com/",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [{ name: "Home", url: "https://simpleitsrq.com/" }],

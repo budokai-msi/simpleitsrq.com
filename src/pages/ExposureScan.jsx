@@ -30,9 +30,9 @@ export default function ExposureScan() {
   const [report, setReport] = useState(null);
 
   useSEO({
-    title: "Free External Exposure Scan - DNS, SPF, DMARC, Subdomain Audit | Simple IT SRQ",
+    title: "Free DNS, SPF & DMARC Exposure Scan | Simple IT SRQ",
     description:
-      "Free passive-OSINT scan of your domain. Checks MX, SPF, DMARC, DKIM, IPv6, and exposed subdomains from Certificate Transparency logs. Plain-English grade and recommendations. No signup required to get the preview.",
+      "Run a passive external scan for DNS, MX, SPF, DMARC, DKIM, IPv6, and exposed subdomains, with a plain-English grade and next steps.",
     canonical: `${SITE_URL}/exposure-scan`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [

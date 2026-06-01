@@ -25,9 +25,9 @@ const HUB_INTRO = `Florida small-business IT looks different from the national p
 
 export default function IndustriesHub() {
   useSEO({
-    title: "IT Support by Industry — Florida Small Business | Simple IT SRQ",
+    title: "Industry IT Support for Florida SMBs | Simple IT SRQ",
     description:
-      "Industry-specific IT support for Florida small businesses: medical & dental practices, law firms, financial advisors, marine services, construction firms, and vacation rental management. HIPAA, GLBA, Florida-Bar-aligned. Pick your vertical and city.",
+      "IT support for medical, legal, finance, marine, construction, and vacation-rental teams across Sarasota, Bradenton, Venice, and Lakewood Ranch.",
     canonical: `${SITE_URL}/industries`,
     image: `${SITE_URL}/og-industries.png`,
     breadcrumbs: [

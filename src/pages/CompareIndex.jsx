@@ -5,9 +5,9 @@ import { COMPARISONS } from "../data/comparisons";
 
 export default function CompareIndex() {
   useSEO({
-    title: "Head-to-Head: Tool vs Tool Comparisons for Florida SMBs | Simple IT SRQ",
+    title: "Tool Comparisons for Florida SMBs | Simple IT SRQ",
     description:
-      "Vendor-vs-vendor comparisons for the tools a Sarasota-Bradenton small office actually has to choose between — password managers, productivity suites, backup, payroll, and more.",
+      "Vendor comparisons for Sarasota-Bradenton offices choosing password managers, productivity suites, backup, payroll, and core business tools.",
     canonical: `${SITE_URL}/compare`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [
