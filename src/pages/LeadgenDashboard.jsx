@@ -219,12 +219,16 @@ export default function LeadgenDashboard() {
   const [statusErr, setStatusErr] = useState(null);
   const [opsStatus, setOpsStatus] = useState(null);
   const [runtimeHealth, setRuntimeHealth] = useState(null);
-  const selectTab = (id, source = "leadgen_sidebar") => {
+  const [campaignSeed, setCampaignSeed] = useState(null);
+  const selectTab = (id, source = "leadgen_sidebar", payload = null) => {
     trackEvent("select_content", {
       content_type: "leadgen_tab_nav",
       destination: id,
       source,
     });
+    if (id === "campaigns" && payload?.campaignSeed) {
+      setCampaignSeed(payload.campaignSeed);
+    }
     setTab(id);
   };
 
@@ -454,7 +458,7 @@ export default function LeadgenDashboard() {
           <div className="admin-leadgen-tab-body leadgen-workspace-main">
             {tab === "command" && <CommandTab status={status} opsStatus={opsStatus} runtimeHealth={runtimeHealth} onSelectTab={selectTab} onStatusChange={loadStatus} onOpsRefresh={loadOps} />}
             {tab === "discover" && <DiscoverTab onStatusChange={loadStatus} />}
-            {tab === "campaigns" && <CampaignsTab />}
+            {tab === "campaigns" && <CampaignsTab seed={campaignSeed} onSeedApplied={() => setCampaignSeed(null)} />}
             {tab === "insights" && <InsightsTab />}
             {tab === "jobs" && <JobsTab recent={status?.recent_jobs || []} onSelectTab={selectTab} />}
           </div>
@@ -622,6 +626,26 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
     canCampaign: reviewQueue.length > 0 || campaignQueue.length > 0,
     canExport: emailBusinesses > 0,
   };
+  const seedCampaignFromCommand = () => {
+    if (!isValidZip) {
+      setErr("Enter a valid 5-digit zip to prefill a campaign draft.");
+      return;
+    }
+    const defaultName = `Leadgen ${normalizedZip} ${new Date().toISOString().slice(0, 10)}`;
+    const seed = {
+      name: defaultName,
+      segment: { zip: normalizedZip, min_confidence: 0.7 },
+      throttle_per_hour: 30,
+      daily_cap: Math.max(50, Math.min(250, reviewQueue.length || 100)),
+    };
+    trackEvent("select_content", {
+      content_type: "leadgen_seed_campaign",
+      source: "leadgen_admin_command",
+      zip: normalizedZip,
+      review_ready: reviewQueue.length,
+    });
+    onSelectTab("campaigns", "command_seed_campaign", { campaignSeed: seed });
+  };
 
   return (
     <div className="leadgen-command">
@@ -752,6 +776,15 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
               title={!revenueReady.canCampaign ? "No review-ready records yet" : ""}
             >
               3. Launch campaign
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={seedCampaignFromCommand}
+              disabled={!isValidZip}
+              title={!isValidZip ? "Enter a valid zip to prefill a campaign draft" : ""}
+            >
+              Prefill campaign
             </button>
             <button
               type="button"
@@ -1786,11 +1819,26 @@ Would it be worth a 15-minute call next week to see what is slowing
 [Your name]
 Simple IT SRQ | https://simpleitsrq.com`;
 
-function CampaignsTab() {
+function CampaignsTab({ seed, onSeedApplied }) {
   const [list, setList] = useState([]);
   const [editing, setEditing] = useState(null);
   const [err, setErr] = useState(null);
   const [msg, setMsg] = useState(null);
+
+  const makeDraft = (seedInput = {}) => ({
+    name: seedInput?.name || "",
+    subject_template: seedInput?.subject_template || "",
+    body_template: seedInput?.body_template || DEFAULT_TEMPLATE,
+    from_email: seedInput?.from_email || "",
+    reply_to: seedInput?.reply_to || "",
+    throttle_per_hour: Number(seedInput?.throttle_per_hour ?? 30) || 30,
+    daily_cap: Number(seedInput?.daily_cap ?? 200) || 200,
+    consent_basis: seedInput?.consent_basis || "legitimate_interest",
+    segment: {
+      zip: String(seedInput?.segment?.zip || "").replace(/\D/g, "").slice(0, 5),
+      min_confidence: Number(seedInput?.segment?.min_confidence ?? 0.7),
+    },
+  });
 
   const reload = async () => {
     try {
@@ -1800,18 +1848,14 @@ function CampaignsTab() {
   };
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    if (!seed) return;
+    setEditing(makeDraft(seed));
+    setMsg("Campaign draft prefilled from Command tab. Review copy and save.");
+    onSeedApplied?.();
+  }, [seed, onSeedApplied]);
 
-  const newCampaign = () => setEditing({
-    name: "",
-    subject_template: "",
-    body_template: DEFAULT_TEMPLATE,
-    from_email: "",
-    reply_to: "",
-    throttle_per_hour: 30,
-    daily_cap: 200,
-    consent_basis: "legitimate_interest",
-    segment: { zip: "", min_confidence: 0.7 },
-  });
+  const newCampaign = () => setEditing(makeDraft());
 
   const save = async () => {
     setErr(null); setMsg(null);
