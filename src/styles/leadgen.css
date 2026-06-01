@@ -905,6 +905,65 @@
   .leadgen-app-controls--primary .btn { grid-column: auto; }
 }
 
+@media (max-width: 560px) {
+  .leadgen-app-panel--control {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+  .leadgen-app-title h1 {
+    font-size: clamp(2.05rem, 12vw, 2.7rem);
+    line-height: 1.02;
+  }
+  .leadgen-app-title p {
+    font-size: 0.94rem;
+    line-height: 1.55;
+  }
+  .leadgen-context-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-bottom: 2px;
+    scroll-snap-type: x proximity;
+  }
+  .leadgen-context-item {
+    flex: 0 0 auto;
+    min-width: min(72vw, 232px);
+    min-height: 38px;
+    scroll-snap-align: start;
+  }
+  .leadgen-context-item__hint {
+    display: none;
+  }
+  .leadgen-scan-card {
+    margin-top: 16px;
+    padding: 12px;
+  }
+  .leadgen-app-controls--primary {
+    grid-template-columns: minmax(108px, 0.42fr) minmax(0, 0.58fr);
+    gap: 8px;
+  }
+  .leadgen-app-controls--primary .btn {
+    grid-column: 1 / -1;
+    min-height: 46px;
+  }
+  .leadgen-app-controls input,
+  .leadgen-app-controls select {
+    min-height: 42px;
+  }
+  .leadgen-quick-markets {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .leadgen-quick-markets > span {
+    flex: 0 0 auto;
+  }
+  .leadgen-quick-market-btn {
+    flex: 0 0 auto;
+  }
+}
+
 /* Stat band */
 .leadgen-statband-section { padding: 2rem 0; }
 .leadgen-statband { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--syn-border, #e5e7eb); background: var(--syn-surface, #fff); }

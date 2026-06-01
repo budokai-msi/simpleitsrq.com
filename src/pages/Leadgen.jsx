@@ -1065,7 +1065,7 @@ function LeadgenScanApp() {
                 onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
                 onKeyDown={onScanKeyDown}
                 inputMode="numeric"
-                placeholder="34237"
+                placeholder="e.g. 34237"
                 aria-label="Target zip code"
               />
             </label>
@@ -1077,7 +1077,7 @@ function LeadgenScanApp() {
             </label>
             <button type="button" className="btn btn-primary" onClick={runScan} disabled={busy || !validZip}>
               <Search size={16} aria-hidden="true" />
-              {busy ? "Scanning..." : scan ? "Refresh scan" : effectivePrefetchState === "ready" ? "Open scan" : "Run scan"}
+              {busy ? "Scanning..." : !validZip ? "Enter zip" : scan ? "Refresh scan" : effectivePrefetchState === "ready" ? "Open scan" : "Run scan"}
             </button>
           </div>
           <details className="leadgen-advanced-controls">
@@ -1132,7 +1132,7 @@ function LeadgenScanApp() {
           <span />
           {effectivePrefetchState === "loading" ? "Prefetching this market..." : null}
           {effectivePrefetchState === "ready" ? "Scan is warmed and ready." : null}
-          {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a valid zip to warm the scan.") : null}
+          {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip or use a quick start.") : null}
         </div>
 
         {err ? <p className="leadgen-app-error">{err}</p> : null}
