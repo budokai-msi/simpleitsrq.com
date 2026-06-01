@@ -465,6 +465,16 @@
   color: var(--lg-muted);
   font-size: 0.86rem;
 }
+.leadgen-conversion-strip__warn {
+  margin-top: 8px !important;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--warning, #ca8a04) 38%, var(--lg-border-soft));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--warning, #ca8a04) 10%, var(--lg-panel));
+  color: var(--lg-text) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.4;
+}
 .leadgen-conversion-strip__actions {
   display: inline-flex;
   gap: 8px;
