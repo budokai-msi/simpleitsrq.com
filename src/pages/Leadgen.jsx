@@ -653,6 +653,8 @@ function LeadgenScanApp() {
   const recommendedTierId = kept.length >= 120 ? "pro" : "growth";
   const recommendedBilling = kept.length >= 120 ? "annual" : "monthly";
   const recommendedTier = TIERS.find((tier) => tier.id === recommendedTierId) || TIERS[0];
+  const growthLimitExceeded = kept.length > 500;
+  const proCapacityWarning = kept.length > 5000;
   const subIndustryOptions = useMemo(() => (
     Array.from(new Set(reviewedRows.map((row) => row.sub_industry).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   ), [reviewedRows]);
@@ -1097,6 +1099,16 @@ function LeadgenScanApp() {
                 At {dailyCap || 35}/day, this is about {projectedSendDays} send day
                 {projectedSendDays === 1 ? "" : "s"}. Recommended plan: {recommendedTier.name}.
               </p>
+              {growthLimitExceeded ? (
+                <p className="leadgen-conversion-strip__warn">
+                  This reviewed set is above Growth capacity (500 records/month). Pro is the safer fit.
+                </p>
+              ) : null}
+              {proCapacityWarning ? (
+                <p className="leadgen-conversion-strip__warn">
+                  This reviewed set is above Pro monthly capacity (5,000). Split by niche or request Enterprise onboarding.
+                </p>
+              ) : null}
             </div>
             <div className="leadgen-conversion-strip__actions">
               <LeadgenPlanLink
