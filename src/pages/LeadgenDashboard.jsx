@@ -1976,6 +1976,26 @@ function CampaignsTab({ seed, onSeedApplied }) {
   const topOpenCampaign = [...list]
     .filter((c) => Number(c.sent || 0) > 0)
     .sort((a, b) => ratio(b.opened, b.sent) - ratio(a.opened, a.sent))[0];
+  const runningCount = list.filter((c) => c.status === "running").length;
+  const aggregateSent = list.reduce((acc, c) => acc + Number(c.sent || 0), 0);
+  const aggregateOpened = list.reduce((acc, c) => acc + Number(c.opened || 0), 0);
+  const aggregateReplied = list.reduce((acc, c) => acc + Number(c.replied || 0), 0);
+  const pauseAllRunning = async () => {
+    if (runningCount <= 0) {
+      setErr("No running campaigns to pause.");
+      return;
+    }
+    if (!confirm(`Pause ${runningCount} running campaign${runningCount === 1 ? "" : "s"}?`)) return;
+    setErr(null); setMsg(null);
+    try {
+      const running = list.filter((c) => c.status === "running");
+      await Promise.all(running.map((c) => postJson("/api/portal?action=leadgen-campaign-status", { id: c.id, status: "paused" })));
+      setMsg(`Paused ${running.length} running campaign${running.length === 1 ? "" : "s"}.`);
+      reload();
+    } catch (e) {
+      setErr(String(e.message || e));
+    }
+  };
 
   if (editing) {
     return (
@@ -2009,12 +2029,30 @@ function CampaignsTab({ seed, onSeedApplied }) {
             <option value="sent_desc">Sort: Sent volume</option>
             <option value="name_asc">Sort: Name</option>
           </select>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={pauseAllRunning}
+            disabled={runningCount <= 0}
+            title={runningCount <= 0 ? "No running campaigns" : `Pause ${runningCount} running campaign${runningCount === 1 ? "" : "s"}`}
+          >
+            Pause all running
+          </button>
           <button type="button" onClick={newCampaign} className="btn btn-primary">+ New campaign</button>
         </div>
       </div>
       {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
       <div className="admin-leadgen-jobs__health">
+        <span>
+          Aggregate open rate: {pct(aggregateOpened, aggregateSent)}
+        </span>
+        <span>
+          Aggregate reply rate: {pct(aggregateReplied, aggregateSent)}
+        </span>
+        <span>
+          Running campaigns: {runningCount}
+        </span>
         <span>
           Top reply rate: {topReplyCampaign ? `${topReplyCampaign.name} (${pct(topReplyCampaign.replied, topReplyCampaign.sent)})` : "none yet"}
         </span>
