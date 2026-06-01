@@ -3862,6 +3862,10 @@ function safeLeadgenError(err) {
   return String(err?.message || err || "unknown_error").slice(0, 220);
 }
 
+function leadgenResultWarning(mode, reason) {
+  return `Loaded ${mode} view after leadgen query failed: ${safeLeadgenError(reason)}`;
+}
+
 async function fetchLeadgenBusinessesModern(f) {
   const rows = await sql`
     SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.lat, b.lng, b.website,
@@ -4032,63 +4036,158 @@ async function fetchLeadgenBusinessesLegacy(f, reason) {
     return true;
   });
 
-  const totalRow = await sql`
-    SELECT COUNT(*)::int AS total
+  let total = filteredRows.length;
+  let groups = [];
+  const warnings = [];
+
+  try {
+    const totalRow = await sql`
+      SELECT COUNT(*)::int AS total
+      FROM lead_businesses b
+      WHERE (${!f.wantsZip}::bool OR b.zip = ${f.zip})
+        AND (${!f.wantsStatus}::bool OR b.status = ${f.status})
+        AND (${!f.wantsQ}::bool
+          OR lower(b.name) LIKE ${f.like}
+          OR lower(coalesce(b.website,'')) LIKE ${f.like}
+          OR lower(coalesce(b.industry,'')) LIKE ${f.like}
+          OR EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND lower(e.email) LIKE ${f.like}
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+        AND (${!f.wantsGroup}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.groupLike})
+        AND (${!f.wantsSub}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.subLike})
+        AND (${!f.hasWebsite}::bool OR b.website IS NOT NULL)
+        AND (${!f.hasEmail}::bool OR EXISTS (
+              SELECT 1 FROM lead_emails e
+              WHERE e.business_id = b.id
+                AND e.opted_out_at IS NULL
+                AND e.bounced_at IS NULL))
+        AND (${!f.noEmail}::bool OR NOT EXISTS (
+              SELECT 1 FROM lead_emails e
+              WHERE e.business_id = b.id
+                AND e.opted_out_at IS NULL
+                AND e.bounced_at IS NULL))
+        AND (${!f.wantsTag}::bool
+          OR lower(b.name) LIKE ${f.tagLike}
+          OR lower(coalesce(b.website,'')) LIKE ${f.tagLike}
+          OR lower(coalesce(b.industry,'')) LIKE ${f.tagLike}
+          OR EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND lower(e.email) LIKE ${f.tagLike}
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+        AND (${!f.wantsCreatedAfter}::bool OR b.created_at >= ${f.createdAfterIso}::timestamptz)
+        AND (${!f.wantsCreatedBefore}::bool OR b.created_at <= ${f.createdBeforeIso}::timestamptz)
+    `;
+    total = totalRow[0]?.total || 0;
+  } catch (err) {
+    warnings.push(`count: ${safeLeadgenError(err)}`);
+    console.warn("[portal] leadgen legacy count failed; keeping row list", safeLeadgenError(err));
+  }
+
+  try {
+    groups = await sql`
+      SELECT COALESCE(NULLIF(industry, ''), 'Other') AS industry_group, COUNT(*)::int AS n
+      FROM lead_businesses
+      WHERE industry IS NOT NULL
+        AND (${!f.wantsZip}::bool OR zip = ${f.zip})
+      GROUP BY COALESCE(NULLIF(industry, ''), 'Other')
+      ORDER BY n DESC
+    `;
+  } catch (err) {
+    warnings.push(`facets: ${safeLeadgenError(err)}`);
+    console.warn("[portal] leadgen legacy facets failed; keeping row list", safeLeadgenError(err));
+  }
+
+  return {
+    rows: filteredRows,
+    total,
+    facets: { groups, subs: [] },
+    degraded: true,
+    warning: [leadgenResultWarning("compatibility", reason), ...warnings].join(" | "),
+  };
+}
+
+async function fetchLeadgenBusinessesBare(f, reason) {
+  const rows = await sql`
+    SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.lat, b.lng, b.website,
+           b.phone, b.industry, COALESCE(NULLIF(b.industry, ''), 'Other') AS industry_group,
+           NULL::text AS sub_industry, '{}'::text[] AS tags,
+           b.status, b.source, b.source_id, b.source_url, b.created_at,
+           0::int AS deliverable_emails
     FROM lead_businesses b
     WHERE (${!f.wantsZip}::bool OR b.zip = ${f.zip})
       AND (${!f.wantsStatus}::bool OR b.status = ${f.status})
       AND (${!f.wantsQ}::bool
         OR lower(b.name) LIKE ${f.like}
         OR lower(coalesce(b.website,'')) LIKE ${f.like}
-        OR lower(coalesce(b.industry,'')) LIKE ${f.like}
-        OR EXISTS (
-          SELECT 1 FROM lead_emails e
-          WHERE e.business_id = b.id
-            AND lower(e.email) LIKE ${f.like}
-            AND e.opted_out_at IS NULL
-            AND e.bounced_at IS NULL))
+        OR lower(coalesce(b.industry,'')) LIKE ${f.like})
       AND (${!f.wantsGroup}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.groupLike})
       AND (${!f.wantsSub}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.subLike})
       AND (${!f.hasWebsite}::bool OR b.website IS NOT NULL)
-      AND (${!f.hasEmail}::bool OR EXISTS (
-            SELECT 1 FROM lead_emails e
-            WHERE e.business_id = b.id
-              AND e.opted_out_at IS NULL
-              AND e.bounced_at IS NULL))
-      AND (${!f.noEmail}::bool OR NOT EXISTS (
-            SELECT 1 FROM lead_emails e
-            WHERE e.business_id = b.id
-              AND e.opted_out_at IS NULL
-              AND e.bounced_at IS NULL))
       AND (${!f.wantsTag}::bool
         OR lower(b.name) LIKE ${f.tagLike}
         OR lower(coalesce(b.website,'')) LIKE ${f.tagLike}
-        OR lower(coalesce(b.industry,'')) LIKE ${f.tagLike}
-        OR EXISTS (
-          SELECT 1 FROM lead_emails e
-          WHERE e.business_id = b.id
-            AND lower(e.email) LIKE ${f.tagLike}
-            AND e.opted_out_at IS NULL
-            AND e.bounced_at IS NULL))
+        OR lower(coalesce(b.industry,'')) LIKE ${f.tagLike})
       AND (${!f.wantsCreatedAfter}::bool OR b.created_at >= ${f.createdAfterIso}::timestamptz)
       AND (${!f.wantsCreatedBefore}::bool OR b.created_at <= ${f.createdBeforeIso}::timestamptz)
+    ORDER BY b.id DESC
+    LIMIT ${f.limit} OFFSET ${f.offset}
   `;
 
-  const groups = await sql`
-    SELECT COALESCE(NULLIF(industry, ''), 'Other') AS industry_group, COUNT(*)::int AS n
-    FROM lead_businesses
-    WHERE industry IS NOT NULL
-      AND (${!f.wantsZip}::bool OR zip = ${f.zip})
-    GROUP BY COALESCE(NULLIF(industry, ''), 'Other')
-    ORDER BY n DESC
-  `;
+  let total = rows.length;
+  let groups = [];
+  const warnings = [];
+
+  try {
+    const totalRow = await sql`
+      SELECT COUNT(*)::int AS total
+      FROM lead_businesses b
+      WHERE (${!f.wantsZip}::bool OR b.zip = ${f.zip})
+        AND (${!f.wantsStatus}::bool OR b.status = ${f.status})
+        AND (${!f.wantsQ}::bool
+          OR lower(b.name) LIKE ${f.like}
+          OR lower(coalesce(b.website,'')) LIKE ${f.like}
+          OR lower(coalesce(b.industry,'')) LIKE ${f.like})
+        AND (${!f.wantsGroup}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.groupLike})
+        AND (${!f.wantsSub}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.subLike})
+        AND (${!f.hasWebsite}::bool OR b.website IS NOT NULL)
+        AND (${!f.wantsTag}::bool
+          OR lower(b.name) LIKE ${f.tagLike}
+          OR lower(coalesce(b.website,'')) LIKE ${f.tagLike}
+          OR lower(coalesce(b.industry,'')) LIKE ${f.tagLike})
+        AND (${!f.wantsCreatedAfter}::bool OR b.created_at >= ${f.createdAfterIso}::timestamptz)
+        AND (${!f.wantsCreatedBefore}::bool OR b.created_at <= ${f.createdBeforeIso}::timestamptz)
+    `;
+    total = totalRow[0]?.total || 0;
+  } catch (err) {
+    warnings.push(`count: ${safeLeadgenError(err)}`);
+    console.warn("[portal] leadgen bare count failed; keeping row list", safeLeadgenError(err));
+  }
+
+  try {
+    groups = await sql`
+      SELECT COALESCE(NULLIF(industry, ''), 'Other') AS industry_group, COUNT(*)::int AS n
+      FROM lead_businesses
+      WHERE industry IS NOT NULL
+        AND (${!f.wantsZip}::bool OR zip = ${f.zip})
+      GROUP BY COALESCE(NULLIF(industry, ''), 'Other')
+      ORDER BY n DESC
+    `;
+  } catch (err) {
+    warnings.push(`facets: ${safeLeadgenError(err)}`);
+    console.warn("[portal] leadgen bare facets failed; keeping row list", safeLeadgenError(err));
+  }
 
   return {
-    rows: filteredRows,
-    total: totalRow[0]?.total || 0,
+    rows,
+    total,
     facets: { groups, subs: [] },
     degraded: true,
-    warning: `Loaded compatibility view after taxonomy query failed: ${safeLeadgenError(reason)}`,
+    warning: [leadgenResultWarning("bare business", reason), ...warnings].join(" | "),
   };
 }
 
@@ -4111,7 +4210,12 @@ async function handleLeadgenBusinesses(session, url) {
     result = await fetchLeadgenBusinessesModern(f);
   } catch (err) {
     console.warn("[portal] leadgen modern list query failed; trying compatibility mode", safeLeadgenError(err));
-    result = await fetchLeadgenBusinessesLegacy(f, ensureError || err);
+    try {
+      result = await fetchLeadgenBusinessesLegacy(f, ensureError || err);
+    } catch (legacyErr) {
+      console.warn("[portal] leadgen compatibility list query failed; trying bare mode", safeLeadgenError(legacyErr));
+      result = await fetchLeadgenBusinessesBare(f, legacyErr);
+    }
   }
 
   return json(200, {
