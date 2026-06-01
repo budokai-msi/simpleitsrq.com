@@ -435,6 +435,162 @@
   font-size: 0.9rem;
   line-height: 1.45;
 }
+.leadgen-readiness {
+  margin-top: 12px;
+  border: 1px solid var(--lg-border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--lg-panel);
+}
+.leadgen-readiness__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.leadgen-readiness__head span {
+  color: var(--lg-faint);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.leadgen-readiness__head strong {
+  color: var(--lg-text);
+  font-size: 0.96rem;
+}
+.leadgen-readiness__checks {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.leadgen-readiness__check {
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--lg-panel-soft);
+}
+.leadgen-readiness__check span {
+  display: block;
+  color: var(--lg-faint);
+  font-size: 11px;
+  font-weight: 700;
+}
+.leadgen-readiness__check strong {
+  display: block;
+  margin-top: 2px;
+  color: #b45309;
+  font-size: 0.82rem;
+}
+.leadgen-readiness__check.is-ok strong {
+  color: #166534;
+}
+.leadgen-readiness__action {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.leadgen-readiness__action p {
+  margin: 0;
+  color: var(--lg-muted);
+  font-size: 0.84rem;
+}
+.leadgen-readiness--good {
+  border-color: color-mix(in srgb, #16a34a 30%, var(--lg-border));
+}
+.leadgen-readiness--bad {
+  border-color: color-mix(in srgb, #dc2626 35%, var(--lg-border));
+}
+.leadgen-revenue-forecast {
+  margin-top: 12px;
+  border: 1px solid var(--lg-border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--lg-panel-soft);
+}
+.leadgen-revenue-forecast__head span {
+  color: var(--lg-faint);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.leadgen-revenue-forecast__head strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--lg-text);
+  font-size: 1rem;
+}
+.leadgen-revenue-forecast__controls {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.leadgen-revenue-forecast__controls label span {
+  display: block;
+  color: var(--lg-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.leadgen-revenue-forecast__controls label strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--lg-text);
+  font-size: 0.84rem;
+}
+.leadgen-revenue-forecast__kpis {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.leadgen-revenue-forecast__kpis div {
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--lg-panel);
+}
+.leadgen-revenue-forecast__kpis span {
+  display: block;
+  color: var(--lg-faint);
+  font-size: 11px;
+  font-weight: 700;
+}
+.leadgen-revenue-forecast__kpis strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--lg-text);
+  font-size: 0.92rem;
+}
+.leadgen-revenue-forecast__planfit {
+  margin-top: 10px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 8px;
+  background: var(--lg-panel);
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 8px;
+  align-items: end;
+}
+.leadgen-revenue-forecast__planfit span {
+  display: block;
+  color: var(--lg-faint);
+  font-size: 11px;
+  font-weight: 700;
+}
+.leadgen-revenue-forecast__planfit strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--lg-text);
+  font-size: 0.86rem;
+}
 .leadgen-conversion-strip {
   margin-top: 12px;
   border: 1px solid var(--lg-border);
@@ -659,7 +815,11 @@
 @media (max-width: 860px) {
   .leadgen-context-strip,
   .leadgen-app-kpis,
-  .leadgen-app-brief { grid-template-columns: 1fr 1fr; }
+  .leadgen-app-brief,
+  .leadgen-readiness__checks,
+  .leadgen-revenue-forecast__controls,
+  .leadgen-revenue-forecast__kpis { grid-template-columns: 1fr 1fr; }
+  .leadgen-revenue-forecast__planfit { grid-template-columns: 1fr 1fr; }
   .leadgen-conversion-strip { grid-template-columns: 1fr; }
   .leadgen-result-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .leadgen-result-row { grid-template-columns: 1fr; }
@@ -676,6 +836,10 @@
   .leadgen-context-strip,
   .leadgen-app-kpis,
   .leadgen-app-brief,
+  .leadgen-readiness__checks,
+  .leadgen-revenue-forecast__controls,
+  .leadgen-revenue-forecast__kpis,
+  .leadgen-revenue-forecast__planfit,
   .leadgen-result-tools { grid-template-columns: 1fr; }
 }
 
@@ -1410,10 +1574,10 @@
 
 .admin-leadgen .leadgen-command-console {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
-  gap: 10px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.95fr);
+  gap: 12px;
   align-items: stretch;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .admin-leadgen .leadgen-console-main,
@@ -1426,7 +1590,7 @@
 }
 
 .admin-leadgen .leadgen-console-main {
-  padding: 14px;
+  padding: 18px;
 }
 
 .admin-leadgen .leadgen-console-topline {
@@ -1439,10 +1603,10 @@
 
 .admin-leadgen .leadgen-console-main h2 {
   max-width: 700px;
-  margin: 0.1rem 0 0.3rem;
+  margin: 0.2rem 0 0.45rem;
   color: var(--text-1, #111827);
-  font-size: clamp(1.04rem, 1.12vw, 1.22rem);
-  line-height: 1.28;
+  font-size: clamp(1.12rem, 1.22vw, 1.34rem);
+  line-height: 1.24;
   letter-spacing: 0;
 }
 
@@ -1450,8 +1614,8 @@
 .admin-leadgen .leadgen-next-card p {
   max-width: 660px;
   color: var(--text-2, #4b5563);
-  font-size: 0.88rem;
-  line-height: 1.42;
+  font-size: 0.92rem;
+  line-height: 1.46;
   margin: 0;
 }
 
@@ -1511,10 +1675,10 @@
 
 .admin-leadgen .leadgen-console-actions {
   display: grid;
-  grid-template-columns: minmax(240px, 1.5fr) repeat(3, minmax(120px, 1fr));
-  gap: 8px;
+  grid-template-columns: minmax(280px, 1.65fr) repeat(3, minmax(132px, 1fr));
+  gap: 10px;
   align-items: end;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .admin-leadgen .leadgen-console-actions .btn,
@@ -1525,9 +1689,9 @@
   justify-content: center;
   gap: 7px;
   min-width: 0;
-  min-height: 40px;
-  padding: 0 12px;
-  font-size: 0.88rem;
+  min-height: 42px;
+  padding: 0 14px;
+  font-size: 0.9rem;
 }
 
 .admin-leadgen .leadgen-zip-field {
@@ -1545,9 +1709,9 @@
 
 .admin-leadgen .leadgen-stage-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 7px;
-  margin-top: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .admin-leadgen .leadgen-stage {
@@ -1555,7 +1719,7 @@
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
   gap: 7px;
-  padding: 7px 8px;
+  padding: 9px 10px;
   border: 1px solid var(--border, #d1d5db);
   border-radius: 8px;
   background: var(--surface-2, #f8fafc);
@@ -1588,12 +1752,12 @@
 }
 
 .admin-leadgen .leadgen-stage strong {
-  font-size: 0.82rem;
+  font-size: 0.84rem;
 }
 
 .admin-leadgen .leadgen-stage em {
   margin-top: 1px;
-  font-size: 0.94rem;
+  font-size: 1rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -1604,7 +1768,7 @@
 .admin-leadgen .leadgen-console-metrics dt {
   display: block;
   color: var(--text-3, #6b7280);
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   line-height: 1.35;
 }
 
@@ -2059,22 +2223,25 @@
   background: color-mix(in srgb, var(--surface-2, #f8fafc) 90%, var(--text-1, #111827) 10%);
 }
 
-.admin-leadgen-jobs .admin-aff-table th:nth-child(1),
-.admin-leadgen-jobs .admin-aff-table td:nth-child(1) { width: 52px; }
-.admin-leadgen-jobs .admin-aff-table th:nth-child(2),
-.admin-leadgen-jobs .admin-aff-table td:nth-child(2) { width: 118px; }
-.admin-leadgen-jobs .admin-aff-table th:nth-child(3),
-.admin-leadgen-jobs .admin-aff-table td:nth-child(3) { width: 124px; }
-.admin-leadgen-jobs .admin-aff-table th:nth-child(4),
-.admin-leadgen-jobs .admin-aff-table td:nth-child(4) { width: 112px; }
-.admin-leadgen-jobs .admin-aff-table th:nth-child(5),
-.admin-leadgen-jobs .admin-aff-table td:nth-child(5) { width: 132px; }
-.admin-leadgen-jobs .admin-aff-table th:nth-child(6),
-.admin-leadgen-jobs .admin-aff-table td:nth-child(6) { width: 154px; }
-.admin-leadgen-jobs .admin-aff-table th:nth-child(7),
-.admin-leadgen-jobs .admin-aff-table td:nth-child(7) { width: 96px; }
-.admin-leadgen-jobs .admin-aff-table th:nth-child(8),
-.admin-leadgen-jobs .admin-aff-table td:nth-child(8) { width: 300px; }
+.admin-leadgen-jobs .admin-aff-card--jobs-table {
+  overflow: auto;
+}
+
+.admin-leadgen-jobs .admin-aff-card--jobs-table .admin-aff-table {
+  min-width: 1080px;
+}
+
+.admin-leadgen-jobs .admin-aff-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.admin-leadgen-jobs .admin-aff-table td:last-child,
+.admin-leadgen-jobs .admin-aff-table th:last-child {
+  width: 112px;
+  text-align: right;
+}
 
 .admin-leadgen .admin-aff-stat-hint {
   font-size: 11px;

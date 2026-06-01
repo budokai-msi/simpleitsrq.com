@@ -655,10 +655,10 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
             <span className="eyebrow">Live leadgen workspace</span>
             <span className="leadgen-powered-pill">{queuedJobs} queued jobs</span>
           </div>
-          <h2>Operate the local prospect pipeline from one screen.</h2>
+          <h2>Start with map + zip, then move leads to outreach.</h2>
           <p>
-            Enter a zip, discover public business records, crawl published
-            contact paths, review the list, then launch a capped campaign.
+            Pick a local market, discover businesses, verify contact paths, and
+            launch a controlled campaign from one workspace.
           </p>
           <div className="leadgen-console-health" role="status" aria-live="polite">
             <span className={`leadgen-status-chip ${dbHealth === "connected" ? "leadgen-status-chip--good" : "leadgen-status-chip--bad"}`}>
@@ -2045,6 +2045,46 @@ function CampaignsTab({ seed, onSeedApplied }) {
     duplicateCampaign(winner);
     setMsg(`Created draft from top ${kind}-rate campaign: ${winner.name}.`);
   };
+  const exportCampaignSnapshot = () => {
+    if (!sortedList.length) {
+      setErr("No campaign rows to export for this filter.");
+      return;
+    }
+    const rows = sortedList.map((c) => {
+      const readiness = campaignReadiness(c);
+      return {
+        id: c.id,
+        name: c.name || "",
+        status: c.status || "",
+        sent: Number(c.sent || 0),
+        opened: Number(c.opened || 0),
+        replied: Number(c.replied || 0),
+        open_rate: pct(c.opened, c.sent),
+        reply_rate: pct(c.replied, c.sent),
+        checklist_score: readiness.score,
+        checklist_ready: readiness.isReady ? "yes" : "no",
+      };
+    });
+    const headers = Object.keys(rows[0]);
+    const esc = (value) => `"${String(value ?? "").replaceAll("\"", "\"\"")}"`;
+    const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => esc(r[h])).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = `leadgen-campaigns-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(href);
+    setErr(null);
+    setMsg(`Exported ${rows.length} campaign rows.`);
+    trackEvent("select_content", {
+      content_type: "leadgen_campaign_export_snapshot",
+      source: "leadgen_campaigns_table",
+      rows: rows.length,
+    });
+  };
 
   if (editing) {
     return (
@@ -2086,6 +2126,9 @@ function CampaignsTab({ seed, onSeedApplied }) {
             title={runningCount <= 0 ? "No running campaigns" : `Pause ${runningCount} running campaign${runningCount === 1 ? "" : "s"}`}
           >
             Pause all running
+          </button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={exportCampaignSnapshot}>
+            Export view CSV
           </button>
           <button type="button" onClick={newCampaign} className="btn btn-primary">+ New campaign</button>
         </div>
@@ -2344,6 +2387,7 @@ function JobsTab({ recent, onSelectTab }) {
   const [rows, setRows] = useState(recent);
   const [err, setErr] = useState(null);
   const [showAll, setShowAll] = useState(false);
+  const [showFailuresOnly, setShowFailuresOnly] = useState(false);
   const [kindFilter, setKindFilter] = useState("osm_zip");
   const [page, setPage] = useState(1);
   const pageSize = 20;
@@ -2421,16 +2465,19 @@ function JobsTab({ recent, onSelectTab }) {
     return job.kind === kindFilter;
   });
 
-  const filteredRows = showAll
+  const signalRows = showAll
     ? scopedRows
     : scopedRows.filter((job) => ["failed", "productive"].includes(classifyJob(job))).slice(0, 30);
+  const filteredRows = showFailuresOnly
+    ? signalRows.filter((job) => classifyJob(job) === "failed")
+    : signalRows;
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const visibleRows = filteredRows.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   useEffect(() => {
     setPage(1);
-  }, [showAll, kindFilter, rows.length]);
+  }, [showAll, showFailuresOnly, kindFilter, rows.length]);
 
   const stats = rows.reduce((acc, job) => {
     const kind = classifyJob(job);
@@ -2486,6 +2533,9 @@ function JobsTab({ recent, onSelectTab }) {
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowAll((v) => !v)}>
             {showAll ? "Show signal only" : "Show all"}
           </button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowFailuresOnly((v) => !v)}>
+            {showFailuresOnly ? "Show all signal" : "Only failures"}
+          </button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={reload}>Refresh</button>
         </div>
       </div>
@@ -2536,7 +2586,7 @@ function JobsTab({ recent, onSelectTab }) {
         </div>
       ) : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
-      <div className="admin-aff-card">
+      <div className="admin-aff-card admin-aff-card--jobs-table">
         <table className="admin-aff-table">
           <thead>
             <tr>
@@ -2548,6 +2598,7 @@ function JobsTab({ recent, onSelectTab }) {
               <th>Started</th>
               <th>Duration</th>
               <th>Output</th>
+              <th aria-label="action" />
             </tr>
           </thead>
           <tbody>
@@ -2571,10 +2622,31 @@ function JobsTab({ recent, onSelectTab }) {
                 >
                   {outputLabel(j)}
                 </td>
+                <td className="admin-leadgen-row-actions">
+                  {classifyJob(j) === "failed" ? (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => onSelectTab?.(j.kind === "osm_zip" ? "discover" : "command", "jobs_row_failed_action")}
+                    >
+                      Recover
+                    </button>
+                  ) : classifyJob(j) === "no_signal" ? (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => onSelectTab?.("discover", "jobs_row_no_signal_action")}
+                    >
+                      New market
+                    </button>
+                  ) : (
+                    <span className="admin-leadgen-muted">-</span>
+                  )}
+                </td>
               </tr>
             ))}
             {visibleRows.length === 0 ? (
-              <tr><td colSpan={8} className="admin-leadgen-empty">No matching jobs. Try another kind filter or show all.</td></tr>
+              <tr><td colSpan={9} className="admin-leadgen-empty">No matching jobs. Try another filter or toggle.</td></tr>
             ) : null}
           </tbody>
         </table>
