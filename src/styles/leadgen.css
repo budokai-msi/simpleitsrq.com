@@ -493,6 +493,12 @@
   font-size: 12px;
   font-weight: 800;
 }
+.leadgen-review-summary__actions {
+  margin-left: auto;
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .leadgen-result-tools {
   display: grid;
   grid-template-columns: minmax(180px, 1.5fr) repeat(4, minmax(110px, 0.8fr));
