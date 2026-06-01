@@ -1859,6 +1859,8 @@ function CampaignsTab({ seed, onSeedApplied }) {
   const [editing, setEditing] = useState(null);
   const [err, setErr] = useState(null);
   const [msg, setMsg] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [query, setQuery] = useState("");
 
   const makeDraft = (seedInput = {}) => ({
     name: seedInput?.name || "",
@@ -1943,6 +1945,18 @@ function CampaignsTab({ seed, onSeedApplied }) {
       else setErr(`Test failed: ${r.error}${r.permanent ? " (permanent)" : ""}`);
     } catch (e) { setErr(String(e.message || e)); }
   };
+  const filteredList = list.filter((c) => {
+    if (statusFilter !== "all" && c.status !== statusFilter) return false;
+    if (!query.trim()) return true;
+    const text = [c.name, c.status, c.from_email, c.reply_to].filter(Boolean).join(" ").toLowerCase();
+    return text.includes(query.trim().toLowerCase());
+  });
+  const pct = (num, den) => {
+    const n = Number(num || 0);
+    const d = Number(den || 0);
+    if (d <= 0) return "0%";
+    return `${Math.round((n / d) * 100)}%`;
+  };
 
   if (editing) {
     return (
@@ -1960,7 +1974,18 @@ function CampaignsTab({ seed, onSeedApplied }) {
     <div className="admin-leadgen-campaigns">
       <div className="admin-leadgen-section-head">
         <h2 className="title-2">Campaigns</h2>
-        <button type="button" onClick={newCampaign} className="btn btn-primary">+ New campaign</button>
+        <div className="admin-leadgen-jobs__actions">
+          <select className="admin-leadgen-input admin-leadgen-input--sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="all">All statuses</option>
+            <option value="draft">draft</option>
+            <option value="scheduled">scheduled</option>
+            <option value="running">running</option>
+            <option value="paused">paused</option>
+            <option value="done">done</option>
+          </select>
+          <input className="admin-leadgen-input admin-leadgen-input--sm" placeholder="Search campaign" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <button type="button" onClick={newCampaign} className="btn btn-primary">+ New campaign</button>
+        </div>
       </div>
       {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
@@ -1975,11 +2000,13 @@ function CampaignsTab({ seed, onSeedApplied }) {
               <th style={{ textAlign: "right" }}>Sent</th>
               <th style={{ textAlign: "right" }}>Opens</th>
               <th style={{ textAlign: "right" }}>Replies</th>
+              <th style={{ textAlign: "right" }}>Open %</th>
+              <th style={{ textAlign: "right" }}>Reply %</th>
               <th aria-label="actions" />
             </tr>
           </thead>
           <tbody>
-            {list.map((c) => (
+            {filteredList.map((c) => (
               <tr key={c.id}>
                 {(() => {
                   const readiness = campaignReadiness(c);
@@ -1999,6 +2026,8 @@ function CampaignsTab({ seed, onSeedApplied }) {
                 <td style={{ textAlign: "right" }}>{c.sent}</td>
                 <td style={{ textAlign: "right" }}>{c.opened}</td>
                 <td style={{ textAlign: "right" }}>{c.replied}</td>
+                <td style={{ textAlign: "right" }}>{pct(c.opened, c.sent)}</td>
+                <td style={{ textAlign: "right" }}>{pct(c.replied, c.sent)}</td>
                 <td className="admin-leadgen-row-actions">
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(c)}>Edit</button>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => sendTest(c.id)}>Test send</button>
@@ -2021,8 +2050,8 @@ function CampaignsTab({ seed, onSeedApplied }) {
                 })()}
               </tr>
             ))}
-            {list.length === 0 ? (
-              <tr><td colSpan={7} className="admin-leadgen-empty">No campaigns yet - click <strong>+ New campaign</strong>.</td></tr>
+            {filteredList.length === 0 ? (
+              <tr><td colSpan={9} className="admin-leadgen-empty">No campaigns match this view. Clear filters or create a new campaign.</td></tr>
             ) : null}
           </tbody>
         </table>
