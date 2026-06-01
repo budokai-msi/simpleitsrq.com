@@ -804,6 +804,21 @@ function LeadgenScanApp() {
     });
     downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, visibleOnlyRows);
   };
+  const applyVisibleReview = (nextStatus) => {
+    if (!visibleRows.length) return;
+    setReview((current) => {
+      const next = { ...current };
+      for (const item of visibleRows) next[item.index] = nextStatus;
+      return next;
+    });
+    trackEvent("select_content", {
+      content_type: "leadgen_bulk_review",
+      source: "leadgen_scanner",
+      filter_status: statusFilter,
+      applied_status: nextStatus,
+      visible_count: visibleRows.length,
+    });
+  };
 
   const applyQuickMarket = (preset) => {
     setZip(preset.zip);
@@ -1072,6 +1087,13 @@ function LeadgenScanApp() {
           <span>{maybe.length} maybe</span>
           <span>{rejected.length} reject</span>
           {scan ? <span>{visibleRows.length} visible</span> : null}
+          {visibleRows.length ? (
+            <div className="leadgen-review-summary__actions" role="group" aria-label="Bulk review actions">
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Keep all visible</button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("maybe")}>Maybe all visible</button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Reject all visible</button>
+            </div>
+          ) : null}
         </div>
 
         <div className="leadgen-result-tools" aria-label="Result search and filters">
