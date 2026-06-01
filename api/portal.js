@@ -3789,12 +3789,7 @@ async function handleLeadgenCrawlEmails(session, request) {
   return json(200, { ok: true, queued: inserted.length, ids: inserted });
 }
 
-// GET ?zip=&status=&q=&page=&limit=&tag=&min_emails=&max_emails=&created_after=&created_before=
-async function handleLeadgenBusinesses(session, url) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-  await ensureLeadgenTaxonomyColumns();
-
+function readLeadgenBusinessFilters(url) {
   const zip = (url.searchParams.get("zip") || "").trim();
   const status = (url.searchParams.get("status") || "").trim();
   const q = (url.searchParams.get("q") || "").trim();
@@ -3823,7 +3818,51 @@ async function handleLeadgenBusinesses(session, url) {
   const wantsCreatedAfter = /^\d{4}-\d{2}-\d{2}$/.test(createdAfter);
   const wantsCreatedBefore = /^\d{4}-\d{2}-\d{2}$/.test(createdBefore);
   const like = `%${q.toLowerCase()}%`;
+  const tagLike = `%${tag}%`;
+  const groupLike = `%${industryGroup.toLowerCase()}%`;
+  const subLike = `%${subIndustry.toLowerCase()}%`;
+  const createdAfterIso = `${createdAfter}T00:00:00Z`;
+  const createdBeforeIso = `${createdBefore}T23:59:59Z`;
 
+  return {
+    zip,
+    status,
+    q,
+    industryGroup,
+    subIndustry,
+    hasWebsite,
+    hasEmail,
+    noEmail,
+    tag,
+    minEmails,
+    maxEmails,
+    page,
+    limit,
+    offset,
+    wantsZip,
+    wantsStatus,
+    wantsQ,
+    wantsGroup,
+    wantsSub,
+    wantsTag,
+    wantsMinEmails,
+    wantsMaxEmails,
+    wantsCreatedAfter,
+    wantsCreatedBefore,
+    like,
+    tagLike,
+    groupLike,
+    subLike,
+    createdAfterIso,
+    createdBeforeIso,
+  };
+}
+
+function safeLeadgenError(err) {
+  return String(err?.message || err || "unknown_error").slice(0, 220);
+}
+
+async function fetchLeadgenBusinessesModern(f) {
   const rows = await sql`
     SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.lat, b.lng, b.website,
            b.phone, b.industry, b.industry_group, b.sub_industry, b.tags,
@@ -3833,106 +3872,257 @@ async function handleLeadgenBusinesses(session, url) {
                 AND e.opted_out_at IS NULL
                 AND e.bounced_at IS NULL) AS deliverable_emails
     FROM lead_businesses b
-    WHERE (${!wantsZip}::bool OR b.zip = ${zip})
-      AND (${!wantsStatus}::bool OR b.status = ${status})
-      AND (${!wantsQ}::bool
-        OR lower(b.name) LIKE ${like}
-        OR lower(coalesce(b.website,'')) LIKE ${like}
+    WHERE (${!f.wantsZip}::bool OR b.zip = ${f.zip})
+      AND (${!f.wantsStatus}::bool OR b.status = ${f.status})
+      AND (${!f.wantsQ}::bool
+        OR lower(b.name) LIKE ${f.like}
+        OR lower(coalesce(b.website,'')) LIKE ${f.like}
         OR EXISTS (
           SELECT 1 FROM lead_emails e
           WHERE e.business_id = b.id
-            AND lower(e.email) LIKE ${like}
+            AND lower(e.email) LIKE ${f.like}
             AND e.opted_out_at IS NULL
             AND e.bounced_at IS NULL))
-      AND (${!wantsGroup}::bool OR b.industry_group = ${industryGroup})
-      AND (${!wantsSub}::bool OR b.sub_industry = ${subIndustry})
-      AND (${!hasWebsite}::bool OR b.website IS NOT NULL)
-      AND (${!hasEmail}::bool OR EXISTS (
+      AND (${!f.wantsGroup}::bool OR b.industry_group = ${f.industryGroup})
+      AND (${!f.wantsSub}::bool OR b.sub_industry = ${f.subIndustry})
+      AND (${!f.hasWebsite}::bool OR b.website IS NOT NULL)
+      AND (${!f.hasEmail}::bool OR EXISTS (
             SELECT 1 FROM lead_emails e
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
-      AND (${!noEmail}::bool OR NOT EXISTS (
+      AND (${!f.noEmail}::bool OR NOT EXISTS (
             SELECT 1 FROM lead_emails e
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
-      AND (${!wantsTag}::bool OR EXISTS (
+      AND (${!f.wantsTag}::bool OR EXISTS (
             SELECT 1
             FROM unnest(coalesce(b.tags, '{}'::text[])) AS tag_value(tag)
-            WHERE lower(tag_value.tag) LIKE ${'%' + tag + '%'}))
-      AND (${!wantsCreatedAfter}::bool OR b.created_at >= ${createdAfter + 'T00:00:00Z'})
-      AND (${!wantsCreatedBefore}::bool OR b.created_at <= ${createdBefore + 'T23:59:59Z'})
+            WHERE lower(tag_value.tag) LIKE ${f.tagLike}))
+      AND (${!f.wantsCreatedAfter}::bool OR b.created_at >= ${f.createdAfterIso}::timestamptz)
+      AND (${!f.wantsCreatedBefore}::bool OR b.created_at <= ${f.createdBeforeIso}::timestamptz)
     ORDER BY b.id DESC
-    LIMIT ${limit} OFFSET ${offset}
+    LIMIT ${f.limit} OFFSET ${f.offset}
   `;
 
   // Apply min/max email filters in JS because the subquery makes SQL
   // composition with neon tagged templates fragile for HAVING.
   const filteredRows = rows.filter((r) => {
     const de = r.deliverable_emails || 0;
-    if (wantsMinEmails && de < minEmails) return false;
-    if (wantsMaxEmails && de > maxEmails) return false;
+    if (f.wantsMinEmails && de < f.minEmails) return false;
+    if (f.wantsMaxEmails && de > f.maxEmails) return false;
     return true;
   });
 
   const totalRow = await sql`
     SELECT COUNT(*)::int AS total
     FROM lead_businesses b
-    WHERE (${!wantsZip}::bool OR b.zip = ${zip})
-      AND (${!wantsStatus}::bool OR b.status = ${status})
-      AND (${!wantsQ}::bool
-        OR lower(b.name) LIKE ${like}
-        OR lower(coalesce(b.website,'')) LIKE ${like}
+    WHERE (${!f.wantsZip}::bool OR b.zip = ${f.zip})
+      AND (${!f.wantsStatus}::bool OR b.status = ${f.status})
+      AND (${!f.wantsQ}::bool
+        OR lower(b.name) LIKE ${f.like}
+        OR lower(coalesce(b.website,'')) LIKE ${f.like}
         OR EXISTS (
           SELECT 1 FROM lead_emails e
           WHERE e.business_id = b.id
-            AND lower(e.email) LIKE ${like}
+            AND lower(e.email) LIKE ${f.like}
             AND e.opted_out_at IS NULL
             AND e.bounced_at IS NULL))
-      AND (${!wantsGroup}::bool OR b.industry_group = ${industryGroup})
-      AND (${!wantsSub}::bool OR b.sub_industry = ${subIndustry})
-      AND (${!hasWebsite}::bool OR b.website IS NOT NULL)
-      AND (${!hasEmail}::bool OR EXISTS (
+      AND (${!f.wantsGroup}::bool OR b.industry_group = ${f.industryGroup})
+      AND (${!f.wantsSub}::bool OR b.sub_industry = ${f.subIndustry})
+      AND (${!f.hasWebsite}::bool OR b.website IS NOT NULL)
+      AND (${!f.hasEmail}::bool OR EXISTS (
             SELECT 1 FROM lead_emails e
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
-      AND (${!noEmail}::bool OR NOT EXISTS (
+      AND (${!f.noEmail}::bool OR NOT EXISTS (
             SELECT 1 FROM lead_emails e
             WHERE e.business_id = b.id
               AND e.opted_out_at IS NULL
               AND e.bounced_at IS NULL))
-      AND (${!wantsTag}::bool OR EXISTS (
+      AND (${!f.wantsTag}::bool OR EXISTS (
             SELECT 1
             FROM unnest(coalesce(b.tags, '{}'::text[])) AS tag_value(tag)
-            WHERE lower(tag_value.tag) LIKE ${'%' + tag + '%'}))
-      AND (${!wantsCreatedAfter}::bool OR b.created_at >= ${createdAfter + 'T00:00:00Z'})
-      AND (${!wantsCreatedBefore}::bool OR b.created_at <= ${createdBefore + 'T23:59:59Z'})
+            WHERE lower(tag_value.tag) LIKE ${f.tagLike}))
+      AND (${!f.wantsCreatedAfter}::bool OR b.created_at >= ${f.createdAfterIso}::timestamptz)
+      AND (${!f.wantsCreatedBefore}::bool OR b.created_at <= ${f.createdBeforeIso}::timestamptz)
   `;
 
   const groups = await sql`
     SELECT industry_group, COUNT(*)::int AS n
     FROM lead_businesses
     WHERE industry_group IS NOT NULL
-      AND (${!wantsZip}::bool OR zip = ${zip})
+      AND (${!f.wantsZip}::bool OR zip = ${f.zip})
     GROUP BY industry_group ORDER BY n DESC
   `;
-  const subs = wantsGroup ? await sql`
+  const subs = f.wantsGroup ? await sql`
     SELECT sub_industry, COUNT(*)::int AS n
     FROM lead_businesses
-    WHERE industry_group = ${industryGroup}
+    WHERE industry_group = ${f.industryGroup}
       AND sub_industry IS NOT NULL
-      AND (${!wantsZip}::bool OR zip = ${zip})
+      AND (${!f.wantsZip}::bool OR zip = ${f.zip})
     GROUP BY sub_industry ORDER BY n DESC
   ` : [];
 
+  return {
+    rows: filteredRows,
+    total: totalRow[0]?.total || 0,
+    facets: { groups, subs },
+  };
+}
+
+async function fetchLeadgenBusinessesLegacy(f, reason) {
+  const rows = await sql`
+    SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.lat, b.lng, b.website,
+           b.phone, b.industry, COALESCE(NULLIF(b.industry, ''), 'Other') AS industry_group,
+           NULL::text AS sub_industry, '{}'::text[] AS tags,
+           b.status, b.source, b.source_id, b.source_url, b.created_at,
+           (SELECT COUNT(*)::int FROM lead_emails e
+              WHERE e.business_id = b.id
+                AND e.opted_out_at IS NULL
+                AND e.bounced_at IS NULL) AS deliverable_emails
+    FROM lead_businesses b
+    WHERE (${!f.wantsZip}::bool OR b.zip = ${f.zip})
+      AND (${!f.wantsStatus}::bool OR b.status = ${f.status})
+      AND (${!f.wantsQ}::bool
+        OR lower(b.name) LIKE ${f.like}
+        OR lower(coalesce(b.website,'')) LIKE ${f.like}
+        OR lower(coalesce(b.industry,'')) LIKE ${f.like}
+        OR EXISTS (
+          SELECT 1 FROM lead_emails e
+          WHERE e.business_id = b.id
+            AND lower(e.email) LIKE ${f.like}
+            AND e.opted_out_at IS NULL
+            AND e.bounced_at IS NULL))
+      AND (${!f.wantsGroup}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.groupLike})
+      AND (${!f.wantsSub}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.subLike})
+      AND (${!f.hasWebsite}::bool OR b.website IS NOT NULL)
+      AND (${!f.hasEmail}::bool OR EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+      AND (${!f.noEmail}::bool OR NOT EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+      AND (${!f.wantsTag}::bool
+        OR lower(b.name) LIKE ${f.tagLike}
+        OR lower(coalesce(b.website,'')) LIKE ${f.tagLike}
+        OR lower(coalesce(b.industry,'')) LIKE ${f.tagLike}
+        OR EXISTS (
+          SELECT 1 FROM lead_emails e
+          WHERE e.business_id = b.id
+            AND lower(e.email) LIKE ${f.tagLike}
+            AND e.opted_out_at IS NULL
+            AND e.bounced_at IS NULL))
+      AND (${!f.wantsCreatedAfter}::bool OR b.created_at >= ${f.createdAfterIso}::timestamptz)
+      AND (${!f.wantsCreatedBefore}::bool OR b.created_at <= ${f.createdBeforeIso}::timestamptz)
+    ORDER BY b.id DESC
+    LIMIT ${f.limit} OFFSET ${f.offset}
+  `;
+
+  const filteredRows = rows.filter((r) => {
+    const de = r.deliverable_emails || 0;
+    if (f.wantsMinEmails && de < f.minEmails) return false;
+    if (f.wantsMaxEmails && de > f.maxEmails) return false;
+    return true;
+  });
+
+  const totalRow = await sql`
+    SELECT COUNT(*)::int AS total
+    FROM lead_businesses b
+    WHERE (${!f.wantsZip}::bool OR b.zip = ${f.zip})
+      AND (${!f.wantsStatus}::bool OR b.status = ${f.status})
+      AND (${!f.wantsQ}::bool
+        OR lower(b.name) LIKE ${f.like}
+        OR lower(coalesce(b.website,'')) LIKE ${f.like}
+        OR lower(coalesce(b.industry,'')) LIKE ${f.like}
+        OR EXISTS (
+          SELECT 1 FROM lead_emails e
+          WHERE e.business_id = b.id
+            AND lower(e.email) LIKE ${f.like}
+            AND e.opted_out_at IS NULL
+            AND e.bounced_at IS NULL))
+      AND (${!f.wantsGroup}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.groupLike})
+      AND (${!f.wantsSub}::bool OR lower(coalesce(b.industry,'')) LIKE ${f.subLike})
+      AND (${!f.hasWebsite}::bool OR b.website IS NOT NULL)
+      AND (${!f.hasEmail}::bool OR EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+      AND (${!f.noEmail}::bool OR NOT EXISTS (
+            SELECT 1 FROM lead_emails e
+            WHERE e.business_id = b.id
+              AND e.opted_out_at IS NULL
+              AND e.bounced_at IS NULL))
+      AND (${!f.wantsTag}::bool
+        OR lower(b.name) LIKE ${f.tagLike}
+        OR lower(coalesce(b.website,'')) LIKE ${f.tagLike}
+        OR lower(coalesce(b.industry,'')) LIKE ${f.tagLike}
+        OR EXISTS (
+          SELECT 1 FROM lead_emails e
+          WHERE e.business_id = b.id
+            AND lower(e.email) LIKE ${f.tagLike}
+            AND e.opted_out_at IS NULL
+            AND e.bounced_at IS NULL))
+      AND (${!f.wantsCreatedAfter}::bool OR b.created_at >= ${f.createdAfterIso}::timestamptz)
+      AND (${!f.wantsCreatedBefore}::bool OR b.created_at <= ${f.createdBeforeIso}::timestamptz)
+  `;
+
+  const groups = await sql`
+    SELECT COALESCE(NULLIF(industry, ''), 'Other') AS industry_group, COUNT(*)::int AS n
+    FROM lead_businesses
+    WHERE industry IS NOT NULL
+      AND (${!f.wantsZip}::bool OR zip = ${f.zip})
+    GROUP BY COALESCE(NULLIF(industry, ''), 'Other')
+    ORDER BY n DESC
+  `;
+
+  return {
+    rows: filteredRows,
+    total: totalRow[0]?.total || 0,
+    facets: { groups, subs: [] },
+    degraded: true,
+    warning: `Loaded compatibility view after taxonomy query failed: ${safeLeadgenError(reason)}`,
+  };
+}
+
+// GET ?zip=&status=&q=&page=&limit=&tag=&min_emails=&max_emails=&created_after=&created_before=
+async function handleLeadgenBusinesses(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const f = readLeadgenBusinessFilters(url);
+  let ensureError = null;
+  try {
+    await ensureLeadgenTaxonomyColumns();
+  } catch (err) {
+    ensureError = err;
+    console.warn("[portal] leadgen taxonomy ensure failed; list will try compatibility mode", safeLeadgenError(err));
+  }
+
+  let result;
+  try {
+    result = await fetchLeadgenBusinessesModern(f);
+  } catch (err) {
+    console.warn("[portal] leadgen modern list query failed; trying compatibility mode", safeLeadgenError(err));
+    result = await fetchLeadgenBusinessesLegacy(f, ensureError || err);
+  }
+
   return json(200, {
     ok: true,
-    page, limit,
-    total: totalRow[0]?.total || 0,
-    rows: filteredRows,
-    facets: { groups, subs },
+    page: f.page,
+    limit: f.limit,
+    total: result.total,
+    rows: result.rows,
+    facets: result.facets,
+    degraded: !!result.degraded,
+    warning: result.warning || null,
   });
 }
 
