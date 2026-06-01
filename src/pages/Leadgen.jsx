@@ -668,6 +668,39 @@ function LeadgenScanApp() {
   const effectiveSelectedIndex = visibleRows.some((item) => item.index === selectedIndex)
     ? selectedIndex
     : visibleRows[0]?.index ?? null;
+  useEffect(() => {
+    if (!visibleRows.length) return undefined;
+    const onKeyDown = (event) => {
+      const target = event.target;
+      if (target && (target.closest("input, textarea, select, button, a, [contenteditable='true']"))) return;
+      const currentPos = visibleRows.findIndex((item) => item.index === effectiveSelectedIndex);
+      if (event.key.toLowerCase() === "j") {
+        event.preventDefault();
+        const nextPos = currentPos < 0 ? 0 : Math.min(visibleRows.length - 1, currentPos + 1);
+        setSelectedIndex(visibleRows[nextPos].index);
+        return;
+      }
+      if (event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        const nextPos = currentPos < 0 ? 0 : Math.max(0, currentPos - 1);
+        setSelectedIndex(visibleRows[nextPos].index);
+        return;
+      }
+      if (!["1", "2", "3"].includes(event.key)) return;
+      const selectedVisible = visibleRows.find((item) => item.index === effectiveSelectedIndex);
+      if (!selectedVisible) return;
+      event.preventDefault();
+      const nextStatus = event.key === "1" ? "keep" : event.key === "2" ? "maybe" : "reject";
+      setReview((current) => ({ ...current, [selectedVisible.index]: nextStatus }));
+      trackEvent("select_content", {
+        content_type: "leadgen_keyboard_review",
+        source: "leadgen_scanner",
+        applied_status: nextStatus,
+      });
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [effectiveSelectedIndex, visibleRows]);
   const effectivePrefetchState = validZip ? prefetchState : "idle";
   const zipHint = zip && !validZip ? "Enter a valid 5-digit US zip to scan this market." : "";
 
@@ -1104,6 +1137,7 @@ function LeadgenScanApp() {
           <span>{maybe.length} maybe</span>
           <span>{rejected.length} reject</span>
           {scan ? <span>{visibleRows.length} visible</span> : null}
+          {scan ? <span className="leadgen-review-summary__hint">Shortcuts: J/K move, 1 keep, 2 maybe, 3 reject</span> : null}
           {visibleRows.length ? (
             <div className="leadgen-review-summary__actions" role="group" aria-label="Bulk review actions">
               <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Keep all visible</button>

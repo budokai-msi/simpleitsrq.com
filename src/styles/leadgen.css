@@ -493,6 +493,11 @@
   font-size: 12px;
   font-weight: 800;
 }
+.leadgen-review-summary__hint {
+  border-style: dashed;
+  color: var(--lg-faint);
+  font-weight: 700;
+}
 .leadgen-review-summary__actions {
   margin-left: auto;
   display: inline-flex;
