@@ -599,19 +599,36 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
 function LeadgenScanApp() {
   const scanCacheRef = useRef(new Map());
   const scanPromisesRef = useRef(new Map());
-  const [zip, setZip] = useState("");
-  const [niche, setNiche] = useState("All");
+  const initialQuery = useMemo(() => new URLSearchParams(window.location.search), []);
+  const [zip, setZip] = useState(() => (initialQuery.get("zip") || "").replace(/\D/g, "").slice(0, 5));
+  const [niche, setNiche] = useState(() => {
+    const q = initialQuery.get("niche");
+    return q && PUBLIC_NICHES.includes(q) ? q : "All";
+  });
   const [industryOptions, setIndustryOptions] = useState(PUBLIC_NICHES);
-  const [offer, setOffer] = useState("");
-  const [dailyCap, setDailyCap] = useState(35);
+  const [offer, setOffer] = useState(() => initialQuery.get("offer") || "");
+  const [dailyCap, setDailyCap] = useState(() => {
+    const q = Number(initialQuery.get("daily_cap"));
+    if (!Number.isFinite(q)) return 35;
+    return Math.max(5, Math.min(100, Math.round(q)));
+  });
   const [scan, setScan] = useState(null);
   const [review, setReview] = useState({});
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [contactFilter, setContactFilter] = useState("all");
-  const [subIndustryFilter, setSubIndustryFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("contact");
+  const [searchTerm, setSearchTerm] = useState(() => initialQuery.get("q") || "");
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const q = initialQuery.get("status");
+    return ["all", "keep", "maybe", "reject"].includes(q || "") ? q : "all";
+  });
+  const [contactFilter, setContactFilter] = useState(() => {
+    const q = initialQuery.get("contact");
+    return ["all", "website", "phone", "missing-website", "missing-phone", "mapped"].includes(q || "") ? q : "all";
+  });
+  const [subIndustryFilter, setSubIndustryFilter] = useState(() => initialQuery.get("sub_industry") || "all");
+  const [sortBy, setSortBy] = useState(() => {
+    const q = initialQuery.get("sort");
+    return ["contact", "name", "city", "status", "mapped"].includes(q || "") ? q : "contact";
+  });
   const [prefetchState, setPrefetchState] = useState("idle");
   const [lastScanMeta, setLastScanMeta] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -703,6 +720,26 @@ function LeadgenScanApp() {
   }, [effectiveSelectedIndex, visibleRows]);
   const effectivePrefetchState = validZip ? prefetchState : "idle";
   const zipHint = zip && !validZip ? "Enter a valid 5-digit US zip to scan this market." : "";
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const setOrDelete = (key, value, defaultValue = "") => {
+      if (value == null || value === "" || value === defaultValue) params.delete(key);
+      else params.set(key, value);
+    };
+    setOrDelete("zip", zip);
+    setOrDelete("niche", niche, "All");
+    setOrDelete("offer", offer);
+    setOrDelete("daily_cap", String(dailyCap || ""), "35");
+    setOrDelete("q", searchTerm);
+    setOrDelete("status", statusFilter, "all");
+    setOrDelete("contact", contactFilter, "all");
+    setOrDelete("sub_industry", subIndustryFilter, "all");
+    setOrDelete("sort", sortBy, "contact");
+    const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash || ""}`;
+    if (next !== `${window.location.pathname}${window.location.search}${window.location.hash || ""}`) {
+      window.history.replaceState({}, "", next);
+    }
+  }, [zip, niche, offer, dailyCap, searchTerm, statusFilter, contactFilter, subIndustryFilter, sortBy]);
 
   useEffect(() => {
     let disposed = false;
