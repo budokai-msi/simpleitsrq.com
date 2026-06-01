@@ -631,6 +631,10 @@ function LeadgenScanApp() {
   const rejected = reviewedRows.filter((row) => row.status === "reject");
   const websites = reviewedRows.filter((row) => row.website).length;
   const phones = reviewedRows.filter((row) => row.phone).length;
+  const projectedSendDays = Math.max(1, Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)));
+  const recommendedTierId = kept.length >= 120 ? "pro" : "growth";
+  const recommendedBilling = kept.length >= 120 ? "annual" : "monthly";
+  const recommendedTier = TIERS.find((tier) => tier.id === recommendedTierId) || TIERS[0];
   const subIndustryOptions = useMemo(() => (
     Array.from(new Set(reviewedRows.map((row) => row.sub_industry).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   ), [reviewedRows]);
@@ -980,7 +984,7 @@ function LeadgenScanApp() {
           <div>
             <span>Send rule</span>
             <strong>{dailyCap || 35}/day max</strong>
-            <p>{kept.length ? `${Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35))} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Run and review a scan first."}</p>
+            <p>{kept.length ? `${projectedSendDays} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Run and review a scan first."}</p>
           </div>
         </div>
 
@@ -990,21 +994,26 @@ function LeadgenScanApp() {
               <span>Ready to launch</span>
               <strong>{kept.length} reviewed businesses ready for a first campaign pass</strong>
               <p>
-                At {dailyCap || 35}/day, this is about {Math.max(1, Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)))} send day
-                {Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)) === 1 ? "" : "s"}.
+                At {dailyCap || 35}/day, this is about {projectedSendDays} send day
+                {projectedSendDays === 1 ? "" : "s"}. Recommended plan: {recommendedTier.name}.
               </p>
             </div>
             <div className="leadgen-conversion-strip__actions">
               <LeadgenPlanLink
-                tierId="growth"
-                billing="monthly"
+                tierId={recommendedTierId}
+                billing={recommendedBilling}
                 className="btn btn-primary btn-sm"
-                source="leadgen_scanner_ready_growth"
+                source="leadgen_scanner_recommended_plan"
                 context="scanner_conversion_strip"
-                ctaId="scanner_strip_growth"
-                onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_growth", kept_count: kept.length })}
+                ctaId="scanner_strip_recommended"
+                onClick={() => trackEvent("generate_lead", {
+                  source: "leadgen_scanner_recommended_plan",
+                  kept_count: kept.length,
+                  recommended_tier: recommendedTier.id,
+                  projected_days: projectedSendDays,
+                })}
               >
-                Start Growth
+                {`Start ${recommendedTier.name}`}
               </LeadgenPlanLink>
               <Link
                 to={scannerDemoLink}
@@ -1022,6 +1031,18 @@ function LeadgenScanApp() {
               >
                 Open workspace
               </Link>
+              <a
+                href="#pricing"
+                className="btn btn-secondary btn-sm"
+                data-leadgen-cta="scanner_strip_pricing"
+                onClick={() => trackEvent("select_content", {
+                  content_type: "leadgen_scanner_conversion",
+                  destination: "pricing_section",
+                  kept_count: kept.length,
+                })}
+              >
+                Compare plans
+              </a>
             </div>
           </div>
         ) : null}
