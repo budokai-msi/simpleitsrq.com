@@ -632,6 +632,14 @@ function LeadgenScanApp() {
   const [prefetchState, setPrefetchState] = useState("idle");
   const [lastScanMeta, setLastScanMeta] = useState(null);
   const [copiedView, setCopiedView] = useState(false);
+  const [closeRate, setCloseRate] = useState(() => {
+    const q = Number(initialQuery.get("close_rate"));
+    return Number.isFinite(q) ? Math.max(1, Math.min(40, Math.round(q))) : 8;
+  });
+  const [avgDealValue, setAvgDealValue] = useState(() => {
+    const q = Number(initialQuery.get("avg_deal"));
+    return Number.isFinite(q) ? Math.max(500, Math.min(50000, Math.round(q))) : 2400;
+  });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -649,12 +657,50 @@ function LeadgenScanApp() {
   const rejected = reviewedRows.filter((row) => row.status === "reject");
   const websites = reviewedRows.filter((row) => row.website).length;
   const phones = reviewedRows.filter((row) => row.phone).length;
+  const websiteCoverage = reviewedRows.length ? Math.round((websites / reviewedRows.length) * 100) : 0;
+  const phoneCoverage = reviewedRows.length ? Math.round((phones / reviewedRows.length) * 100) : 0;
   const projectedSendDays = Math.max(1, Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)));
   const recommendedTierId = kept.length >= 120 ? "pro" : "growth";
   const recommendedBilling = kept.length >= 120 ? "annual" : "monthly";
   const recommendedTier = TIERS.find((tier) => tier.id === recommendedTierId) || TIERS[0];
   const growthLimitExceeded = kept.length > 500;
   const proCapacityWarning = kept.length > 5000;
+  const readinessChecks = [
+    {
+      id: "offer",
+      label: "Offer angle",
+      ok: offer.trim().length >= 12,
+      hint: "Add a specific value proposition before outreach.",
+    },
+    {
+      id: "cap",
+      label: "Daily cap",
+      ok: Number(dailyCap) > 0 && Number(dailyCap) <= 45,
+      hint: "Keep first-pass cap at 45/day or lower.",
+    },
+    {
+      id: "reviewed",
+      label: "Reviewed records",
+      ok: kept.length >= 5,
+      hint: "Keep at least 5 reviewed businesses before launch.",
+    },
+    {
+      id: "contacts",
+      label: "Contact coverage",
+      ok: websiteCoverage >= 40 || phoneCoverage >= 40,
+      hint: "Aim for >=40% website or phone coverage.",
+    },
+  ];
+  const readinessScore = readinessChecks.filter((item) => item.ok).length;
+  const readinessPercent = Math.round((readinessScore / readinessChecks.length) * 100);
+  const readinessTier = readinessPercent >= 75 ? "good" : readinessPercent >= 50 ? "wait" : "bad";
+  const primaryReadinessGap = readinessChecks.find((item) => !item.ok) || null;
+  const forecastReachable = Math.round(kept.length * Math.max(websiteCoverage, phoneCoverage) / 100);
+  const forecastWins = Math.max(0, Math.round(forecastReachable * (closeRate / 100)));
+  const forecastRevenue = forecastWins * avgDealValue;
+  const recommendedPlanPrice = recommendedBilling === "annual" ? recommendedTier.annual : recommendedTier.monthly;
+  const projectedRoiMultiple = recommendedPlanPrice > 0 ? (forecastRevenue / recommendedPlanPrice) : 0;
+  const projectedNetValue = Math.max(0, forecastRevenue - recommendedPlanPrice);
   const subIndustryOptions = useMemo(() => (
     Array.from(new Set(reviewedRows.map((row) => row.sub_industry).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   ), [reviewedRows]);
@@ -738,11 +784,13 @@ function LeadgenScanApp() {
     setOrDelete("contact", contactFilter, "all");
     setOrDelete("sub_industry", subIndustryFilter, "all");
     setOrDelete("sort", sortBy, "contact");
+    setOrDelete("close_rate", String(closeRate), "8");
+    setOrDelete("avg_deal", String(avgDealValue), "2400");
     const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash || ""}`;
     if (next !== `${window.location.pathname}${window.location.search}${window.location.hash || ""}`) {
       window.history.replaceState({}, "", next);
     }
-  }, [zip, niche, offer, dailyCap, searchTerm, statusFilter, contactFilter, subIndustryFilter, sortBy]);
+  }, [zip, niche, offer, dailyCap, searchTerm, statusFilter, contactFilter, subIndustryFilter, sortBy, closeRate, avgDealValue]);
 
   useEffect(() => {
     let disposed = false;
@@ -1101,6 +1149,103 @@ function LeadgenScanApp() {
             <p>{kept.length ? `${projectedSendDays} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Run and review a scan first."}</p>
           </div>
         </div>
+        <section className={`leadgen-readiness leadgen-readiness--${readinessTier}`} aria-label="Campaign readiness">
+          <div className="leadgen-readiness__head">
+            <span>Campaign readiness</span>
+            <strong>{readinessPercent}% ({readinessScore}/4 checks)</strong>
+          </div>
+          <div className="leadgen-readiness__checks">
+            {readinessChecks.map((item) => (
+              <div key={item.id} className={`leadgen-readiness__check${item.ok ? " is-ok" : ""}`}>
+                <span>{item.label}</span>
+                <strong>{item.ok ? "Ready" : "Needs attention"}</strong>
+              </div>
+            ))}
+          </div>
+          {primaryReadinessGap ? (
+            <div className="leadgen-readiness__action">
+              <p>{primaryReadinessGap.hint}</p>
+              {primaryReadinessGap.id === "cap" ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => {
+                    setDailyCap(35);
+                    trackEvent("select_content", {
+                      content_type: "leadgen_readiness_fix",
+                      destination: "daily_cap_35",
+                    });
+                  }}
+                >
+                  Set cap to 35/day
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </section>
+        <section className="leadgen-revenue-forecast" aria-label="Revenue forecast">
+          <div className="leadgen-revenue-forecast__head">
+            <span>Revenue forecast</span>
+            <strong>${forecastRevenue.toLocaleString()} projected pipeline value</strong>
+          </div>
+          <div className="leadgen-revenue-forecast__controls">
+            <label>
+              <span>Close rate</span>
+              <input
+                type="range"
+                min="1"
+                max="40"
+                value={closeRate}
+                onChange={(e) => setCloseRate(Number(e.target.value))}
+                onMouseUp={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "close_rate" })}
+              />
+              <strong>{closeRate}%</strong>
+            </label>
+            <label>
+              <span>Average deal value</span>
+              <input
+                type="number"
+                min="500"
+                max="50000"
+                step="100"
+                value={avgDealValue}
+                onChange={(e) => setAvgDealValue(Math.max(500, Math.min(50000, Number(e.target.value) || 500)))}
+                onBlur={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "avg_deal_value" })}
+              />
+            </label>
+          </div>
+          <div className="leadgen-revenue-forecast__kpis">
+            <div><span>Reachable</span><strong>{forecastReachable}</strong></div>
+            <div><span>Expected wins</span><strong>{forecastWins}</strong></div>
+            <div><span>Kept businesses</span><strong>{kept.length}</strong></div>
+          </div>
+          <div className="leadgen-revenue-forecast__planfit" role="status" aria-live="polite">
+            <div>
+              <span>Recommended plan cost</span>
+              <strong>${recommendedPlanPrice}/mo ({recommendedTier.name})</strong>
+            </div>
+            <div>
+              <span>Projected net value</span>
+              <strong>${projectedNetValue.toLocaleString()}</strong>
+            </div>
+            <div>
+              <span>Projected ROI multiple</span>
+              <strong>{projectedRoiMultiple.toFixed(1)}x</strong>
+            </div>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => trackEvent("select_content", {
+                content_type: "leadgen_forecast_planfit",
+                destination: `plan_${recommendedTier.id}`,
+                forecast_revenue: forecastRevenue,
+                projected_roi_multiple: Number(projectedRoiMultiple.toFixed(2)),
+              })}
+            >
+              Track plan fit
+            </button>
+          </div>
+        </section>
 
         {scan && kept.length >= 5 ? (
           <div className="leadgen-conversion-strip" role="region" aria-label="Next best conversion actions">
