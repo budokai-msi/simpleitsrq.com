@@ -182,15 +182,16 @@
 }
 .leadgen-app-title h1 {
   margin: 0;
-  max-width: 780px;
-  font-size: clamp(3rem, 5vw, 4.5rem);
+  max-width: 620px;
+  font-size: clamp(2.2rem, 3.8vw, 3.3rem);
+  line-height: 0.98;
 }
 .leadgen-app-title p {
-  margin: 14px 0 0;
-  max-width: 720px;
+  margin: 12px 0 0;
+  max-width: 620px;
   color: var(--lg-muted);
-  font-size: 1rem;
-  line-height: 1.65;
+  font-size: 0.96rem;
+  line-height: 1.58;
 }
 .leadgen-context-strip {
   display: grid;
@@ -267,14 +268,28 @@
   align-items: end;
   margin-top: 22px;
 }
+.leadgen-scan-card {
+  margin-top: 22px;
+  padding: 14px;
+  border: 1px solid var(--lg-border);
+  border-radius: 8px;
+  background: var(--lg-panel-soft);
+}
+.leadgen-app-controls--primary {
+  grid-template-columns: minmax(118px, 0.42fr) minmax(180px, 0.7fr) auto;
+  margin-top: 0;
+}
 .leadgen-app-controls__wide { grid-column: 1 / -1; }
-.leadgen-app-controls label {
+.leadgen-app-controls label,
+.leadgen-advanced-controls label,
+.leadgen-result-tools label {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.leadgen-app-controls label span {
+.leadgen-app-controls label span,
+.leadgen-advanced-controls label span {
   color: var(--lg-muted);
   font-size: 12px;
   font-weight: 800;
@@ -283,6 +298,8 @@
 }
 .leadgen-app-controls input,
 .leadgen-app-controls select,
+.leadgen-advanced-controls input,
+.leadgen-advanced-controls select,
 .leadgen-result-row select {
   width: 100%;
   min-height: 44px;
@@ -296,6 +313,8 @@
 }
 .leadgen-app-controls input:focus,
 .leadgen-app-controls select:focus,
+.leadgen-advanced-controls input:focus,
+.leadgen-advanced-controls select:focus,
 .leadgen-result-row select:focus {
   outline: none;
   border-color: var(--lg-border);
@@ -305,6 +324,25 @@
   min-height: 44px;
   justify-content: center;
   white-space: nowrap;
+}
+.leadgen-advanced-controls {
+  margin-top: 10px;
+  border-top: 1px solid var(--lg-border-faint);
+  padding-top: 10px;
+}
+.leadgen-advanced-controls summary,
+.leadgen-planning-panel summary,
+.leadgen-result-more-filters summary {
+  color: var(--lg-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.leadgen-advanced-controls__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px;
+  gap: 10px;
+  margin-top: 10px;
 }
 .leadgen-quick-markets {
   margin-top: 10px;
@@ -505,6 +543,16 @@
 .leadgen-readiness--bad {
   border-color: color-mix(in srgb, #dc2626 35%, var(--lg-border));
 }
+.leadgen-planning-panel {
+  margin-top: 12px;
+  border: 1px solid var(--lg-border);
+  border-radius: 8px;
+  padding: 10px 12px 12px;
+  background: var(--lg-panel-soft);
+}
+.leadgen-planning-panel[open] summary {
+  margin-bottom: 10px;
+}
 .leadgen-revenue-forecast {
   margin-top: 12px;
   border: 1px solid var(--lg-border);
@@ -672,16 +720,16 @@
 }
 .leadgen-result-tools {
   display: grid;
-  grid-template-columns: minmax(180px, 1.5fr) repeat(4, minmax(110px, 0.8fr));
-  gap: 8px;
+  gap: 10px;
   padding: 12px 18px;
   border-bottom: 1px solid var(--lg-border-faint);
   background: var(--lg-panel-soft);
 }
-.leadgen-result-tools label {
-  min-width: 0;
+.leadgen-result-tools__primary {
   display: grid;
-  gap: 5px;
+  grid-template-columns: minmax(190px, 1fr) minmax(120px, 0.28fr);
+  gap: 8px;
+  align-items: end;
 }
 .leadgen-result-tools label span {
   overflow: hidden;
@@ -716,6 +764,16 @@
   outline: none;
   border-color: var(--lg-border);
   box-shadow: 0 0 0 3px var(--lg-focus);
+}
+.leadgen-result-more-filters {
+  border-top: 1px solid var(--lg-border-faint);
+  padding-top: 8px;
+}
+.leadgen-result-more-filters__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
 }
 .leadgen-result-list {
   flex: 1 1 auto;
@@ -809,8 +867,6 @@
 @media (max-width: 1180px) {
   .leadgen-app-shell { grid-template-columns: 1fr; }
   .leadgen-app-panel--results { max-height: none; }
-  .leadgen-result-tools { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .leadgen-result-tools__search { grid-column: 1 / -1; }
 }
 @media (max-width: 860px) {
   .leadgen-context-strip,
@@ -821,7 +877,9 @@
   .leadgen-revenue-forecast__kpis { grid-template-columns: 1fr 1fr; }
   .leadgen-revenue-forecast__planfit { grid-template-columns: 1fr 1fr; }
   .leadgen-conversion-strip { grid-template-columns: 1fr; }
-  .leadgen-result-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .leadgen-app-controls--primary { grid-template-columns: 1fr 1fr; }
+  .leadgen-app-controls--primary .btn { grid-column: 1 / -1; }
+  .leadgen-result-more-filters__grid { grid-template-columns: 1fr 1fr; }
   .leadgen-result-row { grid-template-columns: 1fr; }
   .leadgen-result-row select { max-width: 180px; }
 }
@@ -833,6 +891,8 @@
   .leadgen-empty-review,
   .leadgen-result-row { padding-left: 14px; padding-right: 14px; }
   .leadgen-app-controls,
+  .leadgen-app-controls--primary,
+  .leadgen-advanced-controls__grid,
   .leadgen-context-strip,
   .leadgen-app-kpis,
   .leadgen-app-brief,
@@ -840,7 +900,9 @@
   .leadgen-revenue-forecast__controls,
   .leadgen-revenue-forecast__kpis,
   .leadgen-revenue-forecast__planfit,
-  .leadgen-result-tools { grid-template-columns: 1fr; }
+  .leadgen-result-tools__primary,
+  .leadgen-result-more-filters__grid { grid-template-columns: 1fr; }
+  .leadgen-app-controls--primary .btn { grid-column: auto; }
 }
 
 /* Stat band */

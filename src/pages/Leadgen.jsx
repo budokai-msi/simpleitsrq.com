@@ -183,15 +183,15 @@ const SCAN_CACHE_TTL = 5 * 60 * 1000;
 
 const SCANNER_CONTEXT = [
   {
-    title: "Public records first",
+    title: "Public records",
     body: "The scan starts from public business records, then keeps the source URL visible so you can audit the list.",
   },
   {
-    title: "Review before outreach",
+    title: "Human review",
     body: "Nothing here means 'send now'. Keep, maybe, or reject each business before it reaches a campaign.",
   },
   {
-    title: "Cap the test",
+    title: "Daily cap",
     body: "The daily cap turns a list into a small test instead of a broad spray campaign.",
   },
 ];
@@ -1039,10 +1039,10 @@ function LeadgenScanApp() {
         </div>
 
         <div className="leadgen-app-title">
-          <h1 className="display">Build a local prospect list before you buy anything.</h1>
+          <h1 className="display">Find local leads by zip.</h1>
           <p>
-            Pick a zip and niche. Leadgen pulls public business records, shows the source,
-            lets you review the list, and exports the segment for the real campaign workspace.
+            Scan public records, inspect the map, keep the right businesses, then export
+            or move the reviewed list into a capped campaign.
           </p>
         </div>
 
@@ -1056,50 +1056,57 @@ function LeadgenScanApp() {
           ))}
         </div>
 
-        <div className="leadgen-app-controls">
-          <label>
-            <span>Zip code</span>
-            <input
-              value={zip}
-              onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
-              onKeyDown={onScanKeyDown}
-              inputMode="numeric"
-              placeholder="Enter any 5-digit zip"
-              aria-label="Target zip code"
-            />
-          </label>
-          <label>
-            <span>Niche</span>
-            <select value={niche} onChange={(e) => setNiche(e.target.value)} aria-label="Target niche">
-              {industryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </label>
-          <label className="leadgen-app-controls__wide">
-            <span>Offer angle</span>
-            <input
-              value={offer}
-              onChange={(e) => setOffer(e.target.value)}
-              onKeyDown={onScanKeyDown}
-              placeholder="Example: backup cleanup for busy offices"
-              aria-label="Offer angle"
-            />
-          </label>
-          <label>
-            <span>Daily cap</span>
-            <input
-              type="number"
-              min="5"
-              max="100"
-              value={dailyCap}
-              onChange={(e) => setDailyCap(e.target.value)}
-              onKeyDown={onScanKeyDown}
-              aria-label="Daily send cap"
-            />
-          </label>
-          <button type="button" className="btn btn-primary" onClick={runScan} disabled={busy || !validZip}>
-            <Search size={16} aria-hidden="true" />
-            {busy ? "Scanning..." : effectivePrefetchState === "ready" ? "Open scan" : "Run scan"}
-          </button>
+        <div className="leadgen-scan-card">
+          <div className="leadgen-app-controls leadgen-app-controls--primary">
+            <label>
+              <span>Zip code</span>
+              <input
+                value={zip}
+                onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                onKeyDown={onScanKeyDown}
+                inputMode="numeric"
+                placeholder="34237"
+                aria-label="Target zip code"
+              />
+            </label>
+            <label>
+              <span>Niche</span>
+              <select value={niche} onChange={(e) => setNiche(e.target.value)} aria-label="Target niche">
+                {industryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </label>
+            <button type="button" className="btn btn-primary" onClick={runScan} disabled={busy || !validZip}>
+              <Search size={16} aria-hidden="true" />
+              {busy ? "Scanning..." : scan ? "Refresh scan" : effectivePrefetchState === "ready" ? "Open scan" : "Run scan"}
+            </button>
+          </div>
+          <details className="leadgen-advanced-controls">
+            <summary>Campaign settings</summary>
+            <div className="leadgen-advanced-controls__grid">
+              <label>
+                <span>Offer angle</span>
+                <input
+                  value={offer}
+                  onChange={(e) => setOffer(e.target.value)}
+                  onKeyDown={onScanKeyDown}
+                  placeholder="Backup cleanup for busy offices"
+                  aria-label="Offer angle"
+                />
+              </label>
+              <label>
+                <span>Daily cap</span>
+                <input
+                  type="number"
+                  min="5"
+                  max="100"
+                  value={dailyCap}
+                  onChange={(e) => setDailyCap(e.target.value)}
+                  onKeyDown={onScanKeyDown}
+                  aria-label="Daily send cap"
+                />
+              </label>
+            </div>
+          </details>
         </div>
 
         <div className="leadgen-quick-markets" aria-label="Quick market presets">
@@ -1125,7 +1132,7 @@ function LeadgenScanApp() {
           <span />
           {effectivePrefetchState === "loading" ? "Prefetching this market..." : null}
           {effectivePrefetchState === "ready" ? "Scan is warmed and ready." : null}
-          {effectivePrefetchState === "idle" ? "Enter a valid zip to warm the scan." : null}
+          {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a valid zip to warm the scan.") : null}
         </div>
 
         {err ? <p className="leadgen-app-error">{err}</p> : null}
@@ -1137,115 +1144,122 @@ function LeadgenScanApp() {
           <div><Check size={15} /><strong>{kept.length || "-"}</strong><span>kept after review</span></div>
         </div>
 
-        <div className="leadgen-app-brief">
-          <div>
-            <span>Campaign brief</span>
-            <strong>{/^\d{5}$/.test(zip) ? `${niche} in ${zip}` : "Choose a zip and niche"}</strong>
-            <p>{offer || "Add an offer angle before sending."}</p>
-          </div>
-          <div>
-            <span>Send rule</span>
-            <strong>{dailyCap || 35}/day max</strong>
-            <p>{kept.length ? `${projectedSendDays} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Run and review a scan first."}</p>
-          </div>
-        </div>
-        <section className={`leadgen-readiness leadgen-readiness--${readinessTier}`} aria-label="Campaign readiness">
-          <div className="leadgen-readiness__head">
-            <span>Campaign readiness</span>
-            <strong>{readinessPercent}% ({readinessScore}/4 checks)</strong>
-          </div>
-          <div className="leadgen-readiness__checks">
-            {readinessChecks.map((item) => (
-              <div key={item.id} className={`leadgen-readiness__check${item.ok ? " is-ok" : ""}`}>
-                <span>{item.label}</span>
-                <strong>{item.ok ? "Ready" : "Needs attention"}</strong>
+        {scan ? (
+          <>
+            <div className="leadgen-app-brief">
+              <div>
+                <span>Campaign brief</span>
+                <strong>{/^\d{5}$/.test(zip) ? `${niche} in ${zip}` : "Choose a zip and niche"}</strong>
+                <p>{offer || "Add an offer angle before sending."}</p>
               </div>
-            ))}
-          </div>
-          {primaryReadinessGap ? (
-            <div className="leadgen-readiness__action">
-              <p>{primaryReadinessGap.hint}</p>
-              {primaryReadinessGap.id === "cap" ? (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => {
-                    setDailyCap(35);
-                    trackEvent("select_content", {
-                      content_type: "leadgen_readiness_fix",
-                      destination: "daily_cap_35",
-                    });
-                  }}
-                >
-                  Set cap to 35/day
-                </button>
-              ) : null}
+              <div>
+                <span>Send rule</span>
+                <strong>{dailyCap || 35}/day max</strong>
+                <p>{kept.length ? `${projectedSendDays} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Review the list first."}</p>
+              </div>
             </div>
-          ) : null}
-        </section>
-        <section className="leadgen-revenue-forecast" aria-label="Revenue forecast">
-          <div className="leadgen-revenue-forecast__head">
-            <span>Revenue forecast</span>
-            <strong>${forecastRevenue.toLocaleString()} projected pipeline value</strong>
-          </div>
-          <div className="leadgen-revenue-forecast__controls">
-            <label>
-              <span>Close rate</span>
-              <input
-                type="range"
-                min="1"
-                max="40"
-                value={closeRate}
-                onChange={(e) => setCloseRate(Number(e.target.value))}
-                onMouseUp={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "close_rate" })}
-              />
-              <strong>{closeRate}%</strong>
-            </label>
-            <label>
-              <span>Average deal value</span>
-              <input
-                type="number"
-                min="500"
-                max="50000"
-                step="100"
-                value={avgDealValue}
-                onChange={(e) => setAvgDealValue(Math.max(500, Math.min(50000, Number(e.target.value) || 500)))}
-                onBlur={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "avg_deal_value" })}
-              />
-            </label>
-          </div>
-          <div className="leadgen-revenue-forecast__kpis">
-            <div><span>Reachable</span><strong>{forecastReachable}</strong></div>
-            <div><span>Expected wins</span><strong>{forecastWins}</strong></div>
-            <div><span>Kept businesses</span><strong>{kept.length}</strong></div>
-          </div>
-          <div className="leadgen-revenue-forecast__planfit" role="status" aria-live="polite">
-            <div>
-              <span>Recommended plan cost</span>
-              <strong>${recommendedPlanPrice}/mo ({recommendedTier.name})</strong>
-            </div>
-            <div>
-              <span>Projected net value</span>
-              <strong>${projectedNetValue.toLocaleString()}</strong>
-            </div>
-            <div>
-              <span>Projected ROI multiple</span>
-              <strong>{projectedRoiMultiple.toFixed(1)}x</strong>
-            </div>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => trackEvent("select_content", {
-                content_type: "leadgen_forecast_planfit",
-                destination: `plan_${recommendedTier.id}`,
-                forecast_revenue: forecastRevenue,
-                projected_roi_multiple: Number(projectedRoiMultiple.toFixed(2)),
-              })}
-            >
-              Track plan fit
-            </button>
-          </div>
-        </section>
+            <details className="leadgen-planning-panel" open>
+              <summary>Readiness and forecast</summary>
+              <section className={`leadgen-readiness leadgen-readiness--${readinessTier}`} aria-label="Campaign readiness">
+                <div className="leadgen-readiness__head">
+                  <span>Campaign readiness</span>
+                  <strong>{readinessPercent}% ({readinessScore}/4 checks)</strong>
+                </div>
+                <div className="leadgen-readiness__checks">
+                  {readinessChecks.map((item) => (
+                    <div key={item.id} className={`leadgen-readiness__check${item.ok ? " is-ok" : ""}`}>
+                      <span>{item.label}</span>
+                      <strong>{item.ok ? "Ready" : "Needs attention"}</strong>
+                    </div>
+                  ))}
+                </div>
+                {primaryReadinessGap ? (
+                  <div className="leadgen-readiness__action">
+                    <p>{primaryReadinessGap.hint}</p>
+                    {primaryReadinessGap.id === "cap" ? (
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => {
+                          setDailyCap(35);
+                          trackEvent("select_content", {
+                            content_type: "leadgen_readiness_fix",
+                            destination: "daily_cap_35",
+                          });
+                        }}
+                      >
+                        Set cap to 35/day
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </section>
+              <section className="leadgen-revenue-forecast" aria-label="Revenue forecast">
+                <div className="leadgen-revenue-forecast__head">
+                  <span>Revenue forecast</span>
+                  <strong>${forecastRevenue.toLocaleString()} projected pipeline value</strong>
+                </div>
+                <div className="leadgen-revenue-forecast__controls">
+                  <label>
+                    <span>Close rate</span>
+                    <input
+                      type="range"
+                      min="1"
+                      max="40"
+                      value={closeRate}
+                      onChange={(e) => setCloseRate(Number(e.target.value))}
+                      onMouseUp={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "close_rate" })}
+                    />
+                    <strong>{closeRate}%</strong>
+                  </label>
+                  <label>
+                    <span>Average deal value</span>
+                    <input
+                      type="number"
+                      min="500"
+                      max="50000"
+                      step="100"
+                      value={avgDealValue}
+                      onChange={(e) => setAvgDealValue(Math.max(500, Math.min(50000, Number(e.target.value) || 500)))}
+                      onBlur={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "avg_deal_value" })}
+                    />
+                  </label>
+                </div>
+                <div className="leadgen-revenue-forecast__kpis">
+                  <div><span>Reachable</span><strong>{forecastReachable}</strong></div>
+                  <div><span>Expected wins</span><strong>{forecastWins}</strong></div>
+                  <div><span>Kept businesses</span><strong>{kept.length}</strong></div>
+                </div>
+                <div className="leadgen-revenue-forecast__planfit" role="status" aria-live="polite">
+                  <div>
+                    <span>Recommended plan cost</span>
+                    <strong>${recommendedPlanPrice}/mo ({recommendedTier.name})</strong>
+                  </div>
+                  <div>
+                    <span>Projected net value</span>
+                    <strong>${projectedNetValue.toLocaleString()}</strong>
+                  </div>
+                  <div>
+                    <span>Projected ROI multiple</span>
+                    <strong>{projectedRoiMultiple.toFixed(1)}x</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => trackEvent("select_content", {
+                      content_type: "leadgen_forecast_planfit",
+                      destination: `plan_${recommendedTier.id}`,
+                      forecast_revenue: forecastRevenue,
+                      projected_roi_multiple: Number(projectedRoiMultiple.toFixed(2)),
+                    })}
+                  >
+                    Track plan fit
+                  </button>
+                </div>
+              </section>
+            </details>
+          </>
+        ) : null}
 
         {scan && kept.length >= 5 ? (
           <div className="leadgen-conversion-strip" role="region" aria-label="Next best conversion actions">
@@ -1324,168 +1338,182 @@ function LeadgenScanApp() {
             <h2>Review list</h2>
           </div>
           <div className="leadgen-app-actions">
-            {scan && kept.length >= 5 ? (
-              <LeadgenPlanLink
-                tierId={recommendedTierId}
-                billing={recommendedBilling}
-                className="btn btn-primary btn-sm"
-                source="leadgen_scanner_results_recommended"
-                context="results_header"
-                ctaId="scanner_results_recommended"
-                onClick={() => trackEvent("generate_lead", {
-                  source: "leadgen_scanner_results_recommended",
-                  kept_count: kept.length,
-                  recommended_tier: recommendedTier.id,
-                })}
-              >
-                {`Start ${recommendedTier.name}`}
-              </LeadgenPlanLink>
+            {scan ? (
+              <>
+                {kept.length >= 5 ? (
+                  <LeadgenPlanLink
+                    tierId={recommendedTierId}
+                    billing={recommendedBilling}
+                    className="btn btn-primary btn-sm"
+                    source="leadgen_scanner_results_recommended"
+                    context="results_header"
+                    ctaId="scanner_results_recommended"
+                    onClick={() => trackEvent("generate_lead", {
+                      source: "leadgen_scanner_results_recommended",
+                      kept_count: kept.length,
+                      recommended_tier: recommendedTier.id,
+                    })}
+                  >
+                    {`Start ${recommendedTier.name}`}
+                  </LeadgenPlanLink>
+                ) : null}
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={copyViewLink}
+                >
+                  {copiedView ? "Copied" : "Copy view link"}
+                </button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export visible</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export kept</button>
+                <Link
+                  to={scannerResultWorkspaceLink}
+                  className="btn btn-primary btn-sm"
+                  data-leadgen-cta="scanner_results_workspace"
+                  onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_results" })}
+                >
+                  Use in workspace
+                </Link>
+              </>
             ) : null}
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={copyViewLink}
-              disabled={!scan}
-            >
-              {copiedView ? "Copied" : "Copy view link"}
-            </button>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export visible</button>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export kept</button>
-            <Link
-              to={scannerResultWorkspaceLink}
-              className="btn btn-primary btn-sm"
-              data-leadgen-cta="scanner_results_workspace"
-              onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_results" })}
-            >
-              Use in workspace
-            </Link>
           </div>
         </div>
 
-        <div className="leadgen-review-summary">
-          <span>{kept.length} keep</span>
-          <span>{maybe.length} maybe</span>
-          <span>{rejected.length} reject</span>
-          {scan ? <span>{visibleRows.length} visible</span> : null}
-          {scan ? <span className="leadgen-review-summary__hint">Shortcuts: J/K move, 1 keep, 2 maybe, 3 reject</span> : null}
-          {visibleRows.length ? (
-            <div className="leadgen-review-summary__actions" role="group" aria-label="Bulk review actions">
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Keep all visible</button>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("maybe")}>Maybe all visible</button>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Reject all visible</button>
-            </div>
-          ) : null}
-        </div>
+        {scan ? (
+          <div className="leadgen-review-summary">
+            <span>{kept.length} keep</span>
+            <span>{maybe.length} maybe</span>
+            <span>{rejected.length} reject</span>
+            <span>{visibleRows.length} visible</span>
+            <span className="leadgen-review-summary__hint">Shortcuts: J/K move, 1 keep, 2 maybe, 3 reject</span>
+            {visibleRows.length ? (
+              <div className="leadgen-review-summary__actions" role="group" aria-label="Bulk review actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Keep all visible</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("maybe")}>Maybe all visible</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Reject all visible</button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
-        <div className="leadgen-result-tools" aria-label="Result search and filters">
-          <label className="leadgen-result-tools__search">
-            <span>Search loaded records</span>
-            <input
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onBlur={() => {
-                if (!searchTerm.trim()) return;
-                trackEvent("select_content", {
-                  content_type: "leadgen_result_search",
-                  source: "leadgen_scanner",
-                  query_length: searchTerm.trim().length,
-                  visible_count: visibleRows.length,
-                });
-              }}
-              placeholder="Name, city, service, phone, website..."
-              aria-label="Search loaded lead records"
-              disabled={!reviewedRows.length}
-            />
-          </label>
-          <label>
-            <span>Status</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                const next = e.target.value;
-                setStatusFilter(next);
-                trackEvent("select_content", {
-                  content_type: "leadgen_result_filter",
-                  source: "leadgen_scanner",
-                  filter_key: "status",
-                  filter_value: next,
-                });
-              }}
-              disabled={!reviewedRows.length}
-            >
-              <option value="all">All</option>
-              <option value="keep">Keep</option>
-              <option value="maybe">Maybe</option>
-              <option value="reject">Reject</option>
-            </select>
-          </label>
-          <label>
-            <span>Contact</span>
-            <select
-              value={contactFilter}
-              onChange={(e) => {
-                const next = e.target.value;
-                setContactFilter(next);
-                trackEvent("select_content", {
-                  content_type: "leadgen_result_filter",
-                  source: "leadgen_scanner",
-                  filter_key: "contact",
-                  filter_value: next,
-                });
-              }}
-              disabled={!reviewedRows.length}
-            >
-              <option value="all">All</option>
-              <option value="website">Has website</option>
-              <option value="phone">Has phone</option>
-              <option value="missing-website">No website</option>
-              <option value="missing-phone">No phone</option>
-              <option value="mapped">Mapped</option>
-            </select>
-          </label>
-          <label>
-            <span>Sub-industry</span>
-            <select
-              value={subIndustryFilter}
-              onChange={(e) => {
-                const next = e.target.value;
-                setSubIndustryFilter(next);
-                trackEvent("select_content", {
-                  content_type: "leadgen_result_filter",
-                  source: "leadgen_scanner",
-                  filter_key: "sub_industry",
-                  filter_value: next,
-                });
-              }}
-              disabled={!subIndustryOptions.length}
-            >
-              <option value="all">All</option>
-              {subIndustryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>Sort</span>
-            <select
-              value={sortBy}
-              onChange={(e) => {
-                const next = e.target.value;
-                setSortBy(next);
-                trackEvent("select_content", {
-                  content_type: "leadgen_result_sort",
-                  source: "leadgen_scanner",
-                  sort_key: next,
-                });
-              }}
-              disabled={!reviewedRows.length}
-            >
-              <option value="contact">Best contact</option>
-              <option value="name">Name</option>
-              <option value="city">City</option>
-              <option value="status">Review status</option>
-              <option value="mapped">Mapped first</option>
-            </select>
-          </label>
-        </div>
+        {scan ? (
+          <div className="leadgen-result-tools" aria-label="Result search and filters">
+            <div className="leadgen-result-tools__primary">
+              <label className="leadgen-result-tools__search">
+                <span>Search loaded records</span>
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onBlur={() => {
+                    if (!searchTerm.trim()) return;
+                    trackEvent("select_content", {
+                      content_type: "leadgen_result_search",
+                      source: "leadgen_scanner",
+                      query_length: searchTerm.trim().length,
+                      visible_count: visibleRows.length,
+                    });
+                  }}
+                  placeholder="Name, city, service, phone, website..."
+                  aria-label="Search loaded lead records"
+                  disabled={!reviewedRows.length}
+                />
+              </label>
+              <label>
+                <span>Status</span>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setStatusFilter(next);
+                    trackEvent("select_content", {
+                      content_type: "leadgen_result_filter",
+                      source: "leadgen_scanner",
+                      filter_key: "status",
+                      filter_value: next,
+                    });
+                  }}
+                  disabled={!reviewedRows.length}
+                >
+                  <option value="all">All</option>
+                  <option value="keep">Keep</option>
+                  <option value="maybe">Maybe</option>
+                  <option value="reject">Reject</option>
+                </select>
+              </label>
+            </div>
+            <details className="leadgen-result-more-filters">
+              <summary>More filters</summary>
+              <div className="leadgen-result-more-filters__grid">
+                <label>
+                  <span>Contact</span>
+                  <select
+                    value={contactFilter}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setContactFilter(next);
+                      trackEvent("select_content", {
+                        content_type: "leadgen_result_filter",
+                        source: "leadgen_scanner",
+                        filter_key: "contact",
+                        filter_value: next,
+                      });
+                    }}
+                    disabled={!reviewedRows.length}
+                  >
+                    <option value="all">All</option>
+                    <option value="website">Has website</option>
+                    <option value="phone">Has phone</option>
+                    <option value="missing-website">No website</option>
+                    <option value="missing-phone">No phone</option>
+                    <option value="mapped">Mapped</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Sub-industry</span>
+                  <select
+                    value={subIndustryFilter}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setSubIndustryFilter(next);
+                      trackEvent("select_content", {
+                        content_type: "leadgen_result_filter",
+                        source: "leadgen_scanner",
+                        filter_key: "sub_industry",
+                        filter_value: next,
+                      });
+                    }}
+                    disabled={!subIndustryOptions.length}
+                  >
+                    <option value="all">All</option>
+                    {subIndustryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span>Sort</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => {
+                      const next = e.target.value;
+                      setSortBy(next);
+                      trackEvent("select_content", {
+                        content_type: "leadgen_result_sort",
+                        source: "leadgen_scanner",
+                        sort_key: next,
+                      });
+                    }}
+                    disabled={!reviewedRows.length}
+                  >
+                    <option value="contact">Best contact</option>
+                    <option value="name">Name</option>
+                    <option value="city">City</option>
+                    <option value="status">Review status</option>
+                    <option value="mapped">Mapped first</option>
+                  </select>
+                </label>
+              </div>
+            </details>
+          </div>
+        ) : null}
 
         <LeadgenMap rows={visibleOnlyRows} scan={scan} selectedIndex={effectiveSelectedIndex} onSelect={setSelectedIndex} />
 
