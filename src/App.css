@@ -2957,7 +2957,8 @@ main, #main {
 }
 
 /* ----- Section reveal on scroll (CSS-only via scroll-driven animations
-        with graceful fallback for non-supporting browsers) ----- */
+        with graceful fallback for non-supporting browsers). Keep opacity
+        at 1 so text never fails contrast while the section enters view. ----- */
 @supports (animation-timeline: view()) {
   .section,
   .logos-bar {
@@ -2967,8 +2968,8 @@ main, #main {
   }
 }
 @keyframes reveal-up {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(18px); }
+  to   { transform: translateY(0); }
 }
 
 [data-theme="dark"] .compliance-card { background: var(--surface); }
@@ -4264,7 +4265,7 @@ main, #main {
   margin-bottom: 14px;
 }
 .tool-category-intro {
-  color: var(--text-3);
+  color: var(--text-2);
   font-size: 14px;
   margin: 0;
 }
@@ -4294,7 +4295,7 @@ main, #main {
 }
 .tools-disclosure {
   font-size: 12px;
-  color: var(--text-3);
+  color: var(--text-2);
   line-height: 1.6;
   padding-top: 20px;
   border-top: 1px solid var(--border);
@@ -4970,8 +4971,8 @@ main, #main {
   font-size: 0.85rem;
   padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(16, 124, 16, 0.08);
-  color: #107C10;
+  background: rgba(9, 92, 11, 0.11);
+  color: #095C0B;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -5035,6 +5036,84 @@ main, #main {
 [data-theme="dark"] .stack-tool__aff-tag {
   background: rgba(76, 194, 255, 0.12);
   color: #4CC2FF;
+}
+
+.stack-calc-total {
+  padding: 24px;
+  border-radius: 14px;
+  background: #111827;
+  color: #ffffff;
+  position: sticky;
+  top: 80px;
+  box-shadow: 0 14px 32px rgba(17, 24, 39, 0.22);
+}
+.stack-calc-total__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #ffffff;
+}
+.stack-calc-total__amount {
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+.stack-calc-total__suffix {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+.stack-calc-total__meta {
+  font-size: 12px;
+  margin-top: 4px;
+  color: #e5e7eb;
+}
+.stack-calc-total__list {
+  list-style: none;
+  margin: 16px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 12px;
+  color: #ffffff;
+}
+.stack-calc-total__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.stack-calc-total__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stack-calc-total__cost {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.stack-calc-total__cta {
+  width: 100%;
+  background: #ffffff;
+  color: #111827;
+  border-color: #ffffff;
+}
+.stack-calc-total__cta:hover {
+  background: #f3f4f6;
+  color: #111827;
+  border-color: #f3f4f6;
+}
+.stack-calc-total__note {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #e5e7eb;
 }
 
 /* ─── Inline stack-tool card (blog `[[tool:<id>]]` + MDX <Tool>) ───────
@@ -5964,7 +6043,21 @@ html { scroll-behavior: smooth; }
 .section-sub a,
 .lede a,
 p a:not(.btn):not(.live-defense-card) {
-  transition: color 160ms var(--ease-out, ease), opacity 160ms ease;
+  color: var(--brand);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+  transition:
+    color 160ms var(--ease-out, ease),
+    opacity 160ms ease,
+    text-decoration-thickness 160ms var(--ease-out, ease);
+}
+.blog-post-content a:hover,
+.section-sub a:hover,
+.lede a:hover,
+p a:not(.btn):not(.live-defense-card):hover {
+  color: var(--brand-hover);
+  text-decoration-thickness: 0.12em;
 }
 
 /* Button press feedback — a tiny scale on :active gives the tactile

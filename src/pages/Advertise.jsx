@@ -219,7 +219,7 @@ export default function Advertise() {
   useSEO({
     title: "Advertise / Sponsor | Simple IT SRQ",
     description:
-      "Reach Florida small-business decision-makers. Sponsor the Simple IT SRQ newsletter, a blog post, or the Stack. Transparent pricing, editorial controls, and FTC-compliant disclosure.",
+      "Reach Florida small-business decision makers through Simple IT SRQ newsletter, blog, and Stack sponsorships with clear pricing and FTC disclosure.",
     canonical: `${SITE_URL}/advertise`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [

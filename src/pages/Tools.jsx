@@ -322,8 +322,8 @@ export default function Tools() {
   ]).filter(Boolean), []);
 
   useSEO({
-    title: "Small Office Tech Calculators & Recommended Hardware | Simple IT SRQ",
-    description: "Practical small-office tech calculators and recommended hardware for Sarasota, Bradenton, and Venice businesses: UPS sizing, backup planning, YubiKeys, WiFi, docks, and network closets.",
+    title: "Small Office Tech Tools & Calculators | Simple IT SRQ",
+    description: "Practical UPS, backup, Wi-Fi, YubiKey, dock, and network closet calculators for Sarasota, Bradenton, and Venice small offices.",
     canonical: "https://simpleitsrq.com/tools",
     breadcrumbs: [
       { name: "Home", url: "https://simpleitsrq.com/" },

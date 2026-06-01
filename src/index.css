@@ -350,18 +350,19 @@ svg { stroke-width: 1.75; }
    nothing to schedule on the main thread. The animation runs
    on the compositor while the user scrolls, locked to the
    element's progress through the viewport, so it never stutters
-   even under heavy JS load.
+   even under heavy JS load. Text stays fully opaque throughout:
+   fading real content triggered contrast failures and made some
+   sections look disabled before they entered the viewport.
    ============================================================ */
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .reveal-up,
-    .reveal-down,
-    .reveal-left,
-    .reveal-right,
-    .reveal-fade,
-    .reveal-scale {
-      opacity: 0;
+    .reveal-up:not([data-reveal]),
+    .reveal-down:not([data-reveal]),
+    .reveal-left:not([data-reveal]),
+    .reveal-right:not([data-reveal]),
+    .reveal-fade:not([data-reveal]),
+    .reveal-scale:not([data-reveal]) {
       animation: linear both;
       animation-timeline: view();
       /* Run the reveal during entry, then keep the element at the end
@@ -371,19 +372,19 @@ svg { stroke-width: 1.75; }
          once the range ends; extending into 'contain' avoids that.) */
       animation-range: entry 12% contain 100%;
     }
-    .reveal-up    { animation-name: scroll-reveal-up;    transform: translateY(28px); }
-    .reveal-down  { animation-name: scroll-reveal-down;  transform: translateY(-28px); }
-    .reveal-left  { animation-name: scroll-reveal-left;  transform: translateX(28px); }
-    .reveal-right { animation-name: scroll-reveal-right; transform: translateX(-28px); }
-    .reveal-fade  { animation-name: scroll-reveal-fade; }
-    .reveal-scale { animation-name: scroll-reveal-scale; transform: scale(0.96); }
+    .reveal-up:not([data-reveal])    { animation-name: scroll-reveal-up;    transform: translateY(28px); }
+    .reveal-down:not([data-reveal])  { animation-name: scroll-reveal-down;  transform: translateY(-28px); }
+    .reveal-left:not([data-reveal])  { animation-name: scroll-reveal-left;  transform: translateX(28px); }
+    .reveal-right:not([data-reveal]) { animation-name: scroll-reveal-right; transform: translateX(-28px); }
+    .reveal-fade:not([data-reveal])  { animation-name: scroll-reveal-fade; }
+    .reveal-scale:not([data-reveal]) { animation-name: scroll-reveal-scale; transform: scale(0.96); }
 
-    @keyframes scroll-reveal-up    { to { opacity: 1; transform: translateY(0); } }
-    @keyframes scroll-reveal-down  { to { opacity: 1; transform: translateY(0); } }
-    @keyframes scroll-reveal-left  { to { opacity: 1; transform: translateX(0); } }
-    @keyframes scroll-reveal-right { to { opacity: 1; transform: translateX(0); } }
-    @keyframes scroll-reveal-fade  { to { opacity: 1; } }
-    @keyframes scroll-reveal-scale { to { opacity: 1; transform: scale(1); } }
+    @keyframes scroll-reveal-up    { to { transform: translateY(0); } }
+    @keyframes scroll-reveal-down  { to { transform: translateY(0); } }
+    @keyframes scroll-reveal-left  { to { transform: translateX(0); } }
+    @keyframes scroll-reveal-right { to { transform: translateX(0); } }
+    @keyframes scroll-reveal-fade  { to { transform: none; } }
+    @keyframes scroll-reveal-scale { to { transform: scale(1); } }
 
     /* Stagger via animation-range shifts — scroll-driven animations
        don't honor animation-delay the way time-driven ones do, so

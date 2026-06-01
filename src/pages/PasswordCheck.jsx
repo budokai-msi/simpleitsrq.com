@@ -67,8 +67,8 @@ export default function PasswordCheck() {
   const inputRef = useRef(null);
 
   useSEO({
-    title: "Is your password breached? — Simple IT SRQ free security tool",
-    description: "Free, privacy-preserving check against 800+ million known breached passwords. Your password never leaves your browser — we use the same k-anonymity technique 1Password Watchtower uses. Built by Simple IT SRQ for Sarasota small businesses.",
+    title: "Free Breached Password Check | Simple IT SRQ",
+    description: "Check a password against known breaches without sending it to our server. Uses Have I Been Pwned k-anonymity for a private browser-side result.",
     canonical: `${SITE_URL}/password-check`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [

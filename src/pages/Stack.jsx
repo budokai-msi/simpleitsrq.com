@@ -190,41 +190,23 @@ function StackCalculator() {
           </div>
 
           {/* Total */}
-          <div style={{
-            padding: 24,
-            borderRadius: 14,
-            background: "linear-gradient(180deg, #111827 0%, #000000 100%)",
-            color: "#fff",
-            position: "sticky",
-            top: 80,
-          }}>
-            <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", opacity: 0.85, fontWeight: 600 }}>
+          <div className="stack-calc-total">
+            <div className="stack-calc-total__label">
               Estimated monthly stack cost
             </div>
-            <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.1, marginTop: 6, fontVariantNumeric: "tabular-nums" }}>
+            <div className="stack-calc-total__amount">
               ${Math.round(total).toLocaleString()}
-              <span style={{ fontSize: 14, fontWeight: 500, opacity: 0.75 }}> /mo</span>
+              <span className="stack-calc-total__suffix"> /mo</span>
             </div>
-            <div style={{ fontSize: 12, opacity: 0.85, marginTop: 4 }}>
+            <div className="stack-calc-total__meta">
               {seats}-person office · {breakdown.length} tools selected
             </div>
 
-            <ul style={{
-              listStyle: "none",
-              margin: "16px 0",
-              padding: 0,
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-              fontSize: 12,
-              opacity: 0.95,
-              maxHeight: 200,
-              overflowY: "auto",
-            }}>
+            <ul className="stack-calc-total__list">
               {breakdown.map((row) => (
-                <li key={row.tool.id} style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.tool.name}</span>
-                  <span style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>${Math.round(row.monthly).toLocaleString()}</span>
+                <li key={row.tool.id} className="stack-calc-total__row">
+                  <span className="stack-calc-total__name">{row.tool.name}</span>
+                  <span className="stack-calc-total__cost">${Math.round(row.monthly).toLocaleString()}</span>
                 </li>
               ))}
             </ul>
@@ -232,17 +214,11 @@ function StackCalculator() {
             <Link
               to={`/book?source=stack-calculator&seats=${seats}&total=${Math.round(total)}`}
               onClick={handleQuoteClick}
-              className="btn btn-primary"
-              style={{
-                background: "#fff",
-                color: "#111827",
-                borderColor: "#fff",
-                width: "100%",
-              }}
+              className="btn btn-primary stack-calc-total__cta"
             >
               <DollarSign size={14} /> Get this priced for my office
             </Link>
-            <p style={{ margin: "10px 0 0", fontSize: 11, opacity: 0.75, lineHeight: 1.4 }}>
+            <p className="stack-calc-total__note">
               We'll quote this exact stack for your headcount and walk through
               substitutions if anything doesn't fit.
             </p>
@@ -267,7 +243,7 @@ export default function Stack() {
   useSEO({
     title: "The Florida Small-Business Tech Stack | Simple IT SRQ",
     description:
-      "Every tool we install and recommend for Florida small businesses in 2026 — M365 Business Premium, 1Password, Acronis, Gusto, HoneyBook, YubiKey, and more. Grouped by what they do, with the tier that actually passes a security review.",
+      "Tools we install for Florida small businesses: M365, 1Password, Acronis, Gusto, HoneyBook, YubiKey, and more, grouped by real office jobs.",
     canonical: `${SITE_URL}/stack`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [

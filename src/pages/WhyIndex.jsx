@@ -5,9 +5,9 @@ import { WHY_VS_LIST } from "../data/why-vs";
 
 export default function WhyIndex() {
   useSEO({
-    title: "Why Simple IT SRQ | Comparisons for Sarasota / Bradenton Buyers",
+    title: "Why Simple IT SRQ | Sarasota IT Support",
     description:
-      "Honest, side-by-side comparisons between Simple IT SRQ and the alternatives a Sarasota or Bradenton business is actually weighing — Tampa-based MSPs, Geek Squad, and other regional options.",
+      "Compare Simple IT SRQ with Tampa MSPs, Geek Squad, and regional IT options for Sarasota and Bradenton businesses choosing local support.",
     canonical: `${SITE_URL}/why`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [

@@ -194,8 +194,8 @@ const SERVICES_FAQS = [
 
 export default function Services() {
   useSEO({
-    title: "Buy IT Services | Copiers, Fax, Migrations, Windows Enterprise — Sarasota & Bradenton",
-    description: "Productized IT services for Sarasota and Bradenton. Copier and fax setup $499, Windows Enterprise migration $2,499, computer tune-up $99, virus removal from $179, M365 migration $1,500. Fixed fees, buy online.",
+    title: "Fixed-Fee IT Services in Sarasota & Bradenton",
+    description: "Buy scoped IT help with public pricing: computer tune-ups, malware cleanup, M365 migration, copier setup, and Windows upgrades across Sarasota and Bradenton.",
     canonical: "https://simpleitsrq.com/services",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [

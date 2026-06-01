@@ -8,9 +8,9 @@ export default function Glossary() {
   const entries = glossaryAlphabetical();
 
   useSEO({
-    title: "Cybersecurity & Compliance Glossary for Florida Small Business | Simple IT SRQ",
+    title: "Cybersecurity Glossary for Florida SMBs | Simple IT SRQ",
     description:
-      "Plain-English definitions of HIPAA, SOC 2, FTC Safeguards, MFA, ransomware, security documentation, BAA, encryption, and 20+ other cybersecurity and compliance terms — written for Florida small-business owners.",
+      "Plain-English definitions of HIPAA, SOC 2, MFA, ransomware, BAA, encryption, and security terms for Florida small-business owners.",
     canonical: `${SITE_URL}/glossary`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [

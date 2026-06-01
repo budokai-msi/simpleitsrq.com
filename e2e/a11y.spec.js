@@ -4,12 +4,29 @@ import AxeBuilder from '@axe-core/playwright';
 /**
  * Accessibility smoke test.
  *
- * Visits the five most important user-facing routes and runs axe-core
+ * Visits the core public and conversion routes and runs axe-core
  * against each. We fail the build for "critical" and "serious" violations
  * and log (but tolerate) "moderate" and "minor" findings so authors can
  * triage incrementally without blocking shipping.
  */
-const ROUTES = ['/', '/tools', '/blog', '/support', '/book'];
+const ROUTES = [
+  '/',
+  '/leadgen',
+  '/services',
+  '/tools',
+  '/stack',
+  '/blog',
+  '/industries',
+  '/service-area',
+  '/support',
+  '/book',
+  '/advertise',
+  '/compare',
+  '/why',
+  '/glossary',
+  '/exposure-scan',
+  '/password-check',
+];
 
 const BLOCKING_IMPACTS = new Set(['critical', 'serious']);
 
