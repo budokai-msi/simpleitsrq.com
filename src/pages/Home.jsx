@@ -530,7 +530,7 @@ function CtaBanner() {
 
 const ERROR_MESSAGES = {
   name_required: "Please enter your name.",
-  email_invalid: "That email address looks off — double-check it?",
+  email_invalid: "That email address looks off - double-check it?",
   message_required: "Add a short message so we know how to help.",
   bot_detected: "We couldn't verify your browser. Please refresh the page and try again.",
   rate_limited: "Too many submissions in a short window. Please wait a few minutes and try again.",
