@@ -371,6 +371,12 @@ function normalizedGeoPoints(rows, cap = 120) {
   }));
 }
 
+function mapsQueryFor(row, fallback = "") {
+  const parts = [row?.name, row?.address, row?.city, row?.state, row?.zip].filter(Boolean);
+  const query = parts.join(", ").trim();
+  return query || fallback;
+}
+
 function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
   const mapRef = useRef(null);
   const fallbackLoggedRef = useRef(false);
@@ -385,6 +391,15 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
   ), [rows]);
   const fallbackPoints = useMemo(() => normalizedGeoPoints(rows), [rows]);
   const centroid = asPoint(scan?.centroid);
+  const topRow = rows?.[0] || null;
+  const openMapsSearch = useMemo(() => {
+    const q = mapsQueryFor(topRow, scan?.label || "");
+    return q ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}` : "";
+  }, [scan?.label, topRow]);
+  const openMapsCenter = useMemo(() => {
+    if (!centroid) return "";
+    return `https://www.google.com/maps/@${centroid.lat},${centroid.lng},13z`;
+  }, [centroid]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -548,6 +563,32 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
               {mapError || "Run a scan to plot public business records in this market."}
               {mapError ? " You can still use the reviewed list, filters, and export below." : ""}
             </span>
+            {mapError ? (
+              <div className="leadgen-map-empty__actions">
+                {openMapsSearch ? (
+                  <a
+                    className="btn btn-secondary btn-sm"
+                    href={openMapsSearch}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => trackEvent("select_content", { content_type: "leadgen_map_fallback", destination: "google_maps_search" })}
+                  >
+                    Open in Google Maps
+                  </a>
+                ) : null}
+                {openMapsCenter ? (
+                  <a
+                    className="btn btn-secondary btn-sm"
+                    href={openMapsCenter}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => trackEvent("select_content", { content_type: "leadgen_map_fallback", destination: "google_maps_center" })}
+                  >
+                    Open market center
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
