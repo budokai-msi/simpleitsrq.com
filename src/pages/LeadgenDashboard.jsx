@@ -2007,7 +2007,7 @@ function JobsTab({ recent, onSelectTab }) {
   const [rows, setRows] = useState(recent);
   const [err, setErr] = useState(null);
   const [showAll, setShowAll] = useState(false);
-  const [kindFilter, setKindFilter] = useState("all");
+  const [kindFilter, setKindFilter] = useState("osm_zip");
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
@@ -2158,6 +2158,9 @@ function JobsTab({ recent, onSelectTab }) {
         <div><strong>{stats.no_signal}</strong><span>No signal</span></div>
         <div><strong>{stats.total}</strong><span>Total</span></div>
       </div>
+      <p className="admin-aff-stat-hint">
+        Default view prioritizes discovery runs with failed/productive outcomes so teams can act quickly.
+      </p>
       <div className="admin-leadgen-jobs__health">
         <span>Signal rate: {productiveRate}%</span>
         <span>Net-new (24h): {netNew24h}</span>

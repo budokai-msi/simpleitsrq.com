@@ -877,6 +877,18 @@ function LeadgenScanApp() {
     });
     downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, visibleOnlyRows);
   };
+  const exportKeptRows = () => {
+    const keptRows = visibleOnlyRows.filter((row) => row.status === "keep");
+    if (!keptRows.length) return;
+    trackEvent("select_content", {
+      content_type: "leadgen_export_kept",
+      source: "leadgen_scanner",
+      zip,
+      niche,
+      count: keptRows.length,
+    });
+    downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-kept.csv`, keptRows);
+  };
   const copyViewLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -1192,7 +1204,8 @@ function LeadgenScanApp() {
             >
               {copiedView ? "Copied" : "Copy view link"}
             </button>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export CSV</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export visible</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export kept</button>
             <Link
               to={scannerResultWorkspaceLink}
               className="btn btn-primary btn-sm"
