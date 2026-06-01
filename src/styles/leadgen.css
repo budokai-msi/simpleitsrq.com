@@ -2416,6 +2416,15 @@
   line-height: 1.45;
 }
 
+.leadgen-map-empty__actions {
+  pointer-events: auto;
+  margin-top: 10px;
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .leadgen-map-fallback {
   position: absolute;
   inset: 10px;
