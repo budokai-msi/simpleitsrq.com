@@ -1564,6 +1564,20 @@ function LeadgenMap({ rows, total, busy }) {
     [rows]
   );
   const fallbackPoints = useMemo(() => normalizedGeoPoints(geocodedRows), [geocodedRows]);
+  const mapsSearchHref = useMemo(() => {
+    const row = geocodedRows[0];
+    if (!row) return "";
+    const query = [row.name, row.address, row.city, row.state, row.zip].filter(Boolean).join(", ");
+    return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : "";
+  }, [geocodedRows]);
+  const mapsCenterHref = useMemo(() => {
+    const row = geocodedRows[0];
+    if (!row) return "";
+    const lat = Number(row.lat);
+    const lng = Number(row.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return "";
+    return `https://www.google.com/maps/@${lat},${lng},13z`;
+  }, [geocodedRows]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1705,7 +1719,33 @@ function LeadgenMap({ rows, total, busy }) {
           </div>
         ) : null}
         {mapState.error ? (
-          <div className="leadgen-map-empty">{mapState.error}</div>
+          <div className="leadgen-map-empty">
+            <span>{mapState.error}</span>
+            <div className="leadgen-map-empty__actions">
+              {mapsSearchHref ? (
+                <a
+                  className="btn btn-secondary btn-sm"
+                  href={mapsSearchHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackEvent("select_content", { content_type: "leadgen_map_fallback", destination: "google_maps_search_admin" })}
+                >
+                  Open in Google Maps
+                </a>
+              ) : null}
+              {mapsCenterHref ? (
+                <a
+                  className="btn btn-secondary btn-sm"
+                  href={mapsCenterHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackEvent("select_content", { content_type: "leadgen_map_fallback", destination: "google_maps_center_admin" })}
+                >
+                  Open market center
+                </a>
+              ) : null}
+            </div>
+          </div>
         ) : !geocodedRows.length ? (
           <div className="leadgen-map-empty">
             {busy ? "Waiting for the discovery crawl to finish..." : "Discover a zip or adjust filters to show mapped businesses."}
