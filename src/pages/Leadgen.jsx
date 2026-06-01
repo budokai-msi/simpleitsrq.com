@@ -631,6 +631,7 @@ function LeadgenScanApp() {
   });
   const [prefetchState, setPrefetchState] = useState("idle");
   const [lastScanMeta, setLastScanMeta] = useState(null);
+  const [copiedView, setCopiedView] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -873,6 +874,20 @@ function LeadgenScanApp() {
       count: visibleOnlyRows.length,
     });
     downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, visibleOnlyRows);
+  };
+  const copyViewLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopiedView(true);
+      window.setTimeout(() => setCopiedView(false), 1500);
+      trackEvent("select_content", {
+        content_type: "leadgen_share_view",
+        source: "leadgen_scanner",
+        visible_count: visibleRows.length,
+      });
+    } catch {
+      setCopiedView(false);
+    }
   };
   const applyVisibleReview = (nextStatus) => {
     if (!visibleRows.length) return;
@@ -1157,6 +1172,14 @@ function LeadgenScanApp() {
                 {`Start ${recommendedTier.name}`}
               </LeadgenPlanLink>
             ) : null}
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={copyViewLink}
+              disabled={!scan}
+            >
+              {copiedView ? "Copied" : "Copy view link"}
+            </button>
             <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export CSV</button>
             <Link
               to={scannerResultWorkspaceLink}
