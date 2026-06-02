@@ -211,6 +211,28 @@ export function buildServiceReserveEmail(reserve, ip = "unknown") {
   return { subject, text, html, replyTo: reserve.email };
 }
 
+export async function persistServiceReserveLead(reserve, ip = "unknown") {
+  const source = `service-reserve:${reserve.serviceSlug}`.slice(0, 120);
+  const existing = await sql`
+    SELECT id FROM newsletter_subscribers WHERE lower(email) = ${reserve.email} LIMIT 1
+  `;
+
+  if (existing[0]) {
+    await sql`
+      UPDATE newsletter_subscribers
+      SET source = ${source}, ip = ${ip}, created_at = now()
+      WHERE id = ${existing[0].id}
+    `;
+    return { ok: true, action: "updated", source };
+  }
+
+  await sql`
+    INSERT INTO newsletter_subscribers (email, confirm_token, unsubscribe_token, source, ip)
+    VALUES (${reserve.email}, ${randomToken()}, ${randomToken()}, ${source}, ${ip})
+  `;
+  return { ok: true, action: "inserted", source };
+}
+
 const json = (status, body) =>
   new Response(JSON.stringify(body), {
     status,
@@ -1220,9 +1242,25 @@ export async function POST(request) {
     const parsed = normalizeServiceReserveBody(body);
     if (!parsed.ok) return json(400, { ok: false, error: parsed.error });
 
+    let storedLead = null;
+    try {
+      storedLead = await persistServiceReserveLead(parsed.value, ip);
+    } catch (err) {
+      console.error("[contact] service reservation persistence failed", err);
+    }
+
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       console.error("[contact] RESEND_API_KEY not set - cannot send service reservation");
+      if (storedLead?.ok) {
+        return json(200, {
+          ok: true,
+          kind: "service_reserve",
+          stored: true,
+          degraded: true,
+          warning: "email_not_sent",
+        });
+      }
       return json(500, { ok: false, error: "send_failed" });
     }
 
@@ -1245,16 +1283,35 @@ export async function POST(request) {
 
       if (error) {
         console.error("[contact] service reservation resend error", error);
+        if (storedLead?.ok) {
+          return json(200, {
+            ok: true,
+            kind: "service_reserve",
+            stored: true,
+            degraded: true,
+            warning: "email_not_sent",
+          });
+        }
         return json(502, { ok: false, error: "send_failed" });
       }
 
       console.log("[contact] service reservation sent", {
         id: data?.id,
         service: parsed.value.serviceSlug,
+        stored: !!storedLead?.ok,
       });
-      return json(200, { ok: true, kind: "service_reserve" });
+      return json(200, { ok: true, kind: "service_reserve", stored: !!storedLead?.ok });
     } catch (err) {
       console.error("[contact] service reservation resend threw", err);
+      if (storedLead?.ok) {
+        return json(200, {
+          ok: true,
+          kind: "service_reserve",
+          stored: true,
+          degraded: true,
+          warning: "email_not_sent",
+        });
+      }
       return json(502, { ok: false, error: "send_failed" });
     }
   }

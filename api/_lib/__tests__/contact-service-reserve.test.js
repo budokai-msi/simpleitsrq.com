@@ -1,7 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+const sqlQueue = [];
+const sqlCalls = [];
+
 vi.mock("botid/server", () => ({ checkBotId: vi.fn() }));
-vi.mock("../db.js", () => ({ sql: vi.fn() }));
+vi.mock("../db.js", () => ({
+  sql: vi.fn((strings, ...values) => {
+    sqlCalls.push({ text: Array.from(strings).join("?"), values });
+    const next = sqlQueue.shift();
+    if (next instanceof Error) return Promise.reject(next);
+    return Promise.resolve(next || []);
+  }),
+}));
 
 const originalEnv = { ...process.env };
 
@@ -14,6 +24,7 @@ process.env = {
 const {
   normalizeServiceReserveBody,
   buildServiceReserveEmail,
+  persistServiceReserveLead,
 } = await import("../../contact.js");
 
 describe("service reservation contact payload", () => {
@@ -23,6 +34,8 @@ describe("service reservation contact payload", () => {
       RESEND_API_KEY: "test-resend-key",
       TURNSTILE_SECRET_KEY: "test-turnstile-key",
     };
+    sqlQueue.length = 0;
+    sqlCalls.length = 0;
   });
 
   afterEach(() => {
@@ -87,5 +100,52 @@ describe("service reservation contact payload", () => {
     expect(email.subject).toBe("Service reservation: <Network Audit> - $399");
     expect(email.html).toContain("&lt;Network Audit&gt;");
     expect(email.html).toContain("&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;");
+  });
+
+  it("persists a new service reservation lead to the existing subscriber store", async () => {
+    sqlQueue.push([], []);
+    const parsed = normalizeServiceReserveBody({
+      email: "buyer@example.com",
+      service_slug: "ssd-upgrade",
+      service_title: "SSD Upgrade",
+      service_price: 249,
+    });
+
+    const result = await persistServiceReserveLead(parsed.value, "198.51.100.10");
+
+    expect(result).toEqual({
+      ok: true,
+      action: "inserted",
+      source: "service-reserve:ssd-upgrade",
+    });
+    expect(sqlCalls).toHaveLength(2);
+    expect(sqlCalls[0].text).toContain("SELECT id FROM newsletter_subscribers");
+    expect(sqlCalls[0].values).toContain("buyer@example.com");
+    expect(sqlCalls[1].text).toContain("INSERT INTO newsletter_subscribers");
+    expect(sqlCalls[1].values).toContain("service-reserve:ssd-upgrade");
+    expect(sqlCalls[1].values).toContain("198.51.100.10");
+  });
+
+  it("updates an existing subscriber row with the latest service intent", async () => {
+    sqlQueue.push([{ id: 42 }], []);
+    const parsed = normalizeServiceReserveBody({
+      email: "buyer@example.com",
+      service_slug: "network-audit",
+      service_title: "Network + Wi-Fi Audit",
+      service_price: 399,
+    });
+
+    const result = await persistServiceReserveLead(parsed.value, "203.0.113.25");
+
+    expect(result).toEqual({
+      ok: true,
+      action: "updated",
+      source: "service-reserve:network-audit",
+    });
+    expect(sqlCalls).toHaveLength(2);
+    expect(sqlCalls[1].text).toContain("UPDATE newsletter_subscribers");
+    expect(sqlCalls[1].values).toContain("service-reserve:network-audit");
+    expect(sqlCalls[1].values).toContain("203.0.113.25");
+    expect(sqlCalls[1].values).toContain(42);
   });
 });
