@@ -242,6 +242,14 @@ export function useSEO({
 // we explicitly mark as coming soon — hiding draft products keeps us out of
 // Merchant Center disapproval.
 export function productListSchema(products, { basePath = "/tools" } = {}) {
+  const pagePath = basePath.startsWith("/") ? basePath : `/${basePath}`;
+  const productUrl = (p) => `${SITE_URL}${pagePath}#${p.slug}`;
+  const offerUrl = (p) => {
+    if (!p.buyLink) return productUrl(p);
+    if (/^https?:\/\//i.test(p.buyLink)) return p.buyLink;
+    return `${SITE_URL}${p.buyLink.startsWith("/") ? p.buyLink : `/${p.buyLink}`}`;
+  };
+
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -254,7 +262,7 @@ export function productListSchema(products, { basePath = "/tools" } = {}) {
         description: p.description || p.tagline,
         brand: { "@type": "Brand", name: SITE_NAME },
         image: `${SITE_URL}/og-image.png`,
-        url: `${SITE_URL}${basePath}#${p.slug}`,
+        url: productUrl(p),
         offers: {
           "@type": "Offer",
           price: String(p.price),
@@ -262,7 +270,7 @@ export function productListSchema(products, { basePath = "/tools" } = {}) {
           availability: p.buyLink
             ? "https://schema.org/InStock"
             : "https://schema.org/PreOrder",
-          url: p.buyLink || `${SITE_URL}/tools`,
+          url: offerUrl(p),
           seller: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
         },
       },

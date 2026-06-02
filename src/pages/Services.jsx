@@ -241,6 +241,14 @@ function ServiceCard({ svc }) {
 }
 
 const TABS = ["All", "Residential", "Business"];
+const SERVICE_PRODUCTS = services.map((svc) => ({
+  slug: svc.slug,
+  title: svc.title,
+  description: svc.tagline,
+  price: svc.price,
+  buyLink: svc.buyLink,
+}));
+
 const SERVICES_FAQS = [
   {
     q: "Do you publish fixed prices before we book?",
@@ -266,6 +274,8 @@ export default function Services() {
       { name: "Home", url: "https://simpleitsrq.com/" },
       { name: "Services", url: "https://simpleitsrq.com/services" },
     ],
+    products: SERVICE_PRODUCTS,
+    productBasePath: "/services",
     faqs: SERVICES_FAQS,
   });
 
