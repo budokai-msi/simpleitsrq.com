@@ -7,13 +7,41 @@ import { services, audienceFilter } from "../data/services";
 import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics";
+import "../styles/services-revenue.css";
 
-// Reservation / waitlist CTA. When a
+function servicePriceLabel(svc) {
+  if (svc.price === 0) return "Free";
+  const prefix = svc.priceFrom ? "from " : "";
+  const suffix = svc.priceSuffix || "";
+  return `${prefix}$${svc.price.toLocaleString()}${suffix}`;
+}
+
+function serviceCheckoutPayload(svc, source, extra = {}) {
+  const price = typeof svc.price === "number" ? svc.price : undefined;
+  return {
+    source,
+    service_slug: svc.slug,
+    service_title: svc.title,
+    value: price,
+    currency: "USD",
+    items: [{
+      item_id: svc.slug,
+      item_name: svc.title,
+      item_category: svc.audience,
+      price,
+      quantity: 1,
+    }],
+    ...extra,
+  };
+}
+
+// Reservation / checkout CTA. When a
 // service has a buyLink, we render a hard Buy/Reserve button that opens the
-// Stripe-hosted checkout. When it doesn't, we render an email capture so we
-// can measure demand BEFORE wiring the Stripe link.
+// Stripe-hosted checkout. When it doesn't, we capture purchase intent and
+// route the customer toward scheduling so the SKU can still turn into revenue.
 function BuyCta({ svc }) {
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [status, setStatus] = useState("idle"); // idle | submitting | sent | error
   const [errMsg, setErrMsg] = useState("");
 
@@ -23,7 +51,7 @@ function BuyCta({ svc }) {
       <Link
         to={svc.buyLink || "/book"}
         className="btn btn-primary svc-buy-btn"
-        onClick={() => trackEvent("generate_lead", { source: "services_consult_click", service_slug: svc.slug })}
+        onClick={() => trackEvent("generate_lead", serviceCheckoutPayload(svc, "services_consult_click"))}
       >
         Book a free call <ArrowRight size={16} />
       </Link>
@@ -37,24 +65,22 @@ function BuyCta({ svc }) {
         href={svc.buyLink}
         className="btn btn-primary svc-buy-btn"
         rel="noopener noreferrer"
-        onClick={() => trackEvent("begin_checkout", {
-          source: "services_buy_click",
-          service_slug: svc.slug,
+        onClick={() => trackEvent("begin_checkout", serviceCheckoutPayload(svc, "services_buy_click", {
           checkout_kind: isStripe ? "stripe" : "external",
-          value: typeof svc.price === "number" ? svc.price : undefined,
-          currency: "USD",
-        })}
+        }))}
       >
-        {svc.price === 0 ? "Reserve now" : `Buy now — $${svc.price}${svc.priceSuffix || ""}`}
+        {svc.price === 0 ? "Reserve now" : `Buy now - ${servicePriceLabel(svc)}`}
         <ArrowRight size={16} />
       </a>
     );
   }
 
-  // Waitlist email capture
+  // Purchase-intent capture for SKUs that do not have a live Payment Link yet.
   const submit = async (e) => {
     e.preventDefault();
-    if (!email || !/.+@.+\..+/.test(email)) {
+    const cleanEmail = email.trim();
+    const cleanPhone = phone.trim();
+    if (!cleanEmail || !/.+@.+\..+/.test(cleanEmail)) {
       setStatus("error");
       setErrMsg("Enter a valid email.");
       return;
@@ -66,18 +92,26 @@ function BuyCta({ svc }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: email.split("@")[0],
-          email,
-          message: `[services-waitlist] Wants to be notified when "${svc.title}" opens for purchase. Slug: ${svc.slug}`,
-          source: "services-waitlist",
+          name: cleanEmail.split("@")[0],
+          email: cleanEmail,
+          phone: cleanPhone,
+          message: [
+            `[services-reserve] Wants scheduling/payment link for "${svc.title}".`,
+            `Slug: ${svc.slug}`,
+            `Published price: ${servicePriceLabel(svc)}`,
+            `Phone: ${cleanPhone || "not provided"}`,
+            "Source: /services",
+          ].join("\n"),
+          source: "services-reserve",
         }),
       });
       if (res.ok) {
-        trackEvent("generate_lead", { source: "services_waitlist_signup", service_slug: svc.slug });
+        trackEvent("generate_lead", serviceCheckoutPayload(svc, "services_reserve_request"));
+        trackEvent("add_to_cart", serviceCheckoutPayload(svc, "services_reserve_request"));
         setStatus("sent");
       } else {
         setStatus("error");
-        setErrMsg("Couldn't add you to the list. Try again or email hello@simpleitsrq.com.");
+        setErrMsg("Couldn't send the request. Try again or email hello@simpleitsrq.com.");
       }
     } catch {
       setStatus("error");
@@ -87,35 +121,65 @@ function BuyCta({ svc }) {
 
   if (status === "sent") {
     return (
-      <div className="svc-waitlist-sent" role="status">
-        <CheckCircle2 size={18} color="var(--success)" /> You're on the list. We'll email when this opens.
+      <div className="svc-reserve-sent" role="status">
+        <CheckCircle2 size={18} color="var(--success)" />
+        <span>Request received. We'll send the scheduling/payment link and the next available windows.</span>
       </div>
     );
   }
 
+  const bookHref = `/book?topic=${encodeURIComponent(svc.slug)}&source=services-reserve`;
+
   return (
-    <form className="svc-waitlist" onSubmit={submit} noValidate>
-      <label className="svc-waitlist-label" htmlFor={`waitlist-${svc.slug}`}>
-        Email me when this opens
-      </label>
-      <div className="svc-waitlist-row">
-        <input
-          id={`waitlist-${svc.slug}`}
-          type="email"
-          placeholder="you@business.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={status === "submitting"}
-          autoComplete="email"
-          inputMode="email"
-        />
+    <form className="svc-reserve" onSubmit={submit} noValidate>
+      <div className="svc-reserve-head">
+        <span className="svc-reserve-kicker">Ready to move?</span>
+        <strong>Request the scheduling link</strong>
+        <p>We confirm fit, send payment or booking details, and hold the scope at the posted price.</p>
+      </div>
+      <div className="svc-reserve-row">
+        <label className="svc-reserve-field" htmlFor={`reserve-email-${svc.slug}`}>
+          <span>Email</span>
+          <input
+            id={`reserve-email-${svc.slug}`}
+            type="email"
+            placeholder="you@business.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={status === "submitting"}
+            autoComplete="email"
+            inputMode="email"
+          />
+        </label>
+        <label className="svc-reserve-field" htmlFor={`reserve-phone-${svc.slug}`}>
+          <span>Phone <em>optional</em></span>
+          <input
+            id={`reserve-phone-${svc.slug}`}
+            type="tel"
+            placeholder="(941) 555-0144"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            disabled={status === "submitting"}
+            autoComplete="tel"
+            inputMode="tel"
+          />
+        </label>
+      </div>
+      <div className="svc-reserve-actions">
         <button
           type="submit"
-          className="btn btn-secondary"
+          className="btn btn-primary svc-buy-btn"
           disabled={status === "submitting"}
         >
-          {status === "submitting" ? <Loader2 size={16} className="spin" /> : "Notify me"}
+          {status === "submitting" ? <Loader2 size={16} className="spin" /> : "Send request"}
         </button>
+        <Link
+          to={bookHref}
+          className="svc-reserve-book"
+          onClick={() => trackEvent("generate_lead", serviceCheckoutPayload(svc, "services_reserve_book_call"))}
+        >
+          Book a call instead <ArrowRight size={14} />
+        </Link>
       </div>
       {status === "error" && (
         <p className="svc-waitlist-err" role="alert"><AlertCircle size={14} /> {errMsg}</p>

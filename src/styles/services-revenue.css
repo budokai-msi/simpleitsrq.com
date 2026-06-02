@@ -1,0 +1,123 @@
+.svc-reserve {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+
+.svc-reserve-head {
+  display: grid;
+  gap: 4px;
+}
+
+.svc-reserve-kicker {
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.svc-reserve-head strong {
+  color: var(--text-1);
+  font-size: 14px;
+}
+
+.svc-reserve-head p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.svc-reserve-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.75fr);
+  gap: 8px;
+}
+
+.svc-reserve-field {
+  display: grid;
+  gap: 5px;
+}
+
+.svc-reserve-field span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.svc-reserve-field em {
+  color: var(--text-3);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.svc-reserve-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-elevated);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 14px;
+}
+
+.svc-reserve-field input:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+  border-color: var(--brand);
+}
+
+.svc-reserve-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.svc-reserve-book {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.svc-reserve-book:hover {
+  color: var(--brand-hover);
+  text-decoration: underline;
+}
+
+.svc-reserve-sent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--success) 25%, transparent);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--success) 10%, transparent);
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.svc-reserve-sent svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+@media (max-width: 520px) {
+  .svc-reserve-row {
+    grid-template-columns: 1fr;
+  }
+}

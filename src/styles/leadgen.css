@@ -919,18 +919,15 @@
     line-height: 1.55;
   }
   .leadgen-context-strip {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 8px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    padding-bottom: 2px;
-    scroll-snap-type: x proximity;
+    overflow: visible;
+    padding-bottom: 0;
   }
   .leadgen-context-item {
-    flex: 0 0 auto;
-    min-width: min(72vw, 232px);
+    min-width: 0;
     min-height: 38px;
-    scroll-snap-align: start;
   }
   .leadgen-context-item__hint {
     display: none;
@@ -952,15 +949,18 @@
     min-height: 42px;
   }
   .leadgen-quick-markets {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding-bottom: 2px;
+    display: grid;
+    grid-template-columns: 1fr;
+    overflow: visible;
+    padding-bottom: 0;
   }
   .leadgen-quick-markets > span {
-    flex: 0 0 auto;
+    min-width: 0;
   }
   .leadgen-quick-market-btn {
-    flex: 0 0 auto;
+    width: 100%;
+    min-height: 36px;
+    justify-content: center;
   }
 }
 
