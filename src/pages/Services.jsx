@@ -7,6 +7,7 @@ import { services, audienceFilter } from "../data/services";
 import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics";
+import { TURNSTILE_SITE_KEY, useTurnstile } from "../lib/useTurnstile";
 import "../styles/services-revenue.css";
 
 function servicePriceLabel(svc) {
@@ -44,6 +45,15 @@ function BuyCta({ svc }) {
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState("idle"); // idle | submitting | sent | error
   const [errMsg, setErrMsg] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [verificationArmed, setVerificationArmed] = useState(false);
+
+  const { containerRef: turnstileRef, reset: resetTurnstile } =
+    useTurnstile(setTurnstileToken);
+
+  const armVerification = () => {
+    if (TURNSTILE_SITE_KEY) setVerificationArmed(true);
+  };
 
   // $0 lead-gen tier routes to /book, not Stripe.
   if (svc.status === "consult") {
@@ -85,6 +95,12 @@ function BuyCta({ svc }) {
       setErrMsg("Enter a valid email.");
       return;
     }
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setVerificationArmed(true);
+      setStatus("error");
+      setErrMsg("Complete the browser check, then send the request.");
+      return;
+    }
     setStatus("submitting");
     setErrMsg("");
     try {
@@ -92,30 +108,37 @@ function BuyCta({ svc }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          kind: "service_reserve",
           name: cleanEmail.split("@")[0],
           email: cleanEmail,
           phone: cleanPhone,
-          message: [
-            `[services-reserve] Wants scheduling/payment link for "${svc.title}".`,
-            `Slug: ${svc.slug}`,
-            `Published price: ${servicePriceLabel(svc)}`,
-            `Phone: ${cleanPhone || "not provided"}`,
-            "Source: /services",
-          ].join("\n"),
+          service_slug: svc.slug,
+          service_title: svc.title,
+          service_price: typeof svc.price === "number" ? svc.price : null,
+          service_price_label: servicePriceLabel(svc),
+          service_price_note: svc.priceNote || "",
           source: "services-reserve",
+          turnstileToken,
         }),
       });
-      if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
         trackEvent("generate_lead", serviceCheckoutPayload(svc, "services_reserve_request"));
         trackEvent("add_to_cart", serviceCheckoutPayload(svc, "services_reserve_request"));
         setStatus("sent");
       } else {
         setStatus("error");
-        setErrMsg("Couldn't send the request. Try again or email hello@simpleitsrq.com.");
+        setErrMsg(data?.error === "bot_detected"
+          ? "Complete the browser check, then send the request."
+          : "Couldn't send the request. Try again or email hello@simpleitsrq.com.");
+        resetTurnstile?.();
+        setTurnstileToken("");
       }
     } catch {
       setStatus("error");
       setErrMsg("Network hiccup. Try again.");
+      resetTurnstile?.();
+      setTurnstileToken("");
     }
   };
 
@@ -145,7 +168,8 @@ function BuyCta({ svc }) {
             type="email"
             placeholder="you@business.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onFocus={armVerification}
+            onChange={(e) => { setEmail(e.target.value); armVerification(); }}
             disabled={status === "submitting"}
             autoComplete="email"
             inputMode="email"
@@ -158,13 +182,17 @@ function BuyCta({ svc }) {
             type="tel"
             placeholder="(941) 555-0144"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onFocus={armVerification}
+            onChange={(e) => { setPhone(e.target.value); armVerification(); }}
             disabled={status === "submitting"}
             autoComplete="tel"
             inputMode="tel"
           />
         </label>
       </div>
+      {TURNSTILE_SITE_KEY && verificationArmed ? (
+        <div ref={turnstileRef} className="svc-reserve-check" aria-label="Browser verification" />
+      ) : null}
       <div className="svc-reserve-actions">
         <button
           type="submit"

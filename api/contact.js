@@ -118,6 +118,99 @@ const stripHeaderCtrl = (s = "") => {
   return out.replace(/\s+/g, " ").trim();
 };
 
+const cleanServiceSlug = (s = "") =>
+  stripHeaderCtrl(String(s).toLowerCase())
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 96);
+
+const serviceReserveError = (error) => ({ ok: false, error });
+
+export function normalizeServiceReserveBody(body = {}) {
+  const email = stripHeaderCtrl(String(body.email || "").trim().toLowerCase()).slice(0, 320);
+  if (!email || !isEmail(email)) return serviceReserveError("email_invalid");
+
+  const serviceSlug = cleanServiceSlug(body.service_slug || body.serviceSlug || body.slug);
+  if (!serviceSlug) return serviceReserveError("service_required");
+
+  const serviceTitle = stripHeaderCtrl(String(body.service_title || body.serviceTitle || "").trim()).slice(0, 180);
+  if (!serviceTitle) return serviceReserveError("service_required");
+
+  const name =
+    stripHeaderCtrl(String(body.name || "").trim()).slice(0, 160) ||
+    email.split("@")[0].slice(0, 160);
+  const phone = stripHeaderCtrl(String(body.phone || "").trim()).slice(0, 60);
+  const source = stripHeaderCtrl(String(body.source || "services-reserve").trim()).slice(0, 80);
+  const priceLabel = stripHeaderCtrl(String(body.service_price_label || body.price_label || "").trim()).slice(0, 80);
+  const priceNote = stripHeaderCtrl(String(body.service_price_note || body.price_note || "").trim()).slice(0, 180);
+  const rawPrice = Number(body.service_price ?? body.price);
+  const servicePrice = Number.isFinite(rawPrice) && rawPrice >= 0 ? rawPrice : null;
+  const message = String(body.message || "").trim().slice(0, 1200);
+
+  return {
+    ok: true,
+    value: {
+      name,
+      email,
+      phone,
+      serviceSlug,
+      serviceTitle,
+      servicePrice,
+      priceLabel,
+      priceNote,
+      source,
+      message,
+    },
+  };
+}
+
+export function buildServiceReserveEmail(reserve, ip = "unknown") {
+  const price =
+    reserve.priceLabel ||
+    (reserve.servicePrice !== null ? `$${reserve.servicePrice.toLocaleString("en-US")}` : "not provided");
+  const subject = `Service reservation: ${reserve.serviceTitle} - ${price}`;
+
+  const text = [
+    "New service reservation request",
+    "",
+    `Service: ${reserve.serviceTitle}`,
+    `Slug: ${reserve.serviceSlug}`,
+    `Posted price: ${price}`,
+    reserve.priceNote ? `Price note: ${reserve.priceNote}` : null,
+    "",
+    `Name: ${reserve.name}`,
+    `Email: ${reserve.email}`,
+    `Phone: ${reserve.phone || "-"}`,
+    `Source: ${reserve.source}`,
+    "",
+    reserve.message ? `Customer note:\n${reserve.message}\n` : null,
+    "---",
+    `Sent via simpleitsrq.com/services`,
+    `Submitter IP: ${ip}`,
+  ].filter(Boolean).join("\n");
+
+  const html = `
+    <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:620px;margin:0 auto;color:#1a1a1a">
+      <h2 style="margin:0 0 16px;color:#0F6CBD">New service reservation</h2>
+      <table cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:14px">
+        <tr><td style="color:#6b7280">Service</td><td><strong>${escapeHtml(reserve.serviceTitle)}</strong></td></tr>
+        <tr><td style="color:#6b7280">Slug</td><td>${escapeHtml(reserve.serviceSlug)}</td></tr>
+        <tr><td style="color:#6b7280">Posted price</td><td>${escapeHtml(price)}</td></tr>
+        ${reserve.priceNote ? `<tr><td style="color:#6b7280">Price note</td><td>${escapeHtml(reserve.priceNote)}</td></tr>` : ""}
+        <tr><td style="color:#6b7280">Name</td><td>${escapeHtml(reserve.name)}</td></tr>
+        <tr><td style="color:#6b7280">Email</td><td><a href="mailto:${escapeHtml(reserve.email)}">${escapeHtml(reserve.email)}</a></td></tr>
+        <tr><td style="color:#6b7280">Phone</td><td>${escapeHtml(reserve.phone || "-")}</td></tr>
+        <tr><td style="color:#6b7280">Source</td><td>${escapeHtml(reserve.source)}</td></tr>
+      </table>
+      ${reserve.message ? `<h3 style="margin:20px 0 8px;font-size:14px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em">Customer note</h3><div style="white-space:pre-wrap;padding:12px 14px;background:#f7f7f8;border-radius:8px;font-size:14px;line-height:1.5">${escapeHtml(reserve.message)}</div>` : ""}
+      <p style="margin-top:20px;font-size:12px;color:#9ca3af">Sent via simpleitsrq.com/services &middot; IP ${escapeHtml(ip)}</p>
+    </div>
+  `;
+
+  return { subject, text, html, replyTo: reserve.email };
+}
+
 const json = (status, body) =>
   new Response(JSON.stringify(body), {
     status,
@@ -1122,6 +1215,49 @@ export async function POST(request) {
 
   // 5. Honeypot — real users leave this blank; bots fill it.
   if (body._hp) return json(200, { ok: true });
+
+  if (body.kind === "service_reserve") {
+    const parsed = normalizeServiceReserveBody(body);
+    if (!parsed.ok) return json(400, { ok: false, error: parsed.error });
+
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.error("[contact] RESEND_API_KEY not set - cannot send service reservation");
+      return json(500, { ok: false, error: "send_failed" });
+    }
+
+    const reserveEmail = buildServiceReserveEmail(parsed.value, ip);
+    const resend = new Resend(apiKey);
+    const contactTo = process.env.CONTACT_TO_EMAIL || CONTACT_TO_DEFAULT;
+    try {
+      const { data, error } = await resend.emails.send({
+        from: CONTACT_FROM,
+        to: [contactTo],
+        replyTo: reserveEmail.replyTo,
+        subject: reserveEmail.subject,
+        text: reserveEmail.text,
+        html: reserveEmail.html,
+        headers: {
+          "X-Service-Intent": parsed.value.serviceSlug,
+          "X-Service-Source": parsed.value.source,
+        },
+      });
+
+      if (error) {
+        console.error("[contact] service reservation resend error", error);
+        return json(502, { ok: false, error: "send_failed" });
+      }
+
+      console.log("[contact] service reservation sent", {
+        id: data?.id,
+        service: parsed.value.serviceSlug,
+      });
+      return json(200, { ok: true, kind: "service_reserve" });
+    } catch (err) {
+      console.error("[contact] service reservation resend threw", err);
+      return json(502, { ok: false, error: "send_failed" });
+    }
+  }
 
   const name = stripHeaderCtrl(String(body.name || "").slice(0, 200));
   const company = stripHeaderCtrl(String(body.company || "").slice(0, 200));

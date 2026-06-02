@@ -81,6 +81,14 @@
   gap: 8px;
 }
 
+.svc-reserve-check {
+  overflow: hidden;
+}
+
+.svc-reserve-check:not(:empty) {
+  min-height: 65px;
+}
+
 .svc-reserve-book {
   display: inline-flex;
   align-items: center;
