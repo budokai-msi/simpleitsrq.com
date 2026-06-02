@@ -73,6 +73,83 @@ function hostFor(url) {
   try { return new URL(url).host.replace(/^www\./, ""); } catch { return url; }
 }
 
+function makePreviewFacets(rows) {
+  const groups = new Map();
+  const subs = new Map();
+  for (const row of rows) {
+    const group = String(row.industry_group || row.industry || "Other").trim() || "Other";
+    groups.set(group, (groups.get(group) || 0) + 1);
+    if (row.sub_industry) {
+      const key = `${group}::${row.sub_industry}`;
+      subs.set(key, {
+        industry_group: group,
+        sub_industry: row.sub_industry,
+        n: (subs.get(key)?.n || 0) + 1,
+      });
+    }
+  }
+  return {
+    groups: Array.from(groups, ([industry_group, n]) => ({ industry_group, n }))
+      .sort((a, b) => b.n - a.n || a.industry_group.localeCompare(b.industry_group)),
+    subs: Array.from(subs.values())
+      .sort((a, b) => b.n - a.n || a.sub_industry.localeCompare(b.sub_industry)),
+  };
+}
+
+function publicScanToPreviewRows(scan, zip) {
+  return (scan?.rows || []).map((row, index) => ({
+    id: `preview-${zip}-${row.source_id || index}`,
+    name: row.name || "Unnamed business",
+    address: row.address || "",
+    city: row.city || "",
+    state: row.state || "",
+    zip: row.zip || zip,
+    lat: row.lat,
+    lng: row.lng,
+    website: row.website || "",
+    phone: row.phone || "",
+    industry: row.industry || "",
+    industry_group: row.industry_group || row.industry || "Other",
+    sub_industry: row.sub_industry || "",
+    tags: ["preview"],
+    status: "preview",
+    source: "public_scan",
+    source_id: row.source_id || "",
+    source_url: row.source_url || "",
+    created_at: null,
+    deliverable_emails: 0,
+    preview: true,
+  }));
+}
+
+function filterPreviewRows(rows, f, { includeContactFilters = true } = {}) {
+  const q = String(f.q || "").trim().toLowerCase();
+  const wantsQ = q.length >= 2;
+  return rows.filter((row) => {
+    if (f.industry_group && row.industry_group !== f.industry_group) return false;
+    if (f.sub_industry && row.sub_industry !== f.sub_industry) return false;
+    if (f.has_website && !row.website) return false;
+
+    if (includeContactFilters) {
+      if (f.has_email) return false;
+      if (f.min_emails) return false;
+      if (f.tag && !row.tags.some((tag) => tag.includes(f.tag))) return false;
+      if (wantsQ) {
+        const haystack = [
+          row.name,
+          row.website,
+          row.industry,
+          row.industry_group,
+          row.sub_industry,
+          row.city,
+        ].filter(Boolean).join(" ").toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+    }
+    return true;
+  });
+}
+
 function Stat({ label, value, hint, accent, badge }) {
   return (
     <div className={`leadgen-kpi${accent ? ` leadgen-kpi--${accent}` : ""}`}>
@@ -1179,6 +1256,8 @@ function DiscoverTab({ onStatusChange }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
   const [err, setErr] = useState(null);
+  const [previewMode, setPreviewMode] = useState(false);
+  const previewCacheRef = useRef(new Map());
 
   const limit = 50;
   const validStatuses = new Set(["", "active", "rejected", "do_not_contact"]);
@@ -1288,13 +1367,61 @@ function DiscoverTab({ onStatusChange }) {
       setRows(r.rows || []);
       setTotal(r.total || 0);
       setFacets(r.facets || { groups: [], subs: [] });
+      setPreviewMode(false);
       setErr(null);
     } catch (e) {
       const message = String(e.message || e);
+      const recovered = await loadPublicPreview(sourceFilter).catch((previewErr) => {
+        console.warn("[leadgen] public preview fallback failed", previewErr?.message || previewErr);
+        return false;
+      });
+      if (recovered) return;
       setErr(message === "HTTP 500"
-        ? "Lead list could not reload. Current results remain visible; retry or clear filters."
+        ? "The saved lead list failed to reload. The screen stayed usable; clear filters or scan the zip again."
         : message);
     }
+  };
+
+  const loadPublicPreview = async (sourceFilter = filter) => {
+    const f = normalizeListFilter(sourceFilter);
+    if (!/^\d{5}$/.test(f.zip)) return false;
+
+    const niche = f.industry_group || "All";
+    const cacheKey = `${f.zip}::${niche}`;
+    let scan = previewCacheRef.current.get(cacheKey);
+    if (!scan) {
+      const response = await fetch("/api/leadgen", {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ zip: f.zip, niche, limit: 80 }),
+      });
+      scan = await response.json().catch(() => ({}));
+      if (!response.ok || scan.ok === false) {
+        throw new Error(scan.message || scan.error || `HTTP ${response.status}`);
+      }
+      previewCacheRef.current.set(cacheKey, scan);
+    }
+
+    const allPreviewRows = publicScanToPreviewRows(scan, f.zip);
+    const exactRows = filterPreviewRows(allPreviewRows, f, { includeContactFilters: true });
+    const relaxedRows = filterPreviewRows(allPreviewRows, f, { includeContactFilters: false });
+    const rowsForView = exactRows.length ? exactRows : relaxedRows;
+    const relaxed = !exactRows.length && relaxedRows.length;
+
+    setRows(rowsForView);
+    setTotal(rowsForView.length);
+    setFacets(makePreviewFacets(allPreviewRows));
+    setPreviewMode(true);
+    setErr(null);
+    setMsg(relaxed
+      ? "Saved lead list did not reload, so this is a live public market preview. Contact/email filters are paused until the saved list is back."
+      : "Saved lead list did not reload, so this is a live public market preview for the current zip.");
+    return true;
   };
 
   // Re-load whenever the filter changes. Fetch-on-mount is a legitimate
@@ -1361,6 +1488,10 @@ function DiscoverTab({ onStatusChange }) {
   };
 
   const setRowStatus = async (id, newStatus) => {
+    if (String(id).startsWith("preview-")) {
+      setErr("Preview rows need to be saved by the discovery pipeline before status can change.");
+      return;
+    }
     try {
       await postJson("/api/portal?action=leadgen-business-update", { id, status: newStatus });
       await loadList();
@@ -1372,6 +1503,10 @@ function DiscoverTab({ onStatusChange }) {
   // Free-form tags: prompt() is intentionally low-fi here; full editor
   // would need a per-row inline form. Comma-separated input -> text[].
   const editRowTags = async (row) => {
+    if (row.preview) {
+      setErr("Preview rows need to be saved by the discovery pipeline before tags can change.");
+      return;
+    }
     const next = prompt(`Tags for "${row.name}" (comma separated, lowercase):`, (row.tags || []).join(", "));
     if (next === null) return;
     try {
@@ -1462,9 +1597,14 @@ function DiscoverTab({ onStatusChange }) {
         <div>
           <span className="leadgen-console-topline">Lead list</span>
           <strong>{total.toLocaleString()} businesses</strong>
-          <p>{currentZip ? `Filtered to ZIP ${currentZip}.` : "Scan a zip to populate the map and lead table."}</p>
+          <p>
+            {previewMode
+              ? `Live public preview for ZIP ${currentZip}; save/reload the pipeline for emails and campaign actions.`
+              : currentZip ? `Filtered to ZIP ${currentZip}.` : "Scan a zip to populate the map and lead table."}
+          </p>
         </div>
         <div className="leadgen-filter-presets" aria-label="Lead list presets">
+          {previewMode ? <span className="leadgen-status-chip">Preview</span> : null}
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("all")}>All in zip</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("ready")}>Ready contacts</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("needs_email")}>Needs email crawl</button>
@@ -1481,6 +1621,7 @@ function DiscoverTab({ onStatusChange }) {
               value={filter.q}
               onChange={(e) => { setFilter((f) => ({ ...f, q: e.target.value })); setPage(1); }}
               autoComplete="off"
+              name="leadgen-business-search"
               className="admin-leadgen-input admin-leadgen-input--grow"
             />
           </label>
@@ -1492,6 +1633,7 @@ function DiscoverTab({ onStatusChange }) {
               onChange={(e) => { setFilter((f) => ({ ...f, zip: cleanDigits(e.target.value) })); setPage(1); }}
               inputMode="numeric"
               autoComplete="postal-code"
+              name="leadgen-filter-zip"
               className="admin-leadgen-input admin-leadgen-input--zip"
             />
           </label>
@@ -1562,7 +1704,8 @@ function DiscoverTab({ onStatusChange }) {
                   placeholder="reviewed"
                   value={filter.tag}
                   onChange={(e) => { setFilter((f) => ({ ...f, tag: cleanTag(e.target.value) })); setPage(1); }}
-                  autoComplete="off"
+                  autoComplete="new-password"
+                  name="leadgen-tag-filter"
                   className="admin-leadgen-input"
                 />
               </label>
@@ -1574,6 +1717,7 @@ function DiscoverTab({ onStatusChange }) {
                   value={filter.min_emails}
                   onChange={(e) => { setFilter((f) => ({ ...f, min_emails: cleanDigits(e.target.value, 4) })); setPage(1); }}
                   autoComplete="off"
+                  name="leadgen-min-emails"
                   className="admin-leadgen-input"
                 />
               </label>
@@ -1585,6 +1729,7 @@ function DiscoverTab({ onStatusChange }) {
                   value={filter.max_emails}
                   onChange={(e) => { setFilter((f) => ({ ...f, max_emails: cleanDigits(e.target.value, 4) })); setPage(1); }}
                   autoComplete="off"
+                  name="leadgen-max-emails"
                   className="admin-leadgen-input"
                 />
               </label>
@@ -1594,6 +1739,7 @@ function DiscoverTab({ onStatusChange }) {
                   type="date"
                   value={filter.created_after}
                   onChange={(e) => { setFilter((f) => ({ ...f, created_after: e.target.value })); setPage(1); }}
+                  name="leadgen-created-after"
                   className="admin-leadgen-input"
                 />
               </label>
@@ -1603,6 +1749,7 @@ function DiscoverTab({ onStatusChange }) {
                   type="date"
                   value={filter.created_before}
                   onChange={(e) => { setFilter((f) => ({ ...f, created_before: e.target.value })); setPage(1); }}
+                  name="leadgen-created-before"
                   className="admin-leadgen-input"
                 />
               </label>
@@ -1610,8 +1757,8 @@ function DiscoverTab({ onStatusChange }) {
           </details>
           <span className="admin-leadgen-count">{activeFilterCount} active</span>
           <div className="admin-leadgen-export-group">
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("csv")} disabled={total === 0}>Export CSV</button>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("json")} disabled={total === 0}>Export JSON</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("csv")} disabled={total === 0 || previewMode} title={previewMode ? "Reload the saved list before exporting" : ""}>Export CSV</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("json")} disabled={total === 0 || previewMode} title={previewMode ? "Reload the saved list before exporting" : ""}>Export JSON</button>
             <button type="button" className="btn btn-secondary btn-sm" onClick={reclassify} disabled={busy} title="Backfill industry_group + sub_industry from raw OSM tags">Reclassify</button>
           </div>
         </div>
@@ -1647,19 +1794,22 @@ function DiscoverTab({ onStatusChange }) {
                     </a>
                   ) : "-"}
                 </td>
-                <td style={{ textAlign: "right" }}>{r.deliverable_emails}</td>
+                <td style={{ textAlign: "right" }}>{r.preview ? "not crawled" : r.deliverable_emails}</td>
                 <td>
-                  <button type="button" className="admin-leadgen-tag-btn" onClick={() => editRowTags(r)} title="Edit tags">
+                  <button type="button" className="admin-leadgen-tag-btn" onClick={() => editRowTags(r)} title={r.preview ? "Preview rows need to be saved before tagging" : "Edit tags"} disabled={r.preview}>
                     {(r.tags && r.tags.length) ? r.tags.map((t) => <span key={t} className="admin-leadgen-tag">{t}</span>) : <em style={{ fontSize: 11, opacity: 0.6 }}>+ tag</em>}
                   </button>
                 </td>
-                <td className="admin-leadgen-muted">{r.status}</td>
+                <td className="admin-leadgen-muted">{r.preview ? "public preview" : r.status}</td>
                 <td style={{ textAlign: "right" }}>
                   <select
                     value={r.status}
                     onChange={(e) => setRowStatus(r.id, e.target.value)}
                     className="admin-leadgen-input admin-leadgen-input--sm"
+                    disabled={r.preview}
+                    title={r.preview ? "Run discovery/reload the saved list before changing status" : ""}
                   >
+                    {r.preview ? <option value="preview">preview</option> : null}
                     <option value="active">active</option>
                     <option value="rejected">rejected</option>
                     <option value="do_not_contact">do_not_contact</option>
