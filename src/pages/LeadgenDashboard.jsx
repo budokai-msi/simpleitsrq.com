@@ -1288,7 +1288,7 @@ function DiscoverTab({ onStatusChange }) {
     } catch (e) {
       const message = String(e.message || e);
       setErr(message === "HTTP 500"
-        ? "The lead list failed to reload. I kept the screen usable; refresh or clear filters, then run discovery again."
+        ? "Lead list could not reload. Current results remain visible; retry or clear filters."
         : message);
     }
   };
@@ -1438,7 +1438,19 @@ function DiscoverTab({ onStatusChange }) {
       </div>
 
       {msg ? <p className="admin-leadgen-ok">{msg}</p> : null}
-      {err ? <p className="admin-leadgen-err">{err}</p> : null}
+      {err ? (
+        <div className="admin-leadgen-err leadgen-inline-alert" role="alert">
+          <span>{err}</span>
+          <div className="leadgen-inline-alert__actions">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => loadList(page)} disabled={busy}>
+              Retry
+            </button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={resetFilters} disabled={busy || activeFilterCount === 0}>
+              Clear filters
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <LeadgenMap rows={rows} total={total} busy={busy} />
 
