@@ -325,6 +325,22 @@
   justify-content: center;
   white-space: nowrap;
 }
+.leadgen-public .leadgen-app-controls .btn-primary {
+  border-color: var(--lg-text);
+  background: var(--lg-text);
+  color: var(--lg-panel);
+}
+.leadgen-public .leadgen-app-controls .btn-primary:hover,
+.leadgen-public .leadgen-app-controls .btn-primary:focus-visible {
+  border-color: var(--lg-blue-deep);
+  background: var(--lg-blue-deep);
+  color: var(--lg-panel);
+}
+.leadgen-public .leadgen-app-controls .btn-primary:disabled {
+  border-color: var(--lg-border-soft);
+  background: var(--lg-border-soft);
+  color: var(--lg-muted);
+}
 .leadgen-advanced-controls {
   margin-top: 10px;
   border-top: 1px solid var(--lg-border-faint);
@@ -344,22 +360,42 @@
   gap: 10px;
   margin-top: 10px;
 }
-.leadgen-quick-markets {
+.leadgen-market-refinements {
   margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(138px, 0.9fr) repeat(3, minmax(0, 1fr));
   gap: 8px;
+  align-items: stretch;
 }
-.leadgen-quick-markets > span {
-  color: var(--text-3, #6b7280);
+.leadgen-market-refinements > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 8px;
+  background: var(--lg-panel-soft);
+}
+.leadgen-market-refinements span {
+  color: var(--lg-faint);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-.leadgen-quick-market-btn {
-  min-height: 32px;
+.leadgen-market-refinements strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--lg-text);
+  font-size: 0.82rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.leadgen-market-refinement-btn {
+  min-height: 44px;
   padding: 0 10px;
   border: 1px solid var(--border, #d1d5db);
   border-radius: 8px;
@@ -367,15 +403,20 @@
   color: var(--text-1, #111827);
   font-size: 0.78rem;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.15;
   cursor: pointer;
   transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
 }
-.leadgen-quick-market-btn:hover,
-.leadgen-quick-market-btn:focus-visible {
+.leadgen-market-refinement-btn:hover,
+.leadgen-market-refinement-btn:focus-visible {
   border-color: var(--text-1, #111827);
   background: var(--surface-2, #f8fafc);
   transform: translateY(-1px);
+}
+.leadgen-market-refinement-btn.is-active {
+  border-color: var(--lg-border);
+  background: var(--lg-text);
+  color: var(--lg-panel);
 }
 .leadgen-prefetch {
   display: inline-flex;
@@ -948,18 +989,19 @@
   .leadgen-app-controls select {
     min-height: 42px;
   }
-  .leadgen-quick-markets {
+  .leadgen-market-refinements {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     overflow: visible;
     padding-bottom: 0;
   }
-  .leadgen-quick-markets > span {
-    min-width: 0;
+  .leadgen-market-refinements > div {
+    grid-column: 1 / -1;
+    min-height: 44px;
   }
-  .leadgen-quick-market-btn {
+  .leadgen-market-refinement-btn {
     width: 100%;
-    min-height: 36px;
+    min-height: 38px;
     justify-content: center;
   }
 }
@@ -2699,7 +2741,7 @@
 [data-theme="dark"] .admin-leadgen .leadgen-signal-grid span,
 [data-theme="dark"] .admin-leadgen .leadgen-console-focus__label,
 [data-theme="dark"] .admin-leadgen .leadgen-zip-field span,
-[data-theme="dark"] .leadgen-quick-markets > span {
+[data-theme="dark"] .leadgen-market-refinements span {
   color: #B4BAC4;
 }
 
@@ -2771,15 +2813,21 @@
 [data-theme="dark"] .admin-leadgen-jobs .admin-aff-table tbody tr:hover {
   background: #18202B;
 }
-[data-theme="dark"] .leadgen-quick-market-btn {
+[data-theme="dark"] .leadgen-market-refinements > div,
+[data-theme="dark"] .leadgen-market-refinement-btn {
   border-color: #353B45;
   background: #11151B;
   color: #F4F5F7;
 }
-[data-theme="dark"] .leadgen-quick-market-btn:hover,
-[data-theme="dark"] .leadgen-quick-market-btn:focus-visible {
+[data-theme="dark"] .leadgen-market-refinement-btn:hover,
+[data-theme="dark"] .leadgen-market-refinement-btn:focus-visible {
   border-color: #F4F5F7;
   background: #18202B;
+}
+[data-theme="dark"] .leadgen-market-refinement-btn.is-active {
+  border-color: #F4F5F7;
+  background: #F4F5F7;
+  color: #0F1217;
 }
 
 /* Customer-visible discovery map */

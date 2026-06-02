@@ -209,7 +209,7 @@ const LEADGEN_FAQS = [
   },
   {
     q: "Is this hard-coded to Sarasota, Bradenton, or Venice?",
-    a: "No. Those are examples. The scanner and filters are dynamic and work by zip and niche.",
+    a: "No. Enter any supported 5-digit zip, choose a niche, and the scanner works from that market. Suggested niches only refine the zip you entered.",
   },
   {
     q: "What happens if the map does not load?",
@@ -217,11 +217,7 @@ const LEADGEN_FAQS = [
   },
 ];
 
-const QUICK_MARKETS = [
-  { label: "Sarasota healthcare", zip: "34239", niche: "Healthcare", offer: "HIPAA-aware IT support for independent practices" },
-  { label: "Bradenton trades", zip: "34208", niche: "Trades", offer: "Fast dispatch IT and phone setup for field teams" },
-  { label: "Venice services", zip: "34285", niche: "Professional Services", offer: "Secure email + backup hygiene for local offices" },
-];
+const PRIORITY_NICHES = ["All", "Healthcare", "Trades", "Professional Services", "Retail", "Food & Drink"];
 
 const BOOK_DEMO_URL = "/book?topic=leadgen-demo&utm_source=leadgen_page&utm_medium=cta&utm_campaign=demo";
 const LEADGEN_PRODUCTS = TIERS.filter((tier) => tier.id !== "free").map((tier) => ({
@@ -967,27 +963,30 @@ function LeadgenScanApp() {
     });
   };
 
-  const applyQuickMarket = (preset) => {
-    setZip(preset.zip);
-    setNiche(preset.niche);
-    setOffer(preset.offer);
-    setDailyCap(35);
+  const marketRefinements = useMemo(() => {
+    const available = new Set(industryOptions.filter(Boolean));
+    const ordered = [niche, ...PRIORITY_NICHES, ...industryOptions]
+      .filter((item) => item && available.has(item));
+    return Array.from(new Set(ordered)).slice(0, 6);
+  }, [industryOptions, niche]);
+
+  const applyMarketRefinement = (nextNiche) => {
+    setNiche(nextNiche);
     setErr("");
     trackEvent("select_content", {
-      content_type: "leadgen_quick_market",
+      content_type: "leadgen_market_refinement",
       source: "leadgen_scanner",
-      label: preset.label,
-      zip: preset.zip,
-      niche: preset.niche,
+      zip,
+      niche: nextNiche,
     });
   };
 
-  const prefetchMarket = useCallback((preset) => {
-    if (!preset?.zip || !/^\d{5}$/.test(preset.zip)) return;
-    getScanData(preset.zip, preset.niche || "All")
+  const prefetchRefinement = useCallback((nextNiche) => {
+    if (!validZip) return;
+    getScanData(zip, nextNiche || "All")
       .then(() => setPrefetchState((current) => (current === "idle" ? "ready" : current)))
       .catch(() => {});
-  }, [getScanData]);
+  }, [getScanData, validZip, zip]);
 
   const scannerContextParams = useMemo(() => {
     const params = new URLSearchParams();
@@ -1109,20 +1108,23 @@ function LeadgenScanApp() {
           </details>
         </div>
 
-        <div className="leadgen-quick-markets" aria-label="Quick market presets">
-          <span>Quick start</span>
-          {QUICK_MARKETS.map((preset) => (
+        <div className="leadgen-market-refinements" aria-label="Refine current market">
+          <div>
+            <span>Refine this market</span>
+            <strong>{validZip ? `Keep ZIP ${zip}` : "Enter a zip first"}</strong>
+          </div>
+          {marketRefinements.map((item) => (
             <button
-              key={preset.label}
+              key={item}
               type="button"
-              className="leadgen-quick-market-btn"
-              onClick={() => applyQuickMarket(preset)}
-              onMouseEnter={() => prefetchMarket(preset)}
-              onFocus={() => prefetchMarket(preset)}
-              title={preset.offer}
-              aria-label={`${preset.label}: ${preset.offer}`}
+              className={`leadgen-market-refinement-btn${item === niche ? " is-active" : ""}`}
+              onClick={() => applyMarketRefinement(item)}
+              onMouseEnter={() => prefetchRefinement(item)}
+              onFocus={() => prefetchRefinement(item)}
+              title={validZip ? `Scan ${item} in ${zip}` : "Choose this niche, then enter a zip"}
+              aria-label={validZip ? `Use ${item} for ZIP ${zip}` : `Use ${item} after entering a zip`}
             >
-              {preset.label}
+              {item === "All" ? "All businesses" : item}
             </button>
           ))}
         </div>
@@ -1132,7 +1134,7 @@ function LeadgenScanApp() {
           <span />
           {effectivePrefetchState === "loading" ? "Prefetching this market..." : null}
           {effectivePrefetchState === "ready" ? "Scan is warmed and ready." : null}
-          {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip or use a quick start.") : null}
+          {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip to start.") : null}
         </div>
 
         {err ? <p className="leadgen-app-error">{err}</p> : null}
