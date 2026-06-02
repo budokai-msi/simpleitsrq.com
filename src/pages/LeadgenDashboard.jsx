@@ -38,7 +38,11 @@ import { useSEO } from "../lib/seo";
 // ---------- helpers ----------
 
 async function getJson(url) {
-  const r = await fetch(url, { credentials: "same-origin" });
+  const r = await fetch(url, {
+    credentials: "same-origin",
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || j.ok === false) {
     throw new Error(j.error || `HTTP ${r.status}`);

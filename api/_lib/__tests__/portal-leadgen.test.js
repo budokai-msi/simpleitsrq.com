@@ -207,4 +207,24 @@ describe("portal leadgen business list", () => {
     expect(body.rows[0].deliverable_emails).toBe(0);
     expect(body.warning).toContain("bare business");
   });
+
+  it("returns an empty degraded list instead of 500 when every list query fails", async () => {
+    sqlQueue.push(
+      new Error("permission denied for schema public"),
+      new Error('column "industry_group" does not exist'),
+      new Error('column "opted_out_at" does not exist'),
+      new Error("relation lead_businesses does not exist"),
+    );
+
+    const response = await GET(authedRequest("/api/portal?action=leadgen-businesses&zip=34207&status=active"));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.degraded).toBe(true);
+    expect(body.total).toBe(0);
+    expect(body.rows).toEqual([]);
+    expect(body.facets).toEqual({ groups: [], subs: [] });
+    expect(body.warning).toContain("empty fallback");
+  });
 });
