@@ -104,6 +104,39 @@ describe("portal leadgen business list", () => {
     expect(values).toContain("9999-12-31T23:59:59Z");
   });
 
+  it("uses valid timestamp placeholders when date params are explicitly blank", async () => {
+    sqlQueue.push(
+      new Error("permission denied for schema public"),
+      [{
+        id: 11,
+        name: "Example Contractor",
+        zip: "34207",
+        lat: 27.49,
+        lng: -82.55,
+        website: "https://contractor.example",
+        industry: "trades",
+        industry_group: "Trades",
+        sub_industry: "Contractor",
+        tags: [],
+        status: "active",
+        deliverable_emails: 0,
+      }],
+      [{ total: 1 }],
+      [{ industry_group: "Trades", n: 1 }],
+    );
+
+    const response = await GET(authedRequest("/api/portal?action=leadgen-businesses&zip=34207&status=active&created_after=&created_before=&page=1&limit=50"));
+    const body = await response.json();
+    const values = sqlCalls.flatMap((call) => call.values);
+
+    expect(response.status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(values).not.toContain("T00:00:00Z");
+    expect(values).not.toContain("T23:59:59Z");
+    expect(values).toContain("1970-01-01T00:00:00Z");
+    expect(values).toContain("9999-12-31T23:59:59Z");
+  });
+
   it("keeps compatibility rows when count and facet queries fail", async () => {
     sqlQueue.push(
       new Error("permission denied for schema public"),

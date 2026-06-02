@@ -2132,6 +2132,29 @@
   margin: 8px 0;
 }
 
+.admin-leadgen .leadgen-inline-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger, #b91c1c) 30%, var(--border, #e5e7eb));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--danger, #b91c1c) 8%, var(--surface, #ffffff));
+}
+
+.admin-leadgen .leadgen-inline-alert > span {
+  min-width: 0;
+  line-height: 1.45;
+}
+
+.admin-leadgen .leadgen-inline-alert__actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Consolidated form/table controls previously defined in App.css */
 .admin-leadgen .admin-leadgen-field {
   display: flex;
@@ -2555,6 +2578,16 @@
   .admin-leadgen .admin-leadgen-jobs__filters {
     width: 100%;
     justify-content: flex-end;
+  }
+
+  .admin-leadgen .leadgen-inline-alert {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-leadgen .leadgen-inline-alert__actions,
+  .admin-leadgen .leadgen-inline-alert__actions .btn {
+    width: 100%;
   }
 
   .admin-leadgen .leadgen-console-focus .btn,
