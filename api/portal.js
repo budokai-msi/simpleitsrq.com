@@ -4214,7 +4214,21 @@ async function handleLeadgenBusinesses(session, url) {
       result = await fetchLeadgenBusinessesLegacy(f, ensureError || err);
     } catch (legacyErr) {
       console.warn("[portal] leadgen compatibility list query failed; trying bare mode", safeLeadgenError(legacyErr));
-      result = await fetchLeadgenBusinessesBare(f, legacyErr);
+      try {
+        result = await fetchLeadgenBusinessesBare(f, legacyErr);
+      } catch (bareErr) {
+        console.error("[portal] leadgen bare list query failed; returning empty degraded list", safeLeadgenError(bareErr));
+        result = {
+          rows: [],
+          total: 0,
+          facets: { groups: [], subs: [] },
+          degraded: true,
+          warning: [
+            leadgenResultWarning("empty fallback", bareErr),
+            `compatibility: ${safeLeadgenError(legacyErr)}`,
+          ].join(" | "),
+        };
+      }
     }
   }
 
