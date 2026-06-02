@@ -3821,8 +3821,8 @@ function readLeadgenBusinessFilters(url) {
   const tagLike = `%${tag}%`;
   const groupLike = `%${industryGroup.toLowerCase()}%`;
   const subLike = `%${subIndustry.toLowerCase()}%`;
-  const createdAfterIso = `${createdAfter}T00:00:00Z`;
-  const createdBeforeIso = `${createdBefore}T23:59:59Z`;
+  const createdAfterIso = wantsCreatedAfter ? `${createdAfter}T00:00:00Z` : "1970-01-01T00:00:00Z";
+  const createdBeforeIso = wantsCreatedBefore ? `${createdBefore}T23:59:59Z` : "9999-12-31T23:59:59Z";
 
   return {
     zip,
