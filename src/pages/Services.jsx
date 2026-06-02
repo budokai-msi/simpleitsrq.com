@@ -248,6 +248,21 @@ const SERVICE_PRODUCTS = services.map((svc) => ({
   price: svc.price,
   buyLink: svc.buyLink,
 }));
+const LIVE_CHECKOUT_COUNT = services.filter((svc) => svc.status === "live" && svc.buyLink).length;
+const PAID_SERVICE_COUNT = services.filter((svc) => svc.price > 0).length;
+const HAS_LIVE_CHECKOUT = LIVE_CHECKOUT_COUNT > 0;
+const SERVICES_HERO_TITLE = HAS_LIVE_CHECKOUT
+  ? "Productized IT services. Public pricing. Online checkout."
+  : "Productized IT services. Public pricing. Fast scheduling.";
+const SERVICES_HERO_COPY = HAS_LIVE_CHECKOUT
+  ? "A fixed-fee service catalog for Sarasota, Bradenton, Venice, Lakewood Ranch, and Nokomis. Each engagement has a defined scope, a written statement of work, and a posted price. Select an SKU, complete checkout, and schedule."
+  : "A fixed-fee service catalog for Sarasota, Bradenton, Venice, Lakewood Ranch, and Nokomis. Each engagement has a defined scope, a written statement of work, and a posted price. Select an SKU, request the scheduling or payment link, and we confirm fit before work starts.";
+const SERVICES_META_DESCRIPTION = HAS_LIVE_CHECKOUT
+  ? "Buy scoped IT help with public pricing: computer tune-ups, malware cleanup, M365 migration, copier setup, and Windows upgrades across Sarasota and Bradenton."
+  : "Request scoped IT help with public pricing: computer tune-ups, malware cleanup, M365 migration, copier setup, and Windows upgrades across Sarasota and Bradenton.";
+const SERVICES_SECOND_STAT = HAS_LIVE_CHECKOUT
+  ? { value: LIVE_CHECKOUT_COUNT, label: "Checkout-ready SKUs" }
+  : { value: PAID_SERVICE_COUNT, label: "Paid service paths" };
 
 const SERVICES_FAQS = [
   {
@@ -267,7 +282,7 @@ const SERVICES_FAQS = [
 export default function Services() {
   useSEO({
     title: "Fixed-Fee IT Services in Sarasota & Bradenton",
-    description: "Buy scoped IT help with public pricing: computer tune-ups, malware cleanup, M365 migration, copier setup, and Windows upgrades across Sarasota and Bradenton.",
+    description: SERVICES_META_DESCRIPTION,
     canonical: "https://simpleitsrq.com/services",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
@@ -290,12 +305,9 @@ export default function Services() {
       <section className="section services-hero">
         <div className="container">
           <span className="eyebrow">Service Catalog · Fixed Fee · Public Pricing</span>
-          <h1 className="display">Productized IT services. Public pricing. Online checkout.</h1>
+          <h1 className="display">{SERVICES_HERO_TITLE}</h1>
           <p className="lede">
-            A fixed-fee service catalog for Sarasota, Bradenton, Venice, Lakewood
-            Ranch, and Nokomis. Each engagement has a defined scope, a written
-            statement of work, and a posted price — no quote-and-callback dance,
-            no hourly surprises. Select an SKU, complete checkout, schedule.
+            {SERVICES_HERO_COPY} No quote-and-callback dance, no hourly surprises.
           </p>
           <div className="services-trust-row">
             <span><MapPin size={14} /> Local Sarasota / Bradenton engineering team</span>
@@ -323,12 +335,12 @@ export default function Services() {
               <div className="services-stat__label">Productized SKUs</div>
             </div>
             <div role="listitem" className="services-stat">
-              <div className="services-stat__num">$0</div>
-              <div className="services-stat__label">Quote-and-callback</div>
+              <div className="services-stat__num">{SERVICES_SECOND_STAT.value}</div>
+              <div className="services-stat__label">{SERVICES_SECOND_STAT.label}</div>
             </div>
             <div role="listitem" className="services-stat">
               <div className="services-stat__num">Written</div>
-              <div className="services-stat__label">Scope before checkout</div>
+              <div className="services-stat__label">Scope before scheduling</div>
             </div>
             <div role="listitem" className="services-stat">
               <div className="services-stat__num">5-city</div>
