@@ -433,8 +433,11 @@ function Navbar() {
   }, []);
 
   useEffect(() => {
-    setOpen(false);
-    setOpenGroup(null);
+    const id = window.setTimeout(() => {
+      setOpen(false);
+      setOpenGroup(null);
+    }, 0);
+    return () => window.clearTimeout(id);
   }, [location.pathname, location.hash]);
 
   useEffect(() => {
@@ -866,7 +869,6 @@ function ReadingProgress() {
 
   useEffect(() => {
     if (!enabled) {
-      setProgress(0);
       return undefined;
     }
 
@@ -893,13 +895,19 @@ function AnimatedRoutes() {
 
   useEffect(() => {
     if (location.pathname !== displayLocation.pathname) {
-      setTransitionStage("fadeOut");
-      const t = setTimeout(() => {
-        setDisplayLocation(location);
-        setTransitionStage("fadeIn");
-        window.scrollTo(0, 0);
-      }, 180);
-      return () => clearTimeout(t);
+      let swapTimer;
+      const fadeTimer = window.setTimeout(() => {
+        setTransitionStage("fadeOut");
+        swapTimer = window.setTimeout(() => {
+          setDisplayLocation(location);
+          setTransitionStage("fadeIn");
+          window.scrollTo(0, 0);
+        }, 180);
+      }, 0);
+      return () => {
+        window.clearTimeout(fadeTimer);
+        if (swapTimer) window.clearTimeout(swapTimer);
+      };
     }
   }, [location, displayLocation]);
 
