@@ -596,6 +596,9 @@ function LeadgenScanApp() {
   const scanCacheRef = useRef(new Map());
   const scanPromisesRef = useRef(new Map());
   const initialQuery = useMemo(() => new URLSearchParams(window.location.search), []);
+  const initialUrlZipRef = useRef((initialQuery.get("zip") || "").replace(/\D/g, "").slice(0, 5));
+  const autoOpenedScanRef = useRef("");
+  const refinementRequestRef = useRef(0);
   const [zip, setZip] = useState(() => (initialQuery.get("zip") || "").replace(/\D/g, "").slice(0, 5));
   const [niche, setNiche] = useState(() => {
     const q = initialQuery.get("niche");
@@ -835,13 +838,66 @@ function LeadgenScanApp() {
     setScan(data);
     setReview(Object.fromEntries((data.rows || []).map((_, index) => [index, index < 20 ? "keep" : "maybe"])));
     setSelectedIndex((data.rows || []).length ? 0 : null);
-    setSearchTerm("");
-    setStatusFilter("all");
-    setContactFilter("all");
-    setSubIndustryFilter("all");
-    setSortBy("contact");
+    if (!meta.preserveView) {
+      setSearchTerm("");
+      setStatusFilter("all");
+      setContactFilter("all");
+      setSubIndustryFilter("all");
+      setSortBy("contact");
+    }
     setLastScanMeta({ ...meta, at: Date.now() });
   };
+
+  useEffect(() => {
+    if (!/^\d{5}$/.test(initialUrlZipRef.current) || !validZip || scan) {
+      return undefined;
+    }
+
+    const key = scanKey(zip, niche);
+    if (autoOpenedScanRef.current === key) return undefined;
+    autoOpenedScanRef.current = key;
+
+    let disposed = false;
+    let completed = false;
+    const startedAt = performance.now();
+    setBusy(true);
+    setErr("");
+    getScanData(zip, niche)
+      .then((result) => {
+        completed = true;
+        if (disposed) return;
+        applyScan(result.data, { cached: result.cached, preserveView: true, autoOpened: true });
+        setPrefetchState("ready");
+        trackEvent("search", {
+          search_term: `${zip}:${niche}`,
+          source: "leadgen_scanner_deeplink",
+          result_count: Number(result?.data?.matched || 0),
+          cached: Boolean(result?.cached),
+          latency_ms: Math.round(performance.now() - startedAt),
+        });
+      })
+      .catch((e) => {
+        completed = true;
+        if (disposed) return;
+        const message = String(e?.message || e || "Scan failed");
+        setErr(`The shared scan did not open automatically: ${message}. Try Run scan again or change the zip.`);
+        trackEvent("exception", {
+          description: message,
+          fatal: false,
+          source: "leadgen_scanner_deeplink",
+        });
+      })
+      .finally(() => {
+        if (!disposed) setBusy(false);
+      });
+
+    return () => {
+      disposed = true;
+      if (!completed && autoOpenedScanRef.current === key) {
+        autoOpenedScanRef.current = "";
+      }
+    };
+  }, [getScanData, niche, scan, validZip, zip]);
 
   useEffect(() => {
     if (!validZip) {
@@ -979,6 +1035,38 @@ function LeadgenScanApp() {
       zip,
       niche: nextNiche,
     });
+    if (!validZip || (scan && nextNiche === niche)) return;
+
+    const requestId = refinementRequestRef.current + 1;
+    refinementRequestRef.current = requestId;
+    setBusy(true);
+    setPrefetchState("loading");
+    getScanData(zip, nextNiche || "All")
+      .then((result) => {
+        if (refinementRequestRef.current !== requestId) return;
+        applyScan(result.data, { cached: result.cached, refined: true });
+        setPrefetchState("ready");
+        trackEvent("search", {
+          search_term: `${zip}:${nextNiche}`,
+          source: "leadgen_market_refinement",
+          result_count: Number(result?.data?.matched || 0),
+          cached: Boolean(result?.cached),
+        });
+      })
+      .catch((e) => {
+        if (refinementRequestRef.current !== requestId) return;
+        const message = String(e?.message || e || "Scan failed");
+        setErr(`Could not load ${nextNiche} in ${zip}: ${message}`);
+        setPrefetchState("idle");
+        trackEvent("exception", {
+          description: message,
+          fatal: false,
+          source: "leadgen_market_refinement",
+        });
+      })
+      .finally(() => {
+        if (refinementRequestRef.current === requestId) setBusy(false);
+      });
   };
 
   const prefetchRefinement = useCallback((nextNiche) => {
