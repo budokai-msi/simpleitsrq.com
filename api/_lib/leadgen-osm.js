@@ -19,6 +19,10 @@
 
 const NOMINATIM = "https://nominatim.openstreetmap.org";
 const OVERPASS  = "https://overpass-api.de/api/interpreter";
+const OVERPASS_TIMEOUT_MS = Number(process.env.LEADGEN_OVERPASS_TIMEOUT_MS || 15000);
+const OVERPASS_RETRY_DELAY_MS = Number(process.env.LEADGEN_OVERPASS_RETRY_DELAY_MS || 600);
+const OVERPASS_SPLIT_AREA_THRESHOLD = Number(process.env.LEADGEN_OVERPASS_SPLIT_AREA_THRESHOLD || 0.0045);
+const TRANSIENT_OVERPASS_RE = /overpass http (429|500|502|503|504)|timeout|out of memory|aborted|terminated|fetch failed/i;
 
 import { classifyIndustry } from "./leadgen-classify.js";
 
@@ -89,6 +93,59 @@ function buildOverpassQuery(bbox) {
   return `[out:json][timeout:60];\n(\n  ${filters}\n);\nout center tags;`;
 }
 
+function shouldSplitBbox(bbox) {
+  const [s, w, n, e] = bbox;
+  const area = Math.abs((n - s) * (e - w));
+  return area >= OVERPASS_SPLIT_AREA_THRESHOLD;
+}
+
+function splitBbox(bbox) {
+  const [s, w, n, e] = bbox;
+  const midLat = (s + n) / 2;
+  const midLng = (w + e) / 2;
+  return [
+    [s, w, midLat, midLng],
+    [s, midLng, midLat, e],
+    [midLat, w, n, midLng],
+    [midLat, midLng, n, e],
+  ];
+}
+
+function isTransientOverpassError(err) {
+  return TRANSIENT_OVERPASS_RE.test(String(err?.message || err || ""));
+}
+
+function uniqueElements(elements) {
+  const seen = new Set();
+  const out = [];
+  for (const el of elements || []) {
+    const key = `${el?.type || "unknown"}/${el?.id ?? ""}`;
+    if (!el?.id || seen.has(key)) continue;
+    seen.add(key);
+    out.push(el);
+  }
+  return out;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithTimeout(url, options, ms, label) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(`${label} aborted after ${ms}ms`), ms);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err?.name === "AbortError" || controller.signal.aborted) {
+      throw new Error(`${label} aborted after ${ms}ms`, { cause: err });
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /**
  * Run an Overpass query and return raw elements. Throws on HTTP error or
  * Overpass remark indicating quota/timeout — caller can retry with a
@@ -96,20 +153,52 @@ function buildOverpassQuery(bbox) {
  */
 export async function overpassBusinesses(bbox) {
   const body = `data=${encodeURIComponent(buildOverpassQuery(bbox))}`;
-  const res = await fetch(OVERPASS, {
+  const res = await fetchWithTimeout(OVERPASS, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "User-Agent": ua(),
     },
     body,
-  });
+  }, OVERPASS_TIMEOUT_MS, "overpass");
   if (!res.ok) throw new Error(`overpass http ${res.status}`);
   const json = await res.json();
   if (json.remark && /timeout|out of memory/i.test(json.remark)) {
     throw new Error(`overpass remark: ${json.remark}`);
   }
   return Array.isArray(json.elements) ? json.elements : [];
+}
+
+export async function overpassBusinessesResilient(bbox) {
+  if (!shouldSplitBbox(bbox)) return overpassBusinesses(bbox);
+
+  try {
+    return await overpassBusinesses(bbox);
+  } catch (err) {
+    if (!isTransientOverpassError(err)) throw err;
+    await sleep(OVERPASS_RETRY_DELAY_MS);
+    try {
+      return await overpassBusinesses(bbox);
+    } catch (retryErr) {
+      if (!isTransientOverpassError(retryErr)) throw retryErr;
+
+      const chunks = splitBbox(bbox);
+      const elements = [];
+      let successfulChunks = 0;
+      let firstChunkError = retryErr;
+      for (const chunk of chunks) {
+        try {
+          elements.push(...await overpassBusinesses(chunk));
+          successfulChunks += 1;
+        } catch (chunkErr) {
+          if (!isTransientOverpassError(chunkErr)) throw chunkErr;
+          firstChunkError = firstChunkError || chunkErr;
+        }
+      }
+      if (!successfulChunks) throw firstChunkError;
+      return uniqueElements(elements);
+    }
+  }
 }
 
 // ---------- normalization ----------
@@ -187,7 +276,7 @@ export function normalizeOsmElement(el) {
 export async function discoverBusinessesByZip(zip) {
   const box = await bboxForZip(zip);
   if (!box) return { ok: false, error: "zip_not_found", businesses: [], bbox: null };
-  const elements = await overpassBusinesses(box.bbox);
+  const elements = await overpassBusinessesResilient(box.bbox);
   const businesses = elements
     .map(normalizeOsmElement)
     .filter(Boolean)

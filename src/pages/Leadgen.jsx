@@ -634,6 +634,7 @@ function LeadgenScanApp() {
     return q && PUBLIC_NICHES.includes(q) ? q : "All";
   });
   const [industryOptions, setIndustryOptions] = useState(PUBLIC_NICHES);
+  const [marketTypeSearch, setMarketTypeSearch] = useState("");
   const [offer, setOffer] = useState(() => initialQuery.get("offer") || "");
   const [dailyCap, setDailyCap] = useState(() => {
     const q = Number(initialQuery.get("daily_cap"));
@@ -674,6 +675,10 @@ function LeadgenScanApp() {
   const validZip = /^\d{5}$/.test(zip);
 
   const rows = scan?.rows || [];
+  const broadenedMapRows = scan?.broadened_rows || [];
+  const industryCountMap = useMemo(() => (
+    Object.fromEntries((scan?.industry_counts || []).map((item) => [item.industry, Number(item.count) || 0]))
+  ), [scan?.industry_counts]);
   const reviewedRows = useMemo(() => (
     (scan?.rows || []).map((row, index) => ({
       ...row,
@@ -1048,12 +1053,26 @@ function LeadgenScanApp() {
     });
   };
 
-  const marketRefinements = useMemo(() => {
-    const available = new Set(industryOptions.filter(Boolean));
-    const ordered = [niche, ...PRIORITY_NICHES, ...industryOptions]
-      .filter((item) => item && available.has(item));
-    return Array.from(new Set(ordered)).slice(0, 6);
-  }, [industryOptions, niche]);
+  const marketTypeMatches = useMemo(() => {
+    const query = marketTypeSearch.trim().toLowerCase();
+    const priority = new Map(PRIORITY_NICHES.map((item, index) => [item, index]));
+    return Array.from(new Set(industryOptions.filter(Boolean)))
+      .filter((item) => {
+        if (!query) return true;
+        return item.toLowerCase().includes(query);
+      })
+      .sort((a, b) => {
+        if (a === niche) return -1;
+        if (b === niche) return 1;
+        const countDelta = (industryCountMap[b] || 0) - (industryCountMap[a] || 0);
+        if (countDelta) return countDelta;
+        const aPriority = priority.has(a) ? priority.get(a) : 99;
+        const bPriority = priority.has(b) ? priority.get(b) : 99;
+        if (aPriority !== bPriority) return aPriority - bPriority;
+        return a.localeCompare(b);
+      })
+      .slice(0, 8);
+  }, [industryCountMap, industryOptions, marketTypeSearch, niche]);
 
   const applyMarketRefinement = (nextNiche) => {
     setNiche(nextNiche);
@@ -1186,7 +1205,7 @@ function LeadgenScanApp() {
               />
             </label>
             <label>
-              <span>Niche</span>
+              <span>Customer type</span>
               <select value={niche} onChange={(e) => setNiche(e.target.value)} aria-label="Target niche">
                 {industryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
               </select>
@@ -1236,13 +1255,31 @@ function LeadgenScanApp() {
             <p>
               {validZip
                 ? scan
-                  ? `${scan.matched ?? 0} records loaded. Filters keep ZIP ${zip}.`
-                  : "Choose a customer type; the map stays tied to this zip."
+                  ? scan.matched
+                    ? `${scan.matched} records loaded from ${scan.scan_source === "cache" ? "cached local records" : "live public records"}.`
+                    : `No ${niche} records yet. Map shows broader ZIP records.`
+                  : "Search the customer type list; the map stays tied to this zip."
                 : "Enter a zip, then choose the customer type you want."}
             </p>
           </div>
+          <div className="leadgen-market-builder__tools">
+            <label className="leadgen-market-builder__search">
+              <span>Search customer type</span>
+              <input
+                value={marketTypeSearch}
+                onChange={(e) => setMarketTypeSearch(e.target.value)}
+                placeholder="healthcare, trades, retail..."
+                aria-label="Search available customer types"
+              />
+            </label>
+            <small>
+              {marketTypeSearch.trim()
+                ? `${marketTypeMatches.length} match${marketTypeMatches.length === 1 ? "" : "es"}`
+                : `${industryOptions.length} types available`}
+            </small>
+          </div>
           <div className="leadgen-market-builder__chips">
-            {marketRefinements.map((item) => (
+            {marketTypeMatches.map((item) => (
               <button
                 key={item}
                 type="button"
@@ -1254,9 +1291,20 @@ function LeadgenScanApp() {
                 aria-label={validZip ? `Use ${item} for ZIP ${zip}` : `Use ${item} after entering a zip`}
               >
                 <span>{item === "All" ? "All businesses" : item}</span>
-                <small>{item === niche ? "Selected" : validZip ? `Preview ${zip}` : "Set type"}</small>
+                <small>
+                  {scan && item !== "All"
+                    ? `${industryCountMap[item] || 0} found`
+                    : item === niche
+                      ? "Selected"
+                      : validZip ? `Preview ${zip}` : "Set type"}
+                </small>
               </button>
             ))}
+            {!marketTypeMatches.length ? (
+              <div className="leadgen-market-builder__empty">
+                No category found. Use All businesses or try a broader word.
+              </div>
+            ) : null}
           </div>
         </div>
         {zipHint ? <p className="leadgen-app-error" style={{ marginTop: 8 }}>{zipHint}</p> : null}
@@ -1706,7 +1754,12 @@ function LeadgenScanApp() {
           </div>
         ) : null}
 
-        <LeadgenMap rows={visibleOnlyRows} scan={scan} selectedIndex={effectiveSelectedIndex} onSelect={setSelectedIndex} />
+        <LeadgenMap
+          rows={rows.length ? visibleOnlyRows : broadenedMapRows}
+          scan={scan}
+          selectedIndex={effectiveSelectedIndex}
+          onSelect={setSelectedIndex}
+        />
 
         <div className="leadgen-result-list">
           {!scan ? (
@@ -1721,6 +1774,7 @@ function LeadgenScanApp() {
                 {niche !== "All"
                   ? `No ${niche.toLowerCase()} records matched ${zip}. Broaden to all businesses or try a nearby zip.`
                   : `No public business records matched ${zip}. Try a nearby zip or ask us to review it manually.`}
+                {broadenedMapRows.length ? " The map still shows broader public records for this ZIP." : ""}
               </span>
               <div className="leadgen-empty-review__actions">
                 {niche !== "All" ? (

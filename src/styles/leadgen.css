@@ -363,9 +363,13 @@
 .leadgen-market-builder {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: minmax(150px, 0.76fr) minmax(0, 1.24fr);
+  grid-template-columns: minmax(150px, 0.85fr) minmax(190px, 1.15fr);
   gap: 10px;
-  align-items: stretch;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 8px;
+  background: var(--lg-panel-soft);
 }
 .leadgen-market-builder__summary {
   min-width: 0;
@@ -373,10 +377,6 @@
   flex-direction: column;
   justify-content: flex-start;
   gap: 5px;
-  padding: 12px;
-  border: 1px solid var(--lg-border-soft);
-  border-radius: 8px;
-  background: var(--lg-panel-soft);
 }
 .leadgen-market-builder__summary span {
   color: var(--lg-faint);
@@ -400,16 +400,59 @@
   font-size: 0.78rem;
   line-height: 1.35;
 }
-.leadgen-market-builder__chips {
+.leadgen-market-builder__tools {
   min-width: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.leadgen-market-builder__tools small {
+  color: var(--lg-faint);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-align: right;
+  text-transform: uppercase;
+}
+.leadgen-market-builder__search {
+  display: grid;
+  gap: 5px;
+}
+.leadgen-market-builder__search span {
+  color: var(--lg-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.leadgen-market-builder__search input {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 8px;
+  background: var(--lg-panel);
+  color: var(--lg-text);
+  padding: 9px 11px;
+  font: inherit;
+  font-size: 0.9rem;
+}
+.leadgen-market-builder__search input:focus {
+  outline: none;
+  border-color: var(--lg-border);
+  box-shadow: 0 0 0 3px var(--lg-focus);
+}
+.leadgen-market-builder__chips {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: flex;
   gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
 }
 .leadgen-market-refinement-btn {
   display: flex;
+  flex: 0 0 clamp(118px, 18vw, 174px);
   min-width: 0;
-  min-height: 58px;
+  min-height: 46px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
@@ -450,6 +493,15 @@
 .leadgen-market-refinement-btn.is-active small {
   color: currentColor;
   opacity: 0.74;
+}
+.leadgen-market-builder__empty {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px dashed var(--lg-border-soft);
+  border-radius: 8px;
+  color: var(--lg-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 .leadgen-prefetch {
   display: inline-flex;
@@ -1036,7 +1088,6 @@
     min-height: 42px;
   }
   .leadgen-market-builder {
-    display: grid;
     grid-template-columns: 1fr;
     overflow: visible;
     padding-bottom: 0;
@@ -1044,11 +1095,8 @@
   .leadgen-market-builder__summary {
     min-height: 44px;
   }
-  .leadgen-market-builder__chips {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .leadgen-market-refinement-btn {
-    width: 100%;
+    flex-basis: 148px;
     min-height: 44px;
   }
 }
@@ -2860,15 +2908,21 @@
 [data-theme="dark"] .admin-leadgen-jobs .admin-aff-table tbody tr:hover {
   background: #18202B;
 }
-[data-theme="dark"] .leadgen-market-builder__summary,
+[data-theme="dark"] .leadgen-market-builder,
+[data-theme="dark"] .leadgen-market-builder__search input,
 [data-theme="dark"] .leadgen-market-refinement-btn {
   border-color: #353B45;
   background: #11151B;
   color: #F4F5F7;
 }
 [data-theme="dark"] .leadgen-market-builder__summary p,
+[data-theme="dark"] .leadgen-market-builder__tools small,
+[data-theme="dark"] .leadgen-market-builder__empty,
 [data-theme="dark"] .leadgen-market-refinement-btn small {
   color: #B4BAC4;
+}
+[data-theme="dark"] .leadgen-market-builder__search input:focus {
+  border-color: #F4F5F7;
 }
 [data-theme="dark"] .leadgen-market-refinement-btn:hover,
 [data-theme="dark"] .leadgen-market-refinement-btn:focus-visible {
