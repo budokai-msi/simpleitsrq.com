@@ -1,9 +1,11 @@
 import { json } from "./_lib/http.js";
+import { sql } from "./_lib/db.js";
 import { discoverBusinessesByZip } from "./_lib/leadgen-osm.js";
-import { INDUSTRY_OPTIONS } from "./_lib/leadgen-classify.js";
+import { classifyIndustry, INDUSTRY_OPTIONS } from "./_lib/leadgen-classify.js";
 import { clientIp, isHostileGeo, logThreatActor, rateLimit } from "./_lib/security.js";
 
 const MAX_LIMIT = 80;
+const MAX_CACHE_ROWS = 600;
 const SCAN_WINDOW_SECONDS = 600;
 const SCAN_WINDOW_MAX = 8;
 const ALLOWED_NICHES = new Set(["All", ...INDUSTRY_OPTIONS]);
@@ -19,6 +21,9 @@ function parseBody(request) {
 }
 
 function rowForClient(row) {
+  const classified = row.industry_group
+    ? { industry: row.industry_group, sub_industry: row.sub_industry }
+    : classifyIndustry(row.industry);
   return {
     name: cleanText(row.name),
     address: cleanText(row.address),
@@ -30,10 +35,112 @@ function rowForClient(row) {
     source_url: cleanText(row.source_url, 320),
     source_id: cleanText(row.source_id, 80),
     industry: cleanText(row.industry, 120),
-    industry_group: cleanText(row.industry_group || "Other", 80),
-    sub_industry: cleanText(row.sub_industry, 120),
+    industry_group: cleanText(row.industry_group || classified.industry || "Other", 80),
+    sub_industry: cleanText(row.sub_industry || classified.sub_industry, 120),
     lat: Number.isFinite(Number(row.lat)) ? Number(row.lat) : null,
     lng: Number.isFinite(Number(row.lng)) ? Number(row.lng) : null,
+  };
+}
+
+function industryCounts(rows) {
+  const counts = new Map();
+  for (const row of rows || []) {
+    const key = row.industry_group || "Other";
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return Array.from(counts.entries())
+    .map(([industry, count]) => ({ industry, count }))
+    .sort((a, b) => b.count - a.count || a.industry.localeCompare(b.industry));
+}
+
+function centroidForRows(rows) {
+  const points = (rows || [])
+    .map((row) => ({ lat: Number(row.lat), lng: Number(row.lng) }))
+    .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
+  if (!points.length) return null;
+  return {
+    lat: points.reduce((sum, point) => sum + point.lat, 0) / points.length,
+    lng: points.reduce((sum, point) => sum + point.lng, 0) / points.length,
+  };
+}
+
+function bboxForRows(rows) {
+  const points = (rows || [])
+    .map((row) => ({ lat: Number(row.lat), lng: Number(row.lng) }))
+    .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
+  if (!points.length) return null;
+  const lats = points.map((point) => point.lat);
+  const lngs = points.map((point) => point.lng);
+  return [Math.min(...lats), Math.min(...lngs), Math.max(...lats), Math.max(...lngs)];
+}
+
+function missingTaxonomyColumns(err) {
+  return /column .*?(industry_group|sub_industry).*?does not exist/i.test(String(err?.message || err || ""));
+}
+
+async function cachedBusinessesByZipLegacy(zip) {
+  try {
+    const rows = await sql`
+      SELECT
+        name, address, city, state, zip, lat, lng, website, phone,
+        source_id, source_url, industry
+      FROM lead_businesses
+      WHERE zip = ${zip}
+        AND status = 'active'
+      ORDER BY
+        CASE WHEN lat IS NOT NULL AND lng IS NOT NULL THEN 0 ELSE 1 END,
+        CASE WHEN website IS NOT NULL AND website <> '' THEN 0 ELSE 1 END,
+        lower(name)
+      LIMIT ${MAX_CACHE_ROWS}
+    `;
+    return Array.isArray(rows) ? rows : [];
+  } catch (err) {
+    console.warn("[leadgen] legacy cache lookup failed; falling back to live OSM", err?.message || err);
+    return [];
+  }
+}
+
+async function cachedBusinessesByZip(zip) {
+  try {
+    const rows = await sql`
+      SELECT
+        name, address, city, state, zip, lat, lng, website, phone,
+        source_id, source_url, industry, industry_group, sub_industry
+      FROM lead_businesses
+      WHERE zip = ${zip}
+        AND status = 'active'
+      ORDER BY
+        CASE WHEN lat IS NOT NULL AND lng IS NOT NULL THEN 0 ELSE 1 END,
+        CASE WHEN website IS NOT NULL AND website <> '' THEN 0 ELSE 1 END,
+        lower(name)
+      LIMIT ${MAX_CACHE_ROWS}
+    `;
+    return Array.isArray(rows) ? rows : [];
+  } catch (err) {
+    if (missingTaxonomyColumns(err)) {
+      return cachedBusinessesByZipLegacy(zip);
+    }
+    console.warn("[leadgen] cache lookup failed; falling back to live OSM", err?.message || err);
+    return [];
+  }
+}
+
+async function discoverOrLoadBusinesses(zip) {
+  const cachedRows = await cachedBusinessesByZip(zip);
+  if (cachedRows.length) {
+    return {
+      ok: true,
+      source: "cache",
+      businesses: cachedRows,
+      bbox: bboxForRows(cachedRows),
+      centroid: centroidForRows(cachedRows),
+    };
+  }
+
+  const discovered = await discoverBusinessesByZip(zip);
+  return {
+    ...discovered,
+    source: "live_osm",
   };
 }
 
@@ -80,7 +187,7 @@ export async function POST(request) {
   }
 
   try {
-    const result = await discoverBusinessesByZip(zip);
+    const result = await discoverOrLoadBusinesses(zip);
     if (!result.ok) {
       return json(404, {
         ok: false,
@@ -95,13 +202,17 @@ export async function POST(request) {
     const filteredRows = niche && niche !== "All"
       ? allRows.filter((row) => row.industry_group === niche)
       : allRows;
-    const sortedRows = filteredRows.sort((a, b) => {
+    const sortRows = (rows) => rows.sort((a, b) => {
       const aw = a.website ? 0 : 1;
       const bw = b.website ? 0 : 1;
       if (aw !== bw) return aw - bw;
       return a.name.localeCompare(b.name);
     });
+    const sortedRows = sortRows([...filteredRows]);
     const rows = sortedRows.slice(0, limit);
+    const broadenedRows = niche && niche !== "All" && !filteredRows.length
+      ? sortRows([...allRows]).slice(0, limit)
+      : [];
 
     return json(200, {
       ok: true,
@@ -111,8 +222,11 @@ export async function POST(request) {
       total: allRows.length,
       matched: filteredRows.length,
       returned: rows.length,
+      scan_source: result.source,
       with_website: filteredRows.filter((row) => row.website).length,
       with_phone: filteredRows.filter((row) => row.phone).length,
+      industry_counts: industryCounts(allRows),
+      broadened_rows: broadenedRows,
       bbox: result.bbox,
       centroid: result.centroid,
       rows,
