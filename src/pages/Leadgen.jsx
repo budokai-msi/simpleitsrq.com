@@ -2314,9 +2314,17 @@ function LeadgenCheckoutSuccess() {
     if (typeof window === "undefined") return null;
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") !== "success") return null;
+    const tier = (params.get("tier") || "leadgen").toLowerCase();
+    const cadence = (params.get("cadence") || "").toLowerCase();
+    const zip = (params.get("zip") || "").replace(/\D/g, "").slice(0, 5);
+    const niche = params.get("niche") || "";
+    const kept = params.get("kept") || "";
     return {
-      tier: params.get("tier") || "your plan",
-      cadence: params.get("cadence") || "",
+      tier,
+      cadence,
+      zip,
+      niche,
+      kept,
     };
   });
 
@@ -2336,11 +2344,24 @@ function LeadgenCheckoutSuccess() {
 
   if (!state) return null;
 
-  const tierLabel = state.tier === "starter" ? "Starter" :
-    state.tier === "growth" ? "Growth" :
-    state.tier === "enterprise" ? "Enterprise" : "your plan";
+  const tierLabel = state.tier === "growth" ? "Growth" :
+    state.tier === "pro" ? "Pro" :
+    state.tier === "free" || state.tier === "sample" ? "Sample" :
+    state.tier === "enterprise" ? "Enterprise" :
+    state.tier === "starter" ? "Growth" :
+    "Leadgen";
   const cadenceLabel = state.cadence === "annual" ? "annual" :
     state.cadence === "monthly" ? "monthly" : "";
+  const workspaceParams = new URLSearchParams({
+    utm_source: "stripe_checkout",
+    utm_medium: "success_banner",
+    utm_campaign: "leadgen_onboarding",
+  });
+  if (state.zip) workspaceParams.set("zip", state.zip);
+  if (state.niche) workspaceParams.set("niche", state.niche);
+  if (state.kept) workspaceParams.set("kept", state.kept);
+  if (state.tier) workspaceParams.set("tier", state.tier);
+  const workspaceHref = `/portal/leadgen?${workspaceParams.toString()}`;
 
   return (
     <div
@@ -2359,14 +2380,33 @@ function LeadgenCheckoutSuccess() {
           You&rsquo;re in. Welcome to Leadgen {tierLabel}{cadenceLabel ? ` - ${cadenceLabel}` : ""}.
         </div>
         <p style={{ margin: "4px 0 12px", fontSize: "0.95rem", opacity: 0.95, lineHeight: 1.5 }}>
-          Your receipt is on its way from Stripe. We&rsquo;ll email your onboarding
-          checklist within 1 business hour, and your dashboard credentials within 24 hours.
+          Your receipt is on its way from Stripe. Open the workspace with your market context,
+          or book onboarding and we&rsquo;ll review the first target list before anything sends.
         </p>
         <div style={{ display: "inline-flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+          <Link
+            to={workspaceHref}
+            className="btn btn-secondary btn-sm"
+            style={{ background: "#fff", color: "#111827", borderColor: "#fff" }}
+            data-leadgen-cta="checkout_success_workspace"
+            onClick={() => trackEvent("generate_lead", {
+              source: "leadgen_checkout_success_workspace",
+              plan: state.tier,
+              billing_cycle: state.cadence,
+            })}
+          >
+            Open workspace
+          </Link>
           <a
             href={`mailto:hello@simpleitsrq.com?subject=Leadgen%20${tierLabel}%20onboarding`}
             className="btn btn-secondary btn-sm"
-            style={{ background: "#fff", color: "#111827", borderColor: "#fff" }}
+            style={{ background: "transparent", color: "#fff", borderColor: "rgba(255,255,255,0.7)" }}
+            data-leadgen-cta="checkout_success_email"
+            onClick={() => trackEvent("generate_lead", {
+              source: "leadgen_checkout_success_email",
+              plan: state.tier,
+              billing_cycle: state.cadence,
+            })}
           >
             Email us your priority list
           </a>
@@ -2374,6 +2414,12 @@ function LeadgenCheckoutSuccess() {
             to="/book?topic=leadgen-onboarding"
             className="btn btn-secondary btn-sm"
             style={{ background: "transparent", color: "#fff", borderColor: "rgba(255,255,255,0.7)" }}
+            data-leadgen-cta="checkout_success_onboarding"
+            onClick={() => trackEvent("generate_lead", {
+              source: "leadgen_checkout_success_onboarding",
+              plan: state.tier,
+              billing_cycle: state.cadence,
+            })}
           >
             Book onboarding call
           </Link>
