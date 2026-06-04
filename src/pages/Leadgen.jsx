@@ -9,6 +9,34 @@ import {
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
 
+const LEADGEN_PROMO_CODE = "LAUNCH20";
+const LEADGEN_STRIPE_LINKS = {
+  growth: {
+    monthly: "https://buy.stripe.com/8x2cMYaAX3qg648aUlak01y",
+    annual: "https://buy.stripe.com/9B65kwgZl4uk9gk7I9ak01z",
+  },
+  pro: {
+    monthly: "https://buy.stripe.com/14A8wI5gDbWM0JO9Qhak01A",
+    annual: "https://buy.stripe.com/4gM28kaAX1i8eAE0fHak01B",
+  },
+};
+
+function withLeadgenPromo(url) {
+  if (!url) return "";
+  try {
+    const next = new URL(url);
+    if (!next.searchParams.has("prefilled_promo_code")) {
+      next.searchParams.set("prefilled_promo_code", LEADGEN_PROMO_CODE);
+    }
+    return next.toString();
+  } catch {
+    const glue = url.includes("?") ? "&" : "?";
+    return url.includes("prefilled_promo_code=")
+      ? url
+      : `${url}${glue}prefilled_promo_code=${encodeURIComponent(LEADGEN_PROMO_CODE)}`;
+  }
+}
+
 const TIERS = [
   {
     id: "growth",
@@ -18,8 +46,8 @@ const TIERS = [
     blurb: "The focused paid test: one local niche, reviewed before sending.",
     cta: "Start Growth",
     ctaHref: "/book?topic=leadgen-growth&utm_source=leadgen_page&utm_medium=pricing_card&utm_campaign=growth",
-    stripeMonthly: import.meta.env.VITE_LEADGEN_GROWTH_MONTHLY_URL,
-    stripeAnnual: import.meta.env.VITE_LEADGEN_GROWTH_ANNUAL_URL,
+    stripeMonthly: import.meta.env.VITE_LEADGEN_GROWTH_MONTHLY_URL || LEADGEN_STRIPE_LINKS.growth.monthly,
+    stripeAnnual: import.meta.env.VITE_LEADGEN_GROWTH_ANNUAL_URL || LEADGEN_STRIPE_LINKS.growth.annual,
     highlight: true,
     badge: "Start here",
     features: [
@@ -60,8 +88,8 @@ const TIERS = [
     blurb: "For repeat campaigns across several territories or niches.",
     cta: "Start Pro",
     ctaHref: "/book?topic=leadgen-pro&utm_source=leadgen_page&utm_medium=pricing_card&utm_campaign=pro",
-    stripeMonthly: import.meta.env.VITE_LEADGEN_PRO_MONTHLY_URL,
-    stripeAnnual: import.meta.env.VITE_LEADGEN_PRO_ANNUAL_URL,
+    stripeMonthly: import.meta.env.VITE_LEADGEN_PRO_MONTHLY_URL || LEADGEN_STRIPE_LINKS.pro.monthly,
+    stripeAnnual: import.meta.env.VITE_LEADGEN_PRO_ANNUAL_URL || LEADGEN_STRIPE_LINKS.pro.annual,
     highlight: false,
     features: [
       "Unlimited zip-radius searches",
@@ -255,7 +283,8 @@ function LeadgenPlanLink({
   ctaId = null,
 }) {
   const tier = TIERS.find((t) => t.id === tierId) || TIERS[1];
-  const stripeUrl = billing === "annual" ? tier.stripeAnnual : tier.stripeMonthly;
+  const rawStripeUrl = billing === "annual" ? tier.stripeAnnual : tier.stripeMonthly;
+  const stripeUrl = withLeadgenPromo(rawStripeUrl);
   const onPlanClick = () => {
     trackEvent("begin_checkout", {
       plan: tier.id,
@@ -2053,7 +2082,7 @@ export default function Leadgen() {
                 <Currency value={billing === "annual" ? t.annual : t.monthly} />
                 <p className="leadgen-tier__blurb">{t.blurb}</p>
                 {(() => {
-                  const stripeUrl = billing === "annual" ? t.stripeAnnual : t.stripeMonthly;
+                  const stripeUrl = withLeadgenPromo(billing === "annual" ? t.stripeAnnual : t.stripeMonthly);
                   if (stripeUrl) {
                     return (
                       <LeadgenPlanLink
