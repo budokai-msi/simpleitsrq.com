@@ -1419,6 +1419,64 @@ function LeadgenScanApp() {
             </div>
           </div>
         ) : null}
+
+        {scan && kept.length < 5 ? (
+          <div className="leadgen-conversion-strip leadgen-conversion-strip--assist" role="region" aria-label="Recommended next action for this scan">
+            <div>
+              <span>Next best move</span>
+              <strong>
+                {rows.length
+                  ? `${kept.length} kept ${kept.length === 1 ? "business" : "businesses"} is too small for a campaign`
+                  : `No ${niche === "All" ? "public" : niche.toLowerCase()} records found in ${zip}`}
+              </strong>
+              <p>
+                {niche !== "All"
+                  ? `Broaden to all businesses in ${zip}, then filter from the larger market.`
+                  : "Try a nearby zip or send this view to the workspace for manual review."}
+              </p>
+            </div>
+            <div className="leadgen-conversion-strip__actions">
+              {niche !== "All" ? (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={() => applyMarketRefinement("All")}
+                  disabled={busy}
+                >
+                  Broaden market
+                </button>
+              ) : null}
+              <Link
+                to={scannerDemoLink}
+                className="btn btn-secondary btn-sm"
+                data-leadgen-cta="scanner_low_volume_demo"
+                onClick={() => trackEvent("generate_lead", {
+                  source: "leadgen_scanner_low_volume_demo",
+                  kept_count: kept.length,
+                  matched_count: scan.matched,
+                  niche,
+                })}
+              >
+                Ask for review
+              </Link>
+              {rows.length ? (
+                <Link
+                  to={scannerWorkspaceLink}
+                  className="btn btn-secondary btn-sm"
+                  data-leadgen-cta="scanner_low_volume_workspace"
+                  onClick={() => trackEvent("generate_lead", {
+                    source: "leadgen_scanner_low_volume_workspace",
+                    kept_count: kept.length,
+                    matched_count: scan.matched,
+                    niche,
+                  })}
+                >
+                  Open workspace
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="leadgen-app-panel leadgen-app-panel--results">
@@ -1608,10 +1666,43 @@ function LeadgenScanApp() {
         <LeadgenMap rows={visibleOnlyRows} scan={scan} selectedIndex={effectiveSelectedIndex} onSelect={setSelectedIndex} />
 
         <div className="leadgen-result-list">
-          {!rows.length ? (
+          {!scan ? (
             <div className="leadgen-empty-review">
               <strong>No list yet</strong>
               <span>Enter a zip code, choose a niche, and run a scan. Results here come from public records with source fields attached.</span>
+            </div>
+          ) : !rows.length ? (
+            <div className="leadgen-empty-review">
+              <strong>No records found for this scan</strong>
+              <span>
+                {niche !== "All"
+                  ? `No ${niche.toLowerCase()} records matched ${zip}. Broaden to all businesses or try a nearby zip.`
+                  : `No public business records matched ${zip}. Try a nearby zip or ask us to review it manually.`}
+              </span>
+              <div className="leadgen-empty-review__actions">
+                {niche !== "All" ? (
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => applyMarketRefinement("All")}
+                    disabled={busy}
+                  >
+                    Broaden market
+                  </button>
+                ) : null}
+                <Link
+                  to={scannerDemoLink}
+                  className="btn btn-secondary btn-sm"
+                  data-leadgen-cta="scanner_empty_review"
+                  onClick={() => trackEvent("generate_lead", {
+                    source: "leadgen_scanner_empty_review",
+                    matched_count: scan.matched,
+                    niche,
+                  })}
+                >
+                  Ask for review
+                </Link>
+              </div>
             </div>
           ) : !visibleRows.length ? (
             <div className="leadgen-empty-review">

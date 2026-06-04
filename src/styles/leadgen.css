@@ -710,6 +710,13 @@
   color: var(--lg-muted);
   font-size: 0.86rem;
 }
+.leadgen-conversion-strip--assist {
+  border-color: color-mix(in srgb, var(--lg-text) 18%, var(--lg-border));
+  background: color-mix(in srgb, var(--lg-panel-soft) 82%, var(--lg-panel));
+}
+.leadgen-conversion-strip--assist strong {
+  font-size: 0.92rem;
+}
 .leadgen-conversion-strip__warn {
   margin-top: 8px !important;
   padding: 8px 10px;
@@ -835,6 +842,12 @@
   color: var(--lg-faint);
   font-size: 0.88rem;
   line-height: 1.45;
+}
+.leadgen-empty-review__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 .leadgen-result-row {
   display: grid;
