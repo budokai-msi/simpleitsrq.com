@@ -570,12 +570,6 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
   const [err, setErr] = useState(null);
   const normalizedZip = String(zip || "").replace(/\D/g, "").slice(0, 5);
   const isValidZip = /^\d{5}$/.test(normalizedZip);
-  const marketPresets = [
-    { label: "Sarasota healthcare", zip: "34232" },
-    { label: "Bradenton trades", zip: "34207" },
-    { label: "Venice services", zip: "34293" },
-  ];
-
   const runWorker = async () => {
     setBusy(true); setErr(null); setMsg(null);
     try {
@@ -801,26 +795,6 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
           {!isValidZip ? (
             <p className="admin-aff-stat-hint" aria-live="polite">Use a valid 5-digit zip. Example: 34237.</p>
           ) : null}
-          <div className="leadgen-console-presets" aria-label="Quick market presets">
-            <span>Quick markets</span>
-            {marketPresets.map((preset) => (
-              <button
-                key={preset.label}
-                type="button"
-                className="leadgen-quick-market-btn"
-                onClick={() => {
-                  setZip(preset.zip);
-                  trackEvent("search", {
-                    search_term: preset.zip,
-                    source: "leadgen_admin_market_preset",
-                    market: preset.label,
-                  });
-                }}
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
           <div className="leadgen-revenue-rail" aria-label="Revenue path actions">
             <button
               type="button"

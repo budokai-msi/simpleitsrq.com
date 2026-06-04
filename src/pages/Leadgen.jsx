@@ -1225,25 +1225,39 @@ function LeadgenScanApp() {
           </details>
         </div>
 
-        <div className="leadgen-market-refinements" aria-label="Refine current market">
-          <div>
-            <span>Refine this market</span>
-            <strong>{validZip ? `Keep ZIP ${zip}` : "Enter a zip first"}</strong>
+        <div className="leadgen-market-builder" aria-label="Build current market">
+          <div className="leadgen-market-builder__summary">
+            <span>Market builder</span>
+            <strong>
+              {validZip
+                ? `${niche === "All" ? "All businesses" : niche} in ${zip}`
+                : "Any 5-digit US zip"}
+            </strong>
+            <p>
+              {validZip
+                ? scan
+                  ? `${scan.matched ?? 0} records loaded. Filters keep ZIP ${zip}.`
+                  : "Choose a customer type; the map stays tied to this zip."
+                : "Enter a zip, then choose the customer type you want."}
+            </p>
           </div>
-          {marketRefinements.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={`leadgen-market-refinement-btn${item === niche ? " is-active" : ""}`}
-              onClick={() => applyMarketRefinement(item)}
-              onMouseEnter={() => prefetchRefinement(item)}
-              onFocus={() => prefetchRefinement(item)}
-              title={validZip ? `Scan ${item} in ${zip}` : "Choose this niche, then enter a zip"}
-              aria-label={validZip ? `Use ${item} for ZIP ${zip}` : `Use ${item} after entering a zip`}
-            >
-              {item === "All" ? "All businesses" : item}
-            </button>
-          ))}
+          <div className="leadgen-market-builder__chips">
+            {marketRefinements.map((item) => (
+              <button
+                key={item}
+                type="button"
+                className={`leadgen-market-refinement-btn${item === niche ? " is-active" : ""}`}
+                onClick={() => applyMarketRefinement(item)}
+                onMouseEnter={() => prefetchRefinement(item)}
+                onFocus={() => prefetchRefinement(item)}
+                title={validZip ? `Scan ${item} in ${zip}` : "Choose this business type, then enter a zip"}
+                aria-label={validZip ? `Use ${item} for ZIP ${zip}` : `Use ${item} after entering a zip`}
+              >
+                <span>{item === "All" ? "All businesses" : item}</span>
+                <small>{item === niche ? "Selected" : validZip ? `Preview ${zip}` : "Set type"}</small>
+              </button>
+            ))}
+          </div>
         </div>
         {zipHint ? <p className="leadgen-app-error" style={{ marginTop: 8 }}>{zipHint}</p> : null}
 

@@ -360,52 +360,81 @@
   gap: 10px;
   margin-top: 10px;
 }
-.leadgen-market-refinements {
-  margin-top: 10px;
+.leadgen-market-builder {
+  margin-top: 12px;
   display: grid;
-  grid-template-columns: minmax(138px, 0.9fr) repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: minmax(150px, 0.76fr) minmax(0, 1.24fr);
+  gap: 10px;
   align-items: stretch;
 }
-.leadgen-market-refinements > div {
+.leadgen-market-builder__summary {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 3px;
-  padding: 8px 10px;
+  justify-content: flex-start;
+  gap: 5px;
+  padding: 12px;
   border: 1px solid var(--lg-border-soft);
   border-radius: 8px;
   background: var(--lg-panel-soft);
 }
-.leadgen-market-refinements span {
+.leadgen-market-builder__summary span {
   color: var(--lg-faint);
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-.leadgen-market-refinements strong {
+.leadgen-market-builder__summary strong {
   min-width: 0;
   overflow: hidden;
   color: var(--lg-text);
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.leadgen-market-builder__summary p {
+  margin: 0;
+  color: var(--lg-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.leadgen-market-builder__chips {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
 .leadgen-market-refinement-btn {
-  min-height: 44px;
-  padding: 0 10px;
+  display: flex;
+  min-width: 0;
+  min-height: 58px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
+  padding: 9px 11px;
   border: 1px solid var(--border, #d1d5db);
   border-radius: 8px;
   background: var(--surface, #fff);
   color: var(--text-1, #111827);
-  font-size: 0.78rem;
-  font-weight: 700;
+  text-align: left;
   line-height: 1.15;
   cursor: pointer;
   transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+.leadgen-market-refinement-btn span {
+  max-width: 100%;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: normal;
+}
+.leadgen-market-refinement-btn small {
+  color: var(--lg-faint);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 .leadgen-market-refinement-btn:hover,
 .leadgen-market-refinement-btn:focus-visible {
@@ -417,6 +446,10 @@
   border-color: var(--lg-border);
   background: var(--lg-text);
   color: var(--lg-panel);
+}
+.leadgen-market-refinement-btn.is-active small {
+  color: currentColor;
+  opacity: 0.74;
 }
 .leadgen-prefetch {
   display: inline-flex;
@@ -1002,20 +1035,21 @@
   .leadgen-app-controls select {
     min-height: 42px;
   }
-  .leadgen-market-refinements {
+  .leadgen-market-builder {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     overflow: visible;
     padding-bottom: 0;
   }
-  .leadgen-market-refinements > div {
-    grid-column: 1 / -1;
+  .leadgen-market-builder__summary {
     min-height: 44px;
+  }
+  .leadgen-market-builder__chips {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .leadgen-market-refinement-btn {
     width: 100%;
-    min-height: 38px;
-    justify-content: center;
+    min-height: 44px;
   }
 }
 
@@ -2754,7 +2788,7 @@
 [data-theme="dark"] .admin-leadgen .leadgen-signal-grid span,
 [data-theme="dark"] .admin-leadgen .leadgen-console-focus__label,
 [data-theme="dark"] .admin-leadgen .leadgen-zip-field span,
-[data-theme="dark"] .leadgen-market-refinements span {
+[data-theme="dark"] .leadgen-market-builder__summary span {
   color: #B4BAC4;
 }
 
@@ -2826,11 +2860,15 @@
 [data-theme="dark"] .admin-leadgen-jobs .admin-aff-table tbody tr:hover {
   background: #18202B;
 }
-[data-theme="dark"] .leadgen-market-refinements > div,
+[data-theme="dark"] .leadgen-market-builder__summary,
 [data-theme="dark"] .leadgen-market-refinement-btn {
   border-color: #353B45;
   background: #11151B;
   color: #F4F5F7;
+}
+[data-theme="dark"] .leadgen-market-builder__summary p,
+[data-theme="dark"] .leadgen-market-refinement-btn small {
+  color: #B4BAC4;
 }
 [data-theme="dark"] .leadgen-market-refinement-btn:hover,
 [data-theme="dark"] .leadgen-market-refinement-btn:focus-visible {
