@@ -194,22 +194,22 @@ export default function VisitorTracker() {
       consent: consent ? (analyticsOk ? "analytics" : "essential") : "pending",
     };
 
-    // Prefer sendBeacon so navigation aways doesn't drop the log; fall back
-    // to fetch keepalive.
+    // Route-change pageviews happen while the page is alive, so use fetch
+    // first. Some edge/WAF paths are noisier with Beacon uploads even when
+    // the same JSON POST is accepted.
     try {
       const body = JSON.stringify(payload);
-      if (navigator.sendBeacon) {
+      fetch("/api/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+        keepalive: true,
+        credentials: "same-origin",
+      }).catch(() => {
+        if (!navigator.sendBeacon) return;
         const blob = new Blob([body], { type: "application/json" });
         navigator.sendBeacon("/api/track", blob);
-      } else {
-        fetch("/api/track", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body,
-          keepalive: true,
-          credentials: "same-origin",
-        }).catch(() => {});
-      }
+      });
     } catch {
       // best-effort; never interrupt the user
     }
