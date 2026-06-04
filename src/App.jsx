@@ -692,12 +692,8 @@ function Footer() {
                 language in our Privacy Policy §3 / §7. */}
             <button
               type="button"
+              className="footer-cookie-prefs"
               onClick={() => window.dispatchEvent(new CustomEvent("sirq:reopen-consent"))}
-              style={{
-                background: "none", border: "none", padding: 0,
-                color: "inherit", cursor: "pointer",
-                font: "inherit", textDecoration: "underline",
-              }}
             >
               Cookie preferences
             </button>
@@ -805,6 +801,7 @@ function Layout({ children }) {
   const isInternalOps =
     location.pathname.startsWith("/portal/ops") ||
     location.pathname.startsWith("/portal/opsec");
+  const isLeadgenProduct = location.pathname === "/leadgen";
 
   return (
     <>
@@ -815,13 +812,13 @@ function Layout({ children }) {
       {!isInternalOps && <AnalyticsMount />}
       {children}
       {!isInternalOps && <Footer />}
-      {!isInternalOps && <MobileStickyCTA />}
+      {!isInternalOps && !isLeadgenProduct && <MobileStickyCTA />}
       {!isInternalOps && <ExitIntentMount />}
       <ScrollToTop />
       {!isInternalOps && <CookieConsent />}
       {!isInternalOps && <AutoAds />}
       {!isInternalOps && <LiveChat />}
-      {!isInternalOps && <AIChat />}
+      {!isInternalOps && !isLeadgenProduct && <AIChat />}
       {!isInternalOps && <Analytics />}
       {!isInternalOps && <SpeedInsights />}
     </>
