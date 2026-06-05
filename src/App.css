@@ -121,6 +121,7 @@ main, #main {
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition:
@@ -377,13 +378,18 @@ main, #main {
     radial-gradient(circle at 28% 18%, rgba(234, 248, 255, 0.82), transparent 28%),
     radial-gradient(circle at 70% 72%, rgba(124, 92, 216, 0.38), transparent 35%),
     linear-gradient(145deg, rgba(9, 23, 38, 0.18), rgba(17, 24, 39, 0.22));
-  border: 1px solid color-mix(in srgb, var(--brand) 34%, var(--border));
+  border: 1px solid var(--brand);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.42),
     0 0 0 1px rgba(255, 255, 255, 0.04),
     0 12px 28px rgba(17, 24, 39, 0.16);
   overflow: hidden;
   isolation: isolate;
+}
+@supports (color: color-mix(in srgb, var(--brand) 34%, var(--border))) {
+  .brand-aurora-mark {
+    border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+  }
 }
 .brand-aurora-mark::before {
   content: "";
@@ -403,6 +409,7 @@ main, #main {
     linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
   background-size: 6px 6px;
+  -webkit-mask-image: linear-gradient(140deg, rgba(0, 0, 0, 0.9), transparent 82%);
   mask-image: linear-gradient(140deg, rgba(0, 0, 0, 0.9), transparent 82%);
 }
 .brand-aurora-s {
@@ -624,8 +631,16 @@ main, #main {
 .nav-menu-link:focus-visible,
 .nav-menu-link.is-active {
   background: var(--brand-subtle);
-  border-color: color-mix(in srgb, var(--brand) 18%, transparent);
+  border-color: transparent;
   color: var(--brand);
+}
+
+@supports (color: color-mix(in srgb, var(--brand) 18%, transparent)) {
+  .nav-menu-link:hover,
+  .nav-menu-link:focus-visible,
+  .nav-menu-link.is-active {
+    border-color: color-mix(in srgb, var(--brand) 18%, transparent);
+  }
 }
 .nav-menu-icon,
 .mobile-menu-icon {
@@ -751,7 +766,7 @@ main, #main {
 .mobile-menu-link:focus-visible,
 .mobile-menu-link.is-active {
   background: var(--brand-subtle);
-  border-color: color-mix(in srgb, var(--brand) 16%, transparent);
+  border-color: var(--brand);
   color: var(--brand);
 }
 .mobile-menu-link:hover small,
