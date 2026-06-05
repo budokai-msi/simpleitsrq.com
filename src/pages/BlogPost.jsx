@@ -255,39 +255,38 @@ export default function BlogPost() {
   const metaEntry = useMemo(() => postsMeta.find((p) => p.slug === slug), [slug]);
   const isMdx = Boolean(mdxModules[slugToPath(slug)]);
   const [legacyEntry, setLegacyEntry] = useState(null);
-  const [rawBody, setRawBody] = useState("");
+  const [rawBodyState, setRawBodyState] = useState({ slug: null, body: "" });
+  const rawBody = rawBodyState.slug === slug ? rawBodyState.body : "";
 
-  // Fetch the legacy entry only if we can't resolve the slug via MDX. The
-  // setLegacyEntry(null) reset when switching to an MDX slug is required —
-  // without it, the previous legacy entry would linger in state and the
-  // page would try to render two different posts. Lint plugin can't see
-  // that, so the disable is intentional.
+  // Fetch the legacy entry only if we can't resolve the slug via MDX.
+  // Active legacy/body state is keyed by slug, so older async loads
+  // cannot leak into the currently rendered post.
   useEffect(() => {
-    if (!slug || isMdx) {
-      setLegacyEntry(null);
-      return undefined;
-    }
+    if (!slug || isMdx) return undefined;
     let cancelled = false;
     import("../data/posts").then(({ posts }) => {
       if (cancelled) return;
       const entry = posts.find((p) => p.slug === slug) || null;
       setLegacyEntry(entry);
-      if (entry) setRawBody(entry.content || "");
+      setRawBodyState({ slug, body: entry?.content || "" });
     });
     return () => { cancelled = true; };
   }, [slug, isMdx]);
 
-  const post = metaEntry || legacyEntry;
+  const legacyPost = !isMdx && legacyEntry?.slug === slug ? legacyEntry : null;
+  const post = metaEntry || legacyPost;
 
   // Raw MDX source — loaded lazily alongside the compiled module so the
   // ToolsUsedFooter and reading-time heuristic keep working without a
   // second round trip.
   useEffect(() => {
-    if (!slug || !isMdx) return;
+    if (!slug || !isMdx) return undefined;
     let cancelled = false;
     const loader = mdxSources[slugToPath(slug)];
-    if (!loader) return;
-    loader().then((src) => { if (!cancelled) setRawBody(src); });
+    if (!loader) return undefined;
+    loader().then((src) => {
+      if (!cancelled) setRawBodyState({ slug, body: src });
+    });
     return () => { cancelled = true; };
   }, [slug, isMdx]);
 
