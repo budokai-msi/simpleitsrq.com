@@ -166,6 +166,12 @@ const PRODUCT_RULES = [
   { title: "One review", body: "Before the first send, review source records, contact fields, unsubscribe footer, daily cap, and the actual email copy." },
 ];
 
+const EMPTY_SCAN_STEPS = [
+  { label: "1. Scan", body: "Pull public businesses for one zip and customer type." },
+  { label: "2. Review", body: "Keep, maybe, or reject rows before export or outreach." },
+  { label: "3. Launch", body: "Move reviewed leads into workspace, export CSV, or book a review." },
+];
+
 const WORKSPACE_FLOW = [
   {
     Icon: Search,
@@ -307,6 +313,16 @@ function LeadgenPlanLink({
       {children || tier.cta} <ArrowRight size={16} />
     </Link>
   );
+}
+
+function formatForecastCurrency(value) {
+  return Math.round(value).toLocaleString();
+}
+
+function formatExpectedWins(value) {
+  if (value > 0 && value < 0.1) return "<0.1";
+  if (value > 0 && value < 10) return value.toFixed(1);
+  return String(Math.round(value));
 }
 
 function csvCell(value) {
@@ -637,8 +653,9 @@ function LeadgenScanApp() {
   const [marketTypeSearch, setMarketTypeSearch] = useState("");
   const [offer, setOffer] = useState(() => initialQuery.get("offer") || "");
   const [dailyCap, setDailyCap] = useState(() => {
-    const q = Number(initialQuery.get("daily_cap"));
-    if (!Number.isFinite(q)) return 35;
+    const raw = initialQuery.get("daily_cap");
+    const q = Number(raw);
+    if (!raw || !Number.isFinite(q)) return 35;
     return Math.max(5, Math.min(100, Math.round(q)));
   });
   const [scan, setScan] = useState(null);
@@ -662,12 +679,14 @@ function LeadgenScanApp() {
   const [lastScanMeta, setLastScanMeta] = useState(null);
   const [copiedView, setCopiedView] = useState(false);
   const [closeRate, setCloseRate] = useState(() => {
-    const q = Number(initialQuery.get("close_rate"));
-    return Number.isFinite(q) ? Math.max(1, Math.min(40, Math.round(q))) : 8;
+    const raw = initialQuery.get("close_rate");
+    const q = Number(raw);
+    return raw && Number.isFinite(q) ? Math.max(1, Math.min(40, Math.round(q))) : 8;
   });
   const [avgDealValue, setAvgDealValue] = useState(() => {
-    const q = Number(initialQuery.get("avg_deal"));
-    return Number.isFinite(q) ? Math.max(500, Math.min(50000, Math.round(q))) : 2400;
+    const raw = initialQuery.get("avg_deal");
+    const q = Number(raw);
+    return raw && Number.isFinite(q) ? Math.max(500, Math.min(50000, Math.round(q))) : 2400;
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -729,11 +748,12 @@ function LeadgenScanApp() {
   const readinessTier = readinessPercent >= 75 ? "good" : readinessPercent >= 50 ? "wait" : "bad";
   const primaryReadinessGap = readinessChecks.find((item) => !item.ok) || null;
   const forecastReachable = Math.round(kept.length * Math.max(websiteCoverage, phoneCoverage) / 100);
-  const forecastWins = Math.max(0, Math.round(forecastReachable * (closeRate / 100)));
+  const forecastWins = Math.max(0, forecastReachable * (closeRate / 100));
+  const forecastWinsLabel = formatExpectedWins(forecastWins);
   const forecastRevenue = forecastWins * avgDealValue;
   const recommendedPlanPrice = recommendedBilling === "annual" ? recommendedTier.annual : recommendedTier.monthly;
   const projectedRoiMultiple = recommendedPlanPrice > 0 ? (forecastRevenue / recommendedPlanPrice) : 0;
-  const projectedNetValue = Math.max(0, forecastRevenue - recommendedPlanPrice);
+  const projectedNetValue = forecastRevenue - recommendedPlanPrice;
   const subIndustryOptions = useMemo(() => (
     Array.from(new Set(reviewedRows.map((row) => row.sub_industry).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   ), [reviewedRows]);
@@ -1378,7 +1398,7 @@ function LeadgenScanApp() {
               <section className="leadgen-revenue-forecast" aria-label="Revenue forecast">
                 <div className="leadgen-revenue-forecast__head">
                   <span>Revenue forecast</span>
-                  <strong>${forecastRevenue.toLocaleString()} projected pipeline value</strong>
+                  <strong>${formatForecastCurrency(forecastRevenue)} projected pipeline value</strong>
                 </div>
                 <div className="leadgen-revenue-forecast__controls">
                   <label>
@@ -1408,7 +1428,7 @@ function LeadgenScanApp() {
                 </div>
                 <div className="leadgen-revenue-forecast__kpis">
                   <div><span>Reachable</span><strong>{forecastReachable}</strong></div>
-                  <div><span>Expected wins</span><strong>{forecastWins}</strong></div>
+                  <div><span>Expected wins</span><strong>{forecastWinsLabel}</strong></div>
                   <div><span>Kept businesses</span><strong>{kept.length}</strong></div>
                 </div>
                 <div className="leadgen-revenue-forecast__planfit" role="status" aria-live="polite">
@@ -1418,7 +1438,7 @@ function LeadgenScanApp() {
                   </div>
                   <div>
                     <span>Projected net value</span>
-                    <strong>${projectedNetValue.toLocaleString()}</strong>
+                    <strong>{projectedNetValue < 0 ? "-" : ""}${formatForecastCurrency(Math.abs(projectedNetValue))}</strong>
                   </div>
                   <div>
                     <span>Projected ROI multiple</span>
@@ -1430,7 +1450,7 @@ function LeadgenScanApp() {
                     onClick={() => trackEvent("select_content", {
                       content_type: "leadgen_forecast_planfit",
                       destination: `plan_${recommendedTier.id}`,
-                      forecast_revenue: forecastRevenue,
+                      forecast_revenue: Math.round(forecastRevenue),
                       projected_roi_multiple: Number(projectedRoiMultiple.toFixed(2)),
                     })}
                   >
@@ -1764,8 +1784,37 @@ function LeadgenScanApp() {
         <div className="leadgen-result-list">
           {!scan ? (
             <div className="leadgen-empty-review">
-              <strong>No list yet</strong>
-              <span>Enter a zip code, choose a niche, and run a scan. Results here come from public records with source fields attached.</span>
+              <strong>Build a usable lead list</strong>
+              <span>Enter any 5-digit zip, choose the customer type, and run a scan. The list stays reviewable before anything becomes outreach.</span>
+              <div className="leadgen-empty-review__flow" aria-label="Leadgen workflow preview">
+                {EMPTY_SCAN_STEPS.map((item) => (
+                  <div key={item.label}>
+                    <b>{item.label}</b>
+                    <p>{item.body}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="leadgen-empty-review__actions">
+                <Link
+                  to={scannerDemoLink}
+                  className="btn btn-secondary btn-sm"
+                  data-leadgen-cta="scanner_prescan_review"
+                  onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_prescan_review" })}
+                >
+                  Get list review
+                </Link>
+                <a
+                  href="#pricing"
+                  className="btn btn-secondary btn-sm"
+                  data-leadgen-cta="scanner_prescan_pricing"
+                  onClick={() => trackEvent("select_content", {
+                    content_type: "leadgen_scanner_prescan",
+                    destination: "pricing_section",
+                  })}
+                >
+                  See pricing
+                </a>
+              </div>
             </div>
           ) : !rows.length ? (
             <div className="leadgen-empty-review">
