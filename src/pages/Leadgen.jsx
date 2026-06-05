@@ -2161,7 +2161,7 @@ export default function Leadgen() {
                         context="pricing_table"
                         ctaId={`pricing_${t.id}_${billing}`}
                       >
-                        {t.cta} <ArrowRight size={14} />
+                        {t.cta}
                       </LeadgenPlanLink>
                     );
                   }
