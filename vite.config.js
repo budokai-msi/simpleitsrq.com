@@ -42,6 +42,19 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
           const url = new URL(req.url || '/', 'http://localhost');
+          if (url.pathname === '/api/track') {
+            if (req.method === 'POST' || req.method === 'OPTIONS') {
+              res.statusCode = 204;
+              res.setHeader('Cache-Control', 'no-store');
+              res.end();
+              return;
+            }
+            res.statusCode = 405;
+            res.setHeader('Content-Type', 'application/json; charset=utf-8');
+            res.end(JSON.stringify({ ok: false, error: 'method_not_allowed' }));
+            return;
+          }
+
           if (url.pathname !== '/api/leadgen') return next();
 
           const chunks = [];
@@ -63,6 +76,7 @@ export default defineConfig({
                 method: req.method,
                 headers: req.headers,
                 body,
+                ...(body ? { duplex: 'half' } : {}),
               });
               const response = await handler(request);
               res.statusCode = response.status;

@@ -928,6 +928,29 @@
   font-size: 0.88rem;
   line-height: 1.45;
 }
+.leadgen-empty-review__flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+  max-width: 640px;
+}
+.leadgen-empty-review__flow div {
+  min-width: 0;
+  border-left: 2px solid var(--lg-border);
+  padding-left: 10px;
+}
+.leadgen-empty-review__flow b {
+  display: block;
+  color: var(--lg-text);
+  font-size: 0.78rem;
+}
+.leadgen-empty-review__flow p {
+  margin: 4px 0 0;
+  color: var(--lg-muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
 .leadgen-empty-review__actions {
   display: flex;
   flex-wrap: wrap;
@@ -1021,6 +1044,7 @@
   .leadgen-result-more-filters__grid { grid-template-columns: 1fr 1fr; }
   .leadgen-result-row { grid-template-columns: 1fr; }
   .leadgen-result-row select { max-width: 180px; }
+  .leadgen-empty-review__flow { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
   .leadgen-app-panel--control,
