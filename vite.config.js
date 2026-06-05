@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import mdx from '@mdx-js/rollup'
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
+import remarkGeneratedPostCleanup from './scripts/remark-generated-post-cleanup.mjs'
 import remarkCityAutolink from './scripts/remark-city-autolink.mjs'
 import { Buffer } from 'node:buffer'
 
@@ -19,6 +20,11 @@ export default defineConfig({
         remarkPlugins: [
           remarkFrontmatter,
           [remarkMdxFrontmatter, { name: 'frontmatter' }],
+          // Some generated news posts arrived with markdown headings and
+          // shortcodes embedded inside a single paragraph. Normalize that
+          // shape at compile time so readers get scannable articles and
+          // affiliate/tool tokens render as real components.
+          remarkGeneratedPostCleanup,
           // Auto-link the first occurrence of each city name in every
           // post body to its city landing page. Compile-time so links
           // ship as real <a> tags in the rendered HTML — no JS required

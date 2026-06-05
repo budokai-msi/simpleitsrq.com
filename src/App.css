@@ -1422,30 +1422,6 @@ main, #main {
   margin: 0;
 }
 
-/* ============ CTA banner ============ */
-.cta-banner {
-  background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--brand-subtle) 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
-  padding: 64px 48px;
-  text-align: center;
-  box-shadow: var(--shadow8);
-}
-.cta-banner p {
-  font-size: 17px;
-  color: var(--text-2);
-  margin: 0 0 28px;
-  max-width: 56ch;
-  margin-left: auto;
-  margin-right: auto;
-}
-.cta-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
 /* ============ Contact ============ */
 .contact-grid {
   display: grid;
@@ -1476,6 +1452,11 @@ main, #main {
   font-weight: 600;
   color: var(--text-1);
 }
+.form label em {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--text-3, #8a8a8a);
+}
 .form input,
 .form textarea {
   width: 100%;
@@ -1495,6 +1476,36 @@ main, #main {
 }
 .form textarea { resize: vertical; }
 .form .btn { align-self: flex-start; }
+.form-optional-details {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+.form-optional-details summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text-1);
+}
+.form-optional-details summary::-webkit-details-marker { display: none; }
+.form-optional-details summary::after {
+  content: "+";
+  float: right;
+  color: var(--text-2);
+  font-weight: 700;
+}
+.form-optional-details[open] summary {
+  border-bottom: 1px solid var(--border);
+}
+.form-optional-details[open] summary::after {
+  content: "-";
+}
+.form-optional-details .row-2 {
+  padding: 14px;
+}
 .form-note {
   font-size: 13px;
   color: var(--text-2, #707070);
@@ -2057,7 +2068,6 @@ main, #main {
   .situation-actions .btn { width: 100%; }
   .footer-grid { grid-template-columns: 1fr; gap: 32px; }
   .row-2 { grid-template-columns: 1fr; }
-  .cta-banner { padding: 40px 24px; }
   .container { padding: 0 20px; }
   .dash-card { transform: none; animation: none; }
 }

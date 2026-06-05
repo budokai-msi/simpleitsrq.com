@@ -499,35 +499,6 @@ function BlogPreview() {
   );
 }
 
-function CtaBanner() {
-  return (
-    <section className="section">
-      <div className="container">
-        <div className="cta-banner reveal-scale">
-          <h2 className="title-2">Need a real fix this week?</h2>
-          <p>Send the issue, the location, and the deadline. We will tell you whether it is a repair visit, a managed support fit, or something you should not pay us for.</p>
-          <div className="cta-actions">
-            <Link
-              to="/book"
-              className="btn btn-primary btn-lg"
-              onClick={() => trackEvent("generate_lead", { source: "home_bottom_cta_book" })}
-            >
-              Book a time
-            </Link>
-            <Link
-              to="/support"
-              className="btn btn-secondary btn-lg"
-              onClick={() => trackEvent("select_content", { content_type: "home_bottom_cta_support", source: "home_bottom_cta" })}
-            >
-              Existing client support
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 const ERROR_MESSAGES = {
   name_required: "Please enter your name.",
   email_invalid: "That email address looks off - double-check it?",
@@ -592,10 +563,21 @@ function Contact() {
     setErrorMsg("");
 
     try {
+      const email = String(form.email || "").trim();
+      const derivedName =
+        String(form.name || "").trim() ||
+        email.split("@")[0]?.replace(/[._-]+/g, " ").trim() ||
+        "Website visitor";
       const r = await csrfFetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, turnstileToken }),
+        body: JSON.stringify({
+          ...form,
+          name: derivedName,
+          email,
+          message: String(form.message || "").trim(),
+          turnstileToken,
+        }),
       });
       const data = await r.json().catch(() => ({}));
 
@@ -640,7 +622,6 @@ function Contact() {
   const submitting = status === "submitting";
   const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(form.email || "").trim());
   const formReady =
-    String(form.name || "").trim().length > 1 &&
     emailLooksValid &&
     String(form.message || "").trim().length > 9;
 
@@ -648,9 +629,9 @@ function Contact() {
     <section className="section" id="contact" aria-labelledby="contact-title">
       <div className="container">
         <div className="section-head">
-          <span className="eyebrow">Contact</span>
-          <h2 id="contact-title" className="title-1">Tell us what's going on</h2>
-          <p className="section-sub">Drop us a note and a real person will get back to you during business hours.</p>
+          <span className="eyebrow">Review request</span>
+          <h2 id="contact-title" className="title-1">Get a second set of eyes</h2>
+          <p className="section-sub">Send the situation in one note. A real person will reply with the cleanest next step.</p>
         </div>
         <div className="contact-grid">
           <div className="form-shell">
@@ -660,47 +641,59 @@ function Contact() {
               aria-label="Contact form"
               noValidate
             >
-              <div className="row-2">
+              <label>
+                <span>What should we review?</span>
+                <textarea
+                  name="message"
+                  rows="7"
+                  value={form.message}
+                  onChange={update("message")}
+                  placeholder="Example: Our Mac Office apps are going view-only, the front desk Wi-Fi keeps dropping, or our renewal questionnaire is due next week."
+                  disabled={submitting}
+                  required
+                  aria-required="true"
+                />
+              </label>
+              <div className="row-2 contact-primary-row">
                 <label>
-                  <span>Name</span>
-                  <input
-                    type="text" name="name" value={form.name} onChange={update("name")}
-                    required aria-required="true" autoComplete="name"
-                    disabled={submitting}
-                  />
-                </label>
-                <label>
-                  <span>Company</span>
-                  <input
-                    type="text" name="company" value={form.company} onChange={update("company")}
-                    autoComplete="organization" disabled={submitting}
-                  />
-                </label>
-              </div>
-              <div className="row-2">
-                <label>
-                  <span>Email</span>
+                  <span>Reply email</span>
                   <input
                     type="email" name="email" value={form.email} onChange={update("email")}
                     required aria-required="true" autoComplete="email"
                     inputMode="email" disabled={submitting}
+                    placeholder="you@company.com"
                   />
                 </label>
                 <label>
-                  <span>Phone</span>
+                  <span>Name <em>optional</em></span>
                   <input
-                    type="tel" name="phone" value={form.phone} onChange={update("phone")}
-                    autoComplete="tel" inputMode="tel" disabled={submitting}
+                    type="text" name="name" value={form.name} onChange={update("name")}
+                    autoComplete="name"
+                    disabled={submitting}
+                    placeholder="Your name"
                   />
                 </label>
               </div>
-              <label>
-                <span>Message</span>
-                <textarea
-                  name="message" rows="5" value={form.message} onChange={update("message")}
-                  disabled={submitting}
-                />
-              </label>
+
+              <details className="form-optional-details">
+                <summary>Add phone or company</summary>
+                <div className="row-2">
+                  <label>
+                    <span>Company</span>
+                    <input
+                      type="text" name="company" value={form.company} onChange={update("company")}
+                      autoComplete="organization" disabled={submitting}
+                    />
+                  </label>
+                  <label>
+                    <span>Phone</span>
+                    <input
+                      type="tel" name="phone" value={form.phone} onChange={update("phone")}
+                      autoComplete="tel" inputMode="tel" disabled={submitting}
+                    />
+                  </label>
+                </div>
+              </details>
 
               {/* Honeypot — hidden from real users, catches bots.
                   Inline styles + class so no layout rule can leak it. */}
@@ -744,15 +737,15 @@ function Contact() {
                 {submitting ? (
                   <><Loader2 size={18} className="spin" /> Sending...</>
                 ) : (
-                  <><Send size={16} /> Send Message</>
+                  <><Send size={16} /> Request review</>
                 )}
               </button>
 
               <p className="form-note">
-                We'll reply during business hours. No spam, ever.
+                We will reply during business hours. No spam, no automated audit report.
               </p>
               {!formReady && status !== "success" ? (
-                <p className="form-note">Add name, valid email, and a short message to send.</p>
+                <p className="form-note">Add a valid email and a few details about what to review.</p>
               ) : null}
 
               {status === "error" && (
@@ -769,8 +762,8 @@ function Contact() {
                   <div className="success-check">
                     <CheckCircle2 size={56} />
                   </div>
-                  <h3>Message sent</h3>
-                  <p>Thanks for reaching out — a real human at Simple IT SRQ will reply during business hours.</p>
+                  <h3>Review request sent</h3>
+                  <p>Thanks for reaching out. A real human at Simple IT SRQ will reply during business hours.</p>
                   <button type="button" className="btn btn-secondary" onClick={reset}>
                     Send another
                   </button>
@@ -780,9 +773,9 @@ function Contact() {
           </div>
 
           <aside className="contact-info" aria-label="Contact information">
-            <div className="info-row"><Mail size={18} /><div><strong>Email</strong><br />hello@simpleitsrq.com</div></div>
-            <div className="info-row"><MapPin size={18} /><div><strong>Service Area</strong><br />Sarasota, Bradenton, and Venice</div></div>
-            <div className="info-row"><Clock size={18} /><div><strong>Hours</strong><br />Mon-Fri, 8:00 AM - 6:00 PM</div></div>
+            <div className="info-row"><Mail size={18} /><div><strong>Send a review request</strong><br />hello@simpleitsrq.com</div></div>
+            <div className="info-row"><MapPin size={18} /><div><strong>Local context helps</strong><br />Sarasota, Bradenton, Venice, and nearby offices.</div></div>
+            <div className="info-row"><Clock size={18} /><div><strong>What comes back</strong><br />A plain next step, a useful question, or a booking link if a call is the fastest path.</div></div>
           </aside>
         </div>
       </div>
@@ -808,7 +801,6 @@ export default function Home() {
       <Compliance />
       <GoogleReviews />
       <BlogPreview />
-      <CtaBanner />
       <Contact />
     </>
   );

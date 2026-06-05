@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Link } from "../lib/Link";
 import { ArrowRight } from "lucide-react";
@@ -18,7 +18,8 @@ export default function BlogIndex() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const [active, setActive] = useState("All");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const pageKey = `${active}::${initialQuery}`;
+  const [pagination, setPagination] = useState({ key: pageKey, count: PAGE_SIZE });
 
   // `searchResults` is the post list after BlogSearch has applied its
   // title/tag/description match. When the query is empty, BlogSearch
@@ -37,14 +38,17 @@ export default function BlogIndex() {
     return searchResults.filter((p) => p.category === active);
   }, [active, searchResults]);
 
+  const currentPageKey = `${active}::${committedQuery}`;
+  const visibleCount = pagination.key === currentPageKey ? pagination.count : PAGE_SIZE;
   const visible = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
 
-  // Reset pagination whenever category OR search query changes so
-  // "Load more" starts fresh. Intentional setState in effect — this is
-  // the classic "derived reset" pattern that the lint plugin can't
-  // distinguish from a cascading-render bug.
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [active, committedQuery]);
+  const showMore = useCallback(() => {
+    setPagination((current) => ({
+      key: currentPageKey,
+      count: (current.key === currentPageKey ? current.count : PAGE_SIZE) + PAGE_SIZE,
+    }));
+  }, [currentPageKey]);
 
   // Keep ?q=... in sync with the committed search query. We use replace
   // (not push) to avoid polluting the browser history on every debounced
@@ -198,7 +202,7 @@ export default function BlogIndex() {
               <button
                 type="button"
                 className="btn btn-secondary btn-lg"
-                onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+                onClick={showMore}
               >
                 Load more posts ({filtered.length - visibleCount} more)
               </button>
