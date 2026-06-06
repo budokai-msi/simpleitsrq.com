@@ -113,20 +113,26 @@ describe("oauth — pure URL helpers", () => {
       expect(appBaseUrl(req)).toBe("https://simpleitsrq.com");
     });
 
-    it("reads x-forwarded-proto and x-forwarded-host when APP_URL is unset", () => {
+    it("ignores forwarded host/proto spoofing when APP_URL is unset", () => {
       delete process.env.APP_URL;
-      const req = mkRequest("http://internal/x", {
+      const req = mkRequest("https://simpleitsrq.com/x", {
         "x-forwarded-proto": "https",
-        "x-forwarded-host": "simpleitsrq.com",
-        host: "internal",
+        "x-forwarded-host": "evil.example",
+        host: "simpleitsrq.com",
       });
       expect(appBaseUrl(req)).toBe("https://simpleitsrq.com");
     });
 
-    it("falls back to request URL proto/host when no forwarded headers", () => {
+    it("falls back to the canonical site for untrusted request origins", () => {
       delete process.env.APP_URL;
       const req = mkRequest("https://example.org:8443/foo");
-      expect(appBaseUrl(req)).toBe("https://example.org:8443");
+      expect(appBaseUrl(req)).toBe("https://simpleitsrq.com");
+    });
+
+    it("allows Vercel deployment origins for previews", () => {
+      delete process.env.APP_URL;
+      const req = mkRequest("https://simpleitsrq-preview-abc123.vercel.app/foo");
+      expect(appBaseUrl(req)).toBe("https://simpleitsrq-preview-abc123.vercel.app");
     });
   });
 

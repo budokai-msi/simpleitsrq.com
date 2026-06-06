@@ -16,6 +16,11 @@ import { isAdminEmail } from "./admin.js";
  */
 
 const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const DEFAULT_APP_URL = "https://simpleitsrq.com";
+const ALLOWED_APP_ORIGIN_EXACT = new Set([
+  "https://simpleitsrq.com",
+  "https://www.simpleitsrq.com",
+]);
 
 // Hard cap on every outbound call to an IdP. Without this, a hung token
 // endpoint would pin the serverless function until Vercel's global timeout.
@@ -55,19 +60,34 @@ export const PROVIDERS = {
 };
 
 /**
- * Derive the deployment's public base URL (no trailing slash). Prefers the
- * `APP_URL` env var, otherwise reconstructs from forwarded proto / host
- * headers.
+ * Derive the deployment's public base URL (no trailing slash). Never trusts
+ * client-controllable forwarded host/proto headers; unknown origins fall back
+ * to the canonical production site.
  *
  * @param {Request} request
  * @returns {string}
  */
+function cleanAllowedAppOrigin(value) {
+  try {
+    const url = new URL(value);
+    const origin = url.origin;
+    if (ALLOWED_APP_ORIGIN_EXACT.has(origin)) return origin;
+    if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin)) return origin;
+    if (process.env.NODE_ENV !== "production" && /^http:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?$/i.test(origin)) {
+      return origin;
+    }
+  } catch {
+    // Ignore malformed deployment URLs and fall back to the canonical site.
+  }
+  return null;
+}
+
 export function appBaseUrl(request) {
-  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
+  if (process.env.APP_URL) {
+    return cleanAllowedAppOrigin(process.env.APP_URL) || DEFAULT_APP_URL;
+  }
   const url = new URL(request.url);
-  const proto = request.headers.get("x-forwarded-proto") || url.protocol.replace(":", "");
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || url.host;
-  return `${proto}://${host}`;
+  return cleanAllowedAppOrigin(url.origin) || DEFAULT_APP_URL;
 }
 
 /**

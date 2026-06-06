@@ -1385,106 +1385,145 @@ function LeadgenScanApp() {
         ) : null}
 
         {scan && kept.length >= 5 ? (
-          <div className="leadgen-conversion-strip" role="region" aria-label="Next best conversion actions">
-            <div>
-              <span>Ready to launch</span>
-              <strong>{kept.length} reviewed businesses ready for a first campaign pass</strong>
-              <p>
-                At {dailyCap || 35}/day, this is about {projectedSendDays} send day
-                {projectedSendDays === 1 ? "" : "s"}. Recommended plan: {recommendedTier.name}.
-              </p>
-              {growthLimitExceeded ? (
-                <p className="leadgen-conversion-strip__warn">
-                  This reviewed set is above Growth capacity (500 records/month). Pro is the safer fit.
+          <div className="leadgen-action-drawer" role="region" aria-label="Next best conversion actions">
+            <details open={growthLimitExceeded || proCapacityWarning}>
+              <summary>
+                <span>Ready to launch</span>
+                <strong>{kept.length} reviewed businesses ready</strong>
+                <em>Details</em>
+              </summary>
+              <div className="leadgen-action-drawer__body">
+                <p>
+                  At {dailyCap || 35}/day, this is about {projectedSendDays} send day
+                  {projectedSendDays === 1 ? "" : "s"}. Recommended plan: {recommendedTier.name}.
                 </p>
-              ) : null}
-              {proCapacityWarning ? (
-                <p className="leadgen-conversion-strip__warn">
-                  This reviewed set is above Pro monthly capacity (5,000). Split by niche or request Enterprise onboarding.
-                </p>
-              ) : null}
-            </div>
-            <div className="leadgen-conversion-strip__actions">
-              <LeadgenPlanLink
-                tierId={recommendedTierId}
-                billing={recommendedBilling}
-                className="btn btn-primary btn-sm"
-                source="leadgen_scanner_recommended_plan"
-                context="scanner_conversion_strip"
-                ctaId="scanner_strip_recommended"
-                onClick={() => trackEvent("generate_lead", {
-                  source: "leadgen_scanner_recommended_plan",
-                  kept_count: kept.length,
-                  recommended_tier: recommendedTier.id,
-                  projected_days: projectedSendDays,
-                })}
-              >
-                {`Start ${recommendedTier.name}`}
-              </LeadgenPlanLink>
-              <Link
-                to={scannerDemoLink}
-                className="btn btn-secondary btn-sm"
-                data-leadgen-cta="scanner_strip_demo"
-                onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_demo", kept_count: kept.length })}
-              >
-                Review with us
-              </Link>
-              <Link
-                to={scannerWorkspaceLink}
-                className="btn btn-secondary btn-sm"
-                data-leadgen-cta="scanner_strip_workspace"
-                onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_workspace", kept_count: kept.length })}
-              >
-                Open workspace
-              </Link>
-              <a
-                href="#pricing"
-                className="btn btn-secondary btn-sm"
-                data-leadgen-cta="scanner_strip_pricing"
-                onClick={() => trackEvent("select_content", {
-                  content_type: "leadgen_scanner_conversion",
-                  destination: "pricing_section",
-                  kept_count: kept.length,
-                })}
-              >
-                Compare plans
-              </a>
-            </div>
+                {growthLimitExceeded ? (
+                  <p className="leadgen-action-drawer__warn">
+                    This reviewed set is above Growth capacity (500 records/month). Pro is the safer fit.
+                  </p>
+                ) : null}
+                {proCapacityWarning ? (
+                  <p className="leadgen-action-drawer__warn">
+                    This reviewed set is above Pro monthly capacity (5,000). Split by niche or request Enterprise onboarding.
+                  </p>
+                ) : null}
+                <div className="leadgen-action-drawer__actions">
+                  <Link
+                    to={scannerDemoLink}
+                    className="btn btn-secondary btn-sm"
+                    data-leadgen-cta="scanner_strip_demo"
+                    onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_demo", kept_count: kept.length })}
+                  >
+                    Review with us
+                  </Link>
+                  <Link
+                    to={scannerWorkspaceLink}
+                    className="btn btn-secondary btn-sm"
+                    data-leadgen-cta="scanner_strip_workspace"
+                    onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_ready_workspace", kept_count: kept.length })}
+                  >
+                    Open workspace
+                  </Link>
+                  <a
+                    href="#pricing"
+                    className="btn btn-secondary btn-sm"
+                    data-leadgen-cta="scanner_strip_pricing"
+                    onClick={() => trackEvent("select_content", {
+                      content_type: "leadgen_scanner_conversion",
+                      destination: "pricing_section",
+                      kept_count: kept.length,
+                    })}
+                  >
+                    Compare plans
+                  </a>
+                </div>
+              </div>
+            </details>
+            <LeadgenPlanLink
+              tierId={recommendedTierId}
+              billing={recommendedBilling}
+              className="btn btn-primary btn-sm leadgen-action-drawer__primary"
+              source="leadgen_scanner_recommended_plan"
+              context="scanner_conversion_strip"
+              ctaId="scanner_strip_recommended"
+              onClick={() => trackEvent("generate_lead", {
+                source: "leadgen_scanner_recommended_plan",
+                kept_count: kept.length,
+                recommended_tier: recommendedTier.id,
+                projected_days: projectedSendDays,
+              })}
+            >
+              {`Start ${recommendedTier.name}`}
+            </LeadgenPlanLink>
           </div>
         ) : null}
 
         {scan && kept.length < 5 ? (
-          <div className="leadgen-conversion-strip leadgen-conversion-strip--assist" role="region" aria-label="Recommended next action for this scan">
-            <div>
-              <span>Next best move</span>
-              <strong>
-                {rows.length
-                  ? `${kept.length} kept ${kept.length === 1 ? "business" : "businesses"} is too small for a campaign`
-                  : `No ${niche === "All" ? "public" : niche.toLowerCase()} records found in ${zip}`}
-              </strong>
-              <p>
-                {niche !== "All"
-                  ? `Broaden to all businesses in ${zip}, then filter from the larger market.`
-                  : "Try a nearby zip or send this view to the workspace for manual review."}
-              </p>
-            </div>
-            <div className="leadgen-conversion-strip__actions">
-              {niche !== "All" ? (
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  onClick={() => applyMarketRefinement("All")}
-                  disabled={busy}
-                >
-                  Broaden market
-                </button>
-              ) : null}
+          <div className="leadgen-action-drawer leadgen-action-drawer--assist" role="region" aria-label="Recommended next action for this scan">
+            <details>
+              <summary>
+                <span>Next best move</span>
+                <strong>
+                  {rows.length
+                    ? `${kept.length} kept ${kept.length === 1 ? "business" : "businesses"}`
+                    : `No ${niche === "All" ? "public" : niche.toLowerCase()} records found`}
+                </strong>
+                <em>Why?</em>
+              </summary>
+              <div className="leadgen-action-drawer__body">
+                <p>
+                  {niche !== "All"
+                    ? `A campaign needs more reviewed businesses. Broaden to all businesses in ${zip}, then filter from the larger market.`
+                    : "Try a nearby zip or send this view to the workspace for manual review."}
+                </p>
+                <div className="leadgen-action-drawer__actions">
+                  <Link
+                    to={scannerDemoLink}
+                    className="btn btn-secondary btn-sm"
+                    data-leadgen-cta="scanner_low_volume_demo"
+                    onClick={() => trackEvent("generate_lead", {
+                      source: "leadgen_scanner_low_volume_demo",
+                      kept_count: kept.length,
+                      matched_count: scan.matched,
+                      niche,
+                    })}
+                  >
+                    Ask for review
+                  </Link>
+                  {rows.length ? (
+                    <Link
+                      to={scannerWorkspaceLink}
+                      className="btn btn-secondary btn-sm"
+                      data-leadgen-cta="scanner_low_volume_workspace"
+                      onClick={() => trackEvent("generate_lead", {
+                        source: "leadgen_scanner_low_volume_workspace",
+                        kept_count: kept.length,
+                        matched_count: scan.matched,
+                        niche,
+                      })}
+                    >
+                      Open workspace
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            </details>
+            {niche !== "All" ? (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm leadgen-action-drawer__primary"
+                onClick={() => applyMarketRefinement("All")}
+                disabled={busy}
+              >
+                Broaden market
+              </button>
+            ) : (
               <Link
                 to={scannerDemoLink}
-                className="btn btn-secondary btn-sm"
-                data-leadgen-cta="scanner_low_volume_demo"
+                className="btn btn-primary btn-sm leadgen-action-drawer__primary"
+                data-leadgen-cta="scanner_low_volume_demo_primary"
                 onClick={() => trackEvent("generate_lead", {
-                  source: "leadgen_scanner_low_volume_demo",
+                  source: "leadgen_scanner_low_volume_demo_primary",
                   kept_count: kept.length,
                   matched_count: scan.matched,
                   niche,
@@ -1492,22 +1531,7 @@ function LeadgenScanApp() {
               >
                 Ask for review
               </Link>
-              {rows.length ? (
-                <Link
-                  to={scannerWorkspaceLink}
-                  className="btn btn-secondary btn-sm"
-                  data-leadgen-cta="scanner_low_volume_workspace"
-                  onClick={() => trackEvent("generate_lead", {
-                    source: "leadgen_scanner_low_volume_workspace",
-                    kept_count: kept.length,
-                    matched_count: scan.matched,
-                    niche,
-                  })}
-                >
-                  Open workspace
-                </Link>
-              ) : null}
-            </div>
+            )}
           </div>
         ) : null}
       </div>
