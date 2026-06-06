@@ -1125,41 +1125,27 @@
   }
 }
 
-/* Stat band */
-.leadgen-statband-section { padding: 2rem 0; }
-.leadgen-statband { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--syn-border, #e5e7eb); background: var(--syn-surface, #fff); }
-.leadgen-statband__cell { padding: 24px; border-right: 1px solid var(--syn-border, #e5e7eb); }
-.leadgen-statband__cell:last-child { border-right: none; }
-.leadgen-statband__num { font-size: 2rem; font-weight: 800; color: var(--text-1, #111827); letter-spacing: -0.02em; line-height: 1; }
-.leadgen-statband__label { font-size: 0.85rem; color: var(--text-muted, #6b7280); margin-top: 6px; font-weight: 500; }
-@media (max-width: 720px) { .leadgen-statband { grid-template-columns: repeat(2, 1fr); } .leadgen-statband__cell:nth-child(2) { border-right: none; } .leadgen-statband__cell:nth-child(1), .leadgen-statband__cell:nth-child(2) { border-bottom: 1px solid var(--syn-border, #e5e7eb); } }
-[data-theme="dark"] .leadgen-statband__num { color: #7DB7E6; }
-
-/* Workspace proof */
-.leadgen-workspace__grid {
+.leadgen-product-focus__grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(420px, 1.18fr);
-  gap: 2rem;
+  grid-template-columns: minmax(0, 0.86fr) minmax(360px, 1.14fr);
+  gap: 24px;
   align-items: start;
 }
-.leadgen-workspace__copy {
-  max-width: 560px;
-}
-.leadgen-workspace__flow {
+.leadgen-product-rules {
   display: grid;
   gap: 10px;
 }
-.leadgen-workspace__step {
+.leadgen-product-rule {
   display: grid;
-  grid-template-columns: 34px 42px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
   align-items: start;
   padding: 16px;
   border: 1px solid var(--syn-border, #e5e7eb);
   border-radius: 8px;
   background: var(--syn-surface, #fff);
 }
-.leadgen-workspace__num {
+.leadgen-product-rule > span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1172,66 +1158,22 @@
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
-.leadgen-workspace__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: rgba(17,24,39,0.08);
-  color: #111827;
-}
-.leadgen-workspace__step h3 {
+.leadgen-product-rule h3 {
   margin: 0 0 4px;
   color: var(--text-1, #111827);
   font-size: 0.98rem;
 }
-.leadgen-workspace__step p {
+.leadgen-product-rule p {
   margin: 0;
   color: var(--text-muted, #6b7280);
   font-size: 0.9rem;
   line-height: 1.55;
 }
-@media (max-width: 960px) {
-  .leadgen-workspace__grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 560px) {
-  .leadgen-workspace__step {
-    grid-template-columns: 30px minmax(0, 1fr);
-  }
-  .leadgen-workspace__icon {
-    grid-column: 1;
-    grid-row: 2;
-    width: 30px;
-    height: 30px;
+@media (max-width: 900px) {
+  .leadgen-product-focus__grid {
+    grid-template-columns: 1fr;
   }
 }
-
-/* Steps */
-.leadgen-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
-.leadgen-step { padding: 24px; border: 1px solid var(--syn-border, #e5e7eb); border-radius: 12px; background: var(--syn-surface, #fff); }
-.leadgen-step__icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(17,24,39,0.08); color: var(--text-1, #111827); margin-bottom: 12px; }
-.leadgen-step__title { font-size: 0.95rem; font-weight: 700; margin: 0 0 6px; }
-.leadgen-step__body { font-size: 0.88rem; color: var(--text-muted, #6b7280); margin: 0; line-height: 1.55; }
-@media (max-width: 960px) { .leadgen-steps { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 520px) { .leadgen-steps { grid-template-columns: 1fr; } }
-
-/* Features */
-.leadgen-features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 2rem; }
-.leadgen-feature { padding: 24px; border: 1px solid var(--syn-border, #e5e7eb); border-radius: 12px; background: var(--syn-surface, #fff); transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease; }
-.leadgen-feature:hover { border-color: var(--text-1, #111827); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(17,24,39,0.08); }
-.leadgen-feature__icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(17,24,39,0.08); color: var(--text-1, #111827); margin-bottom: 14px; }
-.leadgen-feature__title { font-size: 1rem; font-weight: 700; margin: 0 0 8px; }
-.leadgen-feature__body { font-size: 0.92rem; color: var(--text-muted, #6b7280); margin: 0; line-height: 1.6; }
-@media (max-width: 960px) { .leadgen-features { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .leadgen-features { grid-template-columns: 1fr; } }
-
-/* Compliance */
-.leadgen-compliance-list { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
-.leadgen-compliance-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.92rem; line-height: 1.55; color: var(--text-1, #111827); }
-.leadgen-compliance-list svg { flex-shrink: 0; margin-top: 3px; color: var(--text-1, #111827); }
-@media (max-width: 720px) { .leadgen-compliance-list { grid-template-columns: 1fr; } }
 
 /* Pricing */
 .leadgen-billing-toggle { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding: 4px; border-radius: 999px; background: var(--syn-surface-muted, #f3f4f6); border: 1px solid var(--syn-border, #e5e7eb); margin: 1.5rem 0; max-width: 100%; }
@@ -1262,13 +1204,6 @@
 
 [data-theme="dark"] .leadgen-tier { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); }
 [data-theme="dark"] .leadgen-tier__price-num, [data-theme="dark"] .leadgen-tier__price-custom { color: #E8EEF6; }
-[data-theme="dark"] .leadgen-step, [data-theme="dark"] .leadgen-feature, [data-theme="dark"] .leadgen-statband { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); }
-[data-theme="dark"] .leadgen-statband__cell { border-right-color: rgba(255,255,255,0.08); }
-
-/* Final CTA */
-.leadgen-final-cta { background: linear-gradient(135deg, rgba(17,24,39,0.06) 0%, rgba(107,114,128,0.06) 100%); }
-[data-theme="dark"] .leadgen-final-cta { background: linear-gradient(135deg, rgba(17,24,39,0.12) 0%, rgba(107,114,128,0.12) 100%); }
-
 /* =====================================================================
    LEADGEN ADMIN — internal /portal/leadgen polish
    ===================================================================== */
@@ -1357,25 +1292,18 @@
 [data-theme="dark"] .leadgen-hero__trust,
 [data-theme="dark"] .leadgen-hero__offer span,
 [data-theme="dark"] .leadgen-product-rule p,
-[data-theme="dark"] .leadgen-workspace__step p,
 [data-theme="dark"] .leadgen-tier__price-currency,
 [data-theme="dark"] .leadgen-tier__price-suffix,
 [data-theme="dark"] .leadgen-tier__blurb,
-[data-theme="dark"] .leadgen-tier__fineprint,
-[data-theme="dark"] .leadgen-step__body,
-[data-theme="dark"] .leadgen-feature__body {
+[data-theme="dark"] .leadgen-tier__fineprint {
   color: #B4BAC4;
 }
 [data-theme="dark"] .leadgen-hero__trust svg,
-[data-theme="dark"] .leadgen-step__icon,
-[data-theme="dark"] .leadgen-feature__icon,
-[data-theme="dark"] .leadgen-tier__features svg,
-[data-theme="dark"] .leadgen-compliance-list svg {
+[data-theme="dark"] .leadgen-tier__features svg {
   color: #F4F5F7;
 }
 [data-theme="dark"] .leadgen-hero__offer,
-[data-theme="dark"] .leadgen-product-rule,
-[data-theme="dark"] .leadgen-workspace__step {
+[data-theme="dark"] .leadgen-product-rule {
   background: #0B0D10;
   border-color: #F4F5F7;
 }
@@ -1384,19 +1312,12 @@
 }
 [data-theme="dark"] .leadgen-hero__offer strong,
 [data-theme="dark"] .leadgen-product-rule h3,
-[data-theme="dark"] .leadgen-workspace__step h3,
 [data-theme="dark"] .leadgen-tier__name,
-[data-theme="dark"] .leadgen-tier__features li,
-[data-theme="dark"] .leadgen-feature__title,
-[data-theme="dark"] .leadgen-step__title,
-[data-theme="dark"] .leadgen-compliance-list li {
+[data-theme="dark"] .leadgen-tier__features li {
   color: #F4F5F7;
 }
 [data-theme="dark"] .leadgen-product-rule,
-[data-theme="dark"] .leadgen-workspace__step,
-[data-theme="dark"] .leadgen-tier,
-[data-theme="dark"] .leadgen-step,
-[data-theme="dark"] .leadgen-feature {
+[data-theme="dark"] .leadgen-tier {
   background: #11151B;
   border-color: #353B45;
 }
