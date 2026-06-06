@@ -2601,7 +2601,7 @@ async function handleOpsStatus(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
 
-  const [auditCols, feedTable, feedAgg, chainSnapshot] = await Promise.all([
+  const [auditCols, feedTable, feedAgg, chainSnapshot, dbPing, criticalHour] = await Promise.all([
     sql`
       SELECT column_name, data_type, character_maximum_length
       FROM information_schema.columns
@@ -2622,6 +2622,13 @@ async function handleOpsStatus(session) {
              COUNT(*) FILTER (WHERE row_hash IS NOT NULL)::int AS chained
       FROM security_events
     `.catch(() => [{ total: 0, chained: 0 }]),
+    sql`SELECT 1 AS ping`
+      .then((r) => ({ status: r.length > 0 ? "connected" : "no_response" }))
+      .catch(() => ({ status: "error" })),
+    sql`
+      SELECT COUNT(*)::int AS cnt FROM security_events
+      WHERE severity = 'critical' AND ts > now() - interval '1 hour'
+    `.then((r) => Number(r[0]?.cnt || 0)).catch(() => -1),
   ]);
 
   const hasChainCols = auditCols.length === 2;
@@ -2639,6 +2646,10 @@ async function handleOpsStatus(session) {
     chain: {
       totalRows: chainSnapshot[0]?.total || 0,
       chainedRows: chainSnapshot[0]?.chained || 0,
+    },
+    runtime: {
+      db: dbPing.status,
+      criticalEventsLastHour: criticalHour,
     },
     osint: {
       feeds: feedAgg,
@@ -3375,6 +3386,7 @@ async function handleNewsletterSend(session, request) {
 // ---------- health (unauthenticated, for external uptime monitors) ----------
 async function handleHealth() {
   const checks = { db: "unknown", criticalEvents: 0, ok: false };
+  const startedAt = Date.now();
   try {
     const r = await sql`SELECT 1 AS ping`;
     checks.db = r.length > 0 ? "connected" : "no_response";
@@ -3392,7 +3404,15 @@ async function handleHealth() {
     checks.criticalEvents = r[0]?.cnt || 0;
   } catch { checks.criticalEvents = -1; }
   checks.ok = checks.db === "connected" && checks.criticalEvents === 0;
-  return json(checks.ok ? 200 : 503, checks);
+  return json(checks.ok ? 200 : 503, {
+    ok: checks.ok,
+    status: checks.ok ? "ok" : "degraded",
+    service: "simpleitsrq-web",
+    uptime: {
+      latencyMs: Date.now() - startedAt,
+      timestamp: new Date().toISOString(),
+    },
+  });
 }
 
 // ---------- github diagnostic (admin only) ----------

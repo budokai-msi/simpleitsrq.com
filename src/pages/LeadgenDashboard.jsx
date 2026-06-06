@@ -653,8 +653,13 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
   const threatFeedCount = Number(opsStatus?.osint?.feeds?.length || 0);
   const threatTotalCidrs = Number(opsStatus?.osint?.totalCidrs || 0);
   const osintOldest = opsStatus?.osint?.oldestFetch || null;
-  const criticalLastHour = Number(runtimeHealth?.checks?.criticalEventsLastHour ?? 0);
-  const dbHealth = runtimeHealth?.checks?.db || "unknown";
+  const criticalLastHour = Number(
+    opsStatus?.runtime?.criticalEventsLastHour
+      ?? runtimeHealth?.checks?.criticalEventsLastHour
+      ?? 0,
+  );
+  const dbHealth = opsStatus?.runtime?.db || runtimeHealth?.checks?.db || (runtimeHealth?.ok ? "healthy" : "unknown");
+  const dbHealthGood = dbHealth === "connected" || dbHealth === "healthy";
   const stages = [
     {
       icon: Search,
@@ -732,8 +737,8 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
             launch a controlled campaign from one workspace.
           </p>
           <div className="leadgen-console-health" role="status" aria-live="polite">
-            <span className={`leadgen-status-chip ${dbHealth === "connected" ? "leadgen-status-chip--good" : "leadgen-status-chip--bad"}`}>
-              DB {dbHealth === "connected" ? "connected" : dbHealth}
+            <span className={`leadgen-status-chip ${dbHealthGood ? "leadgen-status-chip--good" : "leadgen-status-chip--bad"}`}>
+              DB {dbHealth}
             </span>
             <span className={`leadgen-status-chip ${criticalLastHour > 0 ? "leadgen-status-chip--bad" : "leadgen-status-chip--good"}`}>
               {criticalLastHour} critical events / hour
