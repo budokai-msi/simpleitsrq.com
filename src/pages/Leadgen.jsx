@@ -2,8 +2,7 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } f
 import "leaflet/dist/leaflet.css";
 import { Link } from "../lib/Link";
 import {
-  ArrowRight, Check, MapPin, Database, Mail, ShieldCheck,
-  Filter, Send, BarChart3, Building2,
+  ArrowRight, Check, Database, Mail, Building2,
   Search, Info,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
@@ -43,7 +42,7 @@ const TIERS = [
     name: "Growth",
     monthly: 19,
     annual: 15,
-    blurb: "The focused paid test: one local niche, reviewed before sending.",
+    blurb: "One zip, one service category, reviewed before outreach.",
     cta: "Start Growth",
     ctaHref: "/book?topic=leadgen-growth&utm_source=leadgen_page&utm_medium=pricing_card&utm_campaign=growth",
     stripeMonthly: import.meta.env.VITE_LEADGEN_GROWTH_MONTHLY_URL || LEADGEN_STRIPE_LINKS.growth.monthly,
@@ -53,7 +52,7 @@ const TIERS = [
     features: [
       "1 zip-radius search per day",
       "Up to 500 verified business records / month",
-      "1 active outreach campaign",
+      "1 reviewed outreach campaign",
       "Industry & sub-industry filters",
       "Per-domain throttling + reply detection",
       "CSV + Google Sheets export",
@@ -65,7 +64,7 @@ const TIERS = [
     name: "Sample",
     monthly: 0,
     annual: 0,
-    blurb: "A small inspection sample. Useful, but not the product.",
+    blurb: "A quick look before you pay.",
     cta: "Request sample",
     ctaHref: "/book?topic=leadgen-free&utm_source=leadgen_page&utm_medium=pricing_card&utm_campaign=sample",
     stripeMonthly: null,
@@ -85,7 +84,7 @@ const TIERS = [
     name: "Pro",
     monthly: 99,
     annual: 79,
-    blurb: "For repeat campaigns across several territories or niches.",
+    blurb: "For repeated scans across several local markets.",
     cta: "Start Pro",
     ctaHref: "/book?topic=leadgen-pro&utm_source=leadgen_page&utm_medium=pricing_card&utm_campaign=pro",
     stripeMonthly: import.meta.env.VITE_LEADGEN_PRO_MONTHLY_URL || LEADGEN_STRIPE_LINKS.pro.monthly,
@@ -104,100 +103,23 @@ const TIERS = [
   },
 ];
 
-const FEATURES = [
-  {
-    Icon: MapPin,
-    title: "Public business records",
-    body: "Start with OpenStreetMap business records, keep the source ID, and let you inspect where the record came from before outreach.",
-  },
-  {
-    Icon: Database,
-    title: "Published contact emails",
-    body: "Find contact emails from business websites and run basic deliverability checks before a contact lands in the campaign queue.",
-  },
-  {
-    Icon: Filter,
-    title: "Narrow local targeting",
-    body: "Pick a zip code and one business type so the campaign stays specific enough to write a useful offer.",
-  },
-  {
-    Icon: Send,
-    title: "Capped sending",
-    body: "Set daily send caps, include an unsubscribe link and physical address, and pause campaigns that start bouncing.",
-  },
-  {
-    Icon: BarChart3,
-    title: "Reply tracking",
-    body: "Track opens, clicks, replies, and unsubscribes so you know whether the niche is worth another campaign.",
-  },
-  {
-    Icon: ShieldCheck,
-    title: "Exports and source fields",
-    body: "Export the list with source fields and campaign status so you can review the work outside the dashboard.",
-  },
-];
-
-const STEPS = [
-  { Icon: MapPin, label: "1. Pick a local market", body: "Choose one zip code and one business type, such as dental offices in 34237 or contractors in Bradenton." },
-  { Icon: Mail,   label: "2. Build the list", body: "Pull public business records, find published contact emails, and remove obvious duplicates before export or outreach." },
-  { Icon: Send,   label: "3. Review before sending", body: "Check the offer, sender, footer, unsubscribe link, and daily cap before the first email leaves." },
-  { Icon: BarChart3, label: "4. Follow the replies", body: "Watch replies, clicks, and unsubscribes so you can decide whether to keep the niche, change the offer, or stop." },
-];
-
-const COMPLIANCE = [
-  "Physical mailing address and unsubscribe link on outreach emails",
-  "No purchased email lists",
-  "OpenStreetMap source IDs retained where available",
-  "Daily send caps by plan",
-  "Campaigns pause when bounce problems show up",
-  "First campaign reviewed before launch",
-];
-
 const PROOF_POINTS = [
-  { label: "Product", value: "Growth", detail: "The default first paid test" },
-  { label: "Scope", value: "1 zip + 1 niche", detail: "No broad spray campaigns" },
-  { label: "Safety", value: "35/day cap", detail: "Review before the first send" },
-  { label: "Price", value: "$19/mo", detail: "Upgrade only after it proves useful" },
+  { label: "Best for", value: "Local services", detail: "IT support, repair, cameras, Wi-Fi, trades" },
+  { label: "Start with", value: "1 zip", detail: "Keep the market small enough to review" },
+  { label: "First pass", value: "35/day", detail: "Capped outreach, not a blast list" },
+  { label: "Price", value: "$19/mo", detail: "Cancel if the niche is not useful" },
 ];
 
-const PRODUCT_RULES = [
-  { title: "One market", body: "Pick a zip code or tight service area. Sarasota dentists, Bradenton contractors, Venice property managers - not everyone at once." },
-  { title: "One offer", body: "Use a plain first email tied to a real service. The system helps deliver it; it cannot save weak positioning." },
-  { title: "One review", body: "Before the first send, review source records, contact fields, unsubscribe footer, daily cap, and the actual email copy." },
+const SERVICE_USE_CASES = [
+  { title: "Computer repair", body: "Find offices, clinics, shops, and property managers near you that are likely to need device help." },
+  { title: "IT support", body: "Build a tight list for managed IT, Microsoft 365, backup, Wi-Fi, camera, and network offers." },
+  { title: "Local service work", body: "Use the same workflow for trades, healthcare vendors, hospitality, and other repeatable local services." },
 ];
 
 const EMPTY_SCAN_STEPS = [
-  { label: "1. Scan", body: "Pull public businesses for one zip and customer type." },
-  { label: "2. Review", body: "Keep, maybe, or reject rows before export or outreach." },
-  { label: "3. Launch", body: "Move reviewed leads into workspace, export CSV, or book a review." },
-];
-
-const WORKSPACE_FLOW = [
-  {
-    Icon: Search,
-    title: "Discover",
-    body: "Enter a zip code and niche. The workspace queues a local business crawl and keeps source fields with every record.",
-  },
-  {
-    Icon: Mail,
-    title: "Crawl emails",
-    body: "Scan business websites for published contact emails, then separate deliverable contacts from no-contact records.",
-  },
-  {
-    Icon: Filter,
-    title: "Review",
-    body: "Tag, reject, update, or export businesses before a campaign can touch the list.",
-  },
-  {
-    Icon: Send,
-    title: "Campaigns",
-    body: "Write with the AI helper, send a test, set the daily cap, and start only the reviewed campaign.",
-  },
-  {
-    Icon: BarChart3,
-    title: "Jobs and insights",
-    body: "Watch queued jobs, sends, opens, clicks, unsubscribes, and which local niche is worth another pass.",
-  },
+  { label: "1. Scan", body: "Enter a zip and service category." },
+  { label: "2. Keep", body: "Review the businesses worth contacting." },
+  { label: "3. Act", body: "Export, open workspace, or book help." },
 ];
 
 const PUBLIC_NICHES = [
@@ -218,15 +140,15 @@ const SCAN_CACHE_TTL = 5 * 60 * 1000;
 const SCANNER_CONTEXT = [
   {
     title: "Public records",
-    body: "The scan starts from public business records, then keeps the source URL visible so you can audit the list.",
+    body: "Business records come from public sources and keep source links visible.",
   },
   {
     title: "Human review",
-    body: "Nothing here means 'send now'. Keep, maybe, or reject each business before it reaches a campaign.",
+    body: "Keep, maybe, or reject rows before export or outreach.",
   },
   {
     title: "Daily cap",
-    body: "The daily cap turns a list into a small test instead of a broad spray campaign.",
+    body: "Small batches keep the first test controlled.",
   },
 ];
 
@@ -239,15 +161,15 @@ const REVIEW_COPY = {
 const LEADGEN_FAQS = [
   {
     q: "Can I search any U.S. zip code?",
-    a: "Yes. Enter any 5-digit U.S. zip code, pick an industry niche, and run the scan.",
+    a: "Yes. Enter a 5-digit U.S. zip, choose a service category, and run the scan.",
   },
   {
     q: "Is this hard-coded to Sarasota, Bradenton, or Venice?",
-    a: "No. Enter any supported 5-digit zip, choose a niche, and the scanner works from that market. Suggested niches only refine the zip you entered.",
+    a: "No. Those are just familiar examples. The scanner follows the zip code you enter.",
   },
   {
-    q: "What happens if the map does not load?",
-    a: "You can still review, filter, and export the full result list. Mapping is optional to the workflow.",
+    q: "Will this book jobs by itself?",
+    a: "No. It builds a local list and keeps outreach controlled. The offer, follow-up, and sales call still matter.",
   },
 ];
 
@@ -1194,10 +1116,10 @@ function LeadgenScanApp() {
         </div>
 
         <div className="leadgen-app-title">
-          <h1 className="display">Find local leads by zip.</h1>
+          <h1 className="display">Find local service leads by zip.</h1>
           <p>
-            Scan public records, inspect the map, keep the right businesses, then export
-            or move the reviewed list into a capped campaign.
+            Scan nearby businesses, review the map, keep the ones worth contacting,
+            then export the list or book help building the first campaign.
           </p>
         </div>
 
@@ -1890,7 +1812,7 @@ export default function Leadgen() {
   useSEO({
     title: "Get Local Leads | Simple IT SRQ",
     description:
-      "Run a small local lead test: one zip, one business type, verified contacts, capped sends, and reply tracking from $19/month.",
+      "Scan one local zip, review nearby businesses, and build a practical lead list for computer repair, IT support, and local service work.",
     canonical: `${SITE_URL}/leadgen`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [
@@ -1966,7 +1888,7 @@ export default function Leadgen() {
   }, []);
 
   useEffect(() => {
-    const ids = ["pricing", "workspace", "faq", "final-cta"];
+    const ids = ["pricing", "faq"];
     const nodes = ids.map((id) => document.getElementById(id)).filter(Boolean);
     if (!nodes.length) return undefined;
     const observer = new IntersectionObserver((entries) => {
@@ -1999,15 +1921,15 @@ export default function Leadgen() {
       <section className="section leadgen-product-focus">
         <div className="container leadgen-product-focus__grid">
           <div>
-            <h2 className="title-1">The product is the first paid test.</h2>
+            <h2 className="title-1">Built for service calls, not content fluff.</h2>
             <p className="lede">
-              Not a CRM. Not a social scheduler. Not a promise of booked calls.
-              Growth is the controlled workflow that tells you whether a local
-              niche is worth pursuing before you spend real ad money.
+              If you sell computer repair, IT support, cameras, Wi-Fi, phones,
+              or other local service work, start with one zip and a list you can
+              actually review.
             </p>
           </div>
           <div className="leadgen-product-rules">
-            {PRODUCT_RULES.map((rule, index) => (
+            {SERVICE_USE_CASES.map((rule, index) => (
               <article key={rule.title} className="leadgen-product-rule">
                 <span>{index + 1}</span>
                 <div>
@@ -2020,132 +1942,14 @@ export default function Leadgen() {
         </div>
       </section>
 
-      <LeadgenWorkspaceSection />
-
-      {/* Operating rules */}
-      <section className="section leadgen-statband-section">
-        <div className="container">
-          <div className="leadgen-statband">
-            <div className="leadgen-statband__cell">
-              <div className="leadgen-statband__num">1</div>
-              <div className="leadgen-statband__label">Zip code to start</div>
-            </div>
-            <div className="leadgen-statband__cell">
-              <div className="leadgen-statband__num">1</div>
-              <div className="leadgen-statband__label">Business type to target</div>
-            </div>
-            <div className="leadgen-statband__cell">
-              <div className="leadgen-statband__num">35</div>
-              <div className="leadgen-statband__label">Default daily send cap</div>
-            </div>
-            <div className="leadgen-statband__cell">
-              <div className="leadgen-statband__num">$19</div>
-              <div className="leadgen-statband__label">First paid test</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="section section-alt">
-        <div className="container">
-          <div className="section-head" style={{ maxWidth: 720 }}>
-            <span className="eyebrow">How it works</span>
-            <h2 className="title-1">Four steps from a local market to a real reply.</h2>
-          </div>
-          <div className="leadgen-steps">
-            {STEPS.map((s) => (
-              <div key={s.label} className="leadgen-step">
-                <div className="leadgen-step__icon"><s.Icon size={22} /></div>
-                <h3 className="leadgen-step__title">{s.label}</h3>
-                <p className="leadgen-step__body">{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Feature grid */}
-      <section className="section">
-        <div className="container">
-          <div className="section-head" style={{ maxWidth: 720 }}>
-            <span className="eyebrow">Capabilities</span>
-            <h2 className="title-1">The parts that matter before you send.</h2>
-          </div>
-          <div className="leadgen-features">
-            {FEATURES.map((f) => (
-              <div key={f.title} className="leadgen-feature">
-                <div className="leadgen-feature__icon"><f.Icon size={20} /></div>
-                <h3 className="leadgen-feature__title">{f.title}</h3>
-                <p className="leadgen-feature__body">{f.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Compliance band */}
-      <section className="section section-alt leadgen-compliance">
-        <div className="container">
-          <div className="section-head" style={{ maxWidth: 760 }}>
-            <span className="eyebrow"><ShieldCheck size={14} style={{ display: "inline", marginRight: 6 }} /> Compliance & deliverability</span>
-            <h2 className="title-1">Built to keep the first test controlled.</h2>
-            <p className="lede">
-              The goal is not maximum volume. The goal is a narrow list, a clean
-              offer, a working unsubscribe path, and enough replies to know whether
-              the market is worth chasing.
-            </p>
-          </div>
-          <ul className="leadgen-compliance-list">
-            {COMPLIANCE.map((c) => (
-              <li key={c}><Check size={16} /> {c}</li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <LeadgenTestimonials />
-
-      <LeadgenLimits />
-
-      <section id="faq" className="section" aria-labelledby="leadgen-faq-title">
-        <div className="container" style={{ maxWidth: 820 }}>
-          <div className="section-head">
-            <span className="eyebrow">FAQ</span>
-            <h2 id="leadgen-faq-title" className="title-1">What people ask before starting.</h2>
-          </div>
-          <div className="faq-list">
-            {LEADGEN_FAQS.map((item) => (
-              <details
-                key={item.q}
-                className="faq-item"
-                onToggle={(e) => {
-                  if (e.currentTarget.open) {
-                    trackEvent("select_content", {
-                      content_type: "leadgen_faq_open",
-                      destination: item.q,
-                    });
-                  }
-                }}
-              >
-                <summary>{item.q}</summary>
-                <p>{item.a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Pricing */}
       <section id="pricing" className="section">
         <div className="container">
           <div className="section-head" style={{ maxWidth: 720 }}>
             <span className="eyebrow">Pricing</span>
-            <h2 className="title-1">Growth is the default. Everything else is secondary.</h2>
+            <h2 className="title-1">Start with the $19 local test.</h2>
             <p className="lede">
-              Start with Growth unless you only want to inspect a sample.
-              Pro is for teams already repeating the same workflow across
-              several local markets.
+              Run one real market before buying ads or chasing a giant list.
             </p>
           </div>
 
@@ -2230,33 +2034,30 @@ export default function Leadgen() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section id="final-cta" className="section section-alt leadgen-final-cta">
-        <div className="container" style={{ maxWidth: 720, textAlign: "center" }}>
-          <h2 className="title-1">Start with one local list.</h2>
-          <p className="lede" style={{ marginTop: 12 }}>
-            Growth is the fastest honest test: enough records to learn, enough
-            throttling to stay safe, and a one-business-day review before launch.
-          </p>
-          <div className="hero-ctas" style={{ justifyContent: "center", marginTop: 24 }}>
-            <LeadgenPlanLink
-              tierId="growth"
-              billing="monthly"
-              className="btn btn-primary btn-lg"
-              source="leadgen_final_cta_growth"
-              context="final_cta"
-              ctaId="final_cta_growth"
-            >
-              Start Growth
-            </LeadgenPlanLink>
-            <Link
-              to={BOOK_DEMO_URL}
-              className="btn btn-secondary btn-lg"
-              data-leadgen-cta="final_cta_demo"
-              onClick={() => trackEvent("generate_lead", { source: "leadgen_final_cta_demo" })}
-            >
-              Review my first niche
-            </Link>
+      <section id="faq" className="section section-alt" aria-labelledby="leadgen-faq-title">
+        <div className="container" style={{ maxWidth: 820 }}>
+          <div className="section-head">
+            <span className="eyebrow">FAQ</span>
+            <h2 id="leadgen-faq-title" className="title-1">Short answers.</h2>
+          </div>
+          <div className="faq-list">
+            {LEADGEN_FAQS.map((item) => (
+              <details
+                key={item.q}
+                className="faq-item"
+                onToggle={(e) => {
+                  if (e.currentTarget.open) {
+                    trackEvent("select_content", {
+                      content_type: "leadgen_faq_open",
+                      destination: item.q,
+                    });
+                  }
+                }}
+              >
+                <summary>{item.q}</summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
@@ -2280,135 +2081,6 @@ function LeadgenProofStrip() {
   );
 }
 
-function LeadgenWorkspaceSection() {
-  return (
-    <section id="workspace" className="section section-alt leadgen-workspace">
-      <div className="container leadgen-workspace__grid">
-        <div className="leadgen-workspace__copy">
-          <span className="eyebrow">Actual workspace</span>
-          <h2 className="title-1">This is the app behind the page.</h2>
-          <p className="lede">
-            The public page sells the paid test. The portal is where the work
-            happens: build the local list, verify contacts, review the campaign,
-            run the queue, and see whether the market responds.
-          </p>
-          <div className="hero-ctas">
-            <Link
-              to="/portal/leadgen?utm_source=leadgen_page&utm_medium=workspace_section&utm_campaign=workspace_handoff"
-              className="btn btn-primary"
-              onClick={() => trackEvent("generate_lead", { source: "leadgen_workspace_cta" })}
-            >
-              Open workspace <ArrowRight size={16} />
-            </Link>
-            <Link
-              to={BOOK_DEMO_URL}
-              className="btn btn-secondary"
-              onClick={() => trackEvent("generate_lead", { source: "leadgen_workspace_demo" })}
-            >
-              Review a niche
-            </Link>
-          </div>
-        </div>
-        <div className="leadgen-workspace__flow" aria-label="Leadgen workspace workflow">
-          {WORKSPACE_FLOW.map((item, index) => (
-            <article key={item.title} className="leadgen-workspace__step">
-              <span className="leadgen-workspace__num">{index + 1}</span>
-              <div className="leadgen-workspace__icon"><item.Icon size={18} /></div>
-              <div>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ---------- objections band ----------
-// We deliberately ship pre-launch principles instead of fabricated
-// testimonials. Real customer quotes go here once we have explicit
-// written permission per FTC 16 CFR §255 endorsement guides.
-const OBJECTIONS = [
-  {
-    Icon: ShieldCheck,
-    title: "What keeps this from getting sloppy?",
-    body: "Small batches, daily caps, unsubscribe links, a physical address, and a pre-send review on the first campaign. If the list or offer is weak, we say that before sending.",
-    color: "#111827",
-  },
-  {
-    Icon: Database,
-    title: "Where do the records actually come from?",
-    body: "Business records start with OpenStreetMap. Contact emails come from published business websites, contact pages, and mailto links, not purchased email lists.",
-    color: "#6b7280",
-  },
-  {
-    Icon: BarChart3,
-    title: "What should I expect?",
-    body: "A paid test should tell you whether one local niche responds to one clear offer. It is not a promise of customers; it is a faster way to stop guessing.",
-    color: "#9ca3af",
-  },
-];
-
-function LeadgenTestimonials() {
-  return (
-    <section className="section leadgen-testimonials">
-      <div className="container">
-        <div className="section-head" style={{ maxWidth: 720 }}>
-          <span className="eyebrow">Before you sign</span>
-          <h2 className="title-1">The questions we would ask before buying it.</h2>
-          <p className="lede">
-            No fake testimonials. No mystery database. This is the plain version
-            of what the tool does and where it can disappoint you.
-          </p>
-        </div>
-        <div className="leadgen-testimonials__grid">
-          {OBJECTIONS.map((o) => (
-            <div key={o.title} className="leadgen-testimonial">
-              <div
-                className="leadgen-testimonial__mark"
-                style={{ color: o.color, opacity: 0.85 }}
-                aria-hidden="true"
-              >
-                <o.Icon size={22} />
-              </div>
-              <h3 className="leadgen-objection__title">{o.title}</h3>
-              <p className="leadgen-objection__body">{o.body}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function LeadgenLimits() {
-  return (
-    <section className="section section-alt leadgen-limits">
-      <div className="container leadgen-limits__grid">
-        <div>
-          <span className="eyebrow">Honest limits</span>
-          <h2 className="title-1">This will not fix a bad offer.</h2>
-          <p className="lede">
-            Leadgen gives you local data and safer outbound mechanics.
-            It still needs a real offer, a narrow audience, and replies handled
-            by a human who knows the business.
-          </p>
-        </div>
-        <div className="leadgen-limits__panel">
-          <h3>What happens after signup</h3>
-          <ol>
-            <li>We review your target zip, niche, and offer within one business day.</li>
-            <li>You run the first Growth search and inspect the source records.</li>
-            <li>We tune the first campaign cap before anything sends.</li>
-            <li>You get replies in your inbox, plus open/click/reply tracking in the dashboard.</li>
-          </ol>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 // ---------- post-checkout success banner ----------
 // Stripe Payment Links redirect here with ?checkout=success&tier=...&cadence=...
