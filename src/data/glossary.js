@@ -8,8 +8,6 @@
 //   • action — 1-3 line "what to do" actionable next step
 //   • related — slugs of other glossary terms (drives multi-pageview
 //               sessions; AdSense impressions compound)
-//   • product — optional slug from src/data/products.js for an in-context
-//               sales CTA at the bottom of the entry
 //
 // Adding a new term: append to GLOSSARY. The /glossary index lists every
 // entry alphabetically; sitemap regen picks it up via prebuild.
@@ -23,7 +21,6 @@
  * @property {string} why          Florida-SMB relevance
  * @property {string} action       Actionable next step
  * @property {string[]} [related]  Slugs of other glossary entries
- * @property {string} [product]    Slug from src/data/products.js
  */
 
 /** @type {GlossaryEntry[]} */
