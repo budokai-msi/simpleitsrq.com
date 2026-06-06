@@ -178,6 +178,43 @@ describe("api/leadgen", () => {
     expect(data.bbox).toEqual([27.32, -82.54, 27.34, -82.52]);
   });
 
+  it("refreshes live OSM when cached rows miss the selected niche", async () => {
+    mockSql.mockResolvedValue([
+      {
+        name: "Cached Restaurant",
+        zip: "34239",
+        industry_group: "Food & Drink",
+        sub_industry: "Restaurant",
+        website: "https://restaurant.example",
+        lat: 27.32,
+        lng: -82.54,
+      },
+    ]);
+    mockDiscoverBusinessesByZip.mockResolvedValue({
+      ok: true,
+      businesses: [
+        {
+          name: "Live Electric",
+          zip: "34239",
+          industry: "craft:electrician",
+          lat: 27.31,
+          lng: -82.53,
+        },
+      ],
+      bbox: [27.3, -82.55, 27.35, -82.5],
+      centroid: { lat: 27.325, lng: -82.525 },
+    });
+
+    const response = await POST(mkRequest({ body: { zip: "34239", niche: "Trades", limit: 20 } }));
+    const data = await readJson(response);
+
+    expect(response.status).toBe(200);
+    expect(mockDiscoverBusinessesByZip).toHaveBeenCalledWith("34239");
+    expect(data.scan_source).toBe("live_osm_refresh");
+    expect(data.matched).toBe(1);
+    expect(data.rows[0].name).toBe("Live Electric");
+  });
+
   it("uses legacy cached records when taxonomy columns are missing", async () => {
     mockSql
       .mockRejectedValueOnce(new Error('column "industry_group" does not exist'))
