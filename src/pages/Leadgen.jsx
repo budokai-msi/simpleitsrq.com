@@ -20,13 +20,83 @@ const LEADGEN_STRIPE_LINKS = {
   },
 };
 
-function withLeadgenPromo(url) {
+function stripeSafeParam(value, fallback = "leadgen") {
+  const safe = String(value ?? "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 80);
+  return safe || fallback;
+}
+
+function leadgenCheckoutReference({
+  tierId = "growth",
+  billing = "monthly",
+  source = "leadgen",
+  checkoutContext = {},
+} = {}) {
+  const parts = [
+    "lg",
+    stripeSafeParam(tierId),
+    stripeSafeParam(billing),
+  ];
+  const zip = String(checkoutContext.zip || "").replace(/\D/g, "").slice(0, 5);
+  if (zip) parts.push("zip", zip);
+  if (checkoutContext.niche && checkoutContext.niche !== "All") {
+    parts.push("niche", stripeSafeParam(checkoutContext.niche));
+  }
+  const kept = Number(checkoutContext.kept);
+  if (Number.isFinite(kept) && kept >= 0) parts.push("kept", String(Math.round(kept)));
+  const dailyCap = Number(checkoutContext.dailyCap);
+  if (Number.isFinite(dailyCap) && dailyCap > 0) parts.push("cap", String(Math.round(dailyCap)));
+  parts.push("src", stripeSafeParam(source));
+  return parts.join("_").slice(0, 150);
+}
+
+function parseLeadgenCheckoutReference(value) {
+  const raw = stripeSafeParam(value, "");
+  if (!raw) return {};
+  const parts = raw.split("_").filter(Boolean);
+  const parsed = {};
+  if (parts.includes("growth")) parsed.tier = "growth";
+  else if (parts.includes("pro")) parsed.tier = "pro";
+  else if (parts.includes("sample") || parts.includes("free")) parsed.tier = "sample";
+  if (parts.includes("annual")) parsed.cadence = "annual";
+  else if (parts.includes("monthly")) parsed.cadence = "monthly";
+  const readAfter = (key) => {
+    const index = parts.indexOf(key);
+    return index >= 0 ? parts[index + 1] : "";
+  };
+  const zip = readAfter("zip");
+  if (/^\d{5}$/.test(zip)) parsed.zip = zip;
+  const kept = readAfter("kept");
+  if (/^\d+$/.test(kept)) parsed.kept = kept;
+  const nicheIndex = parts.indexOf("niche");
+  if (nicheIndex >= 0) {
+    const stopKeys = new Set(["kept", "cap", "src"]);
+    const nicheParts = [];
+    for (let i = nicheIndex + 1; i < parts.length && !stopKeys.has(parts[i]); i += 1) {
+      nicheParts.push(parts[i]);
+    }
+    if (nicheParts.length) parsed.niche = nicheParts.map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" ");
+  }
+  return parsed;
+}
+
+function withLeadgenCheckoutParams(url, options = {}) {
   if (!url) return "";
   try {
     const next = new URL(url);
     if (!next.searchParams.has("prefilled_promo_code")) {
       next.searchParams.set("prefilled_promo_code", LEADGEN_PROMO_CODE);
     }
+    const reference = leadgenCheckoutReference(options);
+    next.searchParams.set("client_reference_id", reference.slice(0, 200));
+    next.searchParams.set("utm_source", "simpleitsrq_com");
+    next.searchParams.set("utm_medium", "leadgen");
+    next.searchParams.set("utm_campaign", "leadgen_checkout");
+    next.searchParams.set("utm_content", reference.slice(0, 150));
     return next.toString();
   } catch {
     const glue = url.includes("?") ? "&" : "?";
@@ -209,16 +279,19 @@ function LeadgenPlanLink({
   source = "leadgen_pricing",
   context = null,
   ctaId = null,
+  checkoutContext = {},
 }) {
-  const tier = TIERS.find((t) => t.id === tierId) || TIERS[1];
+  const tier = TIERS.find((t) => t.id === tierId) || TIERS.find((t) => t.id === "growth") || TIERS[0];
   const rawStripeUrl = billing === "annual" ? tier.stripeAnnual : tier.stripeMonthly;
-  const stripeUrl = withLeadgenPromo(rawStripeUrl);
+  const checkoutReference = leadgenCheckoutReference({ tierId: tier.id, billing, source, checkoutContext });
+  const stripeUrl = withLeadgenCheckoutParams(rawStripeUrl, { tierId: tier.id, billing, source, checkoutContext });
   const onPlanClick = () => {
     trackEvent("begin_checkout", {
       plan: tier.id,
       billing_cycle: billing,
       value: tier.id === "free" ? 0 : (billing === "annual" ? tier.annual : tier.monthly),
       source,
+      checkout_reference: checkoutReference,
       ...(context ? { context } : {}),
     });
     if (typeof onClick === "function") onClick();
@@ -1100,6 +1173,13 @@ function LeadgenScanApp() {
     return `/book?${params.toString()}`;
   }, [scannerContextParams]);
 
+  const scannerCheckoutContext = useMemo(() => ({
+    zip,
+    niche,
+    kept: kept.length,
+    dailyCap,
+  }), [dailyCap, kept.length, niche, zip]);
+
   return (
     <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
       <div className="leadgen-app-panel leadgen-app-panel--control">
@@ -1385,7 +1465,7 @@ function LeadgenScanApp() {
         ) : null}
 
         {scan && kept.length >= 5 ? (
-          <div className="leadgen-action-drawer" role="region" aria-label="Next best conversion actions">
+          <div className="leadgen-action-drawer leadgen-action-drawer--compact" role="region" aria-label="Next best conversion actions">
             <details open={growthLimitExceeded || proCapacityWarning}>
               <summary>
                 <span>Ready to launch</span>
@@ -1446,6 +1526,7 @@ function LeadgenScanApp() {
               source="leadgen_scanner_recommended_plan"
               context="scanner_conversion_strip"
               ctaId="scanner_strip_recommended"
+              checkoutContext={scannerCheckoutContext}
               onClick={() => trackEvent("generate_lead", {
                 source: "leadgen_scanner_recommended_plan",
                 kept_count: kept.length,
@@ -1459,16 +1540,16 @@ function LeadgenScanApp() {
         ) : null}
 
         {scan && kept.length < 5 ? (
-          <div className="leadgen-action-drawer leadgen-action-drawer--assist" role="region" aria-label="Recommended next action for this scan">
-            <details>
+          <div className="leadgen-action-drawer leadgen-action-drawer--assist leadgen-action-drawer--compact" role="region" aria-label="Recommended next action for this scan">
+            <details open={!rows.length && niche === "All"}>
               <summary>
                 <span>Next best move</span>
                 <strong>
                   {rows.length
-                    ? `${kept.length} kept ${kept.length === 1 ? "business" : "businesses"}`
+                    ? `${kept.length} kept - broaden before sending`
                     : `No ${niche === "All" ? "public" : niche.toLowerCase()} records found`}
                 </strong>
-                <em>Why?</em>
+                <em>Details</em>
               </summary>
               <div className="leadgen-action-drawer__body">
                 <p>
@@ -1515,7 +1596,7 @@ function LeadgenScanApp() {
                 onClick={() => applyMarketRefinement("All")}
                 disabled={busy}
               >
-                Broaden market
+                Broaden
               </button>
             ) : (
               <Link
@@ -1553,6 +1634,7 @@ function LeadgenScanApp() {
                     source="leadgen_scanner_results_recommended"
                     context="results_header"
                     ctaId="scanner_results_recommended"
+                    checkoutContext={scannerCheckoutContext}
                     onClick={() => trackEvent("generate_lead", {
                       source: "leadgen_scanner_results_recommended",
                       kept_count: kept.length,
@@ -2017,8 +2099,8 @@ export default function Leadgen() {
                 <Currency value={billing === "annual" ? t.annual : t.monthly} />
                 <p className="leadgen-tier__blurb">{t.blurb}</p>
                 {(() => {
-                  const stripeUrl = withLeadgenPromo(billing === "annual" ? t.stripeAnnual : t.stripeMonthly);
-                  if (stripeUrl) {
+                  const rawStripeUrl = billing === "annual" ? t.stripeAnnual : t.stripeMonthly;
+                  if (rawStripeUrl) {
                     return (
                       <LeadgenPlanLink
                         tierId={t.id}
@@ -2106,23 +2188,27 @@ function LeadgenProofStrip() {
 }
 
 
-// ---------- post-checkout success banner ----------
-// Stripe Payment Links redirect here with ?checkout=success&tier=...&cadence=...
-// We strip the params after first render so a refresh doesn't re-show the banner.
+// ---------- post-checkout notice ----------
+// Stripe redirects can land here with ?checkout=success or ?checkout=cancelled.
+// We strip the transient checkout flags after first render so refresh/share stays clean.
 function LeadgenCheckoutSuccess() {
-  // Read the success params on first render via lazy initializer so we
-  // never call setState inside an effect (avoids the cascading-render
-  // lint and avoids a pointless re-render.
   const [state] = useState(() => {
     if (typeof window === "undefined") return null;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("checkout") !== "success") return null;
-    const tier = (params.get("tier") || "leadgen").toLowerCase();
-    const cadence = (params.get("cadence") || "").toLowerCase();
-    const zip = (params.get("zip") || "").replace(/\D/g, "").slice(0, 5);
-    const niche = params.get("niche") || "";
-    const kept = params.get("kept") || "";
+    const checkout = (params.get("checkout") || "").toLowerCase();
+    const isSuccess = checkout === "success";
+    const isCancelled = checkout === "cancelled" || checkout === "canceled" || checkout === "cancel";
+    if (!isSuccess && !isCancelled) return null;
+    const parsedReference = parseLeadgenCheckoutReference(
+      params.get("client_reference_id") || params.get("utm_content") || "",
+    );
+    const tier = (params.get("tier") || parsedReference.tier || "leadgen").toLowerCase();
+    const cadence = (params.get("cadence") || parsedReference.cadence || "").toLowerCase();
+    const zip = (params.get("zip") || parsedReference.zip || "").replace(/\D/g, "").slice(0, 5);
+    const niche = params.get("niche") || parsedReference.niche || "";
+    const kept = params.get("kept") || parsedReference.kept || "";
     return {
+      status: isSuccess ? "success" : "cancelled",
       tier,
       cadence,
       zip,
@@ -2139,6 +2225,7 @@ function LeadgenCheckoutSuccess() {
       params.delete("checkout");
       params.delete("tier");
       params.delete("cadence");
+      params.delete("client_reference_id");
       const qs = params.toString();
       const url = window.location.pathname + (qs ? `?${qs}` : "") + window.location.hash;
       window.history.replaceState(null, "", url);
@@ -2164,68 +2251,79 @@ function LeadgenCheckoutSuccess() {
   if (state.niche) workspaceParams.set("niche", state.niche);
   if (state.kept) workspaceParams.set("kept", state.kept);
   if (state.tier) workspaceParams.set("tier", state.tier);
+  workspaceParams.set("checkout_status", state.status);
   const workspaceHref = `/portal/leadgen?${workspaceParams.toString()}`;
+  const reviewParams = new URLSearchParams({
+    topic: state.status === "success" ? "leadgen-onboarding" : "leadgen-demo",
+    utm_source: "leadgen_checkout",
+    utm_medium: state.status,
+    utm_campaign: "leadgen_recovery",
+  });
+  if (state.zip) reviewParams.set("zip", state.zip);
+  if (state.niche) reviewParams.set("niche", state.niche);
+  if (state.kept) reviewParams.set("kept", state.kept);
+  const reviewHref = `/book?${reviewParams.toString()}`;
+  const noticeTitle = state.status === "success"
+    ? `You're in. Welcome to Leadgen ${tierLabel}${cadenceLabel ? ` - ${cadenceLabel}` : ""}.`
+    : "Checkout paused. No payment was completed.";
+  const noticeBody = state.status === "success"
+    ? "Your receipt is on its way from Stripe. Open the workspace with your market context, or book onboarding and we will review the first target list before anything sends."
+    : "Keep this scan open, ask for a quick review, or return to pricing when you are ready.";
+  const noticeEyebrow = state.status === "success" ? "Checkout complete" : "Checkout recovery";
 
   return (
     <div
       role="status"
       aria-live="polite"
-      style={{
-        background: "linear-gradient(135deg, #111827 0%, #374151 100%)",
-        color: "#fff",
-        padding: "20px 16px",
-        textAlign: "center",
-      }}
+      className={`leadgen-checkout-notice leadgen-checkout-notice--${state.status}`}
     >
-      <div style={{ maxWidth: 720, margin: "0 auto" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 8, fontWeight: 700, fontSize: "1.05rem" }}>
-          <Check size={20} aria-hidden="true" />
-          You&rsquo;re in. Welcome to Leadgen {tierLabel}{cadenceLabel ? ` - ${cadenceLabel}` : ""}.
+      <div className="leadgen-checkout-notice__inner">
+        <div className="leadgen-checkout-notice__copy">
+          <span className="leadgen-checkout-notice__eyebrow">{noticeEyebrow}</span>
+          <strong>
+            {state.status === "success" ? <Check size={18} aria-hidden="true" /> : null}
+            {noticeTitle}
+          </strong>
+          <p>{noticeBody}</p>
         </div>
-        <p style={{ margin: "4px 0 12px", fontSize: "0.95rem", opacity: 0.95, lineHeight: 1.5 }}>
-          Your receipt is on its way from Stripe. Open the workspace with your market context,
-          or book onboarding and we&rsquo;ll review the first target list before anything sends.
-        </p>
-        <div style={{ display: "inline-flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+        <div className="leadgen-checkout-notice__actions">
           <Link
             to={workspaceHref}
-            className="btn btn-secondary btn-sm"
-            style={{ background: "#fff", color: "#111827", borderColor: "#fff" }}
-            data-leadgen-cta="checkout_success_workspace"
+            className="btn btn-primary btn-sm"
+            data-leadgen-cta={`checkout_${state.status}_workspace`}
             onClick={() => trackEvent("generate_lead", {
-              source: "leadgen_checkout_success_workspace",
+              source: `leadgen_checkout_${state.status}_workspace`,
               plan: state.tier,
               billing_cycle: state.cadence,
             })}
           >
             Open workspace
           </Link>
-          <a
-            href={`mailto:hello@simpleitsrq.com?subject=Leadgen%20${tierLabel}%20onboarding`}
-            className="btn btn-secondary btn-sm"
-            style={{ background: "transparent", color: "#fff", borderColor: "rgba(255,255,255,0.7)" }}
-            data-leadgen-cta="checkout_success_email"
-            onClick={() => trackEvent("generate_lead", {
-              source: "leadgen_checkout_success_email",
-              plan: state.tier,
-              billing_cycle: state.cadence,
-            })}
-          >
-            Email us your priority list
-          </a>
           <Link
-            to="/book?topic=leadgen-onboarding"
+            to={reviewHref}
             className="btn btn-secondary btn-sm"
-            style={{ background: "transparent", color: "#fff", borderColor: "rgba(255,255,255,0.7)" }}
-            data-leadgen-cta="checkout_success_onboarding"
+            data-leadgen-cta={`checkout_${state.status}_review`}
             onClick={() => trackEvent("generate_lead", {
-              source: "leadgen_checkout_success_onboarding",
+              source: `leadgen_checkout_${state.status}_review`,
               plan: state.tier,
               billing_cycle: state.cadence,
             })}
           >
-            Book onboarding call
+            {state.status === "success" ? "Book onboarding" : "Ask for review"}
           </Link>
+          <a
+            href="#pricing"
+            className="btn btn-secondary btn-sm"
+            data-leadgen-cta={`checkout_${state.status}_pricing`}
+            onClick={() => trackEvent("select_content", {
+              content_type: "leadgen_checkout_notice",
+              destination: "pricing",
+              plan: state.tier,
+              billing_cycle: state.cadence,
+            })}
+          >
+            Pricing
+          </a>
         </div>
       </div>
     </div>
