@@ -683,6 +683,7 @@ function LeadgenScanApp() {
     const q = Number(raw);
     return raw && Number.isFinite(q) ? Math.max(500, Math.min(50000, Math.round(q))) : 2400;
   });
+  const [drawerOpenState, setDrawerOpenState] = useState({ key: "", ready: false, assist: false });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -712,6 +713,18 @@ function LeadgenScanApp() {
   const recommendedTier = TIERS.find((tier) => tier.id === recommendedTierId) || TIERS[0];
   const growthLimitExceeded = kept.length > 500;
   const proCapacityWarning = kept.length > 5000;
+  const drawerScanKey = scan ? [zip, niche, scan.matched ?? 0, rows.length].join(":") : "";
+  const defaultReadyDrawerOpen = Boolean(scan && kept.length >= 5 && (growthLimitExceeded || proCapacityWarning));
+  const defaultAssistDrawerOpen = Boolean(scan && kept.length < 5 && !rows.length && niche === "All");
+  const readyDrawerOpen = drawerOpenState.key === drawerScanKey ? drawerOpenState.ready : defaultReadyDrawerOpen;
+  const assistDrawerOpen = drawerOpenState.key === drawerScanKey ? drawerOpenState.assist : defaultAssistDrawerOpen;
+  const setActionDrawerOpen = (drawer, open) => {
+    setDrawerOpenState((current) => ({
+      key: drawerScanKey,
+      ready: drawer === "ready" ? open : (current.key === drawerScanKey ? current.ready : defaultReadyDrawerOpen),
+      assist: drawer === "assist" ? open : (current.key === drawerScanKey ? current.assist : defaultAssistDrawerOpen),
+    }));
+  };
   const readinessChecks = [
     {
       id: "offer",
@@ -782,6 +795,7 @@ function LeadgenScanApp() {
   const effectiveSelectedIndex = visibleRows.some((item) => item.index === selectedIndex)
     ? selectedIndex
     : visibleRows[0]?.index ?? null;
+
   useEffect(() => {
     if (!visibleRows.length) return undefined;
     const onKeyDown = (event) => {
@@ -1466,11 +1480,14 @@ function LeadgenScanApp() {
 
         {scan && kept.length >= 5 ? (
           <div className="leadgen-action-drawer leadgen-action-drawer--compact" role="region" aria-label="Next best conversion actions">
-            <details open={growthLimitExceeded || proCapacityWarning}>
+            <details
+              open={readyDrawerOpen}
+              onToggle={(event) => setActionDrawerOpen("ready", event.currentTarget.open)}
+            >
               <summary>
-                <span>Ready to launch</span>
-                <strong>{kept.length} reviewed businesses ready</strong>
-                <em>Details</em>
+                <span>Launch path</span>
+                <strong>{kept.length} reviewed - {projectedSendDays} send day{projectedSendDays === 1 ? "" : "s"}</strong>
+                <em>{readyDrawerOpen ? "Collapse" : "Expand"}</em>
               </summary>
               <div className="leadgen-action-drawer__body">
                 <p>
@@ -1541,20 +1558,23 @@ function LeadgenScanApp() {
 
         {scan && kept.length < 5 ? (
           <div className="leadgen-action-drawer leadgen-action-drawer--assist leadgen-action-drawer--compact" role="region" aria-label="Recommended next action for this scan">
-            <details open={!rows.length && niche === "All"}>
+            <details
+              open={assistDrawerOpen}
+              onToggle={(event) => setActionDrawerOpen("assist", event.currentTarget.open)}
+            >
               <summary>
-                <span>Next best move</span>
+                <span>Next step</span>
                 <strong>
                   {rows.length
-                    ? `${kept.length} kept - broaden before sending`
-                    : `No ${niche === "All" ? "public" : niche.toLowerCase()} records found`}
+                    ? `${kept.length} kept. Broaden this market.`
+                    : `No ${niche === "All" ? "public" : niche.toLowerCase()} records found.`}
                 </strong>
-                <em>Details</em>
+                <em>{assistDrawerOpen ? "Collapse" : "Expand"}</em>
               </summary>
               <div className="leadgen-action-drawer__body">
                 <p>
                   {niche !== "All"
-                    ? `A campaign needs more reviewed businesses. Broaden to all businesses in ${zip}, then filter from the larger market.`
+                    ? `Switch to all businesses in ${zip}, then narrow from a fuller list.`
                     : "Try a nearby zip or send this view to the workspace for manual review."}
                 </p>
                 <div className="leadgen-action-drawer__actions">
