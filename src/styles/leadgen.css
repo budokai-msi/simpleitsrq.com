@@ -765,44 +765,88 @@
   color: var(--lg-text);
   font-size: 0.86rem;
 }
-.leadgen-conversion-strip {
-  margin-top: 12px;
-  border: 1px solid var(--lg-border);
+.leadgen-action-drawer {
+  margin-top: 10px;
+  border: 1px solid var(--lg-border-soft);
   border-radius: 8px;
   background: var(--lg-panel-soft);
-  padding: 12px;
+  padding: 8px;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
+  gap: 8px;
+  align-items: start;
 }
-.leadgen-conversion-strip span {
-  display: block;
+.leadgen-action-drawer--assist {
+  border-color: color-mix(in srgb, var(--lg-text) 18%, var(--lg-border));
+  background: color-mix(in srgb, var(--lg-panel-soft) 88%, var(--lg-panel));
+}
+.leadgen-action-drawer details {
+  min-width: 0;
+}
+.leadgen-action-drawer summary {
+  min-height: 36px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+.leadgen-action-drawer summary::-webkit-details-marker {
+  display: none;
+}
+.leadgen-action-drawer summary:focus {
+  outline: none;
+}
+.leadgen-action-drawer summary:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 52%, transparent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.leadgen-action-drawer summary span {
   color: var(--lg-faint);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-.leadgen-conversion-strip strong {
-  display: block;
-  margin-top: 4px;
+.leadgen-action-drawer summary strong {
+  min-width: 0;
   color: var(--lg-text);
-  font-size: 0.96rem;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.leadgen-conversion-strip p {
-  margin: 6px 0 0;
+.leadgen-action-drawer summary em {
   color: var(--lg-muted);
-  font-size: 0.86rem;
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 800;
 }
-.leadgen-conversion-strip--assist {
-  border-color: color-mix(in srgb, var(--lg-text) 18%, var(--lg-border));
-  background: color-mix(in srgb, var(--lg-panel-soft) 82%, var(--lg-panel));
+.leadgen-action-drawer summary em::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 160ms ease;
 }
-.leadgen-conversion-strip--assist strong {
-  font-size: 0.92rem;
+.leadgen-action-drawer details[open] summary em::after {
+  transform: translateY(1px) rotate(225deg);
 }
-.leadgen-conversion-strip__warn {
+.leadgen-action-drawer__body {
+  padding: 6px 2px 2px;
+}
+.leadgen-action-drawer__body p {
+  margin: 0;
+  color: var(--lg-muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+.leadgen-action-drawer__warn {
   margin-top: 8px !important;
   padding: 8px 10px;
   border: 1px solid color-mix(in srgb, var(--warning, #ca8a04) 38%, var(--lg-border-soft));
@@ -810,13 +854,17 @@
   background: color-mix(in srgb, var(--warning, #ca8a04) 10%, var(--lg-panel));
   color: var(--lg-text) !important;
   font-size: 0.82rem !important;
-  line-height: 1.4;
 }
-.leadgen-conversion-strip__actions {
-  display: inline-flex;
+.leadgen-action-drawer__actions {
+  margin-top: 8px;
+  display: flex;
   gap: 8px;
   align-items: center;
   flex-wrap: wrap;
+}
+.leadgen-action-drawer__primary {
+  min-height: 36px;
+  white-space: nowrap;
 }
 .leadgen-app-results-head {
   justify-content: space-between;
@@ -1038,7 +1086,7 @@
   .leadgen-revenue-forecast__controls,
   .leadgen-revenue-forecast__kpis { grid-template-columns: 1fr 1fr; }
   .leadgen-revenue-forecast__planfit { grid-template-columns: 1fr 1fr; }
-  .leadgen-conversion-strip { grid-template-columns: 1fr; }
+  .leadgen-action-drawer { grid-template-columns: 1fr; }
   .leadgen-app-controls--primary { grid-template-columns: 1fr 1fr; }
   .leadgen-app-controls--primary .btn { grid-column: 1 / -1; }
   .leadgen-result-more-filters__grid { grid-template-columns: 1fr 1fr; }
@@ -1110,6 +1158,19 @@
   .leadgen-app-controls input,
   .leadgen-app-controls select {
     min-height: 42px;
+  }
+  .leadgen-action-drawer {
+    padding: 8px;
+  }
+  .leadgen-action-drawer summary {
+    grid-template-columns: 1fr auto;
+  }
+  .leadgen-action-drawer summary span {
+    display: none;
+  }
+  .leadgen-action-drawer__primary {
+    width: 100%;
+    justify-content: center;
   }
   .leadgen-market-builder {
     grid-template-columns: 1fr;

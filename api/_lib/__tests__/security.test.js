@@ -51,6 +51,17 @@ describe("clientIp", () => {
     expect(clientIp(req)).toBe("unknown");
   });
 
+  it("does not trust XFF in production when x-real-ip is absent", () => {
+    const previous = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    try {
+      const req = mkRequest({ "x-forwarded-for": "198.51.100.7, 10.0.0.1" });
+      expect(clientIp(req)).toBe("unknown");
+    } finally {
+      process.env.NODE_ENV = previous;
+    }
+  });
+
   it("handles an IPv6 address in x-real-ip", () => {
     const req = mkRequest({ "x-real-ip": "2001:db8::1" });
     expect(clientIp(req)).toBe("2001:db8::1");

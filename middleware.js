@@ -138,9 +138,11 @@ export const config = {
 };
 
 function getIp(request) {
-  // Prefer Vercel's authoritative header (not spoofable) over X-Forwarded-For.
+  // Prefer Vercel's authoritative header over X-Forwarded-For. In production,
+  // do not trust XFF if x-real-ip is absent; client-supplied XFF can poison
+  // blocklist/rate-limit decisions across proxy layers.
   return request.headers.get("x-real-ip")
-    || (request.headers.get("x-forwarded-for") || "").split(",")[0].trim()
+    || (process.env.NODE_ENV === "production" ? "" : (request.headers.get("x-forwarded-for") || "").split(",")[0].trim())
     || "unknown";
 }
 

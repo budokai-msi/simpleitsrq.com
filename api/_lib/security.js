@@ -63,6 +63,7 @@ export function clientIp(request) {
   // was the source of a rate-limit / blocklist bypass before this fix.
   const real = request.headers.get("x-real-ip");
   if (real) return real;
+  if (process.env.NODE_ENV === "production") return "unknown";
   const xff = request.headers.get("x-forwarded-for") || "";
   return xff.split(",")[0].trim() || "unknown";
 }
