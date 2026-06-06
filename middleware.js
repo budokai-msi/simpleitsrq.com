@@ -47,6 +47,14 @@ const SCANNER_PREFIXES = [
   "/wp-content/", "/wp-includes/",
 ];
 
+// Public uptime probes must be able to reach the health functions even if
+// a monitor IP appears in threat feeds or a recycled ISP address was blocked.
+const PUBLIC_HEALTH_PATHS = new Set([
+  "/api/health",
+  "/api/healthz",
+  "/api/healthcheck",
+]);
+
 function isScannerPath(pathname) {
   const lower = pathname.toLowerCase();
   if (SCANNER_TRAPS.has(lower)) return true;
@@ -420,6 +428,11 @@ export default async function middleware(request) {
 
   // Skip static assets.
   if (SKIP_EXTENSIONS.test(url.pathname)) return;
+
+  // Health endpoints are intentionally public and sanitized inside their
+  // route handlers. Let monitors and operators reach them before defensive
+  // blocklist/OSINT layers can turn app health into a false outage.
+  if (PUBLIC_HEALTH_PATHS.has(url.pathname.toLowerCase())) return;
 
   const ip = getIp(request);
   const geo = getGeo(request);
