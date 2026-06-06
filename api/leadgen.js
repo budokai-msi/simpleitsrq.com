@@ -78,6 +78,14 @@ function missingTaxonomyColumns(err) {
   return /column .*?(industry_group|sub_industry).*?does not exist/i.test(String(err?.message || err || ""));
 }
 
+function rowMatchesNiche(row, niche) {
+  if (!niche || niche === "All") return true;
+  const classified = row.industry_group
+    ? { industry: row.industry_group }
+    : classifyIndustry(row.industry);
+  return classified.industry === niche;
+}
+
 async function cachedBusinessesByZipLegacy(zip) {
   try {
     const rows = await sql`
@@ -125,9 +133,29 @@ async function cachedBusinessesByZip(zip) {
   }
 }
 
-async function discoverOrLoadBusinesses(zip) {
+async function discoverLiveBusinesses(zip, source = "live_osm") {
+  const discovered = await discoverBusinessesByZip(zip);
+  return {
+    ...discovered,
+    source,
+  };
+}
+
+async function discoverOrLoadBusinesses(zip, niche = "All") {
   const cachedRows = await cachedBusinessesByZip(zip);
   if (cachedRows.length) {
+    const cacheHasRequestedNiche = cachedRows.some((row) => rowMatchesNiche(row, niche));
+    if (!cacheHasRequestedNiche && niche !== "All") {
+      try {
+        const refreshed = await discoverLiveBusinesses(zip, "live_osm_refresh");
+        if (refreshed.ok && Array.isArray(refreshed.businesses) && refreshed.businesses.some((row) => rowMatchesNiche(row, niche))) {
+          return refreshed;
+        }
+      } catch (err) {
+        console.warn("[leadgen] live niche refresh failed; serving cached zip rows", err?.message || err);
+      }
+    }
+
     return {
       ok: true,
       source: "cache",
@@ -137,11 +165,7 @@ async function discoverOrLoadBusinesses(zip) {
     };
   }
 
-  const discovered = await discoverBusinessesByZip(zip);
-  return {
-    ...discovered,
-    source: "live_osm",
-  };
+  return discoverLiveBusinesses(zip);
 }
 
 export async function POST(request) {
@@ -187,7 +211,7 @@ export async function POST(request) {
   }
 
   try {
-    const result = await discoverOrLoadBusinesses(zip);
+    const result = await discoverOrLoadBusinesses(zip, niche);
     if (!result.ok) {
       return json(404, {
         ok: false,
