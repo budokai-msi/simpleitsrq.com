@@ -1826,16 +1826,6 @@ function LeadgenScanApp() {
                 {broadenedMapRows.length ? " The map still shows broader public records for this ZIP." : ""}
               </span>
               <div className="leadgen-empty-review__actions">
-                {niche !== "All" ? (
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => applyMarketRefinement("All")}
-                    disabled={busy}
-                  >
-                    Broaden market
-                  </button>
-                ) : null}
                 <Link
                   to={scannerDemoLink}
                   className="btn btn-secondary btn-sm"
