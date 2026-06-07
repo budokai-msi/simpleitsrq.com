@@ -11,6 +11,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 vi.mock("../db.js", () => ({ sql: vi.fn() }));
 
 const { safeRedirectPath } = await import("../http.js");
+const { originAllowed } = await import("../csrf.js");
 const { parseUA } = await import("../ua.js");
 const { appBaseUrl, redirectUri, buildAuthorizeUrl } = await import("../oauth.js");
 
@@ -47,6 +48,24 @@ describe("safeRedirectPath — open-redirect guard", () => {
     expect(safeRedirectPath(undefined)).toBe("/portal");
     expect(safeRedirectPath(42)).toBe("/portal");
     expect(safeRedirectPath({ path: "/x" })).toBe("/portal");
+  });
+});
+
+describe("originAllowed", () => {
+  it("allows canonical production origins", () => {
+    expect(originAllowed("https://simpleitsrq.com")).toBe(true);
+    expect(originAllowed("https://www.simpleitsrq.com")).toBe(true);
+  });
+
+  it("allows Vercel preview origins and local dev", () => {
+    expect(originAllowed("https://simpleitsrq-preview-abc123.vercel.app")).toBe(true);
+    expect(originAllowed("http://localhost:5177")).toBe(true);
+    expect(originAllowed("http://127.0.0.1:5177")).toBe(true);
+  });
+
+  it("rejects unrelated origins", () => {
+    expect(originAllowed("https://evil.example")).toBe(false);
+    expect(originAllowed("http://simpleitsrq.com.evil.example")).toBe(false);
   });
 });
 

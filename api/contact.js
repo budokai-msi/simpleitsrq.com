@@ -239,6 +239,10 @@ const json = (status, body) =>
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
+      "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+      "Referrer-Policy": "no-referrer",
+      "X-Content-Type-Options": "nosniff",
+      "X-Robots-Tag": "noindex, nofollow, noarchive",
     },
   });
 
@@ -688,8 +692,9 @@ async function handleChatCapture(request, body, ip) {
       `;
     }
     // Note is intentionally not persisted (no column on newsletter_subscribers).
-    // It still arrives in our logs so we can grep transcripts if needed.
-    if (note) console.log("[chat] capture note", { email, note: note.slice(0, 200) });
+    // Keep logs metadata-only so contact capture never stores message content
+    // outside the lead record.
+    if (note) console.info("[chat] capture note", { hasEmail: Boolean(email), hasNote: true });
     return json(200, { ok: true });
   } catch (err) {
     console.error("[chat] capture error", err);
@@ -791,7 +796,7 @@ async function handleStripeWebhook(request) {
   }
   const type = event?.type || "unknown";
   const id = event?.id || "evt_unknown";
-  console.log("[stripe-webhook] verified", { id, type, livemode: event.livemode });
+  console.info("[stripe-webhook] verified", { type, livemode: event.livemode });
 
   // Persist every verified event to stripe_events for audit + idempotency.
   // ON CONFLICT DO NOTHING means a Stripe redelivery is a no-op.
@@ -820,7 +825,7 @@ async function handleStripeWebhook(request) {
       const customerId = typeof s.customer === "string" ? s.customer : (s.customer?.id || null);
       const tier = s.metadata?.tier || null;
       const cadence = s.metadata?.cadence || null;
-      console.log("[stripe-webhook] checkout completed", { email, amount, currency, tier, cadence, customerId });
+      console.info("[stripe-webhook] checkout completed", { amount, currency, tier, cadence, hasCustomer: Boolean(customerId) });
 
       // Upsert into newsletter_subscribers so the buyer lands in our
       // existing CRM. We mark them confirmed since they just transacted.
@@ -1295,7 +1300,7 @@ export async function POST(request) {
         return json(502, { ok: false, error: "send_failed" });
       }
 
-      console.log("[contact] service reservation sent", {
+      console.info("[contact] service reservation sent", {
         id: data?.id,
         service: parsed.value.serviceSlug,
         stored: !!storedLead?.ok,
@@ -1384,7 +1389,7 @@ export async function POST(request) {
       return json(502, { ok: false, error: "send_failed" });
     }
 
-    console.log("[contact] sent", { id: data?.id });
+    console.info("[contact] sent", { id: data?.id });
     return json(200, { ok: true });
   } catch (err) {
     console.error("[contact] resend threw", err);

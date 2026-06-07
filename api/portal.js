@@ -22,7 +22,7 @@ import { clientIp, auditVerify, logSecurityEvent } from "./_lib/security.js";
 import { refreshThreatFeeds, matchOsintFeeds, osintStatus } from "./_lib/osint.js";
 import { aggregateScanners, identifyScanner } from "./_lib/scanner-fingerprints.js";
 import { json } from "./_lib/http.js";
-import { csrfValid } from "./_lib/csrf.js";
+import { csrfValid, originAllowed } from "./_lib/csrf.js";
 import { sanitizeHeader, clampString } from "./_lib/sanitize.js";
 import { runLeadgenWorker } from "./cron/agent.js";
 import { timingSafeEqual } from "node:crypto";
@@ -5033,16 +5033,11 @@ p{font-size:15px;color:#374151}
 //      mutating requests must echo the `sit_csrf` cookie back as the
 //      `x-csrf-token` header.
 // Both must pass for any mutation. Defense in depth.
-const ALLOWED_ORIGINS = new Set([
-  "https://simpleitsrq.com",
-  "https://www.simpleitsrq.com",
-]);
-
 function csrfCheck(request, method) {
   if (method === "GET") return true;
   const origin = request.headers.get("origin");
   if (!origin) return false;
-  return ALLOWED_ORIGINS.has(origin);
+  return originAllowed(origin);
 }
 
 // ────────────────────────────────────────────────────────────

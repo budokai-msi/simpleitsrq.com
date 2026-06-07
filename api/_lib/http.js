@@ -1,5 +1,13 @@
 // api/_lib/http.js — tiny response helpers shared across API routes.
 
+export const API_SECURITY_HEADERS = {
+  "Cache-Control": "no-store",
+  "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+  "Referrer-Policy": "no-referrer",
+  "X-Content-Type-Options": "nosniff",
+  "X-Robots-Tag": "noindex, nofollow, noarchive",
+};
+
 /**
  * Serialize a value to a JSON `Response` with no-store caching. Any extra
  * headers are merged after the defaults so callers can override them.
@@ -14,7 +22,7 @@ export const json = (status, body, extraHeaders = {}) =>
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": "no-store",
+      ...API_SECURITY_HEADERS,
       ...extraHeaders,
     },
   });
@@ -32,7 +40,7 @@ export const redirect = (location, extraHeaders = {}) =>
     status: 302,
     headers: {
       Location: location,
-      "Cache-Control": "no-store",
+      ...API_SECURITY_HEADERS,
       ...extraHeaders,
     },
   });
