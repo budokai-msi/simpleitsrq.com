@@ -1,7 +1,7 @@
 [
   {
     "slug": "s-p-500-rejection-what-small-business-owners-in-sarasota-should-know",
-    "title": "What Small Business Owners in Sarasota Can Learn from S&P 500s Rejection of SpaceX",
+    "title": "SpaceX S&P 500 Lesson for Sarasota IT Budgets",
     "date": "2026-06-06",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -10,9 +10,9 @@
       "local-it",
       "smb"
     ],
-    "excerpt": "The S&P 500s rejection of SpaceX has implications for small business owners in Sarasota, highlighting the importance of profitability and financial stability. Learn what this means for your business and how to prioritize your IT investments.",
-    "metaDescription": "S&P 500 rejects SpaceX, what does this mean for small business owners in Sarasota?",
-    "heroAlt": "A local business technology note about What Small Business Owners in Sarasota Can Learn from S&P 500s Rejection of SpaceX."
+    "excerpt": "A high-profile index decision is a useful budget reminder for local owners: reliable operations beat shiny technology that does not reduce risk.",
+    "metaDescription": "A high-profile index rejection is a useful budget reminder: fund resilient IT basics before buying shiny platforms that do not reduce risk.",
+    "heroAlt": "A Sarasota business owner reviewing a technology budget on a laptop."
   },
   {
     "slug": "microsoft-office-mac-view-only-conversion-sarasota-small-business",
@@ -31,7 +31,7 @@
   },
   {
     "slug": "github-ban-security-researcher-sarasota-small-business",
-    "title": "GitHubs Ban on a Security Researcher: What Small Business Owners in Sarasota Need to Know",
+    "title": "GitHub Security Ban Lesson for Sarasota Businesses",
     "date": "2026-05-29",
     "category": "Cybersecurity",
     "author": "Simple IT SRQ Team",
@@ -40,13 +40,13 @@
       "local-it",
       "smb"
     ],
-    "excerpt": "A recent GitHub ban on a security researcher has sparked controversy, but what does it mean for small business owners in Sarasota, Bradenton, and Venice? Learn how to protect your business from zero-day exploits and phishing attacks.",
-    "metaDescription": "GitHub bans security researcher, sparking debate on cybersecurity and phishing-resistant MFA",
-    "heroAlt": "A local business technology note about GitHubs Ban on a Security Researcher: What Small Business Owners in Sarasota Need to Know."
+    "excerpt": "A security-research dispute is not just tech drama. It is a reminder to patch quickly, protect admin accounts, and keep vendor-risk decisions documented.",
+    "metaDescription": "A security-research dispute is a reminder to patch quickly, protect admin accounts with phishing-resistant MFA, and document vendor-risk decisions.",
+    "heroAlt": "Security keys and a laptop on a Sarasota office desk."
   },
   {
     "slug": "microsoft-dos-code-sarasota-small-business",
-    "title": "What Microsofts Open-Sourced DOS Code Means for Your Small Business",
+    "title": "DOS Source Code Lessons for Small Offices",
     "date": "2026-05-25",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -55,13 +55,13 @@
       "local-it",
       "smb"
     ],
-    "excerpt": "Microsofts decision to open-source early DOS code has implications for small businesses in Sarasota and beyond, highlighting the importance of transparency and collaboration in the tech industry.",
-    "metaDescription": "Microsoft open-sources early DOS code, what does it mean for small businesses?",
-    "heroAlt": "A local business technology note about What Microsofts Open-Sourced DOS Code Means for Your Small Business."
+    "excerpt": "Old source code stories are a reminder that business systems outlive the people who first installed them. Documentation is not optional.",
+    "metaDescription": "Old DOS source code is a reminder that documentation, backups, and vendor planning matter long after software leaves the spotlight.",
+    "heroAlt": "A small-office documentation binder next to an old computer terminal."
   },
   {
     "slug": "ai-revolutionizes-problem-solving-for-small-business-owners-in-sarasota-bradenton-venice-florida",
-    "title": "How AI is Revolutionizing Problem-Solving: What Small Business Owners Need to Know",
+    "title": "AI Problem-Solving for Sarasota Small Business",
     "date": "2026-05-21",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -70,13 +70,13 @@
       "local-it",
       "smb"
     ],
-    "excerpt": "A recent breakthrough in AI has significant implications for small business owners in Sarasota, Bradenton, and Venice. Learn how AI is revolutionizing problem-solving and what it means for your business.",
-    "metaDescription": "AI breakthroughs are changing the game for small business owners in Sarasota, Bradenton, and Venice. Learn how to leverage AI for your business.",
-    "heroAlt": "A local business technology note about How AI is Revolutionizing Problem-Solving: What Small Business Owners Need to Know."
+    "excerpt": "AI can help small teams solve real workflow problems, but only when the process, data, and review step are clear before the tool is added.",
+    "metaDescription": "AI can help with messy office workflows, but the first win is not magic. Start with one repeatable process, clean data, and human review.",
+    "heroAlt": "A Sarasota office team reviewing an AI-assisted workflow checklist."
   },
   {
     "slug": "ai-psychosis-in-small-business-sarasota-bradenton-venice-2",
-    "title": "The Dark Side of AI: How Small Businesses Can Avoid the Pitfalls",
+    "title": "Avoid AI Overreach in Small Business",
     "date": "2026-05-17",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -85,13 +85,13 @@
       "local-it",
       "smb"
     ],
-    "excerpt": "Small businesses in Sarasota, Bradenton, and Venice must be aware of the potential risks of AI psychosis, where over-reliance on AI tools can lead to poor decision-making and decreased productivity.",
-    "metaDescription": "Avoid AI psychosis in your small business with practical tips from Simple IT SRQ",
-    "heroAlt": "A local business technology note about The Dark Side of AI: How Small Businesses Can Avoid the Pitfalls."
+    "excerpt": "AI tools are useful when they speed up a known workflow. They get risky when nobody owns the data, review step, or decision.",
+    "metaDescription": "AI tools can help local teams, but unchecked prompts and shortcuts create bad decisions. Use policy, review, and secure access before scaling.",
+    "heroAlt": "A small-business owner reviewing AI tool access on a laptop."
   },
   {
     "slug": "ai-psychosis-in-small-business-sarasota-bradenton-venice",
-    "title": "The Dark Side of AI: What Small Business Owners Need to Know",
+    "title": "Keep AI Useful Without Losing Judgment",
     "date": "2026-05-17",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -100,13 +100,13 @@
       "local-it",
       "smb"
     ],
-    "excerpt": "As AI adoption grows, small businesses must be aware of the potential risks of AI psychosis, where over-reliance on automation can lead to decreased productivity and increased errors.",
-    "metaDescription": "Learn how AI psychosis can impact small businesses in Sarasota, Bradenton, and Venice",
-    "heroAlt": "A local business technology note about The Dark Side of AI: What Small Business Owners Need to Know."
+    "excerpt": "The safest AI rollout is not the flashiest one. Use it for drafts and triage, then keep humans responsible for decisions.",
+    "metaDescription": "Small businesses should use AI for drafts, summaries, and triage, not unchecked decisions. Here is a practical review loop for local teams.",
+    "heroAlt": "A local office reviewing AI-generated notes before sending them to a customer."
   },
   {
     "slug": "can-macbook-air-handle-demanding-tasks-sarasota-bradenton-venice-florida-small-business",
-    "title": "Can a MacBook Air Handle Demanding Tasks in Your Small Business?",
+    "title": "MacBook Air Fit for Local Business Work",
     "date": "2026-05-15",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -115,9 +115,9 @@
       "local-it",
       "smb"
     ],
-    "excerpt": "Explore the capabilities of the M4 MacBook Air for gaming and demanding tasks, and what it means for small businesses in Sarasota, Bradenton, and Venice. Discover how to optimize your IT setup for maximum productivity.",
-    "metaDescription": "M4 MacBook Air for small business: can it handle demanding tasks?",
-    "heroAlt": "A local business technology note about Can a MacBook Air Handle Demanding Tasks in Your Small Business?."
+    "excerpt": "A MacBook Air can be the right workstation for many local offices, but the buying decision should include docks, displays, storage, and support.",
+    "metaDescription": "The M4 MacBook Air fits many office workflows, but docks, storage, displays, and support policy matter more than benchmark hype.",
+    "heroAlt": "A MacBook Air connected to an office dock, monitor, and wired keyboard."
   },
   {
     "slug": "hermes-ai-uncensored-open-model-business-2026",
@@ -264,7 +264,7 @@
       "bradenton"
     ],
     "excerpt": "Yesterday we shipped /exposure-scan — a free, no-signup-required passive scan that grades your domain's DNS hygiene the same way a ransomware operator would size you up before deciding whether to bother. Here's what it checks and why every Florida business owner should run it once.",
-    "metaDescription": "Simple IT SRQ now offers a free passive-OSINT scan for any Florida small business. Plain-English grade on your DNS, SPF, DMARC, DKIM, and exposed subdomains in 10 seconds. No signup.",
+    "metaDescription": "Run a free passive exposure scan for DNS, SPF, DMARC, DKIM, and exposed subdomains. Get a plain-English risk grade in seconds.",
     "heroAlt": "A computer screen showing an A-through-F report card grading a small business domain on email authentication, DNS records, and exposed subdomains."
   },
   {
@@ -630,7 +630,7 @@
   },
   {
     "slug": "source-map-leak-build-pipeline-cleanup-sarasota",
-    "title": "The Claude Code Source Map Leak: Clean Up Your Build Pipeline",
+    "title": "Source-Map Leaks in Build Pipelines",
     "date": "2026-03-31",
     "category": "Cybersecurity",
     "author": "Simple IT SRQ Team",
@@ -645,7 +645,7 @@
   },
   {
     "slug": "copilot-ad-injection-ai-supply-chain-risk",
-    "title": "AI Assistants Are a Distribution Channel. Vendors Will Sell It.",
+    "title": "Copilot Ad Injection and AI Supply-Chain Risk",
     "date": "2026-03-30",
     "category": "Cybersecurity",
     "author": "Simple IT SRQ Team",
@@ -692,7 +692,7 @@
   },
   {
     "slug": "github-copilot-private-repo-training-opt-out-april-24",
-    "title": "Opt Out by April 24: GitHub Copilot Training on Private Repos",
+    "title": "GitHub Copilot Private Repo Opt-Out Deadline",
     "date": "2026-03-27",
     "category": "Compliance",
     "author": "Simple IT SRQ Team",
@@ -722,7 +722,7 @@
   },
   {
     "slug": "chat-control-encryption-backdoors-sarasota",
-    "title": "Why Encryption Backdoors Break Security for Sarasota Businesses",
+    "title": "Chat Control and Encryption Backdoors",
     "date": "2026-03-25",
     "category": "Privacy",
     "author": "Simple IT SRQ Team",
@@ -737,7 +737,7 @@
   },
   {
     "slug": "wine-11-linux-windows-workstation-refresh",
-    "title": "Wine 11 Closes the Gap: Cheaper Workstation Refreshes for SMBs",
+    "title": "Wine 11 and Linux Workstation Refreshes",
     "date": "2026-03-24",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -767,7 +767,7 @@
   },
   {
     "slug": "post-git-version-control-engineering-leaders",
-    "title": "Post-Git Version Control: Should Local Engineering Teams Care?",
+    "title": "Post-Git Version Control for Engineering Leaders",
     "date": "2026-03-22",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -782,7 +782,7 @@
   },
   {
     "slug": "ubuntu-26-04-sudo-change-bradenton-sysadmins",
-    "title": "Ubuntu 26.04 Breaks 46 Years of Sudo Habit. Test Before Upgrade.",
+    "title": "Ubuntu 26.04 Sudo Change for Sysadmins",
     "date": "2026-03-21",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -842,7 +842,7 @@
   },
   {
     "slug": "style-transfer-llm-marketing-sarasota",
-    "title": "Style-Transfer LLMs Have Arrived. Now What for Sarasota Marketing?",
+    "title": "Style Transfer LLMs for Sarasota Marketing",
     "date": "2026-03-17",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -867,7 +867,7 @@
       "reputation"
     ],
     "excerpt": "A reporter described receiving death threats from Polymarket traders trying to manipulate his coverage. The piece exposes how prediction markets create perverse incentives around real-world reporting.",
-    "metaDescription": "A reporter received death threats from prediction-market traders trying to sway his coverage. Heres what that means for Sarasota businesses doing public research.",
+    "metaDescription": "Prediction-market attacks show how public research can become brand risk. Sarasota businesses need monitoring, escalation, and evidence.",
     "heroAlt": "A stock-market style chart with overlaid news headlines and warning icons."
   },
   {
@@ -917,7 +917,7 @@
   },
   {
     "slug": "clean-room-reverse-engineering-legacy-vendor-lockin",
-    "title": "Breaking Free from Legacy Vendor Lock-In: Clean-Room Migrations",
+    "title": "Clean-Room Reverse Engineering for Legacy Lock-In",
     "date": "2026-03-12",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -949,7 +949,7 @@
   },
   {
     "slug": "tony-hoare-quicksort-lessons-it-leaders",
-    "title": "Tony Hoares Lessons That Still Matter for Sarasota IT Leaders",
+    "title": "Tony Hoare Lessons for IT Leaders",
     "date": "2026-03-10",
     "category": "Business Tech",
     "author": "Simple IT SRQ Team",
@@ -964,7 +964,7 @@
   },
   {
     "slug": "ai-coding-cost-myth-smb-budgeting",
-    "title": "Are AI Coding Tools Really a Money Pit? A Sarasota Reality Check",
+    "title": "AI Cost Myth for SMB Budgeting",
     "date": "2026-03-09",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
@@ -979,7 +979,7 @@
   },
   {
     "slug": "sandboxing-ai-agents-mac-sarasota",
-    "title": "Sandboxing AI Coding Agents: A Safer Default for Sarasota Teams",
+    "title": "Sandbox AI Agents Before They Touch Files",
     "date": "2026-03-08",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
