@@ -113,7 +113,7 @@ function timingSafeEqual(a, b) {
  * @param {string | null | undefined} origin
  * @returns {boolean}
  */
-function originAllowed(origin) {
+export function originAllowed(origin) {
   if (!origin) return true; // non-browser clients (curl, server-to-server) have no Origin
   if (ALLOWED_ORIGIN_EXACT.has(origin)) return true;
   // Vercel preview deployments: https://<project>-<hash>.vercel.app

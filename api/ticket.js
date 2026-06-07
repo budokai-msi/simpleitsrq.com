@@ -71,6 +71,10 @@ const json = (status, body) =>
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
+      "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+      "Referrer-Policy": "no-referrer",
+      "X-Content-Type-Options": "nosniff",
+      "X-Robots-Tag": "noindex, nofollow, noarchive",
     },
   });
 
@@ -306,7 +310,7 @@ export async function POST(request) {
       return json(502, { ok: false, error: "send_failed" });
     }
 
-    console.log("[ticket] sent", { id: data?.id, ticketId, priority });
+    console.info("[ticket] sent", { id: data?.id, priority });
     return json(200, { ok: true, ticketId });
   } catch (err) {
     console.error("[ticket] resend threw", err);

@@ -22,6 +22,9 @@ describe("/api/health public response", () => {
     expect(body.service).toBe("simpleitsrq-web");
     expect(body.uptime.timestamp).toEqual(expect.any(String));
     expect(body).not.toHaveProperty("checks");
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow, noarchive");
+    expect(response.headers.get("content-security-policy")).toContain("default-src 'none'");
   });
 
   it("mirrors GET status and headers for HEAD probes without a body", async () => {
