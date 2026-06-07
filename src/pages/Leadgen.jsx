@@ -3,7 +3,7 @@ import "leaflet/dist/leaflet.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, Database, Mail, Building2,
-  Search, Info,
+  Search,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
@@ -206,21 +206,6 @@ const PUBLIC_NICHES = [
 
 const SCAN_LIMIT = 80;
 const SCAN_CACHE_TTL = 5 * 60 * 1000;
-
-const SCANNER_CONTEXT = [
-  {
-    title: "Public records",
-    body: "Business records come from public sources and keep source links visible.",
-  },
-  {
-    title: "Human review",
-    body: "Keep, maybe, or reject rows before export or outreach.",
-  },
-  {
-    title: "Daily cap",
-    body: "Small batches keep the first test controlled.",
-  },
-];
 
 const REVIEW_COPY = {
   keep: "Ready for the first reviewed campaign pass.",
@@ -645,7 +630,6 @@ function LeadgenScanApp() {
     return q && PUBLIC_NICHES.includes(q) ? q : "All";
   });
   const [industryOptions, setIndustryOptions] = useState(PUBLIC_NICHES);
-  const [marketTypeSearch, setMarketTypeSearch] = useState("");
   const [offer, setOffer] = useState(() => initialQuery.get("offer") || "");
   const [dailyCap, setDailyCap] = useState(() => {
     const raw = initialQuery.get("daily_cap");
@@ -714,8 +698,8 @@ function LeadgenScanApp() {
   const growthLimitExceeded = kept.length > 500;
   const proCapacityWarning = kept.length > 5000;
   const drawerScanKey = scan ? [zip, niche, scan.matched ?? 0, rows.length].join(":") : "";
-  const defaultReadyDrawerOpen = Boolean(scan && kept.length >= 5 && (growthLimitExceeded || proCapacityWarning));
-  const defaultAssistDrawerOpen = Boolean(scan && kept.length < 5 && !rows.length && niche === "All");
+  const defaultReadyDrawerOpen = false;
+  const defaultAssistDrawerOpen = false;
   const readyDrawerOpen = drawerOpenState.key === drawerScanKey ? drawerOpenState.ready : defaultReadyDrawerOpen;
   const assistDrawerOpen = drawerOpenState.key === drawerScanKey ? drawerOpenState.assist : defaultAssistDrawerOpen;
   const setActionDrawerOpen = (drawer, open) => {
@@ -1083,13 +1067,8 @@ function LeadgenScanApp() {
   };
 
   const marketTypeMatches = useMemo(() => {
-    const query = marketTypeSearch.trim().toLowerCase();
     const priority = new Map(PRIORITY_NICHES.map((item, index) => [item, index]));
     return Array.from(new Set(industryOptions.filter(Boolean)))
-      .filter((item) => {
-        if (!query) return true;
-        return item.toLowerCase().includes(query);
-      })
       .sort((a, b) => {
         if (a === niche) return -1;
         if (b === niche) return 1;
@@ -1100,8 +1079,8 @@ function LeadgenScanApp() {
         if (aPriority !== bPriority) return aPriority - bPriority;
         return a.localeCompare(b);
       })
-      .slice(0, 8);
-  }, [industryCountMap, industryOptions, marketTypeSearch, niche]);
+      .slice(0, 6);
+  }, [industryCountMap, industryOptions, niche]);
 
   const applyMarketRefinement = (nextNiche) => {
     setNiche(nextNiche);
@@ -1212,19 +1191,9 @@ function LeadgenScanApp() {
         <div className="leadgen-app-title">
           <h1 className="display">Find local service leads by zip.</h1>
           <p>
-            Scan nearby businesses, review the map, keep the ones worth contacting,
-            then export the list or book help building the first campaign.
+            Enter a zip and customer type. We map nearby businesses, keep the list
+            reviewable, and hand off clean exports for outreach.
           </p>
-        </div>
-
-        <div className="leadgen-context-strip" aria-label="How to read this scanner">
-          {SCANNER_CONTEXT.map((item) => (
-            <div key={item.title} className="leadgen-context-item" tabIndex="0">
-              <Info size={15} aria-hidden="true" />
-              <strong>{item.title}</strong>
-              <span className="leadgen-context-item__hint">{item.body}</span>
-            </div>
-          ))}
         </div>
 
         <div className="leadgen-scan-card">
@@ -1280,40 +1249,20 @@ function LeadgenScanApp() {
           </details>
         </div>
 
-        <div className="leadgen-market-builder" aria-label="Build current market">
-          <div className="leadgen-market-builder__summary">
-            <span>Market builder</span>
+        <details className="leadgen-market-builder" aria-label="Change current market">
+          <summary className="leadgen-market-builder__summary">
+            <span>
+              {scan
+                ? `${scan.matched || 0} record${scan.matched === 1 ? "" : "s"} loaded`
+                : validZip ? `Ready for ${zip}` : "Choose market"}
+            </span>
             <strong>
               {validZip
                 ? `${niche === "All" ? "All businesses" : niche} in ${zip}`
                 : "Any 5-digit US zip"}
             </strong>
-            <p>
-              {validZip
-                ? scan
-                  ? scan.matched
-                    ? `${scan.matched} records loaded from ${scan.scan_source === "cache" ? "cached local records" : "live public records"}.`
-                    : `No ${niche} records yet. Map shows broader ZIP records.`
-                  : "Search the customer type list; the map stays tied to this zip."
-                : "Enter a zip, then choose the customer type you want."}
-            </p>
-          </div>
-          <div className="leadgen-market-builder__tools">
-            <label className="leadgen-market-builder__search">
-              <span>Search customer type</span>
-              <input
-                value={marketTypeSearch}
-                onChange={(e) => setMarketTypeSearch(e.target.value)}
-                placeholder="healthcare, trades, retail..."
-                aria-label="Search available customer types"
-              />
-            </label>
-            <small>
-              {marketTypeSearch.trim()
-                ? `${marketTypeMatches.length} match${marketTypeMatches.length === 1 ? "" : "es"}`
-                : `${industryOptions.length} types available`}
-            </small>
-          </div>
+            <em>Change type</em>
+          </summary>
           <div className="leadgen-market-builder__chips">
             {marketTypeMatches.map((item) => (
               <button
@@ -1338,11 +1287,11 @@ function LeadgenScanApp() {
             ))}
             {!marketTypeMatches.length ? (
               <div className="leadgen-market-builder__empty">
-                No category found. Use All businesses or try a broader word.
+                No categories are available yet. Use All businesses or run the scan again.
               </div>
             ) : null}
           </div>
-        </div>
+        </details>
         {zipHint ? <p className="leadgen-app-error" style={{ marginTop: 8 }}>{zipHint}</p> : null}
 
         <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
@@ -1353,130 +1302,6 @@ function LeadgenScanApp() {
         </div>
 
         {err ? <p className="leadgen-app-error">{err}</p> : null}
-
-        <div className="leadgen-app-kpis" aria-label="Scan metrics">
-          <div><Building2 size={15} /><strong>{scan?.matched ?? "-"}</strong><span>matching records</span></div>
-          <div><Database size={15} /><strong>{websites || "-"}</strong><span>with websites</span></div>
-          <div><Mail size={15} /><strong>{phones || "-"}</strong><span>with phone</span></div>
-          <div><Check size={15} /><strong>{kept.length || "-"}</strong><span>kept after review</span></div>
-        </div>
-
-        {scan ? (
-          <>
-            <div className="leadgen-app-brief">
-              <div>
-                <span>Campaign brief</span>
-                <strong>{/^\d{5}$/.test(zip) ? `${niche} in ${zip}` : "Choose a zip and niche"}</strong>
-                <p>{offer || "Add an offer angle before sending."}</p>
-              </div>
-              <div>
-                <span>Send rule</span>
-                <strong>{dailyCap || 35}/day max</strong>
-                <p>{kept.length ? `${projectedSendDays} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Review the list first."}</p>
-              </div>
-            </div>
-            <details className="leadgen-planning-panel" open>
-              <summary>Readiness and forecast</summary>
-              <section className={`leadgen-readiness leadgen-readiness--${readinessTier}`} aria-label="Campaign readiness">
-                <div className="leadgen-readiness__head">
-                  <span>Campaign readiness</span>
-                  <strong>{readinessPercent}% ({readinessScore}/4 checks)</strong>
-                </div>
-                <div className="leadgen-readiness__checks">
-                  {readinessChecks.map((item) => (
-                    <div key={item.id} className={`leadgen-readiness__check${item.ok ? " is-ok" : ""}`}>
-                      <span>{item.label}</span>
-                      <strong>{item.ok ? "Ready" : "Needs attention"}</strong>
-                    </div>
-                  ))}
-                </div>
-                {primaryReadinessGap ? (
-                  <div className="leadgen-readiness__action">
-                    <p>{primaryReadinessGap.hint}</p>
-                    {primaryReadinessGap.id === "cap" ? (
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => {
-                          setDailyCap(35);
-                          trackEvent("select_content", {
-                            content_type: "leadgen_readiness_fix",
-                            destination: "daily_cap_35",
-                          });
-                        }}
-                      >
-                        Set cap to 35/day
-                      </button>
-                    ) : null}
-                  </div>
-                ) : null}
-              </section>
-              <section className="leadgen-revenue-forecast" aria-label="Revenue forecast">
-                <div className="leadgen-revenue-forecast__head">
-                  <span>Revenue forecast</span>
-                  <strong>${formatForecastCurrency(forecastRevenue)} projected pipeline value</strong>
-                </div>
-                <div className="leadgen-revenue-forecast__controls">
-                  <label>
-                    <span>Close rate</span>
-                    <input
-                      type="range"
-                      min="1"
-                      max="40"
-                      value={closeRate}
-                      onChange={(e) => setCloseRate(Number(e.target.value))}
-                      onMouseUp={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "close_rate" })}
-                    />
-                    <strong>{closeRate}%</strong>
-                  </label>
-                  <label>
-                    <span>Average deal value</span>
-                    <input
-                      type="number"
-                      min="500"
-                      max="50000"
-                      step="100"
-                      value={avgDealValue}
-                      onChange={(e) => setAvgDealValue(Math.max(500, Math.min(50000, Number(e.target.value) || 500)))}
-                      onBlur={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "avg_deal_value" })}
-                    />
-                  </label>
-                </div>
-                <div className="leadgen-revenue-forecast__kpis">
-                  <div><span>Reachable</span><strong>{forecastReachable}</strong></div>
-                  <div><span>Expected wins</span><strong>{forecastWinsLabel}</strong></div>
-                  <div><span>Kept businesses</span><strong>{kept.length}</strong></div>
-                </div>
-                <div className="leadgen-revenue-forecast__planfit" role="status" aria-live="polite">
-                  <div>
-                    <span>Recommended plan cost</span>
-                    <strong>${recommendedPlanPrice}/mo ({recommendedTier.name})</strong>
-                  </div>
-                  <div>
-                    <span>Projected net value</span>
-                    <strong>{projectedNetValue < 0 ? "-" : ""}${formatForecastCurrency(Math.abs(projectedNetValue))}</strong>
-                  </div>
-                  <div>
-                    <span>Projected ROI multiple</span>
-                    <strong>{projectedRoiMultiple.toFixed(1)}x</strong>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => trackEvent("select_content", {
-                      content_type: "leadgen_forecast_planfit",
-                      destination: `plan_${recommendedTier.id}`,
-                      forecast_revenue: Math.round(forecastRevenue),
-                      projected_roi_multiple: Number(projectedRoiMultiple.toFixed(2)),
-                    })}
-                  >
-                    Track plan fit
-                  </button>
-                </div>
-              </section>
-            </details>
-          </>
-        ) : null}
 
         {scan && kept.length >= 5 ? (
           <div className="leadgen-action-drawer leadgen-action-drawer--compact" role="region" aria-label="Next best conversion actions">
@@ -1686,6 +1511,13 @@ function LeadgenScanApp() {
           </div>
         </div>
 
+        <LeadgenMap
+          rows={rows.length ? visibleOnlyRows : broadenedMapRows}
+          scan={scan}
+          selectedIndex={effectiveSelectedIndex}
+          onSelect={setSelectedIndex}
+        />
+
         {scan ? (
           <div className="leadgen-review-summary">
             <span>{kept.length} keep</span>
@@ -1822,13 +1654,6 @@ function LeadgenScanApp() {
           </div>
         ) : null}
 
-        <LeadgenMap
-          rows={rows.length ? visibleOnlyRows : broadenedMapRows}
-          scan={scan}
-          selectedIndex={effectiveSelectedIndex}
-          onSelect={setSelectedIndex}
-        />
-
         <div className="leadgen-result-list">
           {!scan ? (
             <div className="leadgen-empty-review">
@@ -1925,6 +1750,129 @@ function LeadgenScanApp() {
           ))}
         </div>
       </div>
+
+      {scan ? (
+        <div className="leadgen-scan-followup" aria-label="Scan metrics and campaign planning">
+          <div className="leadgen-app-kpis" aria-label="Scan metrics">
+            <div><Building2 size={15} /><strong>{scan?.matched ?? 0}</strong><span>matching records</span></div>
+            <div><Database size={15} /><strong>{websites}</strong><span>with websites</span></div>
+            <div><Mail size={15} /><strong>{phones}</strong><span>with phone</span></div>
+            <div><Check size={15} /><strong>{kept.length}</strong><span>kept after review</span></div>
+          </div>
+          <div className="leadgen-app-brief">
+            <div>
+              <span>Campaign brief</span>
+              <strong>{/^\d{5}$/.test(zip) ? `${niche} in ${zip}` : "Choose a zip and niche"}</strong>
+              <p>{offer || "Add an offer angle before sending."}</p>
+            </div>
+            <div>
+              <span>Send rule</span>
+              <strong>{dailyCap || 35}/day max</strong>
+              <p>{kept.length ? `${projectedSendDays} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Review the list first."}</p>
+            </div>
+          </div>
+          <details className="leadgen-planning-panel">
+            <summary>Readiness and forecast</summary>
+            <section className={`leadgen-readiness leadgen-readiness--${readinessTier}`} aria-label="Campaign readiness">
+              <div className="leadgen-readiness__head">
+                <span>Campaign readiness</span>
+                <strong>{readinessPercent}% ({readinessScore}/4 checks)</strong>
+              </div>
+              <div className="leadgen-readiness__checks">
+                {readinessChecks.map((item) => (
+                  <div key={item.id} className={`leadgen-readiness__check${item.ok ? " is-ok" : ""}`}>
+                    <span>{item.label}</span>
+                    <strong>{item.ok ? "Ready" : "Needs attention"}</strong>
+                  </div>
+                ))}
+              </div>
+              {primaryReadinessGap ? (
+                <div className="leadgen-readiness__action">
+                  <p>{primaryReadinessGap.hint}</p>
+                  {primaryReadinessGap.id === "cap" ? (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => {
+                        setDailyCap(35);
+                        trackEvent("select_content", {
+                          content_type: "leadgen_readiness_fix",
+                          destination: "daily_cap_35",
+                        });
+                      }}
+                    >
+                      Set cap to 35/day
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </section>
+            <section className="leadgen-revenue-forecast" aria-label="Revenue forecast">
+              <div className="leadgen-revenue-forecast__head">
+                <span>Revenue forecast</span>
+                <strong>${formatForecastCurrency(forecastRevenue)} projected pipeline value</strong>
+              </div>
+              <div className="leadgen-revenue-forecast__controls">
+                <label>
+                  <span>Close rate</span>
+                  <input
+                    type="range"
+                    min="1"
+                    max="40"
+                    value={closeRate}
+                    onChange={(e) => setCloseRate(Number(e.target.value))}
+                    onMouseUp={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "close_rate" })}
+                  />
+                  <strong>{closeRate}%</strong>
+                </label>
+                <label>
+                  <span>Average deal value</span>
+                  <input
+                    type="number"
+                    min="500"
+                    max="50000"
+                    step="100"
+                    value={avgDealValue}
+                    onChange={(e) => setAvgDealValue(Math.max(500, Math.min(50000, Number(e.target.value) || 500)))}
+                    onBlur={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "avg_deal_value" })}
+                  />
+                </label>
+              </div>
+              <div className="leadgen-revenue-forecast__kpis">
+                <div><span>Reachable</span><strong>{forecastReachable}</strong></div>
+                <div><span>Expected wins</span><strong>{forecastWinsLabel}</strong></div>
+                <div><span>Kept businesses</span><strong>{kept.length}</strong></div>
+              </div>
+              <div className="leadgen-revenue-forecast__planfit" role="status" aria-live="polite">
+                <div>
+                  <span>Recommended plan cost</span>
+                  <strong>${recommendedPlanPrice}/mo ({recommendedTier.name})</strong>
+                </div>
+                <div>
+                  <span>Projected net value</span>
+                  <strong>{projectedNetValue < 0 ? "-" : ""}${formatForecastCurrency(Math.abs(projectedNetValue))}</strong>
+                </div>
+                <div>
+                  <span>Projected ROI multiple</span>
+                  <strong>{projectedRoiMultiple.toFixed(1)}x</strong>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => trackEvent("select_content", {
+                    content_type: "leadgen_forecast_planfit",
+                    destination: `plan_${recommendedTier.id}`,
+                    forecast_revenue: Math.round(forecastRevenue),
+                    projected_roi_multiple: Number(projectedRoiMultiple.toFixed(2)),
+                  })}
+                >
+                  Track plan fit
+                </button>
+              </div>
+            </section>
+          </details>
+        </div>
+      ) : null}
     </section>
   );
 }
