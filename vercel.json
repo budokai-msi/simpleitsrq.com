@@ -5,7 +5,8 @@
   "trailingSlash": false,
   "cleanUrls": true,
   "redirects": [
-    { "source": "/pricing", "destination": "/services", "permanent": true }
+    { "source": "/pricing", "destination": "/services", "permanent": true },
+    { "source": "/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice-2", "destination": "/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice", "permanent": true }
   ],
   "crons": [
     {
