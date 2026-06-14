@@ -247,9 +247,19 @@ export function normalizeOsmElement(el) {
   const industry = pickIndustry(tags);
   const { industry: industry_group, sub_industry } = classifyIndustry(industry);
 
+  // Chain signal. OSM tags national/regional chains with `brand` and, when a
+  // Wikidata entity exists, `brand:wikidata` — the most reliable way to tell a
+  // 7-Eleven from an independent corner shop. An IT-services prospector wants
+  // independent local businesses, so we surface this so the UI can flag and
+  // de-prioritize chains.
+  const brand = tags.brand || tags["brand:en"] || null;
+  const isChain = Boolean(brand || tags["brand:wikidata"]);
+
   return {
     name,
     legal_name: tags.operator || null,
+    brand,
+    is_chain: isChain,
     address: buildAddress(tags),
     city: tags["addr:city"] || null,
     state: tags["addr:state"] || null,

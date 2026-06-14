@@ -670,6 +670,7 @@ function LeadgenScanApp() {
   const [drawerOpenState, setDrawerOpenState] = useState({ key: "", ready: false, assist: false });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [independentsOnly, setIndependentsOnly] = useState(() => initialQuery.get("independents") === "1");
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const validZip = /^\d{5}$/.test(zip);
   // Only surface keyboard-shortcut hints on devices that actually have a
@@ -692,6 +693,8 @@ function LeadgenScanApp() {
   const kept = reviewedRows.filter((row) => row.status === "keep");
   const maybe = reviewedRows.filter((row) => row.status === "maybe");
   const rejected = reviewedRows.filter((row) => row.status === "reject");
+  const chainCount = reviewedRows.filter((row) => row.is_chain).length;
+  const independentCount = reviewedRows.length - chainCount;
   const websites = reviewedRows.filter((row) => row.website).length;
   const phones = reviewedRows.filter((row) => row.phone).length;
   const websiteCoverage = reviewedRows.length ? Math.round((websites / reviewedRows.length) * 100) : 0;
@@ -768,9 +771,14 @@ function LeadgenScanApp() {
         if (contactFilter === "missing-website" && row.website) return false;
         if (contactFilter === "missing-phone" && row.phone) return false;
         if (contactFilter === "mapped" && !asPoint(row)) return false;
+        if (independentsOnly && row.is_chain) return false;
         return true;
       })
       .sort((a, b) => {
+        // Independent local businesses always lead — they're the prospects an
+        // IT-services provider actually wants; chains sink to the bottom.
+        const chainDelta = (a.row.is_chain ? 1 : 0) - (b.row.is_chain ? 1 : 0);
+        if (chainDelta) return chainDelta;
         if (sortBy === "name") return a.row.name.localeCompare(b.row.name);
         if (sortBy === "city") return (a.row.city || "").localeCompare(b.row.city || "") || a.row.name.localeCompare(b.row.name);
         if (sortBy === "status") return (statusRank[a.row.status] ?? 9) - (statusRank[b.row.status] ?? 9) || a.row.name.localeCompare(b.row.name);
@@ -779,7 +787,7 @@ function LeadgenScanApp() {
         const bc = (b.row.website ? 2 : 0) + (b.row.phone ? 1 : 0);
         return bc - ac || a.row.name.localeCompare(b.row.name);
       });
-  }, [contactFilter, deferredSearchTerm, reviewedRows, sortBy, statusFilter, subIndustryFilter]);
+  }, [contactFilter, deferredSearchTerm, independentsOnly, reviewedRows, sortBy, statusFilter, subIndustryFilter]);
   const visibleOnlyRows = visibleRows.map(({ row }) => row);
   const effectiveSelectedIndex = visibleRows.some((item) => item.index === selectedIndex)
     ? selectedIndex
@@ -835,13 +843,14 @@ function LeadgenScanApp() {
     setOrDelete("contact", contactFilter, "all");
     setOrDelete("sub_industry", subIndustryFilter, "all");
     setOrDelete("sort", sortBy, "contact");
+    setOrDelete("independents", independentsOnly ? "1" : "", "");
     setOrDelete("close_rate", String(closeRate), "8");
     setOrDelete("avg_deal", String(avgDealValue), "2400");
     const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash || ""}`;
     if (next !== `${window.location.pathname}${window.location.search}${window.location.hash || ""}`) {
       window.history.replaceState({}, "", next);
     }
-  }, [zip, niche, offer, dailyCap, searchTerm, statusFilter, contactFilter, subIndustryFilter, sortBy, closeRate, avgDealValue]);
+  }, [zip, niche, offer, dailyCap, searchTerm, statusFilter, contactFilter, subIndustryFilter, sortBy, independentsOnly, closeRate, avgDealValue]);
 
   useEffect(() => {
     let disposed = false;
@@ -888,7 +897,15 @@ function LeadgenScanApp() {
 
   const applyScan = (data, meta = {}) => {
     setScan(data);
-    setReview(Object.fromEntries((data.rows || []).map((_, index) => [index, index < 20 ? "keep" : "maybe"])));
+    // Default the first 20 *independent* businesses to "keep" and leave chains
+    // out of the kept set (they default to "maybe") — the prospect list an IT
+    // provider starts from should be local independents, not national chains.
+    let keptSoFar = 0;
+    setReview(Object.fromEntries((data.rows || []).map((row, index) => {
+      if (row.is_chain) return [index, "maybe"];
+      if (keptSoFar < 20) { keptSoFar += 1; return [index, "keep"]; }
+      return [index, "maybe"];
+    })));
     setSelectedIndex((data.rows || []).length ? 0 : null);
     if (!meta.preserveView) {
       setSearchTerm("");
@@ -1194,10 +1211,11 @@ function LeadgenScanApp() {
         </div>
 
         <div className="leadgen-app-title">
-          <h1 className="display">Find local service leads by zip.</h1>
+          <h1 className="display">Find independent local businesses to pitch.</h1>
           <p>
-            Enter a zip and customer type. We map nearby businesses, keep the list
-            reviewable, and hand off clean exports for outreach.
+            Enter a zip and the kind of business you serve. We map nearby
+            companies, flag the national chains so you can focus on independent
+            local owners, and hand off a clean list ready for outreach.
           </p>
         </div>
 
@@ -1529,6 +1547,28 @@ function LeadgenScanApp() {
             <span>{maybe.length} maybe</span>
             <span>{rejected.length} reject</span>
             <span>{visibleRows.length} visible</span>
+            <span title="Independent local businesses found in this market" style={{ color: "#067647", fontWeight: 600 }}>
+              {independentCount} independent
+            </span>
+            {chainCount ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setIndependentsOnly((v) => !v);
+                  trackEvent("select_content", { content_type: "leadgen_independents_toggle", source: "leadgen_scanner", on: !independentsOnly });
+                }}
+                aria-pressed={independentsOnly}
+                title="Hide national/regional chains and show only independent local businesses"
+                style={{
+                  padding: "2px 10px", borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  border: independentsOnly ? "1px solid #067647" : "1px solid var(--syn-border, #d0d5dd)",
+                  background: independentsOnly ? "#067647" : "transparent",
+                  color: independentsOnly ? "#fff" : "var(--text-1)",
+                }}
+              >
+                {independentsOnly ? `✓ Independents only` : `Hide ${chainCount} chain${chainCount === 1 ? "" : "s"}`}
+              </button>
+            ) : null}
             {hasKeyboard ? (
               <span className="leadgen-review-summary__hint">Shortcuts: J/K move, 1 keep, 2 maybe, 3 reject</span>
             ) : null}
@@ -1734,7 +1774,17 @@ function LeadgenScanApp() {
               onFocus={() => setSelectedIndex(index)}
             >
               <div className="leadgen-result-row__main">
-                <strong>{row.name}</strong>
+                <strong>
+                  {row.name}
+                  {row.is_chain ? (
+                    <span
+                      title="National or regional chain — usually not an independent local prospect"
+                      style={{ marginLeft: 8, padding: "1px 7px", borderRadius: 999, fontSize: 11, fontWeight: 600, verticalAlign: "middle", background: "#FEF0C7", color: "#7A4F01", border: "1px solid #FEDF89" }}
+                    >
+                      Chain
+                    </span>
+                  ) : null}
+                </strong>
                 <span>{[row.sub_industry || row.industry_group, row.city || row.address, row.zip].filter(Boolean).join(" - ")}</span>
               </div>
               <div className="leadgen-result-row__meta">

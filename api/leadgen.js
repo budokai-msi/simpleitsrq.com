@@ -14,6 +14,29 @@ function cleanText(value, max = 240) {
   return String(value || "").trim().slice(0, max);
 }
 
+// Fallback chain detection for records that lack an OSM brand tag (e.g. older
+// cached rows). The live OSM path sets is_chain from brand/brand:wikidata,
+// which is authoritative; this name-based pass catches the common national
+// chains an IT-services prospector wants to skip in favor of independents.
+const CHAIN_NAME_RE = new RegExp(
+  "\\b(" + [
+    "7-?eleven", "circle k", "wawa", "racetrac", "speedway", "exxon", "mobil", "shell", "chevron", "bp", "marathon", "citgo", "sunoco",
+    "walmart", "target", "costco", "sam's club", "aldi", "publix", "winn-?dixie", "whole foods", "trader joe", "kroger", "dollar general", "dollar tree", "family dollar",
+    "cvs", "walgreens", "rite aid",
+    "mcdonald", "burger king", "wendy", "taco bell", "kfc", "popeyes", "chick-?fil-?a", "subway", "starbucks", "dunkin", "domino", "pizza hut", "papa john", "chipotle", "panera", "arby", "sonic", "culver", "five guys", "jersey mike", "firehouse subs", "ihop", "denny", "applebee", "olive garden", "chili's", "outback", "panda express",
+    "home depot", "lowe's", "best buy", "walgreen", "autozone", "o'reilly", "advance auto", "napa auto", "pep boys", "jiffy lube", "valvoline",
+    "bank of america", "wells fargo", "chase", "citibank", "pnc", "truist", "regions", "suntrust", "us bank", "td bank", "capital one", "fifth third",
+    "ups store", "fedex", "usps", "h&r block", "great clips", "supercuts", "planet fitness", "anytime fitness", "la fitness", "crunch fitness", "orangetheory",
+    "verizon", "at&t", "t-mobile", "xfinity", "spectrum", "enterprise rent", "hertz", "avis", "budget rent", "u-haul",
+    "marriott", "hilton", "hampton inn", "holiday inn", "best western", "comfort inn", "la quinta", "courtyard", "fairfield inn", "residence inn",
+  ].join("|") + ")\\b",
+  "i",
+);
+
+function looksLikeChain(name) {
+  return CHAIN_NAME_RE.test(String(name || ""));
+}
+
 function parseBody(request) {
   const type = request.headers.get("content-type") || "";
   if (!type.includes("application/json")) return {};
@@ -39,6 +62,7 @@ function rowForClient(row) {
     sub_industry: cleanText(row.sub_industry || classified.sub_industry, 120),
     lat: Number.isFinite(Number(row.lat)) ? Number(row.lat) : null,
     lng: Number.isFinite(Number(row.lng)) ? Number(row.lng) : null,
+    is_chain: Boolean(row.is_chain) || looksLikeChain(row.name),
   };
 }
 
