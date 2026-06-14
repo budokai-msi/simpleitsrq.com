@@ -8,7 +8,7 @@
     <language>en-us</language>
     <lastBuildDate>Sat, 06 Jun 2026 00:00:00 GMT</lastBuildDate>
     <item>
-      <title>SpaceX S&amp;P 500 Lesson for Sarasota IT Budgets</title>
+      <title>An S&amp;P 500 Lesson for Sarasota IT Budgets</title>
       <link>https://simpleitsrq.com/blog/s-p-500-rejection-what-small-business-owners-in-sarasota-should-know</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/s-p-500-rejection-what-small-business-owners-in-sarasota-should-know</guid>
       <pubDate>Sat, 06 Jun 2026 00:00:00 GMT</pubDate>
@@ -41,7 +41,7 @@
       <pubDate>Mon, 25 May 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Business Tech</category>
-      <description>Old source code stories are a reminder that business systems outlive the people who first installed them. Documentation is not optional.</description>
+      <description>Old source code stories are a reminder that business systems outlive the people who first installed them. Documentation is not optional - here is how to do it.</description>
     </item>
     <item>
       <title>Your First AI Project Should Be Small and Boring</title>
@@ -95,7 +95,7 @@
       <pubDate>Tue, 28 Apr 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>Privacy</category>
-      <description>Ollama is a free open-source runtime that lets you download and run a real AI model on a single laptop — no cloud, no monthly subscription, no data leaving your office. Here is what it is, when it makes sense, and the ten-minute install.</description>
+      <description>Ollama is a free open-source runtime that lets you run a real AI model on one laptop - no cloud, no subscription, no data leaving your office. Here is what it is, when it makes sense, and the ten-minute install.</description>
     </item>
     <item>
       <title>OpenClaw: The Local AI Agent Runtime We Use</title>
