@@ -567,7 +567,7 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
           <span>Market map</span>
           <strong>{mappedRows.length ? `${mappedRows.length} ${mappedRows.length === 1 ? "business" : "businesses"} plotted` : "No mapped records yet"}</strong>
         </div>
-        <span>{scan ? "Live OSM coordinates" : "Awaiting scan"}</span>
+        <span>{scan ? "Mapped from public records" : "Awaiting scan"}</span>
       </div>
       <div className="leadgen-map-shell">
         <div ref={mapRef} className="leadgen-map" aria-hidden={!mappedRows.length} />
@@ -672,6 +672,11 @@ function LeadgenScanApp() {
   const [err, setErr] = useState("");
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const validZip = /^\d{5}$/.test(zip);
+  // Only surface keyboard-shortcut hints on devices that actually have a
+  // keyboard — on touch screens they're noise that makes the tool look complex.
+  const hasKeyboard = typeof window !== "undefined" && window.matchMedia
+    ? window.matchMedia("(pointer: fine)").matches
+    : true;
 
   const rows = scan?.rows || [];
   const broadenedMapRows = scan?.broadened_rows || [];
@@ -1217,7 +1222,7 @@ function LeadgenScanApp() {
             </label>
             <button type="button" className="btn btn-primary" onClick={runScan} disabled={busy || !validZip}>
               <Search size={16} aria-hidden="true" />
-              {busy ? "Scanning..." : !validZip ? "Enter zip" : scan ? "Refresh scan" : effectivePrefetchState === "ready" ? "Open scan" : "Run scan"}
+              {busy ? "Scanning..." : !validZip ? "Enter zip" : scan ? "Refresh scan" : "Run scan"}
             </button>
           </div>
           <details className="leadgen-advanced-controls">
@@ -1296,8 +1301,8 @@ function LeadgenScanApp() {
 
         <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
           <span />
-          {effectivePrefetchState === "loading" ? "Prefetching this market..." : null}
-          {effectivePrefetchState === "ready" ? "Scan is warmed and ready." : null}
+          {effectivePrefetchState === "loading" ? "Loading this market…" : null}
+          {effectivePrefetchState === "ready" ? "Ready — results load instantly." : null}
           {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip to start.") : null}
         </div>
 
@@ -1524,7 +1529,9 @@ function LeadgenScanApp() {
             <span>{maybe.length} maybe</span>
             <span>{rejected.length} reject</span>
             <span>{visibleRows.length} visible</span>
-            <span className="leadgen-review-summary__hint">Shortcuts: J/K move, 1 keep, 2 maybe, 3 reject</span>
+            {hasKeyboard ? (
+              <span className="leadgen-review-summary__hint">Shortcuts: J/K move, 1 keep, 2 maybe, 3 reject</span>
+            ) : null}
             {visibleRows.length ? (
               <div className="leadgen-review-summary__actions" role="group" aria-label="Bulk review actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Keep all visible</button>
