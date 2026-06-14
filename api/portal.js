@@ -3545,9 +3545,52 @@ async function ensureLeadgenTaxonomyColumns() {
   leadgenTaxonomyReady = true;
 }
 
+// Independently-wrapped health probe for the leadgen subsystem. Used as the
+// fallback when handleLeadgenStatus fails, so the dashboard can show exactly
+// what's wrong (the common cause is unapplied migrations or a missing
+// DATABASE_URL) instead of an opaque 500.
+const LEADGEN_TABLES = [
+  "lead_businesses", "lead_emails", "lead_campaigns",
+  "lead_campaign_sends", "lead_campaign_links", "lead_crawl_jobs",
+];
+async function leadgenPreflight() {
+  const checks = {};
+  try {
+    await sql`SELECT 1`;
+    checks.database = { ok: true };
+  } catch (e) {
+    checks.database = { ok: false, detail: String(e?.message || e).slice(0, 200) };
+  }
+  if (checks.database.ok) {
+    try {
+      const rows = await sql`SELECT table_name FROM information_schema.tables
+                             WHERE table_schema = 'public' AND table_name = ANY(${LEADGEN_TABLES})`;
+      const present = new Set(rows.map((r) => r.table_name));
+      const missing = LEADGEN_TABLES.filter((t) => !present.has(t));
+      checks.tables = {
+        ok: missing.length === 0,
+        missing,
+        ...(missing.length ? { hint: "Run `npm run db:push` to apply db/migrations (013_leadgen.sql)." } : {}),
+      };
+    } catch (e) {
+      checks.tables = { ok: false, detail: String(e?.message || e).slice(0, 200) };
+    }
+  } else {
+    checks.tables = { ok: false, detail: "skipped — database unreachable" };
+  }
+  const hasEmail = !!(process.env.RESEND_API_KEY || process.env.BREVO_API_KEY || process.env.SMTP_HOST);
+  checks.email_transport = {
+    ok: hasEmail,
+    ...(hasEmail ? {} : { hint: "Set RESEND_API_KEY, BREVO_API_KEY, or SMTP_HOST to enable campaign sends." }),
+  };
+  checks.discovery = { ok: true, detail: "OpenStreetMap Overpass — checked live during discover/crawl." };
+  return { ok: checks.database.ok && checks.tables.ok, checks };
+}
+
 async function handleLeadgenStatus(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
+  try {
   await ensureLeadgenTaxonomyColumns();
 
   // Aggregate counts in one round-trip per table. These power the
@@ -3634,6 +3677,30 @@ async function handleLeadgenStatus(session) {
     campaign_queue: campaignQueue || [],
     job_counts: jobCounts || [],
   });
+  } catch (err) {
+    // Self-diagnose instead of returning an opaque 500. The whole dashboard
+    // reads this endpoint, so a single missing table or unset DATABASE_URL
+    // otherwise makes every leadgen surface look "broken". Surface the exact
+    // cause and remediation so the operator can fix it in one step.
+    const preflight = await leadgenPreflight().catch(() => null);
+    const message = preflight?.checks?.database?.ok === false
+      ? "Leadgen database is unreachable — check DATABASE_URL in your environment."
+      : preflight?.checks?.tables?.ok === false
+        ? "Leadgen tables are missing — run `npm run db:push` to apply migrations."
+        : "Leadgen is temporarily unavailable. See detail below.";
+    return json(200, {
+      ok: true,
+      degraded: true,
+      error: "leadgen_unavailable",
+      message,
+      detail: String(err?.message || err).slice(0, 240),
+      preflight,
+      generated_at: new Date().toISOString(),
+      businesses: {}, emails: {}, campaigns: {}, sends: {},
+      recent_jobs: [], ready_segments: [], review_queue: [],
+      campaign_queue: [], job_counts: [],
+    });
+  }
 }
 
 // GET — aggregated insights for the Insights tab

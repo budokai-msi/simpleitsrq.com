@@ -444,6 +444,35 @@ export default function LeadgenDashboard() {
           </p>
         ) : null}
 
+        {status?.degraded ? (
+          <div
+            role="alert"
+            style={{
+              margin: "0 0 20px", padding: "14px 16px", borderRadius: 10,
+              background: "#FEF3F2", border: "1px solid #FECDCA", color: "#7A271A",
+            }}
+          >
+            <strong style={{ display: "block", marginBottom: 6 }}>
+              Leadgen needs setup: {status.message}
+            </strong>
+            {status.preflight?.checks ? (
+              <ul style={{ margin: "6px 0 0", paddingLeft: 18, fontSize: 13, lineHeight: 1.6 }}>
+                {Object.entries(status.preflight.checks).map(([name, c]) => (
+                  <li key={name}>
+                    {c.ok ? "✓" : "✗"} <code>{name}</code>
+                    {c.missing?.length ? ` — missing: ${c.missing.join(", ")}` : ""}
+                    {c.hint ? ` — ${c.hint}` : ""}
+                    {!c.ok && c.detail ? ` — ${c.detail}` : ""}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {status.detail ? (
+              <p style={{ margin: "8px 0 0", fontSize: 12, opacity: 0.75 }}>Detail: {status.detail}</p>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="leadgen-kpi-grid">
           <Stat
             accent="blue"
