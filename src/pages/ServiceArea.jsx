@@ -42,6 +42,27 @@ const COVERAGE = [
     x: 48,
     y: 86,
   },
+  {
+    slug: "palmetto-it-support",
+    name: "Palmetto",
+    tag: "Riverside Dr, Regatta Pointe, US-301",
+    x: 38,
+    y: 10,
+  },
+  {
+    slug: "ellenton-it-support",
+    name: "Ellenton",
+    tag: "Premium Outlets, I-75, Gateway",
+    x: 58,
+    y: 8,
+  },
+  {
+    slug: "parrish-it-support",
+    name: "Parrish",
+    tag: "North River Ranch, Fort Hamer, US-301",
+    x: 74,
+    y: 6,
+  },
 ];
 
 // Simplified SVG of the SW Florida coastline between Anna Maria Island
@@ -138,7 +159,7 @@ export default function ServiceArea() {
             commercial offices, retail, residential, and seasonal condos.
           </p>
           <div className="service-area-meta">
-            <span><MapPin size={14} /> 5 covered markets</span>
+            <span><MapPin size={14} /> 8 covered markets</span>
             <span><Phone size={14} /> <a href="tel:+14072421456">(407) 242-1456</a></span>
           </div>
         </div>

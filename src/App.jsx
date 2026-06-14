@@ -17,6 +17,7 @@ import {
   isNavItemActive,
   isNavSectionActive,
 } from "./data/navigation";
+import { cityList } from "./data/cities";
 import { selectionHaptic } from "./lib/haptics";
 import { ThemeContext, useTheme } from "./lib/theme";
 import { AuthProvider } from "./lib/auth.jsx";
@@ -914,12 +915,12 @@ function AnimatedRoutes() {
         <Route path="/" element={<main id="main"><Home /></main>} />
         <Route path="/blog" element={<BlogIndex />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
-        <Route path="/sarasota-it-support" element={<LocalLanding />} />
-        <Route path="/bradenton-it-support" element={<LocalLanding />} />
-        <Route path="/lakewood-ranch-it-support" element={<LocalLanding />} />
-        <Route path="/nokomis-it-support" element={<LocalLanding />} />
-        <Route path="/venice-it-support" element={<LocalLanding />} />
-        <Route path="/bradenton-34207-it-support" element={<LocalLanding />} />
+        {/* City landing pages are data-driven from src/data/cities.js — add a
+            city there and it gets a route, a sitemap entry, and industry × city
+            pages automatically. */}
+        {cityList.map((c) => (
+          <Route key={c.slug} path={`/${c.slug}`} element={<LocalLanding />} />
+        ))}
         {/* Industry-vertical landing pages use one-segment URLs such as
             /medical-it-sarasota and /construction-it-bradenton. React
             Router params cannot match partial path segments reliably, so
