@@ -9,6 +9,7 @@ import {
 import { cities } from "../data/cities";
 import { industries, matchIndustryPattern } from "../data/industries";
 import { useSEO, SITE_URL } from "../lib/seo";
+import { csrfFetch } from "../lib/csrf";
 import RecommendedTools from "../components/RecommendedTools";
 import Breadcrumbs from "../components/Breadcrumbs";
 
@@ -192,13 +193,35 @@ export default function LocalLanding() {
   }, [city]);
 
   const [form, setForm] = useState({ name: "", email: "", company: "", message: "" });
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState("idle"); // idle | sending | sent | error
+  const sent = status === "sent";
 
   if (!city) return <Navigate to="/" replace />;
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    setSent(true);
+    if (status === "sending") return;
+    setStatus("sending");
+    try {
+      const res = await csrfFetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          company: form.company.trim(),
+          // /api/contact requires a non-empty message — synthesize one from the
+          // city + company context when the visitor leaves the field blank.
+          message:
+            form.message.trim() ||
+            `Free IT audit request from the ${city.city} landing page${form.company.trim() ? ` (${form.company.trim()})` : ""}.`,
+          source: `local-landing-${city.slug}`,
+        }),
+      });
+      setStatus(res && res.ok ? "sent" : "error");
+    } catch {
+      setStatus("error");
+    }
   };
 
   return (
@@ -391,7 +414,15 @@ export default function LocalLanding() {
                   <label>How can we help?
                     <textarea rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
                   </label>
-                  <button type="submit" className="btn btn-primary btn-lg">Request my audit <ArrowRight size={16} /></button>
+                  <button type="submit" className="btn btn-primary btn-lg" disabled={status === "sending"}>
+                    {status === "sending" ? "Sending…" : <>Request my audit <ArrowRight size={16} /></>}
+                  </button>
+                  {status === "error" && (
+                    <p role="alert" style={{ marginTop: 10, fontSize: 14, color: "#B42318" }}>
+                      Something went wrong sending that. Please email{" "}
+                      <a href="mailto:hello@simpleitsrq.com">hello@simpleitsrq.com</a> and we'll get right back to you.
+                    </p>
+                  )}
                 </>
               )}
             </form>
