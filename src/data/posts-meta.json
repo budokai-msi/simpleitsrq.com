@@ -61,48 +61,35 @@
   },
   {
     "slug": "ai-revolutionizes-problem-solving-for-small-business-owners-in-sarasota-bradenton-venice-florida",
-    "title": "AI Problem-Solving for Sarasota Small Business",
+    "title": "Your First AI Project Should Be Small and Boring",
     "date": "2026-05-21",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
     "tags": [
-      "hacker-news",
+      "ai",
+      "workflow",
       "local-it",
       "smb"
     ],
-    "excerpt": "AI can help small teams solve real workflow problems, but only when the process, data, and review step are clear before the tool is added.",
-    "metaDescription": "AI can help with messy office workflows, but the first win is not magic. Start with one repeatable process, clean data, and human review.",
-    "heroAlt": "A Sarasota office team reviewing an AI-assisted workflow checklist."
-  },
-  {
-    "slug": "ai-psychosis-in-small-business-sarasota-bradenton-venice-2",
-    "title": "Avoid AI Overreach in Small Business",
-    "date": "2026-05-17",
-    "category": "AI & Productivity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hacker-news",
-      "local-it",
-      "smb"
-    ],
-    "excerpt": "AI tools are useful when they speed up a known workflow. They get risky when nobody owns the data, review step, or decision.",
-    "metaDescription": "AI tools can help local teams, but unchecked prompts and shortcuts create bad decisions. Use policy, review, and secure access before scaling.",
-    "heroAlt": "A small-business owner reviewing AI tool access on a laptop."
+    "excerpt": "AI can help small teams solve real workflow problems, but only when the process, the data, and the review step are clear before the tool is added.",
+    "metaDescription": "Forget 'make the company AI-powered.' The first AI win for a Sarasota small business is one repeatable workflow, clean data, and a human review step.",
+    "heroAlt": "A Sarasota office team reviewing an AI-assisted workflow checklist on a whiteboard."
   },
   {
     "slug": "ai-psychosis-in-small-business-sarasota-bradenton-venice",
-    "title": "Keep AI Useful Without Losing Judgment",
+    "title": "Keep AI Useful Without Losing Your Judgment",
     "date": "2026-05-17",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
     "tags": [
-      "hacker-news",
+      "ai",
+      "policy",
       "local-it",
       "smb"
     ],
-    "excerpt": "The safest AI rollout is not the flashiest one. Use it for drafts and triage, then keep humans responsible for decisions.",
-    "metaDescription": "Small businesses should use AI for drafts, summaries, and triage, not unchecked decisions. Here is a practical review loop for local teams.",
-    "heroAlt": "A local office reviewing AI-generated notes before sending them to a customer."
+    "excerpt": "The safest AI rollout is not the flashiest one. Use it for drafts and triage, keep humans on the decisions, and watch for the moment output starts getting treated as fact.",
+    "metaDescription": "AI should speed up your team without making the business careless. A practical review loop for Sarasota and Bradenton small businesses, plus the warning signs.",
+    "heroAlt": "A small-office team reviewing AI-generated notes on a laptop before sending them to a customer."
   },
   {
     "slug": "can-macbook-air-handle-demanding-tasks-sarasota-bradenton-venice-florida-small-business",
@@ -902,18 +889,20 @@
   },
   {
     "slug": "run-ai-locally-bradenton-small-business",
-    "title": "Can You Run AI On-Prem? A Practical Guide for Bradenton SMBs",
+    "title": "Running AI On-Prem: A Hardware Guide for Bradenton SMBs",
     "date": "2026-03-13",
     "category": "AI & Productivity",
     "author": "Simple IT SRQ Team",
     "tags": [
       "ai",
       "on-prem",
-      "smb"
+      "hardware",
+      "smb",
+      "bradenton"
     ],
-    "excerpt": "A new tool detects your hardware and tells you which open-weight models you can realistically run locally. Hand this to any local client asking about on-prem AI.",
-    "metaDescription": "A new tool detects your hardware and tells you which open-weight models you can run locally. Heres a practical guide for Bradenton SMBs.",
-    "heroAlt": "A workstation with a discrete GPU running an AI inference benchmark."
+    "excerpt": "Running a useful AI model on your own hardware is no longer a research project. Here is what to buy, what to skip, and what it actually costs for a Sarasota or Bradenton office.",
+    "metaDescription": "What hardware actually runs AI locally in a Bradenton or Sarasota office? A practical on-prem buying guide: mini PCs, GPUs, RAM, and the real costs.",
+    "heroAlt": "A small-office workstation with a discrete GPU running a local AI model, status LEDs glowing."
   },
   {
     "slug": "clean-room-reverse-engineering-legacy-vendor-lockin",

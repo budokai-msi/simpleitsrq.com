@@ -44,31 +44,22 @@
       <description>Old source code stories are a reminder that business systems outlive the people who first installed them. Documentation is not optional.</description>
     </item>
     <item>
-      <title>AI Problem-Solving for Sarasota Small Business</title>
+      <title>Your First AI Project Should Be Small and Boring</title>
       <link>https://simpleitsrq.com/blog/ai-revolutionizes-problem-solving-for-small-business-owners-in-sarasota-bradenton-venice-florida</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-revolutionizes-problem-solving-for-small-business-owners-in-sarasota-bradenton-venice-florida</guid>
       <pubDate>Thu, 21 May 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>AI &amp; Productivity</category>
-      <description>AI can help small teams solve real workflow problems, but only when the process, data, and review step are clear before the tool is added.</description>
+      <description>AI can help small teams solve real workflow problems, but only when the process, the data, and the review step are clear before the tool is added.</description>
     </item>
     <item>
-      <title>Avoid AI Overreach in Small Business</title>
-      <link>https://simpleitsrq.com/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice-2</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice-2</guid>
-      <pubDate>Sun, 17 May 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>AI &amp; Productivity</category>
-      <description>AI tools are useful when they speed up a known workflow. They get risky when nobody owns the data, review step, or decision.</description>
-    </item>
-    <item>
-      <title>Keep AI Useful Without Losing Judgment</title>
+      <title>Keep AI Useful Without Losing Your Judgment</title>
       <link>https://simpleitsrq.com/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice</guid>
       <pubDate>Sun, 17 May 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>AI &amp; Productivity</category>
-      <description>The safest AI rollout is not the flashiest one. Use it for drafts and triage, then keep humans responsible for decisions.</description>
+      <description>The safest AI rollout is not the flashiest one. Use it for drafts and triage, keep humans on the decisions, and watch for the moment output starts getting treated as fact.</description>
     </item>
     <item>
       <title>MacBook Air Fit for Local Business Work</title>
@@ -503,13 +494,13 @@
       <description>A new Linux distribution explicitly designed for non-technical users focuses on large fonts, minimal menus, and tamper-resistant defaults. A potential kiosk Linux candidate for Sarasota deployments.</description>
     </item>
     <item>
-      <title>Can You Run AI On-Prem? A Practical Guide for Bradenton SMBs</title>
+      <title>Running AI On-Prem: A Hardware Guide for Bradenton SMBs</title>
       <link>https://simpleitsrq.com/blog/run-ai-locally-bradenton-small-business</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/run-ai-locally-bradenton-small-business</guid>
       <pubDate>Fri, 13 Mar 2026 00:00:00 GMT</pubDate>
       <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
       <category>AI &amp; Productivity</category>
-      <description>A new tool detects your hardware and tells you which open-weight models you can realistically run locally. Hand this to any local client asking about on-prem AI.</description>
+      <description>Running a useful AI model on your own hardware is no longer a research project. Here is what to buy, what to skip, and what it actually costs for a Sarasota or Bradenton office.</description>
     </item>
     <item>
       <title>Clean-Room Reverse Engineering for Legacy Lock-In</title>
