@@ -307,6 +307,153 @@ export const cities = {
       },
     ],
   },
+  palmetto: {
+    slug: "palmetto-it-support",
+    city: "Palmetto",
+    cityFull: "Palmetto, FL",
+    // Palmetto centroid; 10mi covers the US-41/US-301 split, the historic
+    // riverfront, Snead Island/Regatta Pointe, Terra Ceia, and Port Manatee.
+    lat: 27.5214,
+    lng: -82.5723,
+    radiusMiles: 10,
+    h1: "IT Support in Palmetto, FL",
+    title: "Palmetto IT Support | Local IT Help for Manatee County | Simple IT SRQ",
+    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Palmetto, FL businesses — from the US-301 produce corridor to the Regatta Pointe waterfront. Flat monthly pricing and a Manatee County team that answers the phone.",
+    intro: "Palmetto runs on industries most IT vendors never learn: produce packing and agribusiness along US-301, marine and boatyard operations out at Snead Island and Regatta Pointe, and the light manufacturing and distribution clustered toward Port Manatee. Simple IT SRQ is headquartered minutes away across the river, and we operate managed IT for the operators that keep north Manatee County moving — cold-storage and logistics networks that cannot go dark mid-shipment, dock Wi-Fi that survives salt air, and the small professional offices along Riverside Drive that just need email, backups, and a tech who picks up.",
+    servicesIntro: "Palmetto accounts cluster into three operating profiles — agribusiness and distribution along the US-301 corridor, marine and waterfront operations on the river, and professional and medical offices downtown. The capabilities below ship on every engagement; only the emphasis changes.",
+    localPatterns: [
+      { title: "Produce or agribusiness, US-301 corridor", body: "Packing-house and cold-storage networks that have to stay online through a harvest shift, ruggedized scanners and fleet tablets that survive a loading dock, seasonal-labor device and account turnover handled without a security hole, and an off-site backup that does not assume the building has power after a summer storm." },
+      { title: "Marine business, Regatta Pointe / Snead Island", body: "Outdoor-rated Wi-Fi that actually reaches the slips and the lift, ruggedized laptops and tablets standardized for the salt-air lifecycle, invoicing that works from a captain's phone when the office is down, and off-site backups stored far enough inland to survive a Gulf landfall." },
+      { title: "Medical or dental practice, downtown Palmetto", body: "EHR and imaging-vendor uptime, a written HIPAA Risk Assessment and Safeguards binder built for the security-renewal questionnaire, two-step sign-in on every account that touches PHI, and a tech who can be on-site across the bridge instead of driving down from Tampa." },
+    ],
+    landmarks: ["Regatta Pointe Marina", "Historic Palmetto / Riverside Drive", "US-301 produce corridor", "Snead Island", "Port Manatee", "Sutton Park"],
+    neighborhoods: "downtown Palmetto, Riverside Drive, Snead Island, Terra Ceia, Rubonia, the US-301 agribusiness corridor, and the industrial district toward Port Manatee",
+    whyLocal: [
+      "Headquartered across the Manatee River in 34207 — Palmetto is part of our daily dispatch run, not a per-trip surcharge from a Tampa office.",
+      "Real depth in the industries Palmetto actually runs on: agribusiness and cold-storage logistics, marine and waterfront operations, and light manufacturing near Port Manatee.",
+      "Hurricane-season continuity engineered for the Gulf Coast: replicated off-site backups, generator-rated network gear, and a tested recovery runbook with documented RTO/RPO.",
+    ],
+    faqs: [
+      {
+        q: "Are you actually local to Palmetto, or driving in from Tampa?",
+        a: "We're headquartered in Bradenton (34207), just across the Manatee River, so Palmetto is part of our regular daily route — not a special trip. When you call, you get a Manatee County engineer, not an overseas call center or a Tampa subcontractor."
+      },
+      {
+        q: "Do you support agribusiness, packing houses, and cold-storage operations?",
+        a: "Yes. We handle the parts of those operations that are pure IT: keeping the packing-house and cold-storage networks online, ruggedized scanners and tablets that survive a loading dock, fleet device management, and off-site backups that don't assume the building has power. We coordinate with your line-of-business and logistics software vendors for anything inside their application."
+      },
+      {
+        q: "Can your Wi-Fi reach the docks at Regatta Pointe or Snead Island?",
+        a: "Yes — outdoor-rated business access points with directional antennas reliably cover slip and lift areas. We've installed this exact setup at marine clients in Cortez and on the Manatee River. The initial site survey is free."
+      },
+      {
+        q: "Can you handle HIPAA for a Palmetto medical or dental office?",
+        a: "Yes. We run the written HIPAA Risk Assessment, put the Administrative, Physical, and Technical Safeguards in place, sign a BAA, and hand you the audit-ready binder your state surveyor or insurance reviewer opens first."
+      },
+      {
+        q: "What does managed IT cost for a small Palmetto business?",
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call so you're never surprised."
+      },
+    ],
+  },
+  ellenton: {
+    slug: "ellenton-it-support",
+    city: "Ellenton",
+    cityFull: "Ellenton, FL",
+    // Ellenton centroid; 10mi covers the I-75 exit 224 logistics corridor,
+    // the Premium Outlets, the US-301 Gateway business parks, and Parrish.
+    lat: 27.5217,
+    lng: -82.5276,
+    radiusMiles: 10,
+    h1: "IT Support in Ellenton, FL",
+    title: "Ellenton IT Support | Local IT for Retail & Logistics | Simple IT SRQ",
+    metaDescription: "Local IT support, computer repair, networking, and PCI-ready point-of-sale help for Ellenton, FL — from the Premium Outlets to the I-75 logistics corridor. Flat monthly pricing and a local Manatee County team.",
+    intro: "Ellenton is a retail-and-logistics town: the Premium Outlets pull traffic off I-75 exit 224, the Gateway and US-301 business parks run distribution and warehousing, and a steady layer of professional and medical offices serves the growing rooftops toward Parrish. Simple IT SRQ runs managed IT for the operators here — point-of-sale uptime that holds through a holiday weekend, warehouse Wi-Fi that reaches every rack and scanner, and the security paperwork your processor or insurer asks for at renewal — all from a team based in Manatee County, not down I-75 in Tampa.",
+    servicesIntro: "Ellenton accounts split across retail and hospitality near the outlets, distribution and logistics along the I-75 / Gateway corridor, and professional and medical offices on US-301. The capabilities below ship on every engagement; only the emphasis changes.",
+    localPatterns: [
+      { title: "Retailer or outlet tenant, Ellenton Premium Outlets", body: "Point-of-sale uptime through holiday and tax-free weekends, guest Wi-Fi isolated from the register network, credit-card processing documented for PCI SAQ-A, and security cameras that actually get reviewed after an incident instead of just blinking on the wall." },
+      { title: "Distribution or logistics, I-75 / Gateway corridor", body: "Warehouse Wi-Fi engineered to reach every rack and handheld scanner, warehouse-management and inventory uptime through a full shift, ruggedized devices that survive the floor, and cellular-backup networking so a single ISP outage doesn't stop shipping." },
+      { title: "Medical or dental practice, US-301 / Gateway", body: "EHR and imaging-vendor uptime, a written HIPAA Risk Assessment and Safeguards binder ready for the security-renewal questionnaire, two-step sign-in on every account that touches PHI, and a local tech who can be on-site the same day when a workstation locks up." },
+    ],
+    landmarks: ["Ellenton Premium Outlets", "I-75 Exit 224", "Gamble Plantation Historic State Park", "US-301 Gateway business parks", "Manatee River"],
+    neighborhoods: "Ellenton, the Premium Outlets district, the I-75 Gateway logistics corridor, Memphis, Rubonia, and the US-301 business parks toward Palmetto and Parrish",
+    whyLocal: [
+      "A Manatee County team based minutes away — Ellenton is part of our daily run, not a billable trip down I-75 from a Tampa MSP.",
+      "Retail and logistics depth: PCI-ready point-of-sale, register-isolated guest Wi-Fi, warehouse-grade wireless, and cellular-backup networking sized for a corridor that ships seven days a week.",
+      "A named primary engineer on every account, flat monthly pricing that doesn't balloon when something breaks, and a phone that's answered by a local tech.",
+    ],
+    faqs: [
+      {
+        q: "Do you support retailers and restaurants at the Ellenton Premium Outlets?",
+        a: "Yes. Point-of-sale uptime through peak weekends, guest Wi-Fi that's isolated from the register network, PCI SAQ-A documentation for your processor, and security cameras that get reviewed after an incident are all things we do every day. We schedule on-site visits during off-peak hours so we're not in the store during the rush."
+      },
+      {
+        q: "Can you handle warehouse and distribution Wi-Fi along the I-75 corridor?",
+        a: "Yes — warehouse Wi-Fi that reaches every rack and handheld, ruggedized scanners, warehouse-management uptime, and cellular-backup networking so one ISP outage doesn't stop shipping. The initial site walk is free."
+      },
+      {
+        q: "Are you really local, or a national company with an Ellenton number?",
+        a: "We're based in Bradenton and Sarasota with techs who live here. Ellenton is part of our regular Manatee County service area, so you get a local engineer — not a Tampa subcontractor on a per-trip charge."
+      },
+      {
+        q: "Do you cover Parrish and Palmetto from Ellenton too?",
+        a: "Yes. Ellenton, Palmetto, and Parrish are all inside our north-Manatee service area on the same flat pricing. Most of our clients in this corridor have a location or two within a few exits of each other."
+      },
+      {
+        q: "What does managed IT cost for a small Ellenton business?",
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call so there are no surprises."
+      },
+    ],
+  },
+  parrish: {
+    slug: "parrish-it-support",
+    city: "Parrish",
+    cityFull: "Parrish, FL",
+    // Parrish centroid; 10mi covers North River Ranch, the Fort Hamer Bridge,
+    // the US-301 growth corridor, Ellenton, and the new hospital district.
+    lat: 27.5786,
+    lng: -82.4226,
+    radiusMiles: 10,
+    h1: "IT Support in Parrish, FL",
+    title: "Parrish IT Support | Local IT for a Growing Town | Simple IT SRQ",
+    metaDescription: "Local IT support, computer repair, office buildouts, and HIPAA documentation for Parrish, FL — the fastest-growing corner of Manatee County. New-office network setup, flat monthly pricing, and a real local team.",
+    intro: "Parrish is the fastest-growing corner of Manatee County, and the IT needs here are the needs of brand-new offices: a medical or dental practice opening in North River Ranch, a construction and development firm building the town itself, and the professional offices following the rooftops up US-301. Simple IT SRQ runs the unglamorous part — cabling and Wi-Fi for a new buildout, Microsoft 365 set up right the first time, HIPAA paperwork for a new practice, and field-ready IT for the contractors working every growth corridor from Fort Hamer to the new hospital district.",
+    servicesIntro: "Parrish accounts skew new: medical and dental practices opening in master-planned communities, construction and development firms building the growth corridors, and professional offices setting up for the first time. The capabilities below ship on every engagement; only the emphasis changes.",
+    localPatterns: [
+      { title: "Medical or dental practice, North River Ranch / US-301", body: "A clean new-office buildout — structured cabling, business firewall, and Wi-Fi sized for exam rooms and chair-side tablets — plus a written HIPAA Risk Assessment and Safeguards binder, EHR and imaging-vendor coordination, and two-step sign-in on every account from day one instead of bolted on later." },
+      { title: "Construction or development firm, Parrish growth corridor", body: "Rugged field laptops sized for the truck cab, cellular-backup networking at the job-site trailer so a pour stays on schedule when builder Wi-Fi fails, MDM for foreman tablets running Procore or Buildertrend, and document security for plans, change orders, and insurance certificates." },
+      { title: "New professional office, Fort Hamer / US-301", body: "Microsoft 365 set up correctly the first time — email, shared drives, secure sign-in, and company devices that all behave the same — plus business-grade Wi-Fi, labeled cabling, and a backup plan, so a brand-new office runs like an established one on opening day." },
+    ],
+    landmarks: ["North River Ranch", "Fort Hamer Bridge", "US-301 growth corridor", "Parrish Historic District", "Fort Hamer Park", "the new north-Manatee hospital district"],
+    neighborhoods: "North River Ranch, the US-301 growth corridor, the Fort Hamer area, Old Parrish, Ellenton-adjacent business parks, and the new master-planned communities along Moccasin Wallow Road",
+    whyLocal: [
+      "A Manatee County team that's actually close — Parrish is part of our north-county dispatch run, not a long trip down I-75 from a Tampa MSP.",
+      "New-buildout depth: structured cabling, firewall and Wi-Fi design, Microsoft 365 done right the first time, and field-ready IT for the firms building Parrish's growth corridors.",
+      "A named primary engineer on every account, flat monthly pricing with no per-ticket surprises, and HIPAA documentation ready for a new practice's first security renewal.",
+    ],
+    faqs: [
+      {
+        q: "We're opening a new office in Parrish — can you handle the buildout?",
+        a: "Yes. We run the network cabling, install and tune the firewall and Wi-Fi, set up Microsoft 365 and your company devices, configure the security cameras, and stay on-site on opening day. We've done new-office buildouts across Manatee County and into the new Parrish communities."
+      },
+      {
+        q: "Do you support construction and development firms working the Parrish corridor?",
+        a: "Yes — rugged field laptops, cellular-backup networking at the job-site trailer, MDM for foreman tablets running Procore or Buildertrend, and document security for plans and change orders. Office IT that survives a power outage on a pour day is part of the plan."
+      },
+      {
+        q: "Can you set up HIPAA paperwork for a new Parrish medical practice?",
+        a: "Absolutely — and it's much easier to do right when the office is new. We run the written HIPAA Risk Assessment, build the network and security controls in from day one, sign a BAA, and hand you an audit-ready binder for your first security renewal."
+      },
+      {
+        q: "Are you local to Parrish, or coming from Tampa?",
+        a: "We're based in Bradenton and Sarasota — Parrish is part of our regular north-Manatee service area. You get a local engineer who knows the area, not a Tampa subcontractor on a per-mile charge."
+      },
+      {
+        q: "How much does managed IT cost for a small Parrish business?",
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and on-site support. New offices also get a one-time setup quote for cabling, Wi-Fi, and devices after a free 30-minute call."
+      },
+    ],
+  },
 };
 
 export const cityList = Object.values(cities);
