@@ -63,6 +63,27 @@ const COVERAGE = [
     x: 74,
     y: 6,
   },
+  {
+    slug: "osprey-it-support",
+    name: "Osprey",
+    tag: "Bay Street, Blackburn Point, Casey Key",
+    x: 44,
+    y: 64,
+  },
+  {
+    slug: "englewood-it-support",
+    name: "Englewood",
+    tag: "Dearborn St, Manasota Key, Lemon Bay",
+    x: 30,
+    y: 96,
+  },
+  {
+    slug: "north-port-it-support",
+    name: "North Port",
+    tag: "Wellen Park, Sumter, Toledo Blade",
+    x: 70,
+    y: 94,
+  },
 ];
 
 // Simplified SVG of the SW Florida coastline between Anna Maria Island
@@ -159,7 +180,7 @@ export default function ServiceArea() {
             commercial offices, retail, residential, and seasonal condos.
           </p>
           <div className="service-area-meta">
-            <span><MapPin size={14} /> 8 covered markets</span>
+            <span><MapPin size={14} /> 11 covered markets</span>
             <span><Phone size={14} /> <a href="tel:+14072421456">(407) 242-1456</a></span>
           </div>
         </div>

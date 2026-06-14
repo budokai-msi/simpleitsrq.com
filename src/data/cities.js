@@ -454,6 +454,153 @@ export const cities = {
       },
     ],
   },
+  osprey: {
+    slug: "osprey-it-support",
+    city: "Osprey",
+    cityFull: "Osprey, FL",
+    // Osprey centroid; 8mi covers US-41/Bay Street, Blackburn Point,
+    // north Casey Key, Oscar Scherer, and the south-Sarasota overlap.
+    lat: 27.1956,
+    lng: -82.4904,
+    radiusMiles: 8,
+    h1: "IT Support in Osprey, FL",
+    title: "Osprey IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
+    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Osprey, FL businesses and Casey Key residences — from Bay Street to Blackburn Point. Flat monthly pricing and a Sarasota County team that picks up.",
+    intro: "Osprey sits in the quiet stretch of US-41 between Sarasota and Venice, where small professional offices, independent medical practices, and the waterfront businesses around Blackburn Point and north Casey Key all need an IT partner who is actually nearby. Simple IT SRQ dispatches engineers out of Sarasota County — not Tampa — and runs managed IT for the Bay Street offices, the practices near Oscar Scherer, and the marine and residential clients along the key. Email, backups, security paperwork, and a tech who answers the phone.",
+    servicesIntro: "Osprey accounts are small and personal — professional and medical offices along US-41, marine and waterfront operations near Blackburn Point, and high-end residential and home offices on Casey Key. The capabilities below ship on every engagement; only the emphasis changes.",
+    localPatterns: [
+      { title: "Medical or professional office, US-41 / Bay Street", body: "A right-sized setup for a small practice or firm — Microsoft 365 done correctly, business Wi-Fi, labeled cabling, and a written HIPAA Risk Assessment and Safeguards binder for the medical offices, all without the overhead a 50-person firm would carry." },
+      { title: "Marine or waterfront business, Blackburn Point / Casey Key", body: "Outdoor-rated Wi-Fi that reaches the dock and the lift, ruggedized laptops and tablets standardized for the salt-air lifecycle, invoicing that works from a phone when the office is down, and off-site backups stored well inland." },
+      { title: "Residential and home office, Casey Key & Oscar Scherer area", body: "Whole-home and home-office networking that actually covers the property, security cameras with mobile viewing, a tested backup for the home machine, and no-contract repair when a laptop or drive fails." },
+    ],
+    landmarks: ["Historic Spanish Point", "Blackburn Point Bridge", "Oscar Scherer State Park", "Bay Street / US-41", "north Casey Key", "Pine View area"],
+    neighborhoods: "Osprey, north Casey Key, Blackburn Point, the Bay Street / US-41 corridor, Southbay, and the south-Sarasota offices toward Vamo and Oscar Scherer",
+    whyLocal: [
+      "Sarasota County engineering team — Osprey is part of our regular US-41 dispatch run between Sarasota and Venice, not a drive-down from Tampa.",
+      "Right-sized for small offices and residential clients: professional and medical practices, marine businesses, and the homes and home offices along Casey Key.",
+      "A named primary engineer on every business account, flat monthly pricing with no per-ticket surprises, and no-contract repair for residential clients.",
+    ],
+    faqs: [
+      {
+        q: "Do you cover Osprey from your Sarasota office?",
+        a: "Yes — Osprey sits right inside our regular service area on the US-41 corridor between Sarasota and Venice. We're based in Sarasota and Bradenton, so Osprey, Blackburn Point, and north Casey Key are part of our normal route. Most issues we start on remotely first and we'll be straight with you about when a tech can be on-site."
+      },
+      {
+        q: "Do you work with residential clients and home offices on Casey Key?",
+        a: "Yes. We do whole-home networking, Wi-Fi that covers the whole property, security cameras with mobile viewing, home-machine backups, and no-contract computer repair for residential clients across Osprey and Casey Key — not just business accounts."
+      },
+      {
+        q: "Can you handle HIPAA for a small Osprey medical office?",
+        a: "Yes. We run the same written HIPAA Risk Assessment, install the required Safeguards, sign a BAA, and hand over audit-ready documentation for small practices that don't have room for a full-time IT person."
+      },
+      {
+        q: "Can your Wi-Fi reach a dock near Blackburn Point?",
+        a: "Yes — outdoor-rated business access points with directional antennas reliably cover slip and lift areas. We've installed this exact setup at marine clients on the Manatee River and in Cortez. The initial site survey is free."
+      },
+      {
+        q: "What does managed IT cost for a small Osprey business?",
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call, and residential repair is billed no-contract by the visit."
+      },
+    ],
+  },
+  englewood: {
+    slug: "englewood-it-support",
+    city: "Englewood",
+    cityFull: "Englewood, FL",
+    // Englewood centroid; 10mi covers Dearborn Street, Manasota Key,
+    // Lemon Bay, and the Sarasota/Charlotte county line.
+    lat: 26.9620,
+    lng: -82.3526,
+    radiusMiles: 10,
+    h1: "IT Support in Englewood, FL",
+    title: "Englewood IT Support | Local IT Help and HIPAA | Simple IT SRQ",
+    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Englewood, FL — Dearborn Street, Manasota Key, and Lemon Bay. Medical, marine, and vacation-rental IT with flat monthly pricing and a local team.",
+    intro: "Englewood straddles the Sarasota–Charlotte county line, with a business mix shaped by the water: fishing and marine operations on Lemon Bay, vacation-rental and hospitality on Manasota Key, and a dense layer of medical practices serving one of the region's most retiree-heavy populations. Simple IT SRQ covers Englewood from our Venice service area and runs managed IT for the Dearborn Street offices, the bayfront marine businesses, and the practices near Englewood Community Hospital — HIPAA paperwork, salt-air-ready hardware, and a tech who shows up.",
+    servicesIntro: "Englewood accounts cluster into three operating profiles — medical and dental practices serving a retiree-heavy population, marine and fishing operations on Lemon Bay, and vacation-rental and hospitality on Manasota Key. The capabilities below ship on every engagement; only the emphasis changes.",
+    localPatterns: [
+      { title: "Medical or dental practice, Dearborn Street / near the hospital", body: "EHR and imaging-vendor uptime for a high-volume, retiree-heavy patient load, a written HIPAA Risk Assessment and Safeguards binder built for the security-renewal questionnaire, two-step sign-in on every account that touches PHI, and phone coverage that survives barrier-island weather." },
+      { title: "Marine or fishing business, Lemon Bay / Manasota Key", body: "Outdoor-rated Wi-Fi that reaches the dock and the fish house, ruggedized devices standardized for the salt-air lifecycle, invoicing and charter booking that work from a captain's phone, and off-site backups stored far enough inland to survive a Gulf landfall." },
+      { title: "Vacation rental or hospitality, Manasota Key", body: "Smart-lock integration with the booking system, per-property guest Wi-Fi separated from the owner network, booking-system uptime sized for the winter peak, and off-island backups that don't assume the key has power." },
+    ],
+    landmarks: ["Historic Dearborn Street", "Manasota Key", "Lemon Bay", "Englewood Beach", "Englewood Community Hospital", "Stump Pass"],
+    neighborhoods: "Englewood, Dearborn Street, Manasota Key, Grove City, Rotonda-adjacent offices, and the Lemon Bay waterfront along both sides of the county line",
+    whyLocal: [
+      "Covered from our Venice service area on the same flat pricing — a local Gulf Coast team, not a per-trip dispatch from Tampa or Fort Myers.",
+      "Real depth in the industries Englewood runs on: retiree-heavy medical practices, marine and fishing operations, and Manasota Key vacation rentals.",
+      "Hurricane-season continuity engineered for a barrier-island reality: replicated off-site backups, generator-rated networking, and a tested runbook that doesn't assume the key has power.",
+    ],
+    faqs: [
+      {
+        q: "Do you cover Englewood, including Manasota Key?",
+        a: "Yes — we cover Englewood and Manasota Key from our Venice service area on the same flat pricing. Most issues we start on remotely first, and we schedule on-site visits as quickly as our calendar allows. We'll always be upfront about timing for island work."
+      },
+      {
+        q: "Do you specialize in medical practice IT near Englewood Community Hospital?",
+        a: "Yes. A big share of our Gulf Coast work is medical, dental, physical-therapy, and imaging practices. We run written HIPAA Risk Assessments, sign BAAs, manage EHR uptime, and hand over audit-ready documentation for state and insurance renewals — built for the high patient volume an Englewood practice sees."
+      },
+      {
+        q: "Can you support a fishing or marine business on Lemon Bay?",
+        a: "Yes — dock and fish-house Wi-Fi, ruggedized devices that survive salt air, charter-booking and invoicing that work from a phone, and off-site backups stored well inland. The initial site survey is free."
+      },
+      {
+        q: "Do you handle vacation rentals on Manasota Key?",
+        a: "Yes. Smart-lock-to-booking-system integration, per-property guest Wi-Fi separated from the owner network, booking-system uptime sized for the winter peak, and off-island backups are all things we do for vacation-rental clients along the coast."
+      },
+      {
+        q: "Are you in Sarasota County or Charlotte County for Englewood?",
+        a: "Englewood straddles the line, and we serve both sides from our Venice base. The flat pricing and service are the same regardless of which county your address falls in."
+      },
+    ],
+  },
+  "north-port": {
+    slug: "north-port-it-support",
+    city: "North Port",
+    cityFull: "North Port, FL",
+    // North Port centroid; 10mi covers Wellen Park / West Villages,
+    // Sumter Blvd, Toledo Blade, and the US-41 corridor toward Venice.
+    lat: 27.0442,
+    lng: -82.2359,
+    radiusMiles: 10,
+    h1: "IT Support in North Port, FL",
+    title: "North Port IT Support | Local IT for a Growing City | Simple IT SRQ",
+    metaDescription: "IT support, new-office buildouts, computer repair, and HIPAA documentation for North Port, FL — Wellen Park, West Villages, and the Sumter/Toledo Blade corridors. Flat monthly pricing and a Gulf Coast team.",
+    intro: "North Port is booming — Wellen Park and the West Villages are pulling in young families, new medical and dental practices, and the construction firms building it all. The IT needs here are new-office needs: cabling and Wi-Fi for a fresh buildout, Microsoft 365 set up right the first time, HIPAA paperwork for a new practice, and field-ready IT for contractors working the growth corridors. Simple IT SRQ serves North Port from our Venice base — we'll be upfront that it's the southern edge of our range, so on-site work is scheduled rather than same-day, but the engineering and the flat pricing are the same.",
+    servicesIntro: "North Port accounts skew new and fast-growing: medical and dental practices opening in Wellen Park, construction and development firms building the West Villages, and professional offices setting up along Sumter and Toledo Blade. The capabilities below ship on every engagement; only the emphasis changes.",
+    localPatterns: [
+      { title: "Medical or dental practice, Wellen Park / Sumter Blvd", body: "A clean new-office buildout — structured cabling, business firewall, and exam-room Wi-Fi — plus a written HIPAA Risk Assessment and Safeguards binder, EHR and imaging-vendor coordination, and two-step sign-in on every account from day one instead of bolted on later." },
+      { title: "Construction or development firm, Wellen Park / West Villages", body: "Rugged field laptops sized for the truck cab, cellular-backup networking at the job-site trailer so a pour stays on schedule when builder Wi-Fi fails, MDM for foreman tablets running Procore or Buildertrend, and document security for plans, change orders, and insurance certificates." },
+      { title: "New professional office, Toledo Blade / US-41", body: "Microsoft 365 set up correctly the first time — email, shared drives, secure sign-in, and company devices that all behave the same — plus business-grade Wi-Fi, labeled cabling, and a tested backup, so a brand-new North Port office runs like an established one." },
+    ],
+    landmarks: ["Wellen Park", "CoolToday Park (Atlanta Braves)", "Warm Mineral Springs", "Sumter Boulevard corridor", "Toledo Blade Boulevard", "Myakka State Forest"],
+    neighborhoods: "Wellen Park, the West Villages, the Sumter Boulevard corridor, Toledo Blade, the US-41 corridor toward Venice, and the new master-planned communities across North Port",
+    whyLocal: [
+      "Served from our Venice base on the same flat pricing — we're honest that North Port is the southern edge of our range, so on-site work is scheduled rather than same-day.",
+      "New-buildout depth: structured cabling, firewall and Wi-Fi design, Microsoft 365 done right the first time, and field-ready IT for the firms building North Port's growth corridors.",
+      "A named primary engineer on every account, HIPAA documentation ready for a new practice's first security renewal, and no per-ticket surprises.",
+    ],
+    faqs: [
+      {
+        q: "Do you really cover North Port, or is it out of range?",
+        a: "We cover North Port from our Venice base, and we'll be straight with you: it's the southern edge of our service area, so we schedule on-site visits rather than promising same-day. Most issues we handle remotely first, and the engineering, security, and flat pricing are identical to the rest of our markets."
+      },
+      {
+        q: "We're opening a new office in Wellen Park — can you handle the buildout?",
+        a: "Yes. We run the network cabling, install and tune the firewall and Wi-Fi, set up Microsoft 365 and your company devices, configure security cameras, and coordinate the opening. New-office buildouts are one of the most common things we do in fast-growing areas like Wellen Park and the West Villages."
+      },
+      {
+        q: "Can you set up HIPAA paperwork for a new North Port practice?",
+        a: "Yes — and it's easiest to do right when the office is new. We run the written HIPAA Risk Assessment, build the security controls in from day one, sign a BAA, and hand you an audit-ready binder for your first security renewal."
+      },
+      {
+        q: "Do you support construction firms building in North Port?",
+        a: "Yes — rugged field laptops, cellular-backup networking at the job-site trailer, MDM for foreman tablets running Procore or Buildertrend, and document security for plans and change orders. Office IT that survives a power outage on a pour day is part of the plan."
+      },
+      {
+        q: "How much does managed IT cost for a small North Port business?",
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and remote support, with scheduled on-site visits. New offices also get a one-time setup quote for cabling, Wi-Fi, and devices after a free 30-minute call."
+      },
+    ],
+  },
 };
 
 export const cityList = Object.values(cities);
