@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { useSEO } from "../lib/seo";
+import NotFound from "./NotFound";
 
 const TABS = [
   ["ops", "Ops", Activity],
@@ -276,16 +277,26 @@ export default function AdminOps() {
     }
   };
 
-  if (forbidden) {
+  const authConfirmed = Object.keys(data).length > 0;
+
+  // Opsec: never confirm this route exists to a non-admin. A probe that isn't
+  // authorized — or any visitor before the admin check resolves — sees the
+  // ordinary site 404, not a "restricted, sign in" page that reveals an admin
+  // surface lives here. The real gate is server-side (requireAdmin on every
+  // action); this just removes the client-side disclosure.
+  if (forbidden || (!authConfirmed && !loading)) {
+    return <NotFound />;
+  }
+
+  // Hold the dashboard shell (tabs, panel structure) until at least one admin
+  // action has returned data, so the cockpit layout isn't exposed during the
+  // initial auth round-trip.
+  if (!authConfirmed) {
     return (
-      <main id="main" className="section admin-affiliates admin-ops">
-        <div className="container">
-          <section className="ops-restricted">
-            <Lock size={24} />
-            <h1>Admin ops is restricted.</h1>
-            <p>Sign in with an admin account, then return to this hidden route.</p>
-            <Link to="/portal" className="btn btn-primary">Go to portal</Link>
-          </section>
+      <main id="main" className="section">
+        <div className="container" style={{ padding: "80px 0", textAlign: "center", color: "var(--syn-text-muted, #6b7280)" }}>
+          <Lock size={20} aria-hidden="true" />
+          <p style={{ marginTop: 12 }}>Loading…</p>
         </div>
       </main>
     );
