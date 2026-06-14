@@ -90,6 +90,52 @@ export const TOOL_CATEGORIES = [
     ],
   },
   {
+    id: "ai-workstation",
+    title: "AI & Workstation Hardware",
+    intro: "Running AI in-house or just keeping a power user fast comes down to four parts: memory, a capable GPU, fast storage, and a quiet box to hold them.",
+    items: [
+      az("mac mini m4 16gb", "Mac mini (16-32GB Unified)", "The lowest-maintenance way to run local AI or serve a power user. Quiet, sips power, and runs Ollama with almost no setup. See our on-prem AI guide."),
+      az("nvidia rtx 4060 ti 16gb", "GPU (16GB VRAM)", "The model has to fit in VRAM to run fast. 16GB is the realistic floor for a local LLM or heavy creative workload; 24GB is the sweet spot."),
+      az("64gb ddr5 desktop ram kit", "DDR5 RAM Kit (64GB)", "Browsers, design apps, and AI tooling all eat memory. 64GB keeps a workstation from swapping under real load."),
+      az("2tb nvme gen4 ssd", "NVMe SSD (2TB Gen4)", "Model files and project libraries are large. A fast Gen4 drive cuts load times and gives AI tools room to grow."),
+      az("mini pc 16gb linux compatible", "Linux-Ready Mini PC", "A cheap one-for-one replacement for a tired office desktop. Pairs well with a Linux refresh instead of a new Windows license."),
+    ],
+  },
+  {
+    id: "print-scan",
+    title: "Printers & Scanners",
+    intro: "The right office printer is boring, networked, and cheap to feed. The right scanner turns a paper office into a searchable one.",
+    items: [
+      az("brother business monochrome laser printer network", "Business Laser Printer (Mono)", "Networked, duplex, and cheap per page. The workhorse for any office that still prints contracts and forms."),
+      az("brother color laser all in one printer business", "Color Laser All-in-One", "Print, scan, copy, and fax-to-email in one networked unit. Color when marketing needs it without inkjet running costs."),
+      az("fujitsu scansnap ix1600 document scanner", "Document Scanner (ScanSnap)", "One button turns a stack of paper into searchable PDFs straight to your cloud. The fastest path to a paperless front desk."),
+      az("dymo label printer thermal shipping", "Thermal Label Printer", "Shipping and file labels with no ink. A quiet revenue-saver for any office that mails or files at volume."),
+    ],
+  },
+  {
+    id: "conference-av",
+    title: "Conference Room & AV",
+    intro: "Hybrid meetings live or die on the room hardware. A real camera and speakerphone end the 'we can't hear you' standup.",
+    items: [
+      az("4k conference room webcam wide angle", "Conference Webcam (4K)", "Wide-angle, auto-framing camera that fits the whole table in frame. The single biggest upgrade to a video-call room."),
+      az("jabra speak speakerphone usb bluetooth", "USB/Bluetooth Speakerphone", "Full-duplex audio that actually picks up the far end of the table. Plug into any laptop for an instant meeting room."),
+      az("logitech wireless headset noise cancelling business", "Wireless Headset (Noise-Cancelling)", "Per-desk essential for call-heavy roles. Noise cancellation keeps the open office out of the customer's ear."),
+      az("tv wall mount full motion 55 75 inch", "TV Wall Mount (Full-Motion)", "Gets the conference display off the cart and onto the wall at the right height. Full-motion for glare and angle."),
+    ],
+  },
+  {
+    id: "field-mobile",
+    title: "Field & Mobile Office",
+    intro: "Job-site trailers, boats, and traveling staff need IT that survives the truck cab and the dead zone. These earn their keep on the road.",
+    items: [
+      az("portable monitor 15.6 usb-c 1080p", "Portable USB-C Monitor", "A second screen that folds into a laptop bag. Doubles productivity for field estimators and traveling staff."),
+      az("usb-c hub multiport ethernet hdmi", "USB-C Multiport Hub", "Ethernet, HDMI, and USB-A from one laptop port. The adapter every modern thin laptop is missing."),
+      az("5g mobile hotspot unlocked", "5G Mobile Hotspot", "Cellular backup for the job-site trailer or a connection where there is none. Keeps the field online when builder Wi-Fi fails."),
+      az("rugged laptop case hard shell 15 inch", "Rugged Laptop Case", "Hard-shell protection for the laptop that lives in a truck or on a boat. Cheaper than the deductible on a cracked screen."),
+      az("portable power station 300w", "Portable Power Station", "Runs a laptop, hotspot, and phone through an outage or off-grid shift. Hurricane-season insurance for field crews."),
+    ],
+  },
+  {
     id: "infrastructure",
     title: "Network Closet & Rack",
     intro: "A messy closet causes outages. A clean rack with labeled cables and a patch panel prevents them.",
