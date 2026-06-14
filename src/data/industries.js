@@ -18,7 +18,7 @@ export const industries = {
     titleSuffix: "Medical & Dental IT Support | HIPAA-ready | Simple IT SRQ",
     serviceType: "Healthcare IT",
     matchPattern: /medical|dental|practice|imaging|physical therapy|chiropract/i,
-    cities: ["sarasota", "bradenton", "lakewood-ranch", "nokomis", "venice", "bradenton-34207", "palmetto", "ellenton", "parrish"],
+    cities: ["sarasota", "bradenton", "lakewood-ranch", "nokomis", "venice", "bradenton-34207", "palmetto", "ellenton", "parrish", "osprey", "englewood", "north-port"],
     intro:
       "Medical and dental practices on the Florida Gulf Coast carry three layers of IT obligation that every other small business avoids: HIPAA technical and administrative safeguards, an EHR vendor whose uptime defines your day, and a security renewal questionnaire that gets longer every year. Simple IT SRQ specializes in independent practices — 4 to 60 providers — that need real HIPAA paperwork, real backups, and a tech who shows up the day a workstation locks up before morning huddle.",
     emphasis: [
@@ -144,7 +144,7 @@ export const industries = {
     titleSuffix: "Marine IT Support | Waterfront-ready | Simple IT SRQ",
     serviceType: "Marine industry IT",
     matchPattern: /marine|waterfront|dock|lift|yacht|boat|fishing/i,
-    cities: ["bradenton", "nokomis", "bradenton-34207", "palmetto"],
+    cities: ["bradenton", "nokomis", "bradenton-34207", "palmetto", "osprey", "englewood"],
     intro:
       "Marine services, boatyards, charter operations, and waterfront repair shops along Bradenton, Cortez, and the Casey Key corridor share a problem most IT vendors don't think about: your tools have to work where the salt air kills consumer hardware in two seasons, where Wi-Fi has to reach across a lift and a slip, and where a tropical storm is part of the operating budget. Simple IT SRQ supports marine clients with ruggedized fleet tablets, dock-and-lift Wi-Fi that actually reaches the water, and offsite backups that don't assume the mainland is online.",
     emphasis: [
@@ -186,7 +186,7 @@ export const industries = {
     titleSuffix: "Construction Firm IT Support | Job-site ready | Simple IT SRQ",
     serviceType: "Construction industry IT",
     matchPattern: /construction|contractor|job ?site|builder/i,
-    cities: ["bradenton", "parrish"],
+    cities: ["bradenton", "parrish", "north-port"],
     intro:
       "General contractors, sub-trades, and design-build firms across the SR-64 corridor and Manatee County run an IT environment most vendors fundamentally don't understand: half your devices live in the office, half live in a truck cab, and the trailer Wi-Fi at a job site is the difference between concrete poured on schedule and concrete poured next week. Simple IT SRQ runs IT for Bradenton-area construction firms with rugged field laptops, cellular-backup networks at the trailer, MDM for foreman tablets, and a tested plan for the days your office loses power but the job site keeps running.",
     emphasis: [
@@ -228,7 +228,7 @@ export const industries = {
     titleSuffix: "Vacation Rental Management IT | Casey Key & Anna Maria | Simple IT SRQ",
     serviceType: "Hospitality IT",
     matchPattern: /vacation rental|short.?term rental|airbnb|vrbo|smart.?lock/i,
-    cities: ["nokomis"],
+    cities: ["nokomis", "englewood"],
     intro:
       "Vacation rental management companies along Casey Key, Anna Maria, and the Nokomis-Venice corridor handle a rolling roster of 30 to 300 properties — each with its own smart locks, Wi-Fi, and check-in flow that has to work at 4pm on a Saturday when the front desk is empty. Simple IT SRQ supports VRMs with smart-lock-to-PMS integration, per-property guest Wi-Fi separated from the owner network, and the booking-system uptime your January-through-March peak demands.",
     emphasis: [
