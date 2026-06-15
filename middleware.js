@@ -465,31 +465,40 @@ export default async function middleware(request) {
   }
 
   const isApiRequest = url.pathname.startsWith("/api/");
+  // Auth endpoints (OAuth login + callback) are exempt from reputation-only
+  // blocking. Admin login grants admin_ip_immunity (checked in Layer 0 above),
+  // which bypasses every defensive layer for 7 days — so a legit-but-flagged
+  // owner can sign in and self-rescue. Without this, reputation feeds create a
+  // catch-22: blocked from the API, so unable to log in to earn immunity. Login
+  // is OAuth and rate-limited, so reputation gating adds little here anyway.
+  const isAuthPath = url.pathname.startsWith("/api/auth/");
+  const enforceReputation = isApiRequest && !isAuthPath;
 
   // Layer 1: IP blocklist — already-known bad actors get nothing. Reputation-
-  // only auto-blocks (OSINT) are enforced on the API only so a legit visitor
-  // on a recycled/flagged residential IP can still read the public site;
-  // manual and exploit-attempt blocks stay hard on every path.
+  // only auto-blocks (OSINT) are enforced on the non-auth API only so a legit
+  // visitor on a recycled/flagged residential IP can still read the public site
+  // and sign in; manual and exploit-attempt blocks stay hard on every path.
   const blockedReason = await blockEntry(sql, ip);
-  if (blockedReason !== null && (isApiRequest || !isSoftReputationBlock(blockedReason))) {
+  if (blockedReason !== null && (enforceReputation || !isSoftReputationBlock(blockedReason))) {
     return BLOCKED_RESPONSE();
   }
 
   // Layer 1.5: OSINT match. If the IP is in Spamhaus DROP/EDROP or Emerging
-  // Threats, block + auto-block it on the API, but for page navigations just
-  // log it (no permanent block, no 403) — reputation feeds false-positive on
-  // residential IPs and must not lock a human out of the marketing site.
-  // Logged as a threat_actor with class=osint_match for admin visibility.
+  // Threats, block + auto-block it on the non-auth API, but for page
+  // navigations and auth endpoints just log it (no permanent block, no 403) —
+  // reputation feeds false-positive on residential IPs and must not lock a
+  // human out of the marketing site or the login flow. Logged as a
+  // threat_actor with class=osint_match for admin visibility.
   if (blockedReason === null) {
     const osintHits = await matchOsint(sql, ip);
     if (osintHits.length > 0) {
       const feeds = osintHits.map((f) => f.feed_name).join(",");
       const p = Promise.all([
-        isApiRequest ? autoBlockIp(sql, ip, `auto: osint match (${feeds})`) : Promise.resolve(),
+        enforceReputation ? autoBlockIp(sql, ip, `auto: osint match (${feeds})`) : Promise.resolve(),
         logThreat(request, geo, "osint_match"),
       ]);
       request.waitUntil?.(p) ?? p.catch(() => {});
-      if (isApiRequest) return BLOCKED_RESPONSE();
+      if (enforceReputation) return BLOCKED_RESPONSE();
     }
   }
 
