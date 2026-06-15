@@ -496,9 +496,10 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
                   <td>
                     <select
                       defaultValue={l.status || "new"}
+                      data-status={l.status || "new"}
                       disabled={busy === "lead-status"}
                       onChange={(e) => runAction("lead-status", { id: l.id, status: e.target.value }, "Lead updated.")}
-                      className="admin-leadgen-input admin-leadgen-input--sm"
+                      className="admin-leadgen-input admin-leadgen-input--sm lead-status-select"
                     >
                       <option value="new">new</option>
                       <option value="contacted">contacted</option>
@@ -541,16 +542,16 @@ function HotLeadsPanel({ hotLeads, error }) {
             {leads.map((l) => (
               <tr key={l.id}>
                 <td>
-                  <strong style={{ color: l.score >= 70 ? "#067647" : l.score >= 40 ? "#B54708" : "inherit" }}>{l.score}</strong>
+                  <span className={`lead-score lead-score--${l.score >= 70 ? "hot" : l.score >= 40 ? "warm" : "cold"}`}>{l.score}</span>
                 </td>
                 <td>
-                  {l.is_local ? <span title="In the service area" style={{ marginRight: 6 }}>📍</span> : null}
+                  {l.is_local ? <span className="lead-local-pin" title="In the service area">📍</span> : null}
                   {l.location}
                 </td>
                 <td className="admin-leadgen-muted">{l.page_count} pp · {l.dwell_sec}s · {l.max_scroll_pct}%{l.engaged ? " · engaged" : ""}</td>
-                <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{l.landing_path || "?"}{l.exit_path && l.exit_path !== l.landing_path ? ` → ${l.exit_path}` : ""}</td>
-                <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{l.referrer}</td>
-                <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{(l.reasons || []).join(", ")}</td>
+                <td className="admin-leadgen-muted lead-reasons">{l.landing_path || "?"}{l.exit_path && l.exit_path !== l.landing_path ? ` → ${l.exit_path}` : ""}</td>
+                <td className="admin-leadgen-muted lead-reasons">{l.referrer}</td>
+                <td className="admin-leadgen-muted lead-reasons">{(l.reasons || []).join(", ")}</td>
               </tr>
             ))}
           </tbody>
@@ -560,15 +561,15 @@ function HotLeadsPanel({ hotLeads, error }) {
   );
 }
 
-function FunnelBar({ label, value, pct, tone }) {
+function FunnelBar({ label, value, pct, green }) {
   return (
-    <div style={{ marginBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 3 }}>
+    <div className="ops-funnel-row">
+      <div className="ops-funnel-row__head">
         <span>{label}</span>
-        <strong>{fmtNumber(value)} <span style={{ opacity: 0.6, fontWeight: 400 }}>({pct}%)</span></strong>
+        <strong>{fmtNumber(value)}<span className="ops-funnel-row__pct">({pct}%)</span></strong>
       </div>
-      <div style={{ height: 8, borderRadius: 999, background: "var(--syn-surface-2, #eef1f4)", overflow: "hidden" }}>
-        <div style={{ width: `${Math.max(2, pct)}%`, height: "100%", background: tone || "#0F6CBD" }} />
+      <div className="ops-funnel-track">
+        <div className={`ops-funnel-fill${green ? " ops-funnel-fill--green" : ""}`} style={{ width: `${Math.max(2, pct)}%` }} />
       </div>
     </div>
   );
@@ -583,10 +584,10 @@ function LeadIntelPanels({ leadIntel, error }) {
       <section className="admin-aff-card ops-panel">
         <div className="ops-panel__head"><h2>Conversion funnel</h2><SignalPill state={funnel.sessions ? "good" : "neutral"}>14 days</SignalPill></div>
         {error ? <EmptyState>{error}</EmptyState> : null}
-        <FunnelBar label="Visitors (sessions)" value={funnel.sessions} pct={100} tone="#0F6CBD" />
-        <FunnelBar label="Engaged" value={funnel.engaged} pct={funnel.engaged_pct} tone="#2563eb" />
-        <FunnelBar label="High-intent pages" value={funnel.high_intent} pct={funnel.high_intent_pct} tone="#7c3aed" />
-        <FunnelBar label="Reached booking / contact" value={funnel.reached_booking} pct={funnel.reached_booking_pct} tone="#067647" />
+        <FunnelBar label="Visitors (sessions)" value={funnel.sessions} pct={100} />
+        <FunnelBar label="Engaged" value={funnel.engaged} pct={funnel.engaged_pct} />
+        <FunnelBar label="High-intent pages" value={funnel.high_intent} pct={funnel.high_intent_pct} />
+        <FunnelBar label="Reached booking / contact" value={funnel.reached_booking} pct={funnel.reached_booking_pct} green />
       </section>
 
       <section className="admin-aff-card ops-panel">
