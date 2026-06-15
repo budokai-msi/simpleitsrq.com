@@ -5625,6 +5625,55 @@ async function handleLeadIntel(session) {
   });
 }
 
+// Leads inbox — the CRM follow-up queue fed by every human form submission
+// (contact form, service reservations, city-landing audit requests). Read +
+// status-update; fault-tolerant so a missing leads table (migration not yet
+// applied) shows an empty inbox rather than erroring.
+const LEAD_STATUSES = ["new", "contacted", "won", "lost"];
+
+async function handleLeadsInbox(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const want = String(url.searchParams.get("status") || "").trim();
+  const filter = LEAD_STATUSES.includes(want) ? want : null;
+  const [rows, counts] = await Promise.all([
+    (filter
+      ? sql`SELECT id, name, email, phone, message, source, page, country, region, city, status, notes, created_at
+            FROM leads WHERE status = ${filter} ORDER BY created_at DESC LIMIT 200`
+      : sql`SELECT id, name, email, phone, message, source, page, country, region, city, status, notes, created_at
+            FROM leads ORDER BY created_at DESC LIMIT 200`
+    ).catch(() => []),
+    sql`SELECT status, COUNT(*)::int AS n FROM leads GROUP BY status`.catch(() => []),
+  ]);
+  const countMap = {};
+  for (const c of counts) countMap[c.status] = Number(c.n) || 0;
+  return json(200, {
+    ok: true,
+    generated_at: new Date().toISOString(),
+    filter,
+    counts: countMap,
+    total: rows.length,
+    leads: rows,
+  });
+}
+
+async function handleLeadStatus(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const id = Number.parseInt(body.id, 10);
+  const status = String(body.status || "").trim();
+  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
+  if (!LEAD_STATUSES.includes(status)) return json(400, { ok: false, error: "invalid_status" });
+  const notes = body.notes !== undefined ? String(body.notes).slice(0, 2000) : null;
+  if (notes !== null) {
+    await sql`UPDATE leads SET status = ${status}, notes = ${notes}, updated_at = now() WHERE id = ${id}`.catch(() => {});
+  } else {
+    await sql`UPDATE leads SET status = ${status}, updated_at = now() WHERE id = ${id}`.catch(() => {});
+  }
+  return json(200, { ok: true });
+}
+
 async function dispatch(request, method) {
   const url = new URL(request.url);
   const action = url.searchParams.get("action") || "";
@@ -5711,6 +5760,8 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "behavior-insights"    && method === "GET")  return handleBehaviorInsights(session);
   if (action === "hot-leads"            && method === "GET")  return handleHotLeads(session);
   if (action === "lead-intel"           && method === "GET")  return handleLeadIntel(session);
+  if (action === "leads-inbox"          && method === "GET")  return handleLeadsInbox(session, url);
+  if (action === "lead-status"          && method === "POST") return handleLeadStatus(session, request);
   if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);
   if (action === "affiliate-stats"      && method === "GET")  return handleAffiliateStats(session, url);
   if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);

@@ -9,6 +9,7 @@ import {
   DollarSign,
   Eye,
   FileText,
+  Inbox,
   Lock,
   RadioTower,
   RefreshCcw,
@@ -23,6 +24,7 @@ import NotFound from "./NotFound";
 
 const TABS = [
   ["ops", "Ops", Activity],
+  ["leads", "Leads", Inbox],
   ["visitors", "Visitors", Eye],
   ["drafts", "Drafts", FileText],
   ["affiliate", "Affiliate", DollarSign],
@@ -41,6 +43,7 @@ const CORE_ACTIONS = [
   "behavior-insights",
   "hot-leads",
   "lead-intel",
+  "leads-inbox",
   "revenue-summary",
   "leadgen-status",
   "adsense-health",
@@ -366,6 +369,7 @@ export default function AdminOps() {
 
         <section className="admin-leadgen-tab-body">
           {tab === "ops" && <OpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
+          {tab === "leads" && <LeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} busy={busy} runAction={runAction} />}
           {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
           {tab === "drafts" && <DraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
           {tab === "affiliate" && <AffiliateTab data={data} />}
@@ -445,6 +449,68 @@ function OpsTab({ data, errors, intel, busy, runAction }) {
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head"><h2>Ops status</h2></div>
         <pre className="ops-pre">{JSON.stringify({ migrations: ops?.migrations, osint: ops?.osint, errors }, null, 2)}</pre>
+      </section>
+    </div>
+  );
+}
+
+function LeadsInboxTab({ data, error, busy, runAction }) {
+  const leads = data?.leads || [];
+  const counts = data?.counts || {};
+  const fmtDate = (ts) => { try { return new Date(ts).toLocaleString(); } catch { return ts; } };
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head">
+          <h2>Leads inbox</h2>
+          <SignalPill state={(counts.new || 0) ? "good" : "neutral"}>
+            {fmtNumber(counts.new || 0)} new · {fmtNumber(counts.contacted || 0)} contacted · {fmtNumber(counts.won || 0)} won
+          </SignalPill>
+        </div>
+        <p className="ops-panel__copy">
+          Every contact form, service reservation, and city-page audit request lands here with full
+          detail — work them like a CRM by setting a status. If this stays empty after a real
+          submission, run <code>npm run db:push</code> once to create the leads table.
+        </p>
+        {error ? <EmptyState>{error}</EmptyState> : null}
+        {!error && leads.length === 0 ? <EmptyState>No leads yet — form submissions appear here in real time.</EmptyState> : null}
+        {leads.length ? (
+          <table className="admin-aff-table ops-table">
+            <thead>
+              <tr><th>When</th><th>Name</th><th>Contact</th><th>Source</th><th>Message</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {leads.map((l) => (
+                <tr key={l.id}>
+                  <td className="admin-leadgen-muted" style={{ whiteSpace: "nowrap", fontSize: 11 }}>{fmtDate(l.created_at)}</td>
+                  <td>
+                    <strong>{l.name || "—"}</strong>
+                    {[l.city, l.region].filter(Boolean).length ? <><br /><span style={{ fontSize: 11, opacity: 0.7 }}>{[l.city, l.region].filter(Boolean).join(", ")}</span></> : null}
+                  </td>
+                  <td style={{ fontSize: 12 }}>
+                    {l.email ? <a href={`mailto:${l.email}`}>{l.email}</a> : "—"}
+                    {l.phone ? <><br /><a href={`tel:${l.phone}`}>{l.phone}</a></> : null}
+                  </td>
+                  <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{l.source || "—"}{l.page ? <><br />{l.page}</> : null}</td>
+                  <td style={{ fontSize: 12, maxWidth: 280, whiteSpace: "pre-wrap" }}>{l.message || "—"}</td>
+                  <td>
+                    <select
+                      defaultValue={l.status || "new"}
+                      disabled={busy === "lead-status"}
+                      onChange={(e) => runAction("lead-status", { id: l.id, status: e.target.value }, "Lead updated.")}
+                      className="admin-leadgen-input admin-leadgen-input--sm"
+                    >
+                      <option value="new">new</option>
+                      <option value="contacted">contacted</option>
+                      <option value="won">won</option>
+                      <option value="lost">lost</option>
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
       </section>
     </div>
   );
