@@ -263,3 +263,50 @@
 [data-theme="dark"] .ops-table tbody tr:hover { background: rgba(255,255,255,0.04); }
 .lead-reasons { font-size: 11px; color: var(--text-muted, #6b7280); }
 .lead-local-pin { margin-right: 5px; }
+
+/* ============================================================
+   Hot Leads — rich CRM-style prospect cards (Apollo/Clay-grade)
+   ============================================================ */
+.hotlead-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin-top: 6px; }
+.hotlead-card {
+  position: relative; display: flex; gap: 14px; padding: 16px 16px 14px;
+  border: 1px solid var(--syn-border, #e5e7eb); border-left: 4px solid var(--syn-border, #d0d5dd);
+  border-radius: 14px; background: var(--syn-surface, #fff);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+.hotlead-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(17,24,39,0.10); }
+.hotlead-card--hot  { border-left-color: #12B76A; }
+.hotlead-card--warm { border-left-color: #F79009; }
+[data-theme="dark"] .hotlead-card { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.10); }
+
+.hotlead-ring {
+  flex: 0 0 auto; width: 54px; height: 54px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 19px; font-variant-numeric: tabular-nums; border: 2px solid currentColor;
+}
+.hotlead-ring--hot  { color: #067647; background: #ECFDF3; }
+.hotlead-ring--warm { color: #B54708; background: #FFFAEB; }
+.hotlead-ring--cold { color: var(--text-muted,#6b7280); background: var(--syn-surface-2,#f1f3f5); }
+[data-theme="dark"] .hotlead-ring--hot  { background: rgba(6,118,71,0.20); }
+[data-theme="dark"] .hotlead-ring--warm { background: rgba(181,71,8,0.20); }
+[data-theme="dark"] .hotlead-ring--cold { background: rgba(255,255,255,0.06); }
+
+.hotlead-body { min-width: 0; flex: 1; }
+.hotlead-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.hotlead-loc { font-weight: 700; font-size: 14px; color: var(--text-1,#111827); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-theme="dark"] .hotlead-loc { color: #E8EEF6; }
+.hotlead-temp { flex: 0 0 auto; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; }
+.hotlead-temp--hot  { background: #12B76A; color: #fff; }
+.hotlead-temp--warm { background: #F79009; color: #fff; }
+.hotlead-temp--cold { background: var(--syn-surface-2,#e5e7eb); color: var(--text-muted,#6b7280); }
+
+.hotlead-stats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.hotlead-stat { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--text-muted,#6b7280); background: var(--syn-surface-2,#f4f6f8); border-radius: 6px; padding: 3px 8px; }
+[data-theme="dark"] .hotlead-stat { background: rgba(255,255,255,0.05); }
+.hotlead-stat--on { color: #067647; background: #ECFDF3; }
+[data-theme="dark"] .hotlead-stat--on { color: #6CE9A6; background: rgba(6,118,71,0.18); }
+
+.hotlead-journey { font-size: 11px; color: var(--text-muted,#6b7280); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hotlead-reasons { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+.hotlead-chip { font-size: 10px; font-weight: 600; color: var(--text-muted,#6b7280); border: 1px solid var(--syn-border,#e5e7eb); border-radius: 999px; padding: 2px 8px; }
+[data-theme="dark"] .hotlead-chip { border-color: rgba(255,255,255,0.14); }
