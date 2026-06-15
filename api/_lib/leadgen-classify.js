@@ -179,3 +179,27 @@ export const INDUSTRY_OPTIONS = (() => {
   arr.sort((a, b) => (a === "Other" ? 1 : b === "Other" ? -1 : a.localeCompare(b)));
   return arr;
 })();
+
+// Name-based chain detection. The live OSM path is authoritative via
+// brand/brand:wikidata tags (see leadgen-osm.js); this catches the common
+// national chains for records that lack those tags (e.g. older cached rows or
+// DB rows in the admin dashboard). An IT-services prospector wants independent
+// local businesses, so callers use this to flag and de-prioritize chains.
+const CHAIN_NAME_RE = new RegExp(
+  "\\b(" + [
+    "7-?eleven", "circle k", "wawa", "racetrac", "speedway", "exxon", "mobil", "shell", "chevron", "bp", "marathon", "citgo", "sunoco",
+    "walmart", "target", "costco", "sam's club", "aldi", "publix", "winn-?dixie", "whole foods", "trader joe", "kroger", "dollar general", "dollar tree", "family dollar",
+    "cvs", "walgreens", "rite aid",
+    "mcdonald", "burger king", "wendy", "taco bell", "kfc", "popeyes", "chick-?fil-?a", "subway", "starbucks", "dunkin", "domino", "pizza hut", "papa john", "chipotle", "panera", "arby", "sonic", "culver", "five guys", "jersey mike", "firehouse subs", "ihop", "denny", "applebee", "olive garden", "chili's", "outback", "panda express",
+    "home depot", "lowe's", "best buy", "autozone", "o'reilly", "advance auto", "napa auto", "pep boys", "jiffy lube", "valvoline",
+    "bank of america", "wells fargo", "chase", "citibank", "pnc", "truist", "regions", "suntrust", "us bank", "td bank", "capital one", "fifth third",
+    "ups store", "fedex", "usps", "h&r block", "great clips", "supercuts", "planet fitness", "anytime fitness", "la fitness", "crunch fitness", "orangetheory",
+    "verizon", "at&t", "t-mobile", "xfinity", "spectrum", "enterprise rent", "hertz", "avis", "budget rent", "u-haul",
+    "marriott", "hilton", "hampton inn", "holiday inn", "best western", "comfort inn", "la quinta", "courtyard", "fairfield inn", "residence inn",
+  ].join("|") + ")\\b",
+  "i",
+);
+
+export function looksLikeChain(name) {
+  return CHAIN_NAME_RE.test(String(name || ""));
+}

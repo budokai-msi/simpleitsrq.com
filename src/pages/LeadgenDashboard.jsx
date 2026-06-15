@@ -1265,7 +1265,15 @@ function DiscoverTab({ onStatusChange }) {
   const [msg, setMsg] = useState(null);
   const [err, setErr] = useState(null);
   const [previewMode, setPreviewMode] = useState(false);
+  const [independentsOnly, setIndependentsOnly] = useState(true);
   const previewCacheRef = useRef(new Map());
+
+  // Independent local businesses are the prospects worth emailing; chains
+  // (flagged server-side via is_chain) sort to the bottom and can be hidden.
+  const chainCount = rows.filter((r) => r.is_chain).length;
+  const displayRows = (independentsOnly ? rows.filter((r) => !r.is_chain) : rows)
+    .slice()
+    .sort((a, b) => (a.is_chain ? 1 : 0) - (b.is_chain ? 1 : 0));
 
   const limit = 50;
   const validStatuses = new Set(["", "active", "rejected", "do_not_contact"]);
@@ -1764,6 +1772,16 @@ function DiscoverTab({ onStatusChange }) {
             </div>
           </details>
           <span className="admin-leadgen-count">{activeFilterCount} active</span>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setIndependentsOnly((v) => !v)}
+            aria-pressed={independentsOnly}
+            title="Hide national/regional chains and show only independent local businesses"
+            style={independentsOnly ? { background: "#067647", color: "#fff", borderColor: "#067647" } : undefined}
+          >
+            {independentsOnly ? `✓ Independents only${chainCount ? ` (${chainCount} chains hidden)` : ""}` : `Hide chains${chainCount ? ` (${chainCount})` : ""}`}
+          </button>
           <div className="admin-leadgen-export-group">
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("csv")} disabled={total === 0 || previewMode} title={previewMode ? "Reload the saved list before exporting" : ""}>Export CSV</button>
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => exportData("json")} disabled={total === 0 || previewMode} title={previewMode ? "Reload the saved list before exporting" : ""}>Export JSON</button>
@@ -1787,9 +1805,16 @@ function DiscoverTab({ onStatusChange }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {displayRows.map((r) => (
               <tr key={r.id}>
-                <td>{r.name}</td>
+                <td>
+                  {r.name}
+                  {r.is_chain ? (
+                    <span title="National/regional chain" style={{ marginLeft: 6, padding: "0 6px", borderRadius: 999, fontSize: 10, fontWeight: 600, background: "#FEF0C7", color: "#7A4F01", border: "1px solid #FEDF89" }}>Chain</span>
+                  ) : (
+                    <span title="Independent local business" style={{ marginLeft: 6, padding: "0 6px", borderRadius: 999, fontSize: 10, fontWeight: 600, background: "#ECFDF3", color: "#067647", border: "1px solid #ABEFC6" }}>Local</span>
+                  )}
+                </td>
                 <td className="admin-leadgen-muted">
                   {r.industry_group ? <strong>{r.industry_group}</strong> : (r.industry || "-")}
                   {r.sub_industry ? <><br /><span style={{ fontSize: 11 }}>{r.sub_industry}</span></> : null}
@@ -1825,8 +1850,12 @@ function DiscoverTab({ onStatusChange }) {
                 </td>
               </tr>
             ))}
-            {rows.length === 0 ? (
-              <tr><td colSpan={8} className="admin-leadgen-empty">{emptyCopy}</td></tr>
+            {displayRows.length === 0 ? (
+              <tr><td colSpan={8} className="admin-leadgen-empty">
+                {rows.length > 0 && independentsOnly
+                  ? "Every business on this page is a chain. Turn off “Independents only” to see them."
+                  : emptyCopy}
+              </td></tr>
             ) : null}
           </tbody>
         </table>
