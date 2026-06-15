@@ -125,6 +125,8 @@ const MAP = {
   // ── Storage / Logistics ──────────────────────────────────────
   "shop:storage_rental":  ["Storage & Logistics", "Self storage"],
   "amenity:parking":      ["Storage & Logistics", "Parking"],
+  "office:logistics":     ["Storage & Logistics", "Logistics"],
+  "shop:wholesale":       ["Storage & Logistics", "Wholesale"],
 
   // ── Education ────────────────────────────────────────────────
   "amenity:school":       ["Education", "School"],
@@ -134,15 +136,46 @@ const MAP = {
   "amenity:childcare":    ["Education", "Childcare"],
   "amenity:library":      ["Education", "Library"],
   "amenity:driving_school": ["Education", "Driving school"],
+  "amenity:language_school": ["Education", "Language school"],
+  "amenity:music_school": ["Education", "Music school"],
+  "amenity:tutoring":     ["Education", "Tutoring"],
 
   // ── Recreation / Fitness ─────────────────────────────────────
   "leisure:fitness_centre": ["Recreation", "Gym"],
   "leisure:sports_centre":  ["Recreation", "Sports center"],
+  "leisure:spa":          ["Recreation", "Spa"],
+  "leisure:dance":        ["Recreation", "Dance studio"],
   "amenity:gym":          ["Recreation", "Gym"],
   "amenity:cinema":       ["Recreation", "Cinema"],
   "amenity:theatre":      ["Recreation", "Theatre"],
   "amenity:nightclub":    ["Recreation", "Nightclub"],
   "amenity:marketplace":  ["Recreation", "Marketplace"],
+  "amenity:events_venue": ["Recreation", "Event venue"],
+  "leisure:bowling_alley": ["Recreation", "Bowling"],
+
+  // ── Cleaning & Maintenance ───────────────────────────────────
+  "craft:cleaning":       ["Cleaning & Maintenance", "Cleaning"],
+  "craft:window_cleaner": ["Cleaning & Maintenance", "Window cleaning"],
+  "craft:carpet_cleaner": ["Cleaning & Maintenance", "Carpet cleaning"],
+  "craft:pool_cleaner":   ["Cleaning & Maintenance", "Pool service"],
+  "office:cleaning":      ["Cleaning & Maintenance", "Cleaning company"],
+
+  // ── Real Estate ──────────────────────────────────────────────
+  "office:real_estate":   ["Real Estate", "Real estate agency"],
+  "office:property_management": ["Real Estate", "Property management"],
+  "office:mortgage":      ["Real Estate", "Mortgage broker"],
+  "shop:rental":          ["Real Estate", "Rental agency"],
+
+  // ── Media & Creative ─────────────────────────────────────────
+  "office:graphic_design": ["Media & Creative", "Graphic design"],
+  "office:photography":   ["Media & Creative", "Photography"],
+  "office:video_production": ["Media & Creative", "Video production"],
+  "office:marketing":     ["Media & Creative", "Marketing agency"],
+  "office:web_design":    ["Media & Creative", "Web design"],
+  "shop:photography":     ["Media & Creative", "Photography studio"],
+  "craft:photographer":   ["Media & Creative", "Photographer"],
+  "craft:printer":        ["Media & Creative", "Print shop"],
+  "shop:art":             ["Media & Creative", "Art gallery / shop"],
 };
 
 /**
@@ -160,7 +193,7 @@ export function classifyIndustry(rawTag) {
   const groupMap = {
     shop: "Retail", amenity: "Other", healthcare: "Healthcare",
     office: "Professional Services", craft: "Trades", tourism: "Hospitality",
-    leisure: "Recreation",
+    leisure: "Recreation", building: "Other",
   };
   return {
     industry: groupMap[key] || "Other",
@@ -183,7 +216,7 @@ export const INDUSTRY_OPTIONS = (() => {
 // Name-based chain detection. The live OSM path is authoritative via
 // brand/brand:wikidata tags (see leadgen-osm.js); this catches the common
 // national chains for records that lack those tags (e.g. older cached rows or
-// DB rows in the admin dashboard). An IT-services prospector wants independent
+// DB rows in the admin dashboard). Prospectors generally want independent
 // local businesses, so callers use this to flag and de-prioritize chains.
 const CHAIN_NAME_RE = new RegExp(
   "\\b(" + [

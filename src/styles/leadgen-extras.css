@@ -310,3 +310,71 @@
 .hotlead-reasons { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
 .hotlead-chip { font-size: 10px; font-weight: 600; color: var(--text-muted,#6b7280); border: 1px solid var(--syn-border,#e5e7eb); border-radius: 999px; padding: 2px 8px; }
 [data-theme="dark"] .hotlead-chip { border-color: rgba(255,255,255,0.14); }
+
+/* ── Integrations section ──────────────────────────────────────────────────── */
+.leadgen-integrations-section {
+  background: var(--syn-surface, #fff);
+  border-top: 1px solid var(--syn-border, #e5e7eb);
+}
+.leadgen-integrations-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+@media (max-width: 860px) { .leadgen-integrations-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 540px) { .leadgen-integrations-grid { grid-template-columns: 1fr; } }
+
+.leadgen-integration-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 20px;
+  border: 1px solid var(--syn-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--syn-surface, #fff);
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.leadgen-integration-card:hover {
+  border-color: var(--syn-primary, #111827);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+[data-theme="dark"] .leadgen-integration-card {
+  background: var(--lg-panel, #121720);
+  border-color: var(--lg-border-soft, #353b45);
+}
+.leadgen-integration-card__logo {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 2px;
+}
+.leadgen-integration-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.leadgen-integration-card__body strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-1, #111827);
+}
+.leadgen-integration-card__badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--syn-primary, #111827);
+  color: #fff;
+  align-self: flex-start;
+}
+.leadgen-integration-card__body p {
+  font-size: 0.82rem;
+  color: var(--text-2, #4b5563);
+  line-height: 1.5;
+  margin: 0;
+}
