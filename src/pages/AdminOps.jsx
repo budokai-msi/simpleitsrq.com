@@ -40,6 +40,7 @@ const CORE_ACTIONS = [
   "revenue-signals",
   "behavior-insights",
   "hot-leads",
+  "lead-intel",
   "revenue-summary",
   "leadgen-status",
   "adsense-health",
@@ -365,7 +366,7 @@ export default function AdminOps() {
 
         <section className="admin-leadgen-tab-body">
           {tab === "ops" && <OpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
-          {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} errors={errors} />}
+          {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
           {tab === "drafts" && <DraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
           {tab === "affiliate" && <AffiliateTab data={data} />}
           {tab === "leadgen" && <LeadgenTab status={data["leadgen-status"]} />}
@@ -493,7 +494,77 @@ function HotLeadsPanel({ hotLeads, error }) {
   );
 }
 
-function VisitorsTab({ data, hotLeads, errors }) {
+function FunnelBar({ label, value, pct, tone }) {
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 3 }}>
+        <span>{label}</span>
+        <strong>{fmtNumber(value)} <span style={{ opacity: 0.6, fontWeight: 400 }}>({pct}%)</span></strong>
+      </div>
+      <div style={{ height: 8, borderRadius: 999, background: "var(--syn-surface-2, #eef1f4)", overflow: "hidden" }}>
+        <div style={{ width: `${Math.max(2, pct)}%`, height: "100%", background: tone || "#0F6CBD" }} />
+      </div>
+    </div>
+  );
+}
+
+function LeadIntelPanels({ leadIntel, error }) {
+  const funnel = leadIntel?.funnel || {};
+  const returning = leadIntel?.returning || [];
+  const sources = leadIntel?.sources || [];
+  return (
+    <>
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Conversion funnel</h2><SignalPill state={funnel.sessions ? "good" : "neutral"}>14 days</SignalPill></div>
+        {error ? <EmptyState>{error}</EmptyState> : null}
+        <FunnelBar label="Visitors (sessions)" value={funnel.sessions} pct={100} tone="#0F6CBD" />
+        <FunnelBar label="Engaged" value={funnel.engaged} pct={funnel.engaged_pct} tone="#2563eb" />
+        <FunnelBar label="High-intent pages" value={funnel.high_intent} pct={funnel.high_intent_pct} tone="#7c3aed" />
+        <FunnelBar label="Reached booking / contact" value={funnel.reached_booking} pct={funnel.reached_booking_pct} tone="#067647" />
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Traffic sources</h2><SignalPill state={sources.length ? "good" : "neutral"}>14 days</SignalPill></div>
+        {error ? <EmptyState>{error}</EmptyState> : null}
+        {!error && sources.length === 0 ? <EmptyState>No source data yet.</EmptyState> : null}
+        {sources.length ? (
+          <table className="admin-aff-table ops-table">
+            <thead><tr><th>Source</th><th style={{ textAlign: "right" }}>Sessions</th><th style={{ textAlign: "right" }}>Engaged</th></tr></thead>
+            <tbody>
+              {sources.map((s) => (
+                <tr key={s.source}><td>{s.source}</td><td style={{ textAlign: "right" }}>{fmtNumber(s.sessions)}</td><td style={{ textAlign: "right" }}>{s.engaged_pct}%</td></tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Returning visitors</h2><SignalPill state={returning.length ? "good" : "neutral"}>{fmtNumber(returning.length)} watching · 30d</SignalPill></div>
+        {error ? <EmptyState>{error}</EmptyState> : null}
+        {!error && returning.length === 0 ? <EmptyState>No repeat visitors yet — they show up here after a second visit.</EmptyState> : null}
+        {returning.length ? (
+          <table className="admin-aff-table ops-table">
+            <thead><tr><th>Location</th><th style={{ textAlign: "right" }}>Visits</th><th style={{ textAlign: "right" }}>Days</th><th style={{ textAlign: "right" }}>Pages</th><th>Engaged</th></tr></thead>
+            <tbody>
+              {returning.map((r) => (
+                <tr key={r.anon_id}>
+                  <td>{r.location}</td>
+                  <td style={{ textAlign: "right" }}>{fmtNumber(r.sessions)}</td>
+                  <td style={{ textAlign: "right" }}>{fmtNumber(r.days)}</td>
+                  <td style={{ textAlign: "right" }}>{fmtNumber(r.total_pages)}</td>
+                  <td>{r.ever_engaged ? "✓" : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+      </section>
+    </>
+  );
+}
+
+function VisitorsTab({ data, hotLeads, leadIntel, errors }) {
   const totals = data?.totals || {};
   const situationFunnel = data?.situationFunnel || {};
   const engagedRate = totals.sessions14d
@@ -502,6 +573,7 @@ function VisitorsTab({ data, hotLeads, errors }) {
   return (
     <div className="ops-grid">
       <HotLeadsPanel hotLeads={hotLeads} error={errors["hot-leads"]} />
+      <LeadIntelPanels leadIntel={leadIntel} error={errors["lead-intel"]} />
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head">
           <h2>Live visitor intent</h2>

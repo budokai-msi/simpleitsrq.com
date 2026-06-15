@@ -5542,6 +5542,89 @@ async function handleHotLeads(session) {
   });
 }
 
+// Lead intelligence — conversion funnel, returning-visitor watchlist, and
+// traffic-source/campaign attribution, all from web_sessions (14d funnel/
+// sources, 30d returning). Each query is independently fault-tolerant so one
+// failure can't blank the whole panel.
+async function handleLeadIntel(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const INTENT = "(services|book|support|leadgen|exposure-scan|password-check|partners|-it-support)";
+  const CONVERT = "(book|support|portal|contact)";
+  const [funnelRows, returningRows, sourceRows] = await Promise.all([
+    sql`
+      SELECT
+        COUNT(*)::int AS sessions,
+        COUNT(*) FILTER (WHERE engaged)::int AS engaged,
+        COUNT(*) FILTER (WHERE landing_path ~* ${INTENT} OR exit_path ~* ${INTENT})::int AS high_intent,
+        COUNT(*) FILTER (WHERE landing_path ~* ${CONVERT} OR exit_path ~* ${CONVERT})::int AS reached_booking
+      FROM web_sessions
+      WHERE started_at > now() - interval '14 days'
+    `.catch(() => []),
+    sql`
+      SELECT anon_id,
+             COUNT(*)::int AS sessions,
+             COUNT(DISTINCT date_trunc('day', started_at))::int AS days,
+             SUM(page_count)::int AS total_pages,
+             bool_or(engaged) AS ever_engaged,
+             MAX(city) AS city, MAX(region) AS region, MAX(country) AS country,
+             MAX(last_activity) AS last_seen
+      FROM web_sessions
+      WHERE started_at > now() - interval '30 days' AND anon_id IS NOT NULL
+      GROUP BY anon_id
+      HAVING COUNT(*) >= 2
+      ORDER BY sessions DESC, last_seen DESC
+      LIMIT 25
+    `.catch(() => []),
+    sql`
+      SELECT
+        COALESCE(
+          NULLIF(substring(landing_path from 'utm_source=([^&]+)'), ''),
+          NULLIF(regexp_replace(COALESCE(referrer, ''), '^https?://(www\.)?([^/]+).*$', '\2'), ''),
+          '(direct)'
+        ) AS source,
+        COUNT(*)::int AS sessions,
+        COUNT(*) FILTER (WHERE engaged)::int AS engaged
+      FROM web_sessions
+      WHERE started_at > now() - interval '14 days'
+      GROUP BY source
+      ORDER BY sessions DESC
+      LIMIT 12
+    `.catch(() => []),
+  ]);
+  const f = funnelRows[0] || {};
+  const sessions = Number(f.sessions) || 0;
+  const pct = (n) => (sessions ? Math.round((Number(n) || 0) / sessions * 100) : 0);
+  return json(200, {
+    ok: true,
+    generated_at: new Date().toISOString(),
+    funnel: {
+      sessions,
+      engaged: Number(f.engaged) || 0,
+      high_intent: Number(f.high_intent) || 0,
+      reached_booking: Number(f.reached_booking) || 0,
+      engaged_pct: pct(f.engaged),
+      high_intent_pct: pct(f.high_intent),
+      reached_booking_pct: pct(f.reached_booking),
+    },
+    returning: returningRows.map((r) => ({
+      anon_id: r.anon_id,
+      sessions: Number(r.sessions) || 0,
+      days: Number(r.days) || 0,
+      total_pages: Number(r.total_pages) || 0,
+      ever_engaged: r.ever_engaged === true,
+      location: [r.city, r.region, r.country].filter(Boolean).join(", ") || "Unknown",
+      last_seen: r.last_seen,
+    })),
+    sources: sourceRows.map((s) => ({
+      source: s.source,
+      sessions: Number(s.sessions) || 0,
+      engaged: Number(s.engaged) || 0,
+      engaged_pct: Number(s.sessions) ? Math.round((Number(s.engaged) || 0) / Number(s.sessions) * 100) : 0,
+    })),
+  });
+}
+
 async function dispatch(request, method) {
   const url = new URL(request.url);
   const action = url.searchParams.get("action") || "";
@@ -5627,6 +5710,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
   if (action === "behavior-insights"    && method === "GET")  return handleBehaviorInsights(session);
   if (action === "hot-leads"            && method === "GET")  return handleHotLeads(session);
+  if (action === "lead-intel"           && method === "GET")  return handleLeadIntel(session);
   if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);
   if (action === "affiliate-stats"      && method === "GET")  return handleAffiliateStats(session, url);
   if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);
