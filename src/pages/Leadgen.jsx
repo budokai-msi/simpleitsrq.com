@@ -182,9 +182,9 @@ const PROOF_POINTS = [
 ];
 
 const SERVICE_USE_CASES = [
-  { title: "Any local service business", body: "Plumbers, electricians, HVAC, landscapers, pest control — find independent shops in any zip and pitch your services." },
-  { title: "Healthcare & professional services", body: "Dentists, clinics, law offices, accountants, and insurance agencies all buy local services. Filter by industry and target them directly." },
-  { title: "Restaurants, retail & hospitality", body: "Reach cafés, boutiques, hotels, and gyms. The same scan workflow works for marketing services, POS systems, Wi-Fi upgrades, and more." },
+  { title: "Trades & home services", body: "Plumbers, roofers, HVAC, landscapers, pest control, cleaners. Independent shops that need more work and actually answer their phone." },
+  { title: "Healthcare & professional offices", body: "Dentists, clinics, law firms, accountants, insurance offices. Steady buyers with real budgets — filter by zip and go." },
+  { title: "Restaurants, shops & hospitality", body: "Cafés, salons, gyms, boutiques, hotels. Any local business that writes checks to vendors is a prospect." },
 ];
 
 const EMPTY_SCAN_STEPS = [
@@ -2075,11 +2075,11 @@ export default function Leadgen() {
       <section className="section leadgen-product-focus">
         <div className="container leadgen-product-focus__grid">
           <div>
-            <h2 className="title-1">Built for any local business that buys services.</h2>
+            <h2 className="title-1">One zip. One niche. A list you can actually use.</h2>
             <p className="lede">
-              Whether you sell IT support, marketing, cleaning, pest control, or
-              anything else to local businesses — start with one zip, pick your
-              niche, and get a reviewed list with emails ready to act on.
+              Pick the type of business you sell to. We pull the local independents,
+              grab their emails, and cut the nationals. You get a short, reviewed
+              list — not a dump of 10,000 rows you'll never touch.
             </p>
           </div>
           <div className="leadgen-product-rules">
