@@ -5466,6 +5466,82 @@ async function handleOpsecNoteDelete(session, request) {
   return json(200, { ok: true });
 }
 
+// Hot Leads — turn raw visitor sessions into a ranked prospect board for the
+// IT business. Scores each recent engaged session by how likely it is to be a
+// real local customer: local geo (the service area), high-intent pages
+// (services / book / leadgen / contact / city pages), depth (pages, dwell,
+// scroll), engagement, and arriving from search. Read-only; degrades to an
+// empty list if the sessions table isn't available.
+const HOT_LEAD_INTENT_RE = /\/(services|book|support|leadgen|exposure-scan|password-check)(\/|$|\?)|contact|-it-support(\/|$|\?)/i;
+const SERVICE_AREA_CITY_RE = /sarasota|bradenton|venice|lakewood ranch|nokomis|palmetto|ellenton|parrish|osprey|englewood|north port|casey key/i;
+
+function scoreHotLead(s) {
+  const reasons = [];
+  let score = 0;
+  const region = String(s.region || "").toLowerCase();
+  const city = String(s.city || "");
+  const isFlorida = region === "florida" || region === "fl";
+  if (isFlorida) { score += 30; reasons.push("Florida visitor"); }
+  if (SERVICE_AREA_CITY_RE.test(city)) { score += 15; reasons.push(`Service area: ${city}`); }
+  const pages = Number(s.page_count) || 0;
+  if (pages >= 2) { score += Math.min(25, pages * 5); reasons.push(`${pages} pages`); }
+  const dwellSec = Math.round((Number(s.total_dwell_ms) || 0) / 1000);
+  if (dwellSec >= 180) { score += 25; reasons.push(`${dwellSec}s on site`); }
+  else if (dwellSec >= 60) { score += 15; reasons.push(`${dwellSec}s on site`); }
+  if ((Number(s.max_scroll_pct) || 0) >= 50) { score += 10; reasons.push("read deeply"); }
+  if (s.engaged === true) { score += 20; reasons.push("engaged"); }
+  const paths = `${s.landing_path || ""} ${s.exit_path || ""}`;
+  if (HOT_LEAD_INTENT_RE.test(paths)) { score += 25; reasons.push("hit a high-intent page"); }
+  if (/google|bing|duckduckgo|search/i.test(String(s.referrer || ""))) { score += 10; reasons.push("from search"); }
+  return { score, reasons };
+}
+
+async function handleHotLeads(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const rows = await sql`
+    SELECT id, anon_id, ip, country, region, city,
+           landing_path, exit_path, referrer, page_count,
+           total_dwell_ms, max_scroll_pct, event_count, engaged,
+           started_at, last_activity
+    FROM web_sessions
+    WHERE last_activity > now() - interval '21 days'
+      AND page_count >= 2
+    ORDER BY last_activity DESC
+    LIMIT 400
+  `.catch(() => []);
+  const leads = rows
+    .map((s) => {
+      const { score, reasons } = scoreHotLead(s);
+      return {
+        id: s.id,
+        anon_id: s.anon_id,
+        ip: s.ip,
+        location: [s.city, s.region, s.country].filter(Boolean).join(", ") || "Unknown",
+        is_local: SERVICE_AREA_CITY_RE.test(String(s.city || "")) || ["florida", "fl"].includes(String(s.region || "").toLowerCase()),
+        landing_path: s.landing_path,
+        exit_path: s.exit_path,
+        referrer: s.referrer || "(direct)",
+        page_count: Number(s.page_count) || 0,
+        dwell_sec: Math.round((Number(s.total_dwell_ms) || 0) / 1000),
+        max_scroll_pct: Number(s.max_scroll_pct) || 0,
+        engaged: s.engaged === true,
+        last_activity: s.last_activity,
+        score,
+        reasons,
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 40);
+  return json(200, {
+    ok: true,
+    generated_at: new Date().toISOString(),
+    total_sessions: rows.length,
+    local_count: leads.filter((l) => l.is_local).length,
+    leads,
+  });
+}
+
 async function dispatch(request, method) {
   const url = new URL(request.url);
   const action = url.searchParams.get("action") || "";
@@ -5550,6 +5626,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
   if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
   if (action === "behavior-insights"    && method === "GET")  return handleBehaviorInsights(session);
+  if (action === "hot-leads"            && method === "GET")  return handleHotLeads(session);
   if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);
   if (action === "affiliate-stats"      && method === "GET")  return handleAffiliateStats(session, url);
   if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);

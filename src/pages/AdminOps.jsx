@@ -39,6 +39,7 @@ const CORE_ACTIONS = [
   "affiliate-stats",
   "revenue-signals",
   "behavior-insights",
+  "hot-leads",
   "revenue-summary",
   "leadgen-status",
   "adsense-health",
@@ -364,7 +365,7 @@ export default function AdminOps() {
 
         <section className="admin-leadgen-tab-body">
           {tab === "ops" && <OpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
-          {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} errors={errors} />}
+          {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} errors={errors} />}
           {tab === "drafts" && <DraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
           {tab === "affiliate" && <AffiliateTab data={data} />}
           {tab === "leadgen" && <LeadgenTab status={data["leadgen-status"]} />}
@@ -448,7 +449,51 @@ function OpsTab({ data, errors, intel, busy, runAction }) {
   );
 }
 
-function VisitorsTab({ data, errors }) {
+function HotLeadsPanel({ hotLeads, error }) {
+  const leads = hotLeads?.leads || [];
+  return (
+    <section className="admin-aff-card ops-panel ops-panel--wide">
+      <div className="ops-panel__head">
+        <h2>🔥 Hot leads</h2>
+        <SignalPill state={hotLeads?.local_count ? "good" : "neutral"}>
+          {fmtNumber(hotLeads?.local_count)} local · {fmtNumber(leads.length)} ranked
+        </SignalPill>
+      </div>
+      <p className="ops-panel__copy">
+        Recent visitors scored by how likely they are to become an IT client — local geo,
+        high-intent pages (services, booking, leadgen, contact, city pages), time on site, and depth.
+      </p>
+      {error ? <EmptyState>{error}</EmptyState> : null}
+      {!error && leads.length === 0 ? <EmptyState>No ranked sessions yet — leads appear here as visitors engage.</EmptyState> : null}
+      {leads.length > 0 ? (
+        <table className="admin-aff-table ops-table">
+          <thead>
+            <tr><th>Score</th><th>Location</th><th>Activity</th><th>Entry → Exit</th><th>Source</th><th>Why</th></tr>
+          </thead>
+          <tbody>
+            {leads.map((l) => (
+              <tr key={l.id}>
+                <td>
+                  <strong style={{ color: l.score >= 70 ? "#067647" : l.score >= 40 ? "#B54708" : "inherit" }}>{l.score}</strong>
+                </td>
+                <td>
+                  {l.is_local ? <span title="In the service area" style={{ marginRight: 6 }}>📍</span> : null}
+                  {l.location}
+                </td>
+                <td className="admin-leadgen-muted">{l.page_count} pp · {l.dwell_sec}s · {l.max_scroll_pct}%{l.engaged ? " · engaged" : ""}</td>
+                <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{l.landing_path || "?"}{l.exit_path && l.exit_path !== l.landing_path ? ` → ${l.exit_path}` : ""}</td>
+                <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{l.referrer}</td>
+                <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{(l.reasons || []).join(", ")}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
+    </section>
+  );
+}
+
+function VisitorsTab({ data, hotLeads, errors }) {
   const totals = data?.totals || {};
   const situationFunnel = data?.situationFunnel || {};
   const engagedRate = totals.sessions14d
@@ -456,6 +501,7 @@ function VisitorsTab({ data, errors }) {
     : 0;
   return (
     <div className="ops-grid">
+      <HotLeadsPanel hotLeads={hotLeads} error={errors["hot-leads"]} />
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head">
           <h2>Live visitor intent</h2>
