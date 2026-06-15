@@ -27,9 +27,9 @@ export const cities = {
     landmarks: ["Main Street Sarasota", "St. Armands Circle", "Lido Key", "Fruitville Road medical corridor", "Downtown Sarasota"],
     neighborhoods: "downtown Sarasota, St. Armands, Lido Key, Siesta Key, Osprey, the Rosemary District, and the Fruitville medical corridor",
     whyLocal: [
-      "On-site engineering coverage from Lido Key to Osprey — dispatched out of Sarasota, not handed off to a Tampa subcontractor.",
-      "A named primary engineer on every account who actually knows your environment, your staff, and the controls your insurance carrier keeps asking about.",
-      "Healthcare-vertical depth: HIPAA risk assessments, Safeguards documentation, and BAAs purpose-built for the dozens of independent practices that make Sarasota one of Florida’s busiest healthcare markets.",
+      "Local engineers dispatched from Sarasota — never handed off to a Tampa subcontractor.",
+      "A named primary engineer on every account who knows your setup and the controls your insurer keeps asking about.",
+      "Deep healthcare/HIPAA work — risk assessments, Safeguards docs, and BAAs for Sarasota's independent practices.",
     ],
     faqs: [
       {
@@ -76,9 +76,9 @@ export const cities = {
     landmarks: ["Bradenton Riverwalk", "Old Main Street", "Manatee Avenue medical corridor", "SR-64 business parks", "Downtown Bradenton"],
     neighborhoods: "downtown Bradenton, the Riverwalk and Old Main Street, West Bradenton, Palma Sola, Bayshore Gardens, and the Manatee Avenue medical corridor",
     whyLocal: [
-      "Headquartered in Manatee County. Engineers dispatched locally — not driving down I-75 from a Tampa office on a per-trip charge.",
-      "Hurricane-season continuity engineered for the Gulf Coast: replicated off-site backups, generator-rated network gear, and a tested DR runbook with documented RTO/RPO.",
-      "A named primary engineer on every account, a phone number that’s answered on the first ring, and a flat monthly contract that doesn’t balloon when something breaks.",
+      "Headquartered in Manatee County — engineers dispatched locally, no per-trip charge from Tampa.",
+      "Gulf Coast hurricane continuity: replicated off-site backups, generator-rated gear, and a tested DR runbook.",
+      "A named engineer, a phone answered on the first ring, and flat monthly pricing that doesn't balloon.",
     ],
     faqs: [
       {
@@ -125,9 +125,9 @@ export const cities = {
     landmarks: ["Lakewood Ranch Main Street", "University Town Center (UTC) mall", "Waterside Place", "Lakewood Ranch Medical Center", "Center Point corporate park"],
     neighborhoods: "Lakewood Ranch Main Street, Waterside Place, Country Club East, Central Park, the UTC corridor, and the business parks along SR-70",
     whyLocal: [
-      "Vertical fit for the 10- to 80-seat professional offices that define Lakewood Ranch — law, finance, medical, insurance, and real estate — with the controls and documentation each regulator expects.",
-      "security renewal evidence aligned to what carriers actually score in 2026: phishing-resistant MFA on every account, modern EDR, tested off-site backups, and a written incident-response plan.",
-      "Quarterly Strategic IT Reviews — a senior engineer walks leadership through what’s working, what’s about to fail, and what belongs in next year’s budget. Plain English, no consulting theater.",
+      "Built for LWR's 10-80 seat professional offices — law, finance, medical, insurance, real estate — with the controls each regulator expects.",
+      "Security-renewal evidence carriers actually score: phishing-resistant MFA, modern EDR, tested off-site backups, and a written incident-response plan.",
+      "Quarterly strategic IT reviews in plain English — what's working, what's about to fail, and what belongs in next year's budget.",
     ],
     faqs: [
       {
@@ -174,9 +174,9 @@ export const cities = {
     landmarks: ["Nokomis Beach", "Casey Key", "US-41 corridor", "Albee Road", "North Jetty Park"],
     neighborhoods: "Nokomis, Casey Key, Laurel, south Osprey, and the US-41 business corridor between Venice and Sarasota",
     whyLocal: [
-      "Sarasota County engineering team — dispatched locally, not driven in from Tampa or Orlando under a per-mile clause.",
-      "Sized for 5- to 30-seat operators and residential accounts: vacation-rental managers, marine service companies, medical practices, professional firms, and the homes and condos in between.",
-      "Hurricane-season backup and recovery engineered for the barrier-island reality: replicated off-site backups, generator-rated networks, and a tested runbook that doesn’t assume mainland power.",
+      "Sarasota County engineers dispatched locally — not driven in from Tampa under a per-mile clause.",
+      "Right-sized for 5-30 seat operators and residences: vacation-rental managers, marine services, medical, and pro firms.",
+      "Barrier-island hurricane recovery: replicated off-site backups, generator-rated networks, and a tested runbook.",
     ],
     faqs: [
       {
@@ -223,9 +223,9 @@ export const cities = {
     landmarks: ["Historic Venice Avenue", "Shamrock Park business corridor", "ShoreView Hospital (formerly Venice Regional Bayfront Health)", "Venice Municipal Airport", "Jacaranda Plaza", "The Legacy Trail"],
     neighborhoods: "Historic downtown Venice, Venice Island, the Jacaranda corridor, East Venice, the Venice airport business district, South Venice, and Englewood-adjacent offices off River Road",
     whyLocal: [
-      "Seasonal-load capacity planning: firewalls, Wi-Fi, and ISP capacity sized for the Nov–Apr snowbird surge so the network doesn’t saturate when every exam room, reception desk, and guest device is online at peak.",
-      "Healthcare and HIPAA depth — Venice has one of the highest concentrations of medical practices per capita in the state. We deliver written HIPAA risk assessments, Safeguards documentation, BAAs, and audit-ready evidence packages, not just endpoint security.",
-      "Sarasota County engineering team — Venice is part of our regular dispatch zone, not a contracted-out trip from a Tampa MSP.",
+      "Seasonal capacity planning — firewalls, Wi-Fi, and ISP sized for the Nov-Apr snowbird surge so the network never saturates.",
+      "Deep healthcare/HIPAA work for one of Florida's densest medical markets: risk assessments, Safeguards docs, BAAs, and audit-ready evidence.",
+      "Sarasota County engineers — Venice is part of our regular dispatch zone, not a contracted-out trip from Tampa.",
     ],
     faqs: [
       {

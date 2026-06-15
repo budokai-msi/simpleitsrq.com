@@ -14,7 +14,7 @@ import RecommendedTools from "../components/RecommendedTools";
 import Breadcrumbs from "../components/Breadcrumbs";
 
 const SERVICES = [
-  { Icon: Headphones, title: "Helpdesk and Everyday IT Support", desc: "Unlimited help desk, monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
+  { Icon: Headphones, title: "Managed IT Support and Helpdesk", desc: "Unlimited help desk, proactive 24x7 monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
   { Icon: Wrench, title: "Computer Repair (Business and Residential)", desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade you've been putting off. We work on home machines too." },
   { Icon: Camera, title: "Security Camera Installation", desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording." },
   { Icon: Network, title: "Enterprise Domain Environments", desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one." },
