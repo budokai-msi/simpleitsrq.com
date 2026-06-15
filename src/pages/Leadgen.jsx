@@ -122,10 +122,11 @@ const TIERS = [
     features: [
       "1 zip-radius search per day",
       "Up to 500 verified business records / month",
+      "Email extraction from business websites",
       "1 reviewed outreach campaign",
-      "Industry & sub-industry filters",
-      "Per-domain throttling + reply detection",
-      "CSV + Google Sheets export",
+      "All industries — any local niche",
+      "CSV export with emails included",
+      "Webhook + Mailchimp + HubSpot integrations",
       "1-business-day onboarding review",
     ],
   },
@@ -163,27 +164,27 @@ const TIERS = [
     features: [
       "Unlimited zip-radius searches",
       "Up to 5,000 verified business records / month",
+      "Bulk email extraction (up to 10 domains at once)",
       "5 concurrent outreach campaigns",
-      "Webhook-ready export",
+      "HubSpot, Mailchimp, ActiveCampaign, GoHighLevel, Zapier",
       "Open, click, and reply tracking",
       "Priority email support",
-      "Custom enrichment fields",
       "Quarterly deliverability review",
     ],
   },
 ];
 
 const PROOF_POINTS = [
-  { label: "Best for", value: "Local services", detail: "IT support, repair, cameras, Wi-Fi, trades" },
-  { label: "Start with", value: "1 zip", detail: "Keep the market small enough to review" },
+  { label: "Works for", value: "Any local niche", detail: "IT, trades, healthcare, retail, restaurants, salons, and more" },
+  { label: "Start with", value: "1 zip", detail: "Keep the market focused before scaling" },
   { label: "First pass", value: "35/day", detail: "Capped outreach, not a blast list" },
-  { label: "Price", value: "$19/mo", detail: "Cancel if the niche is not useful" },
+  { label: "Price", value: "$19/mo", detail: "Cancel if the niche isn't useful" },
 ];
 
 const SERVICE_USE_CASES = [
-  { title: "Computer repair", body: "Find offices, clinics, shops, and property managers near you that are likely to need device help." },
-  { title: "IT support", body: "Build a tight list for managed IT, Microsoft 365, backup, Wi-Fi, camera, and network offers." },
-  { title: "Local service work", body: "Use the same workflow for trades, healthcare vendors, hospitality, and other repeatable local services." },
+  { title: "Any local service business", body: "Plumbers, electricians, HVAC, landscapers, pest control — find independent shops in any zip and pitch your services." },
+  { title: "Healthcare & professional services", body: "Dentists, clinics, law offices, accountants, and insurance agencies all buy local services. Filter by industry and target them directly." },
+  { title: "Restaurants, retail & hospitality", body: "Reach cafés, boutiques, hotels, and gyms. The same scan workflow works for marketing services, POS systems, Wi-Fi upgrades, and more." },
 ];
 
 const EMPTY_SCAN_STEPS = [
@@ -202,6 +203,11 @@ const PUBLIC_NICHES = [
   "Personal Services",
   "Retail",
   "Food & Drink",
+  "Education",
+  "Real Estate",
+  "Cleaning & Maintenance",
+  "Media & Creative",
+  "Recreation",
 ];
 
 const SCAN_LIMIT = 80;
@@ -216,19 +222,27 @@ const REVIEW_COPY = {
 const LEADGEN_FAQS = [
   {
     q: "Can I search any U.S. zip code?",
-    a: "Yes. Enter a 5-digit U.S. zip, choose a service category, and run the scan.",
+    a: "Yes. Enter a 5-digit U.S. zip, choose any industry category, and run the scan.",
   },
   {
-    q: "Is this hard-coded to Sarasota, Bradenton, or Venice?",
-    a: "No. Those are just familiar examples. The scanner follows the zip code you enter.",
+    q: "Is this limited to IT or technology businesses?",
+    a: "No. The scanner covers every industry — food & drink, retail, healthcare, trades, professional services, automotive, hospitality, and more. Pick the niche you serve.",
+  },
+  {
+    q: "Does it find email addresses?",
+    a: "Yes. Growth and Pro plans include email extraction: the crawler visits each business website, pulls mailto links and text-pattern emails, scores them by confidence, and adds them to your export.",
+  },
+  {
+    q: "Can I push leads to my CRM or email platform?",
+    a: "Yes. Premium plans include webhook, Mailchimp, HubSpot, ActiveCampaign, GoHighLevel, and Zapier integrations. Configure them from your workspace and push leads with one click.",
   },
   {
     q: "Will this book jobs by itself?",
-    a: "No. It builds a local list and keeps outreach controlled. The offer, follow-up, and sales call still matter.",
+    a: "No. It builds a reviewed local list and keeps outreach controlled. The offer, follow-up, and close still depend on you.",
   },
 ];
 
-const PRIORITY_NICHES = ["All", "Healthcare", "Trades", "Professional Services", "Retail", "Food & Drink"];
+const PRIORITY_NICHES = ["All", "Healthcare", "Trades", "Professional Services", "Retail", "Food & Drink", "Real Estate", "Cleaning & Maintenance"];
 
 const BOOK_DEMO_URL = "/book?topic=leadgen-demo&utm_source=leadgen_page&utm_medium=cta&utm_campaign=demo";
 const LEADGEN_PRODUCTS = TIERS.filter((tier) => tier.id !== "free").map((tier) => ({
@@ -310,10 +324,20 @@ function csvCell(value) {
 }
 
 function downloadCsv(filename, rows) {
+  const hasEmails = rows.some((r) => r.email || r.emails?.length);
   const headers = ["status", "name", "industry", "sub_industry", "address", "city", "state", "zip", "website", "phone", "source_url"];
+  if (hasEmails) headers.push("email", "email_confidence");
   const lines = [
     headers.map(csvCell).join(","),
-    ...rows.map((row) => headers.map((key) => csvCell(row[key])).join(",")),
+    ...rows.map((row) => {
+      const base = headers.slice(0, hasEmails ? -2 : undefined).map((key) => csvCell(row[key]));
+      if (hasEmails) {
+        const firstEmail = row.email || (Array.isArray(row.emails) ? row.emails[0]?.email : "") || "";
+        const conf = row.email_confidence ?? (Array.isArray(row.emails) ? row.emails[0]?.confidence : null) ?? "";
+        base.push(csvCell(firstEmail), csvCell(conf !== "" ? Number(conf).toFixed(2) : ""));
+      }
+      return base.join(",");
+    }),
   ];
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -1213,11 +1237,11 @@ function LeadgenScanApp() {
         </div>
 
         <div className="leadgen-app-title">
-          <h1 className="display">Find independent local businesses to pitch.</h1>
+          <h1 className="display">Find local businesses in any industry — with emails.</h1>
           <p>
-            Enter a zip and the kind of business you serve. We map nearby
-            companies, flag the national chains so you can focus on independent
-            local owners, and hand off a clean list ready for outreach.
+            Enter any zip and choose an industry. We surface independent local
+            businesses, extract email addresses from their websites, flag national
+            chains, and hand off a clean reviewed list ready for outreach or CRM import.
           </p>
         </div>
 
@@ -1940,9 +1964,9 @@ export default function Leadgen() {
   const firstCtaRef = useRef(false);
 
   useSEO({
-    title: "Get Local Leads | Simple IT SRQ",
+    title: "Local Lead Generation with Email Extraction | Simple IT SRQ",
     description:
-      "Scan one local zip, review nearby businesses, and build a practical lead list for computer repair, IT support, and local service work.",
+      "Scan any U.S. zip code, discover local businesses across every industry, extract verified email addresses, and push leads directly to HubSpot, Mailchimp, or your CRM.",
     canonical: `${SITE_URL}/leadgen`,
     image: `${SITE_URL}/og-image.png`,
     breadcrumbs: [
@@ -2051,11 +2075,11 @@ export default function Leadgen() {
       <section className="section leadgen-product-focus">
         <div className="container leadgen-product-focus__grid">
           <div>
-            <h2 className="title-1">Built for service calls, not content fluff.</h2>
+            <h2 className="title-1">Built for any local business that buys services.</h2>
             <p className="lede">
-              If you sell computer repair, IT support, cameras, Wi-Fi, phones,
-              or other local service work, start with one zip and a list you can
-              actually review.
+              Whether you sell IT support, marketing, cleaning, pest control, or
+              anything else to local businesses — start with one zip, pick your
+              niche, and get a reviewed list with emails ready to act on.
             </p>
           </div>
           <div className="leadgen-product-rules">
@@ -2164,6 +2188,8 @@ export default function Leadgen() {
         </div>
       </section>
 
+      <LeadgenIntegrationsSection />
+
       <section id="faq" className="section section-alt" aria-labelledby="leadgen-faq-title">
         <div className="container" style={{ maxWidth: 820 }}>
           <div className="section-head">
@@ -2192,6 +2218,77 @@ export default function Leadgen() {
         </div>
       </section>
     </main>
+  );
+}
+
+const INTEGRATION_LIST = [
+  {
+    name: "Webhook / Zapier",
+    logo: "⚡",
+    desc: "POST leads to any URL — wire into Zapier, Make, n8n, or your own backend.",
+    badge: "Growth+",
+  },
+  {
+    name: "Mailchimp",
+    logo: "🐒",
+    desc: "Sync leads to a Mailchimp audience. Merge tags for name, company, industry, and phone.",
+    badge: "Growth+",
+  },
+  {
+    name: "HubSpot",
+    logo: "🟠",
+    desc: "Create contacts in HubSpot CRM with industry, website, and leadsource pre-filled.",
+    badge: "Growth+",
+  },
+  {
+    name: "ActiveCampaign",
+    logo: "✉️",
+    desc: "Add contacts to ActiveCampaign and tag them by industry for segmented sequences.",
+    badge: "Pro",
+  },
+  {
+    name: "GoHighLevel",
+    logo: "🚀",
+    desc: "Push contacts directly to a GHL location — ideal for agencies running client pipelines.",
+    badge: "Pro",
+  },
+  {
+    name: "CSV with emails",
+    logo: "📄",
+    desc: "Every export includes extracted email addresses and confidence scores as extra columns.",
+    badge: "Growth+",
+  },
+];
+
+function LeadgenIntegrationsSection() {
+  return (
+    <section id="integrations" className="section leadgen-integrations-section" aria-labelledby="integrations-title">
+      <div className="container">
+        <div className="section-head" style={{ maxWidth: 720 }}>
+          <span className="eyebrow">Integrations</span>
+          <h2 id="integrations-title" className="title-1">Push leads where your team already works.</h2>
+          <p className="lede">
+            Growth and Pro plans include one-click export to the marketing and CRM tools you already use.
+            Connect once, push whenever your review list is ready.
+          </p>
+        </div>
+        <div className="leadgen-integrations-grid">
+          {INTEGRATION_LIST.map((item) => (
+            <div key={item.name} className="leadgen-integration-card">
+              <span className="leadgen-integration-card__logo" aria-hidden="true">{item.logo}</span>
+              <div className="leadgen-integration-card__body">
+                <strong>{item.name}</strong>
+                <span className="leadgen-integration-card__badge">{item.badge}</span>
+                <p>{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p style={{ textAlign: "center", marginTop: "2rem", color: "var(--text-2, #64748b)", fontSize: 14 }}>
+          Configure integrations from your campaign workspace after signup.
+        </p>
+      </div>
+    </section>
   );
 }
 

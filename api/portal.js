@@ -2310,17 +2310,49 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "lead-gen taxonomy columns (014)", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 018 — user plan tracking + integrations table
+  try {
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan text NOT NULL DEFAULT 'free' CHECK (plan IN ('free','growth','pro','lifetime'))`;
+    results.push({ step: "add users.plan column (018)", ok: true });
+  } catch (e) {
+    results.push({ step: "add users.plan column (018)", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`UPDATE users SET plan = 'lifetime', is_admin = true WHERE email = 'ivanovspccenter@gmail.com'`;
+    results.push({ step: "grant lifetime plan to owner (018)", ok: true });
+  } catch (e) {
+    results.push({ step: "grant lifetime plan to owner (018)", ok: false, error: String(e.message || e) });
+  }
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS user_integrations (
+        id            bigserial PRIMARY KEY,
+        user_id       uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        kind          text NOT NULL CHECK (kind IN ('webhook','mailchimp','hubspot','activecampaign','zapier','gohighlevel')),
+        label         text NOT NULL DEFAULT '',
+        config        jsonb NOT NULL DEFAULT '{}'::jsonb,
+        enabled       boolean NOT NULL DEFAULT true,
+        last_used_at  timestamptz,
+        last_error    text,
+        created_at    timestamptz NOT NULL DEFAULT now(),
+        updated_at    timestamptz NOT NULL DEFAULT now(),
+        UNIQUE (user_id, kind, label)
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS user_integrations_user_idx ON user_integrations (user_id, kind)`;
+    results.push({ step: "create user_integrations table (018)", ok: true });
+  } catch (e) {
+    results.push({ step: "create user_integrations table (018)", ok: false, error: String(e.message || e) });
+  }
+
   const allOk = results.every((r) => r.ok);
   const failedSteps = results.filter((r) => !r.ok).map((r) => ({ step: r.step, error: r.error }));
   if (failedSteps.length > 0) {
-    // Surface details in Vercel runtime logs for post-hoc debugging since
-    // the admin UI's pre-block can be hard to read on small screens.
-     
     console.error("[run-audit-migration] failed steps:", JSON.stringify(failedSteps));
   }
   return json(allOk ? 200 : 500, {
     ok: allOk,
-    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers", "007_testimonials", "013_leadgen"],
+    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers", "007_testimonials", "013_leadgen", "018_user_plans"],
     failedSteps,
     results,
   });

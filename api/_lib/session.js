@@ -224,15 +224,26 @@ export async function getSession(request) {
   if (!token) return null;
 
   const tokenHash = await hashToken(token);
+  // Fetch plan alongside session; fall back gracefully if migration 018 hasn't run yet.
   const rows = await sql`
     SELECT s.id, s.user_id, s.expires_at, s.ip AS session_ip, s.user_agent AS session_ua,
-           u.email, u.name, u.avatar_url, u.company, u.phone, u.is_admin
+           u.email, u.name, u.avatar_url, u.company, u.phone, u.is_admin,
+           COALESCE(u.plan, 'free') AS plan
     FROM sessions s
     JOIN users u ON u.id = s.user_id
     WHERE s.token_hash = ${tokenHash}
       AND s.expires_at > now()
     LIMIT 1
-  `;
+  `.catch(() => sql`
+    SELECT s.id, s.user_id, s.expires_at, s.ip AS session_ip, s.user_agent AS session_ua,
+           u.email, u.name, u.avatar_url, u.company, u.phone, u.is_admin,
+           'free'::text AS plan
+    FROM sessions s
+    JOIN users u ON u.id = s.user_id
+    WHERE s.token_hash = ${tokenHash}
+      AND s.expires_at > now()
+    LIMIT 1
+  `);
   if (rows.length === 0) return null;
 
   const row = rows[0];
@@ -281,6 +292,7 @@ export async function getSession(request) {
   // Best-effort last-seen + IP bump.
   sql`UPDATE sessions SET last_seen_at = now(), ip = ${meta.ip} WHERE id = ${row.id}`.catch(() => {});
 
+  const isAdmin = isAdminEmail(row.email);
   return {
     sessionId: row.id,
     user: {
@@ -290,7 +302,9 @@ export async function getSession(request) {
       avatarUrl: row.avatar_url,
       company: row.company,
       phone: row.phone,
-      isAdmin: isAdminEmail(row.email),
+      isAdmin,
+      // Owner always gets lifetime; plan column may not exist yet on older DBs
+      plan: isAdmin ? "lifetime" : (row.plan || "free"),
     },
   };
 }
