@@ -1779,19 +1779,9 @@ function LeadgenScanApp() {
                 <strong>
                   {row.name}
                   {row.is_chain ? (
-                    <span
-                      title="National or regional chain — usually not an independent local prospect"
-                      style={{ marginLeft: 8, padding: "1px 7px", borderRadius: 999, fontSize: 11, fontWeight: 600, verticalAlign: "middle", background: "#FEF0C7", color: "#7A4F01", border: "1px solid #FEDF89" }}
-                    >
-                      Chain
-                    </span>
+                    <span className="lead-tag lead-tag--chain" title="National or regional chain — usually not an independent local prospect">Chain</span>
                   ) : !independentsOnly ? (
-                    <span
-                      title="Independent local business — a good IT-services prospect"
-                      style={{ marginLeft: 8, padding: "1px 7px", borderRadius: 999, fontSize: 11, fontWeight: 600, verticalAlign: "middle", background: "#ECFDF3", color: "#067647", border: "1px solid #ABEFC6" }}
-                    >
-                      Local
-                    </span>
+                    <span className="lead-tag lead-tag--local" title="Independent local business — a good IT-services prospect">Local</span>
                   ) : null}
                 </strong>
                 <span>{[row.sub_industry || row.industry_group, row.city || row.address, row.zip].filter(Boolean).join(" - ")}</span>

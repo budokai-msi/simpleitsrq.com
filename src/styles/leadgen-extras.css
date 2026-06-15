@@ -209,3 +209,57 @@
 .leadgen-objection__body { font-size: 0.92rem; line-height: 1.6; color: var(--text-muted, #6b7280); margin: 0; }
 [data-theme="dark"] .leadgen-objection__title { color: #E8EEF6; }
 [data-theme="dark"] .leadgen-objection__body { color: #B4BAC4; }
+
+/* ============================================================
+   Lead intelligence + inbox polish (Hot Leads, funnel, sources,
+   returning visitors, Leads inbox, public Chain/Local badges).
+   Shared classes so the public scanner and admin dashboard match.
+   ============================================================ */
+
+/* Chain / Local pills — used on /leadgen rows and the Leads inbox */
+.lead-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: 8px; padding: 1px 9px;
+  border-radius: 999px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.02em; vertical-align: middle; line-height: 1.7;
+  border: 1px solid transparent; white-space: nowrap;
+}
+.lead-tag--chain { background: #FEF0C7; color: #7A4F01; border-color: #FEDF89; }
+.lead-tag--local { background: #ECFDF3; color: #067647; border-color: #ABEFC6; }
+[data-theme="dark"] .lead-tag--chain { background: rgba(250,176,5,0.14); color: #FEDF89; border-color: rgba(250,176,5,0.32); }
+[data-theme="dark"] .lead-tag--local { background: rgba(6,118,71,0.20); color: #6CE9A6; border-color: rgba(6,118,71,0.42); }
+
+/* Color-graded lead score chip */
+.lead-score {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 36px; padding: 3px 9px; border-radius: 9px;
+  font-weight: 800; font-variant-numeric: tabular-nums; font-size: 13px;
+  border: 1px solid transparent; line-height: 1;
+}
+.lead-score--hot  { background: #ECFDF3; color: #067647; border-color: #ABEFC6; }
+.lead-score--warm { background: #FFFAEB; color: #B54708; border-color: #FEDF89; }
+.lead-score--cold { background: var(--syn-surface-2, #f1f3f5); color: var(--text-muted, #6b7280); border-color: var(--syn-border, #e5e7eb); }
+[data-theme="dark"] .lead-score--hot  { background: rgba(6,118,71,0.20); color: #6CE9A6; border-color: rgba(6,118,71,0.42); }
+[data-theme="dark"] .lead-score--warm { background: rgba(181,71,8,0.20); color: #FEC84B; border-color: rgba(181,71,8,0.42); }
+
+/* Status select tinted by current value */
+.lead-status-select { font-weight: 600; }
+.lead-status-select[data-status="new"]       { color: #1D4ED8; }
+.lead-status-select[data-status="contacted"] { color: #B54708; }
+.lead-status-select[data-status="won"]       { color: #067647; }
+.lead-status-select[data-status="lost"]      { color: var(--text-muted, #6b7280); }
+
+/* Conversion funnel bars with subtle depth */
+.ops-funnel-row { margin-bottom: 12px; }
+.ops-funnel-row__head { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; margin-bottom: 5px; }
+.ops-funnel-row__pct { opacity: 0.6; font-weight: 500; margin-left: 4px; }
+.ops-funnel-track { height: 10px; border-radius: 999px; background: var(--syn-surface-2, #eef1f4); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.07); }
+.ops-funnel-fill { height: 100%; border-radius: 999px; transition: width 450ms cubic-bezier(.2,.7,.2,1); background: linear-gradient(90deg, var(--brand, #0F6CBD), color-mix(in srgb, var(--brand,#0F6CBD) 55%, #38bdf8)); }
+.ops-funnel-fill--green { background: linear-gradient(90deg, #067647, #34d399); }
+
+/* Table polish: row hover, lead meta */
+.ops-table tbody tr { transition: background-color 120ms ease; }
+.ops-table tbody tr:hover { background: var(--syn-surface-2, #f7f9fb); }
+[data-theme="dark"] .ops-table tbody tr:hover { background: rgba(255,255,255,0.04); }
+.lead-reasons { font-size: 11px; color: var(--text-muted, #6b7280); }
+.lead-local-pin { margin-right: 5px; }
