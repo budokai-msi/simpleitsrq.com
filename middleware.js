@@ -164,12 +164,24 @@ function getSql() {
   return neon(url);
 }
 
-async function isBlocked(sql, ip) {
-  if (!sql || !ip || ip === "unknown") return false;
+// Returns the blocklist reason for an IP, or null if not blocked. The reason
+// lets us treat reputation-only auto-blocks (OSINT / recycled residential IPs)
+// differently from behavioral blocks (manual, exploit attempts) — the former
+// must never brick a human reading the public site.
+async function blockEntry(sql, ip) {
+  if (!sql || !ip || ip === "unknown") return null;
   try {
-    const rows = await sql`SELECT 1 FROM ip_blocklist WHERE ip = ${ip} LIMIT 1`;
-    return rows.length > 0;
-  } catch { return false; }
+    const rows = await sql`SELECT reason FROM ip_blocklist WHERE ip = ${ip} LIMIT 1`;
+    return rows.length > 0 ? (rows[0].reason || "") : null;
+  } catch { return null; }
+}
+
+// Reputation-only blocks (OSINT threat feeds) are noisy for residential IPs,
+// which ISPs recycle constantly. We enforce these on the API only and never
+// hard-403 a page navigation, so a legit visitor on a recycled address can
+// still read the site. Manual blocks and exploit-attempt auto-blocks stay hard.
+function isSoftReputationBlock(reason) {
+  return typeof reason === "string" && /osint|reputation/i.test(reason);
 }
 
 // Admin-IP immunity: never auto-block an IP that recently belonged to a
@@ -452,22 +464,33 @@ export default async function middleware(request) {
     return isSpaRoute(url.pathname) ? await serveHtmlWithNonce(request) : undefined;
   }
 
-  // Layer 1: IP blocklist — already-known bad actors get nothing.
-  if (await isBlocked(sql, ip)) return BLOCKED_RESPONSE();
+  const isApiRequest = url.pathname.startsWith("/api/");
 
-  // Layer 1.5: OSINT auto-block. If the IP is in Spamhaus DROP/EDROP or
-  // Emerging Threats, add to the blocklist and serve 403 immediately.
-  // Logged as a threat_actor with class=osint_match so the admin can
-  // see which feed triggered the block.
-  const osintHits = await matchOsint(sql, ip);
-  if (osintHits.length > 0) {
-    const feeds = osintHits.map((f) => f.feed_name).join(",");
-    const p = Promise.all([
-      autoBlockIp(sql, ip, `auto: osint match (${feeds})`),
-      logThreat(request, geo, "osint_match"),
-    ]);
-    request.waitUntil?.(p) ?? p.catch(() => {});
+  // Layer 1: IP blocklist — already-known bad actors get nothing. Reputation-
+  // only auto-blocks (OSINT) are enforced on the API only so a legit visitor
+  // on a recycled/flagged residential IP can still read the public site;
+  // manual and exploit-attempt blocks stay hard on every path.
+  const blockedReason = await blockEntry(sql, ip);
+  if (blockedReason !== null && (isApiRequest || !isSoftReputationBlock(blockedReason))) {
     return BLOCKED_RESPONSE();
+  }
+
+  // Layer 1.5: OSINT match. If the IP is in Spamhaus DROP/EDROP or Emerging
+  // Threats, block + auto-block it on the API, but for page navigations just
+  // log it (no permanent block, no 403) — reputation feeds false-positive on
+  // residential IPs and must not lock a human out of the marketing site.
+  // Logged as a threat_actor with class=osint_match for admin visibility.
+  if (blockedReason === null) {
+    const osintHits = await matchOsint(sql, ip);
+    if (osintHits.length > 0) {
+      const feeds = osintHits.map((f) => f.feed_name).join(",");
+      const p = Promise.all([
+        isApiRequest ? autoBlockIp(sql, ip, `auto: osint match (${feeds})`) : Promise.resolve(),
+        logThreat(request, geo, "osint_match"),
+      ]);
+      request.waitUntil?.(p) ?? p.catch(() => {});
+      if (isApiRequest) return BLOCKED_RESPONSE();
+    }
   }
 
   // Layer 2: Scanner traps — anyone probing wp-login, .env, phpmyadmin, etc.
