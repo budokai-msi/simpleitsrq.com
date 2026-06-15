@@ -2075,11 +2075,11 @@ export default function Leadgen() {
       <section className="section leadgen-product-focus">
         <div className="container leadgen-product-focus__grid">
           <div>
-            <h2 className="title-1">One zip. One niche. A list you can actually use.</h2>
+            <h2 className="title-1">Every local business near you is a potential customer.</h2>
             <p className="lede">
-              Pick the type of business you sell to. We pull the local independents,
-              grab their emails, and cut the nationals. You get a short, reviewed
-              list — not a dump of 10,000 rows you'll never touch.
+              Pick an industry, drop in a zip. We find the independents,
+              pull their emails, and skip the national chains.
+              You review the short list and reach out — no guesswork, no list brokers.
             </p>
           </div>
           <div className="leadgen-product-rules">
