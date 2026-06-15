@@ -20,7 +20,7 @@ export const industries = {
     matchPattern: /medical|dental|practice|imaging|physical therapy|chiropract/i,
     cities: ["sarasota", "bradenton", "lakewood-ranch", "nokomis", "venice", "bradenton-34207", "palmetto", "ellenton", "parrish", "osprey", "englewood", "north-port"],
     intro:
-      "Medical and dental practices on the Florida Gulf Coast carry three layers of IT obligation that every other small business avoids: HIPAA technical and administrative safeguards, an EHR vendor whose uptime defines your day, and a security renewal questionnaire that gets longer every year. Simple IT SRQ specializes in independent practices — 4 to 60 providers — that need real HIPAA paperwork, real backups, and a tech who shows up the day a workstation locks up before morning huddle.",
+      "Medical and dental practices carry IT obligations other small businesses skip: HIPAA safeguards, an EHR whose uptime defines your day, and a security renewal questionnaire that grows every year. Simple IT SRQ specializes in independent practices — 4 to 60 providers — with real HIPAA paperwork, tested backups, and a tech who shows up before morning huddle.",
     emphasis: [
       "Written HIPAA Risk Assessment + Safeguards documentation refreshed annually",
       "EHR vendor coordination — we book the integration calls so you don't",
@@ -62,7 +62,7 @@ export const industries = {
     matchPattern: /law firm|legal|matter|clio|practice ?panther/i,
     cities: ["sarasota", "venice"],
     intro:
-      "Solo practitioners and 4-to-30-attorney firms on the Florida Gulf Coast face the same compliance + risk-management posture as a Tampa firm five times their size — without the IT budget. Simple IT SRQ runs IT for boutique law firms across Sarasota County: matter-level document security, encrypted email workflows that don't break Outlook, audit-ready phishing-simulation evidence the Florida Bar's risk-management CLE quietly expects, and a tech who actually understands what 'attorney-client privilege' means for a backup retention policy.",
+      "Boutique law firms face the same compliance and risk posture as firms five times their size — without the budget. Simple IT SRQ runs IT for Sarasota County firms: matter-level document security, encrypted email that doesn't break Outlook, Florida Bar-aligned phishing evidence, and backup retention that respects attorney-client privilege.",
     emphasis: [
       "Matter-based document security with audit trails per file",
       "Clio, PracticePanther, MyCase, or LEAP integration support",
@@ -104,7 +104,7 @@ export const industries = {
     matchPattern: /financial|advisor|wealth|sec |glba|registered investment/i,
     cities: ["lakewood-ranch"],
     intro:
-      "Registered investment advisors and independent financial-advisory firms in Lakewood Ranch face an enforcement environment that hasn't gotten gentler in 2026. SEC examiners now expect documented MFA on every admin account, a written Information Security Program (WISP), and evidence of vendor-risk reviews. Simple IT SRQ runs the IT and the documentation side-by-side — quarterly phishing tests with reports packaged for the compliance binder, encrypted email workflows that don't break Outlook, and the GLBA Safeguards Rule paperwork your examiner will read first.",
+      "Registered investment advisors face an SEC enforcement environment that keeps tightening: documented MFA, a written Information Security Program (WISP), and vendor-risk reviews. Simple IT SRQ runs the IT and the documentation together — quarterly phishing tests packaged for the compliance binder, encrypted email that doesn't break Outlook, and the GLBA Safeguards paperwork your examiner reads first.",
     emphasis: [
       "SEC + GLBA-aligned Written Information Security Program (WISP)",
       "Hardware MFA keys (YubiKey 5C) on every admin and reviewer account",
@@ -146,7 +146,7 @@ export const industries = {
     matchPattern: /marine|waterfront|dock|lift|yacht|boat|fishing/i,
     cities: ["bradenton", "nokomis", "bradenton-34207", "palmetto", "osprey", "englewood"],
     intro:
-      "Marine services, boatyards, charter operations, and waterfront repair shops along Bradenton, Cortez, and the Casey Key corridor share a problem most IT vendors don't think about: your tools have to work where the salt air kills consumer hardware in two seasons, where Wi-Fi has to reach across a lift and a slip, and where a tropical storm is part of the operating budget. Simple IT SRQ supports marine clients with ruggedized fleet tablets, dock-and-lift Wi-Fi that actually reaches the water, and offsite backups that don't assume the mainland is online.",
+      "Marine services, boatyards, and charter operations from Bradenton to Casey Key run where salt air kills consumer hardware, Wi-Fi has to reach the lift and slip, and storms are part of the budget. Simple IT SRQ delivers ruggedized fleet tablets, dock-and-lift Wi-Fi that reaches the water, and offsite backups that don't assume the mainland is online.",
     emphasis: [
       "Dock + lift Wi-Fi that survives salt air and reaches across the slips",
       "Ruggedized fleet tablets for captains and field techs",
@@ -188,7 +188,7 @@ export const industries = {
     matchPattern: /construction|contractor|job ?site|builder/i,
     cities: ["bradenton", "parrish", "north-port"],
     intro:
-      "General contractors, sub-trades, and design-build firms across the SR-64 corridor and Manatee County run an IT environment most vendors fundamentally don't understand: half your devices live in the office, half live in a truck cab, and the trailer Wi-Fi at a job site is the difference between concrete poured on schedule and concrete poured next week. Simple IT SRQ runs IT for Bradenton-area construction firms with rugged field laptops, cellular-backup networks at the trailer, MDM for foreman tablets, and a tested plan for the days your office loses power but the job site keeps running.",
+      "General contractors and sub-trades across Manatee County run a split IT setup — half the devices in the office, half in a truck cab, and trailer Wi-Fi that decides whether concrete pours on schedule. Simple IT SRQ delivers rugged field laptops, cellular-backup networking at the trailer, MDM for foreman tablets, and a plan for when the office loses power but the job site doesn't.",
     emphasis: [
       "Rugged field laptops sized for the truck cab + outdoor environment",
       "Cellular-backup networking at the job-site trailer (no more relying on builder Wi-Fi)",
@@ -230,7 +230,7 @@ export const industries = {
     matchPattern: /vacation rental|short.?term rental|airbnb|vrbo|smart.?lock/i,
     cities: ["nokomis", "englewood"],
     intro:
-      "Vacation rental management companies along Casey Key, Anna Maria, and the Nokomis-Venice corridor handle a rolling roster of 30 to 300 properties — each with its own smart locks, Wi-Fi, and check-in flow that has to work at 4pm on a Saturday when the front desk is empty. Simple IT SRQ supports VRMs with smart-lock-to-PMS integration, per-property guest Wi-Fi separated from the owner network, and the booking-system uptime your January-through-March peak demands.",
+      "Vacation rental managers along Casey Key, Anna Maria, and the Nokomis-Venice corridor juggle 30 to 300 properties — each with its own smart locks, Wi-Fi, and check-in that has to work at 4pm Saturday with no front desk. Simple IT SRQ delivers smart-lock-to-PMS integration, per-property guest Wi-Fi isolated from the owner network, and booking-system uptime for the Jan-Mar peak.",
     emphasis: [
       "Smart-lock integration with your PMS (Streamline, Track, Hostfully, OwnerRez, etc.)",
       "Per-property guest Wi-Fi separated from the owner's home network",
