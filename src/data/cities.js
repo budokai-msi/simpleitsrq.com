@@ -280,9 +280,9 @@ export const cities = {
     landmarks: ["Bayshore Gardens Park", "Cortez Road", "14th Street West medical corridor", "SR-64 construction corridor", "Manatee River Riverwalk", "Anna Maria Island Bridge", "Port Manatee"],
     neighborhoods: "Bayshore Gardens, West Bradenton, Samoset, Oneco, Palma Sola, downtown Bradenton, Cortez, Palmetto, Ellenton, Holmes Beach, Bradenton Beach, Anna Maria, northern Longboat Key, Tallevast, and the SR-64 business corridor",
     whyLocal: [
-      "Headquartered inside 34207 — not a Tampa or Lakewood Ranch satellite running this market on a per-trip surcharge. On-site engineering across the 10-mile dispatch radius is part of the standard contract.",
-      "Three post-hurricane account restorations in the last five years, every one inside this radius. The runbooks are battle-tested. Backups are restored on a documented quarterly cadence — not just ‘checked.’",
-      "Every Bradenton account carries a named primary engineer who knows the office by name, the equipment by serial, and the two staff who always escalate first.",
+      "Headquartered inside 34207 — on-site engineering across the 10-mile radius is standard, not a per-trip surcharge.",
+      "Three post-hurricane restorations here in five years; backups restored on a documented quarterly cadence, not just 'checked.'",
+      "A named primary engineer who knows your office by name and your gear by serial number.",
     ],
     faqs: [
       {
@@ -329,9 +329,9 @@ export const cities = {
     landmarks: ["Regatta Pointe Marina", "Historic Palmetto / Riverside Drive", "US-301 produce corridor", "Snead Island", "Port Manatee", "Sutton Park"],
     neighborhoods: "downtown Palmetto, Riverside Drive, Snead Island, Terra Ceia, Rubonia, the US-301 agribusiness corridor, and the industrial district toward Port Manatee",
     whyLocal: [
-      "Headquartered across the Manatee River in 34207 — Palmetto is part of our daily dispatch run, not a per-trip surcharge from a Tampa office.",
-      "Real depth in the industries Palmetto actually runs on: agribusiness and cold-storage logistics, marine and waterfront operations, and light manufacturing near Port Manatee.",
-      "Hurricane-season continuity engineered for the Gulf Coast: replicated off-site backups, generator-rated network gear, and a tested recovery runbook with documented RTO/RPO.",
+      "Headquartered minutes away in 34207 — Palmetto is part of our daily dispatch run, no per-trip charge from Tampa.",
+      "Real depth in Palmetto's industries: agribusiness and cold-storage logistics, marine operations, and light manufacturing near Port Manatee.",
+      "Gulf Coast hurricane continuity: replicated off-site backups, generator-rated gear, and a tested recovery runbook.",
     ],
     faqs: [
       {
@@ -378,9 +378,9 @@ export const cities = {
     landmarks: ["Ellenton Premium Outlets", "I-75 Exit 224", "Gamble Plantation Historic State Park", "US-301 Gateway business parks", "Manatee River"],
     neighborhoods: "Ellenton, the Premium Outlets district, the I-75 Gateway logistics corridor, Memphis, Rubonia, and the US-301 business parks toward Palmetto and Parrish",
     whyLocal: [
-      "A Manatee County team based minutes away — Ellenton is part of our daily run, not a billable trip down I-75 from a Tampa MSP.",
-      "Retail and logistics depth: PCI-ready point-of-sale, register-isolated guest Wi-Fi, warehouse-grade wireless, and cellular-backup networking sized for a corridor that ships seven days a week.",
-      "A named primary engineer on every account, flat monthly pricing that doesn't balloon when something breaks, and a phone that's answered by a local tech.",
+      "A Manatee County team minutes away — Ellenton is part of our daily run, not a billable trip from Tampa.",
+      "Retail and logistics depth: PCI-ready point-of-sale, register-isolated guest Wi-Fi, warehouse wireless, and cellular backup.",
+      "A named engineer, flat monthly pricing that doesn't balloon, and a phone answered by a local tech.",
     ],
     faqs: [
       {
@@ -427,9 +427,9 @@ export const cities = {
     landmarks: ["North River Ranch", "Fort Hamer Bridge", "US-301 growth corridor", "Parrish Historic District", "Fort Hamer Park", "the new north-Manatee hospital district"],
     neighborhoods: "North River Ranch, the US-301 growth corridor, the Fort Hamer area, Old Parrish, Ellenton-adjacent business parks, and the new master-planned communities along Moccasin Wallow Road",
     whyLocal: [
-      "A Manatee County team that's actually close — Parrish is part of our north-county dispatch run, not a long trip down I-75 from a Tampa MSP.",
-      "New-buildout depth: structured cabling, firewall and Wi-Fi design, Microsoft 365 done right the first time, and field-ready IT for the firms building Parrish's growth corridors.",
-      "A named primary engineer on every account, flat monthly pricing with no per-ticket surprises, and HIPAA documentation ready for a new practice's first security renewal.",
+      "A Manatee County team that's actually close — Parrish is on our north-county dispatch run, not a trip from Tampa.",
+      "New-buildout depth: structured cabling, firewall and Wi-Fi design, and Microsoft 365 done right the first time.",
+      "A named engineer, flat pricing with no per-ticket surprises, and HIPAA docs ready for a new practice's first renewal.",
     ],
     faqs: [
       {
@@ -476,9 +476,9 @@ export const cities = {
     landmarks: ["Historic Spanish Point", "Blackburn Point Bridge", "Oscar Scherer State Park", "Bay Street / US-41", "north Casey Key", "Pine View area"],
     neighborhoods: "Osprey, north Casey Key, Blackburn Point, the Bay Street / US-41 corridor, Southbay, and the south-Sarasota offices toward Vamo and Oscar Scherer",
     whyLocal: [
-      "Sarasota County engineering team — Osprey is part of our regular US-41 dispatch run between Sarasota and Venice, not a drive-down from Tampa.",
-      "Right-sized for small offices and residential clients: professional and medical practices, marine businesses, and the homes and home offices along Casey Key.",
-      "A named primary engineer on every business account, flat monthly pricing with no per-ticket surprises, and no-contract repair for residential clients.",
+      "Sarasota County engineers — Osprey is on our regular US-41 dispatch run, not a drive-down from Tampa.",
+      "Right-sized for small offices and residences: professional and medical practices, marine businesses, and Casey Key homes.",
+      "A named engineer, flat monthly pricing, and no-contract repair for residential clients.",
     ],
     faqs: [
       {
@@ -525,9 +525,9 @@ export const cities = {
     landmarks: ["Historic Dearborn Street", "Manasota Key", "Lemon Bay", "Englewood Beach", "Englewood Community Hospital", "Stump Pass"],
     neighborhoods: "Englewood, Dearborn Street, Manasota Key, Grove City, Rotonda-adjacent offices, and the Lemon Bay waterfront along both sides of the county line",
     whyLocal: [
-      "Covered from our Venice service area on the same flat pricing — a local Gulf Coast team, not a per-trip dispatch from Tampa or Fort Myers.",
-      "Real depth in the industries Englewood runs on: retiree-heavy medical practices, marine and fishing operations, and Manasota Key vacation rentals.",
-      "Hurricane-season continuity engineered for a barrier-island reality: replicated off-site backups, generator-rated networking, and a tested runbook that doesn't assume the key has power.",
+      "Covered from Venice on the same flat pricing — a local Gulf Coast team, not a per-trip dispatch from Fort Myers.",
+      "Real depth in Englewood's industries: retiree-heavy medical, marine and fishing, and Manasota Key vacation rentals.",
+      "Barrier-island hurricane continuity: replicated off-site backups, generator-rated networking, and a tested runbook.",
     ],
     faqs: [
       {
@@ -574,9 +574,9 @@ export const cities = {
     landmarks: ["Wellen Park", "CoolToday Park (Atlanta Braves)", "Warm Mineral Springs", "Sumter Boulevard corridor", "Toledo Blade Boulevard", "Myakka State Forest"],
     neighborhoods: "Wellen Park, the West Villages, the Sumter Boulevard corridor, Toledo Blade, the US-41 corridor toward Venice, and the new master-planned communities across North Port",
     whyLocal: [
-      "Served from our Venice base on the same flat pricing — we're honest that North Port is the southern edge of our range, so on-site work is scheduled rather than same-day.",
-      "New-buildout depth: structured cabling, firewall and Wi-Fi design, Microsoft 365 done right the first time, and field-ready IT for the firms building North Port's growth corridors.",
-      "A named primary engineer on every account, HIPAA documentation ready for a new practice's first security renewal, and no per-ticket surprises.",
+      "Served from our Venice base on the same flat pricing — North Port is our southern edge, so on-site is scheduled, not same-day.",
+      "New-buildout depth: structured cabling, firewall and Wi-Fi design, and Microsoft 365 done right the first time.",
+      "A named engineer, HIPAA docs ready for a new practice's first renewal, and no per-ticket surprises.",
     ],
     faqs: [
       {
