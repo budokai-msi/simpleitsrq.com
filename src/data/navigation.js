@@ -5,14 +5,25 @@ const cityPaths = cityList.map((city) => `/${city.slug}`);
 const industryLandingPattern =
   /^\/(?:medical|law-firm|financial-advisor|marine|construction|vacation-rental)-it-[a-z0-9-]+$/;
 
-export const SERVICE_AREA_LINKS = [
-  ...cityList.map((city) => ({
+// Core markets surfaced in the footer / nav. The full set of city pages still
+// exists (routes + sitemap) for SEO, but listing all of them everywhere is
+// bloat — the footer shows these few plus a "View all markets" link.
+const PRIMARY_CITY_SLUGS = new Set([
+  "sarasota-it-support",
+  "bradenton-it-support",
+  "lakewood-ranch-it-support",
+  "venice-it-support",
+  "nokomis-it-support",
+]);
+
+export const SERVICE_AREA_LINKS = cityList
+  .filter((city) => PRIMARY_CITY_SLUGS.has(city.slug))
+  .map((city) => ({
     id: city.slug,
     label: city.city,
     to: `/${city.slug}`,
     icon: "MapPin",
-  })),
-];
+  }));
 
 export const PRIMARY_NAV = [
   {
