@@ -28,6 +28,7 @@ import { runLeadgenWorker } from "./cron/agent.js";
 import { timingSafeEqual } from "node:crypto";
 import { publishDraftToGitHub } from "./_lib/publish-draft.js";
 import { isAdminEmail } from "./_lib/admin.js";
+import { looksLikeChain } from "./_lib/leadgen-classify.js";
 
 // Vercel function config: lead-gen Discover + Crawl run their workers
 // inline (Overpass + outbound HTTP fetches), so we need the higher
@@ -4324,7 +4325,9 @@ async function handleLeadgenBusinesses(session, url) {
     page: f.page,
     limit: f.limit,
     total: result.total,
-    rows: result.rows,
+    // Flag national/regional chains so the dashboard can sort independents
+    // first and offer an independents-only filter (matches the public scanner).
+    rows: (result.rows || []).map((r) => ({ ...r, is_chain: Boolean(r.is_chain) || looksLikeChain(r.name) })),
     facets: result.facets,
     degraded: !!result.degraded,
     warning: result.warning || null,

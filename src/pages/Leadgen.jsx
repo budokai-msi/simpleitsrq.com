@@ -670,7 +670,9 @@ function LeadgenScanApp() {
   const [drawerOpenState, setDrawerOpenState] = useState({ key: "", ready: false, assist: false });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [independentsOnly, setIndependentsOnly] = useState(() => initialQuery.get("independents") === "1");
+  // Default to independents-only — the prospect list an IT provider wants.
+  // Off only when a shared link explicitly opts back into chains (?independents=0).
+  const [independentsOnly, setIndependentsOnly] = useState(() => initialQuery.get("independents") !== "0");
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const validZip = /^\d{5}$/.test(zip);
   // Only surface keyboard-shortcut hints on devices that actually have a
@@ -843,7 +845,7 @@ function LeadgenScanApp() {
     setOrDelete("contact", contactFilter, "all");
     setOrDelete("sub_industry", subIndustryFilter, "all");
     setOrDelete("sort", sortBy, "contact");
-    setOrDelete("independents", independentsOnly ? "1" : "", "");
+    setOrDelete("independents", independentsOnly ? "" : "0", "");
     setOrDelete("close_rate", String(closeRate), "8");
     setOrDelete("avg_deal", String(avgDealValue), "2400");
     const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash || ""}`;
@@ -1782,6 +1784,13 @@ function LeadgenScanApp() {
                       style={{ marginLeft: 8, padding: "1px 7px", borderRadius: 999, fontSize: 11, fontWeight: 600, verticalAlign: "middle", background: "#FEF0C7", color: "#7A4F01", border: "1px solid #FEDF89" }}
                     >
                       Chain
+                    </span>
+                  ) : !independentsOnly ? (
+                    <span
+                      title="Independent local business — a good IT-services prospect"
+                      style={{ marginLeft: 8, padding: "1px 7px", borderRadius: 999, fontSize: 11, fontWeight: 600, verticalAlign: "middle", background: "#ECFDF3", color: "#067647", border: "1px solid #ABEFC6" }}
+                    >
+                      Local
                     </span>
                   ) : null}
                 </strong>

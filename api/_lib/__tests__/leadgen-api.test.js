@@ -22,6 +22,7 @@ vi.mock("../leadgen-classify.js", () => ({
       : { industry: "Other", sub_industry: null }
   ),
   INDUSTRY_OPTIONS: ["Healthcare", "Trades", "Professional Services"],
+  looksLikeChain: (name) => /walmart|7-?eleven|aldi|mcdonald|starbucks|cvs|walgreens/i.test(String(name || "")),
 }));
 
 vi.mock("../security.js", () => ({
