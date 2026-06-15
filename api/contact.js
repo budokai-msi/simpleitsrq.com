@@ -233,6 +233,38 @@ export async function persistServiceReserveLead(reserve, ip = "unknown") {
   return { ok: true, action: "inserted", source };
 }
 
+// Persist a human form submission to the leads inbox (CRM follow-up queue).
+// Best-effort: if the leads table doesn't exist yet (migration not applied),
+// log and move on — the submission email/notification still goes out, so a
+// missing table never costs a lead.
+export async function persistLead(lead = {}) {
+  try {
+    await sql`
+      INSERT INTO leads (name, email, phone, message, source, page, ip, country, region, city)
+      VALUES (
+        ${lead.name || null}, ${lead.email || null}, ${lead.phone || null},
+        ${lead.message || null}, ${lead.source || null}, ${lead.page || null},
+        ${lead.ip || null}, ${lead.country || null}, ${lead.region || null}, ${lead.city || null}
+      )
+    `;
+    return { ok: true };
+  } catch (err) {
+    console.warn("[leads] persist failed (run `npm run db:push`?)", err?.message || err);
+    return { ok: false };
+  }
+}
+
+// Coarse visitor geo from Vercel's edge headers — used to tag leads by region.
+function leadGeoFromRequest(request) {
+  const h = request.headers;
+  const city = h.get("x-vercel-ip-city");
+  return {
+    country: h.get("x-vercel-ip-country") || null,
+    region: h.get("x-vercel-ip-country-region") || null,
+    city: city ? decodeURIComponent(city) : null,
+  };
+}
+
 const json = (status, body) =>
   new Response(JSON.stringify(body), {
     status,
@@ -1253,6 +1285,18 @@ export async function POST(request) {
     } catch (err) {
       console.error("[contact] service reservation persistence failed", err);
     }
+    // Also drop a full record into the leads inbox (name/phone/message/service).
+    const rGeo = leadGeoFromRequest(request);
+    await persistLead({
+      name: parsed.value.name,
+      email: parsed.value.email,
+      phone: parsed.value.phone,
+      message: [`Service: ${parsed.value.serviceTitle}`, parsed.value.message || ""].filter(Boolean).join("\n"),
+      source: `service-reserve:${parsed.value.serviceSlug}`,
+      page: "/services",
+      ip,
+      ...rGeo,
+    });
 
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
@@ -1331,6 +1375,20 @@ export async function POST(request) {
   if (!name) return json(400, { ok: false, error: "name_required" });
   if (!email || !isEmail(email)) return json(400, { ok: false, error: "email_invalid" });
   if (!message) return json(400, { ok: false, error: "message_required" });
+
+  // Persist to the leads inbox before sending — a real follow-up record with
+  // the page/source it came from, so it survives even if the email bounces.
+  const geo = leadGeoFromRequest(request);
+  await persistLead({
+    name,
+    email,
+    phone,
+    message: [company ? `[Company: ${company}]` : "", message].filter(Boolean).join("\n"),
+    source: stripHeaderCtrl(String(body.source || "contact").slice(0, 120)),
+    page: stripHeaderCtrl(String(body.page || body.path || "").slice(0, 200)) || null,
+    ip,
+    ...geo,
+  });
 
   const subject = `Website inquiry from ${name}${company ? ` (${company})` : ""}`;
 
