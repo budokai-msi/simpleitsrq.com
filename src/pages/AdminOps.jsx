@@ -534,31 +534,47 @@ function HotLeadsPanel({ hotLeads, error }) {
       {error ? <EmptyState>{error}</EmptyState> : null}
       {!error && leads.length === 0 ? <EmptyState>No ranked sessions yet — leads appear here as visitors engage.</EmptyState> : null}
       {leads.length > 0 ? (
-        <table className="admin-aff-table ops-table">
-          <thead>
-            <tr><th>Score</th><th>Location</th><th>Activity</th><th>Entry → Exit</th><th>Source</th><th>Why</th></tr>
-          </thead>
-          <tbody>
-            {leads.map((l) => (
-              <tr key={l.id}>
-                <td>
-                  <span className={`lead-score lead-score--${l.score >= 70 ? "hot" : l.score >= 40 ? "warm" : "cold"}`}>{l.score}</span>
-                </td>
-                <td>
-                  {l.is_local ? <span className="lead-local-pin" title="In the service area">📍</span> : null}
-                  {l.location}
-                </td>
-                <td className="admin-leadgen-muted">{l.page_count} pp · {l.dwell_sec}s · {l.max_scroll_pct}%{l.engaged ? " · engaged" : ""}</td>
-                <td className="admin-leadgen-muted lead-reasons">{l.landing_path || "?"}{l.exit_path && l.exit_path !== l.landing_path ? ` → ${l.exit_path}` : ""}</td>
-                <td className="admin-leadgen-muted lead-reasons">{l.referrer}</td>
-                <td className="admin-leadgen-muted lead-reasons">{(l.reasons || []).join(", ")}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="hotlead-grid">
+          {leads.map((l) => {
+            const t = l.score >= 70 ? "hot" : l.score >= 40 ? "warm" : "cold";
+            const journey = `${l.landing_path || "direct"}${l.exit_path && l.exit_path !== l.landing_path ? ` → ${l.exit_path}` : ""}`;
+            return (
+              <article key={l.id} className={`hotlead-card hotlead-card--${t}`}>
+                <div className={`hotlead-ring hotlead-ring--${t}`} title={`Lead score ${l.score}/100`}>{l.score}</div>
+                <div className="hotlead-body">
+                  <div className="hotlead-head">
+                    <span className="hotlead-loc">{l.is_local ? <span className="lead-local-pin" title="In the service area">📍</span> : null}{l.location}</span>
+                    <span className={`hotlead-temp hotlead-temp--${t}`}>{t}</span>
+                  </div>
+                  <div className="hotlead-stats">
+                    <span className="hotlead-stat">{fmtNumber(l.page_count)} pages</span>
+                    <span className="hotlead-stat">{fmtDwell(l.dwell_sec)}</span>
+                    <span className="hotlead-stat">{l.max_scroll_pct}% read</span>
+                    {l.engaged ? <span className="hotlead-stat hotlead-stat--on">engaged</span> : null}
+                  </div>
+                  <div className="hotlead-journey" title={journey}>{journey}</div>
+                  <div className="hotlead-journey">via {l.referrer}</div>
+                  {(l.reasons || []).length ? (
+                    <div className="hotlead-reasons">
+                      {l.reasons.map((r, i) => <span key={i} className="hotlead-chip">{r}</span>)}
+                    </div>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
       ) : null}
     </section>
   );
+}
+
+function fmtDwell(sec) {
+  const s = Number(sec) || 0;
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return r ? `${m}m ${r}s` : `${m}m`;
 }
 
 function FunnelBar({ label, value, pct, green }) {
