@@ -2345,6 +2345,51 @@ async function handleRunAuditMigration(session) {
     results.push({ step: "create user_integrations table (018)", ok: false, error: String(e.message || e) });
   }
 
+  // Migration 019 — visit fingerprint columns. track.js inserts these into
+  // `visits`, but the base schema never had them, so EVERY visit INSERT was
+  // failing silently — that's why no visitor data was being captured. Adding
+  // them (idempotent) restores visitor tracking.
+  try {
+    await sql`
+      ALTER TABLE visits
+        ADD COLUMN IF NOT EXISTS session_id  uuid,
+        ADD COLUMN IF NOT EXISTS device_hash text,
+        ADD COLUMN IF NOT EXISTS color_depth integer,
+        ADD COLUMN IF NOT EXISTS platform    text,
+        ADD COLUMN IF NOT EXISTS cores       integer,
+        ADD COLUMN IF NOT EXISTS mem         real,
+        ADD COLUMN IF NOT EXISTS touch       integer,
+        ADD COLUMN IF NOT EXISTS dpr         real,
+        ADD COLUMN IF NOT EXISTS connection  text,
+        ADD COLUMN IF NOT EXISTS langs       text
+    `;
+    results.push({ step: "add visits fingerprint columns (019)", ok: true });
+  } catch (e) {
+    results.push({ step: "add visits fingerprint columns (019)", ok: false, error: String(e.message || e) });
+  }
+
+  // Migration 017 — leads inbox. Contact-form submissions and service
+  // reservations are written here; without the table they were lost.
+  try {
+    await sql`
+      CREATE TABLE IF NOT EXISTS leads (
+        id          bigserial PRIMARY KEY,
+        name        text, email text, phone text, message text,
+        source      text, page text, ip text,
+        country     text, region text, city text,
+        status      text NOT NULL DEFAULT 'new',
+        notes       text,
+        created_at  timestamptz NOT NULL DEFAULT now(),
+        updated_at  timestamptz NOT NULL DEFAULT now()
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS leads_created_idx ON leads (created_at DESC)`;
+    await sql`CREATE INDEX IF NOT EXISTS leads_status_idx ON leads (status, created_at DESC)`;
+    results.push({ step: "create leads table (017)", ok: true });
+  } catch (e) {
+    results.push({ step: "create leads table (017)", ok: false, error: String(e.message || e) });
+  }
+
   const allOk = results.every((r) => r.ok);
   const failedSteps = results.filter((r) => !r.ok).map((r) => ({ step: r.step, error: r.error }));
   if (failedSteps.length > 0) {
@@ -2352,7 +2397,7 @@ async function handleRunAuditMigration(session) {
   }
   return json(allOk ? 200 : 500, {
     ok: allOk,
-    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers", "007_testimonials", "013_leadgen", "018_user_plans"],
+    migrations: ["001_audit_chain", "002_audit_chain_fix", "003_threat_feeds", "004_admin_ip_immunity", "005_affiliate_clicks", "006_newsletter_subscribers", "007_testimonials", "013_leadgen", "017_leads", "018_user_plans", "019_visits_columns"],
     failedSteps,
     results,
   });
