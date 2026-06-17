@@ -138,10 +138,12 @@ export const config = {
 };
 
 function getIp(request) {
-  // Prefer Vercel's authoritative header over X-Forwarded-For. In production,
-  // do not trust XFF if x-real-ip is absent; client-supplied XFF can poison
-  // blocklist/rate-limit decisions across proxy layers.
-  return request.headers.get("x-real-ip")
+  // Behind Cloudflare → Vercel, the real visitor IP is in cf-connecting-ip.
+  // x-real-ip is Cloudflare's edge IP here, so blocking/rate-limiting on it
+  // would affect every visitor sharing that edge. Prefer CF's header, then
+  // Vercel's; never trust client-supplied XFF in production.
+  return request.headers.get("cf-connecting-ip")
+    || request.headers.get("x-real-ip")
     || (process.env.NODE_ENV === "production" ? "" : (request.headers.get("x-forwarded-for") || "").split(",")[0].trim())
     || "unknown";
 }
