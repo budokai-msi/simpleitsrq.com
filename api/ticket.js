@@ -21,6 +21,7 @@ import { sql } from "./_lib/db.js";
 import { clientIp, rateLimit } from "./_lib/security.js";
 import { getSession } from "./_lib/session.js";
 import { requireCsrf } from "./_lib/csrf.js";
+import { sendTicketEmail } from "./_lib/ticket-mail.js";
 
 const SUPPORT_EMAIL = "hello@simpleitsrq.com";
 const TICKET_FROM = `Simple IT SRQ <${SUPPORT_EMAIL}>`;
@@ -64,6 +65,24 @@ const escapeHtml = (s = "") =>
     .replace(/'/g, "&#39;");
 
 const isEmail = (s = "") => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+// Parse + validate a CC list (array or comma/space-separated string). Caps at
+// 10, dedupes, lowercases, drops invalid/over-long addresses.
+const MAX_CC = 10;
+function normalizeCc(raw, exclude = "") {
+  const arr = Array.isArray(raw) ? raw : String(raw || "").split(/[,;\s]+/);
+  const ex = String(exclude).toLowerCase();
+  const seen = new Set();
+  const out = [];
+  for (const e of arr) {
+    const v = String(e || "").trim().toLowerCase();
+    if (!v || v === ex || v.length > 320 || !isEmail(v) || seen.has(v)) continue;
+    seen.add(v);
+    out.push(v);
+    if (out.length >= MAX_CC) break;
+  }
+  return out;
+}
 
 const json = (status, body) =>
   new Response(JSON.stringify(body), {
@@ -198,6 +217,7 @@ export async function POST(request) {
   const category    = stripHeaderCtrl(String(body.category || "Other").slice(0, 200));
   const subject     = stripHeaderCtrl(String(body.subject || "").slice(0, 200));
   const description = String(body.description || "").trim().slice(0, 8000);
+  const cc          = normalizeCc(body.cc, email);
 
   // 6. Validate
   if (!name) return json(400, { ok: false, error: "name_required" });
@@ -217,10 +237,10 @@ export async function POST(request) {
     await sql`
       INSERT INTO tickets (
         ticket_code, user_id, email, name, company, phone,
-        priority, category, subject, description, status
+        priority, category, subject, description, status, cc_emails
       ) VALUES (
         ${ticketId}, ${currentUserId}, ${email}, ${name}, ${company || null}, ${phone || null},
-        ${priority}, ${category}, ${subject}, ${description}, 'open'
+        ${priority}, ${category}, ${subject}, ${description}, 'open', ${cc}
       )
     `;
   } catch (err) {
@@ -311,9 +331,56 @@ export async function POST(request) {
     }
 
     console.info("[ticket] sent", { id: data?.id, priority });
-    return json(200, { ok: true, ticketId });
   } catch (err) {
     console.error("[ticket] resend threw", err);
     return json(502, { ok: false, error: "send_failed" });
   }
+
+  // Customer confirmation — carries the signed VERP Reply-To + reply banner,
+  // so the customer (and any CC) can reply directly by email and have it
+  // thread back onto the ticket. Best-effort; never fails the request.
+  try {
+    const confirmHtml = `
+      <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:640px;margin:0 auto;color:#1a1a1a">
+        <div style="padding:14px 18px;background:#0F6CBD;color:#fff;border-radius:8px 8px 0 0">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.9">We received your request</div>
+          <div style="font-size:20px;font-weight:700;margin-top:2px">${escapeHtml(ticketId)}</div>
+        </div>
+        <div style="padding:20px;background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px">
+          <h2 style="margin:0 0 14px;font-size:18px;color:#0F6CBD">${escapeHtml(subject)}</h2>
+          <p style="font-size:14px;line-height:1.55;margin:0 0 12px">Thanks${name ? `, ${escapeHtml(name)}` : ""} — your ticket is open and we'll be in touch shortly. You can reply to this email at any time and it'll be added to your ticket, or track it in the portal.</p>
+          <div style="white-space:pre-wrap;padding:14px 16px;background:#f7f7f8;border-radius:8px;font-size:14px;line-height:1.55">${escapeHtml(description)}</div>
+          <p style="margin-top:22px;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px">
+            Ticket ${escapeHtml(ticketId)} · <a href="https://simpleitsrq.com/portal">view in the portal</a>
+          </p>
+        </div>
+      </div>
+    `;
+    const confirmText = [
+      `Thanks${name ? `, ${name}` : ""} — we received your support request.`,
+      `Ticket: ${ticketId} — ${subject}`,
+      ``,
+      `You can reply directly to this email and it'll be added to your ticket.`,
+      ``,
+      description,
+      ``,
+      `Track it in the portal: https://simpleitsrq.com/portal`,
+    ].join("\n");
+
+    const conf = await sendTicketEmail({
+      ticketCode: ticketId,
+      to: email,
+      cc,
+      subject: `[${ticketId}] ${subject}`,
+      html: confirmHtml,
+      text: confirmText,
+    });
+    if (conf?.messageId) {
+      await sql`UPDATE tickets SET last_message_id = ${conf.messageId} WHERE ticket_code = ${ticketId}`.catch(() => {});
+    }
+  } catch (err) {
+    console.warn("[ticket] customer confirmation failed (non-blocking)", err);
+  }
+
+  return json(200, { ok: true, ticketId });
 }
