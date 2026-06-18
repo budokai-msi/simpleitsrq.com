@@ -37,6 +37,7 @@ import {
 } from "./_lib/ticket-mail.js";
 import { buildIcs, calendarLinks } from "./_lib/ics.js";
 import { extractReply } from "./_lib/email-reply-parser.js";
+import { parseRawEmail } from "./_lib/mime-parse.js";
 
 // Vercel function config: lead-gen Discover + Crawl run their workers
 // inline (Overpass + outbound HTTP fetches), so we need the higher
@@ -1034,6 +1035,23 @@ async function handleIcs(url) {
 // reputation block — see middleware.js.
 // ─────────────────────────────────────────────────────────────
 async function handleInboundEmail(request) {
+  // Two ingress paths share the same downstream logic (recordInboundReply):
+  //   • Cloudflare Email Worker  — authenticated by a shared secret header,
+  //     posts { to, from, subject, messageId, raw } (free; our chosen path).
+  //   • Resend Inbound webhook   — Svix-signed metadata; body fetched from the
+  //     Received Emails API (kept for flexibility; requires a paid Resend plan).
+  const workerSecret = process.env.INBOUND_SHARED_SECRET;
+  const provided = request.headers.get("x-inbound-secret");
+  if (workerSecret && provided) {
+    let ok = false;
+    try {
+      const a = Buffer.from(provided), b = Buffer.from(workerSecret);
+      ok = a.length === b.length && timingSafeEqual(a, b);
+    } catch { /* ok stays false */ }
+    if (!ok) return json(401, { ok: false, error: "bad_secret" });
+    return handleInboundFromWorker(request);
+  }
+
   const raw = await request.text();
 
   // 1. Verify signature. Resend signs with Svix headers; the secret is the
@@ -1079,20 +1097,56 @@ async function handleInboundEmail(request) {
   const bodyText = full?.text ?? data.text ?? "";
   const bodyHtml = full?.html ?? data.html ?? "";
 
-  // 3. Strip quoted history / signature.
   const { reply } = extractReply(bodyText, { html: bodyHtml });
   const clean = reply.trim().slice(0, 8000);
-  if (!clean) {
-    return json(200, { ok: true, empty: true });
-  }
+  if (!clean) return json(200, { ok: true, empty: true });
 
   const fromRaw = full?.from ?? data.from ?? "";
   const fromAddr = (typeof fromRaw === "object" ? fromRaw.address : fromRaw).toString().toLowerCase().trim();
   const fromName = (typeof fromRaw === "object" ? fromRaw.name : fromAddr || "").toString().slice(0, 200);
   const msgId = (full?.message_id || data.message_id || full?.headers?.["message-id"] || "").toString().slice(0, 400) || null;
 
-  // 4. Insert idempotently. The partial unique index on message_id makes a
-  //    provider retry a no-op; ON CONFLICT DO NOTHING returns zero rows.
+  return recordInboundReply({ t, code, clean, fromAddr, fromName, msgId });
+}
+
+// Cloudflare Email Worker path: the Worker matched a reply+TOKEN address and
+// posted the raw RFC 822 message. We parse the body, strip quotes, and record.
+async function handleInboundFromWorker(request) {
+  let payload;
+  try { payload = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+
+  const recipients = [payload.to, ...(Array.isArray(payload.cc) ? payload.cc : [])].filter(Boolean);
+  const code = findTicketCode(recipients);
+  if (!code) return json(200, { ok: true, unmatched: true });
+
+  const rows = await sql`SELECT * FROM tickets WHERE ticket_code = ${code} LIMIT 1`;
+  const t = rows[0];
+  if (!t) return json(200, { ok: true, unknown_ticket: code });
+
+  let text = payload.text || "";
+  let html = payload.html || "";
+  if (!text && !html && payload.raw) {
+    const parsed = parseRawEmail(payload.raw);
+    text = parsed.text;
+    html = parsed.html;
+  }
+
+  const { reply } = extractReply(text, { html });
+  const clean = reply.trim().slice(0, 8000);
+  if (!clean) return json(200, { ok: true, empty: true });
+
+  // "Name <addr>" → addr
+  const fromHeader = String(payload.from || "");
+  const fromAddr = (fromHeader.match(/<([^>]+)>/)?.[1] || fromHeader).toLowerCase().trim();
+  const fromName = (fromHeader.replace(/<[^>]*>/, "").replace(/"/g, "").trim() || fromAddr).slice(0, 200);
+  const msgId = String(payload.messageId || "").slice(0, 400) || null;
+
+  return recordInboundReply({ t, code, clean, fromAddr, fromName, msgId });
+}
+
+// Shared tail for both inbound paths: idempotent insert, reopen/bump the
+// ticket, fan out to participants, persist threading id.
+async function recordInboundReply({ t, code, clean, fromAddr, fromName, msgId }) {
   let inserted;
   try {
     inserted = await sql`
@@ -1119,7 +1173,7 @@ async function handleInboundEmail(request) {
     WHERE id = ${t.id}
   `.catch(() => {});
 
-  // 5. Fan out to support + CC participants (excluding the sender).
+  // Fan out to support + CC participants (excluding the sender).
   const outboundId = await notifyTicketParticipants({
     ticket: t,
     message: { ...m, via: "email" },

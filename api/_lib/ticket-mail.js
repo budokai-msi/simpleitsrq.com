@@ -26,9 +26,10 @@ import { REPLY_DELIMITER } from "./email-reply-parser.js";
 const SUPPORT_EMAIL = "hello@simpleitsrq.com";
 const FROM = `Simple IT SRQ <${SUPPORT_EMAIL}>`;
 
-// Subdomain that carries the inbound MX records (kept off the apex so the
-// main mail flow is untouched). Override per-env if it ever moves.
-const INBOUND_DOMAIN = () => process.env.INBOUND_EMAIL_DOMAIN || "inbound.simpleitsrq.com";
+// Domain the reply-to addresses live on. We use the apex simpleitsrq.com
+// because inbound is handled by Cloudflare Email Routing (already the apex MX),
+// which hands ticket replies to an Email Worker → our webhook. Override per-env.
+const INBOUND_DOMAIN = () => process.env.INBOUND_EMAIL_DOMAIN || "simpleitsrq.com";
 
 // Dedicated secret, falling back to the session secret so reply-by-email
 // works the moment AUTH_SECRET is set even before a separate key is minted.
