@@ -474,7 +474,18 @@ export default async function middleware(request) {
   // catch-22: blocked from the API, so unable to log in to earn immunity. Login
   // is OAuth and rate-limited, so reputation gating adds little here anyway.
   const isAuthPath = url.pathname.startsWith("/api/auth/");
-  const enforceReputation = isApiRequest && !isAuthPath;
+
+  // Inbound email webhook + the public .ics download must NOT be reputation-
+  // gated: the webhook arrives from Resend's datacenter IPs (which the OSINT/
+  // datacenter feeds would flag), and the .ics link is opened from a
+  // customer's email client. Both carry their own auth — the webhook is
+  // signature-verified, the .ics is a signed token — so reputation gating
+  // here would only break legitimate traffic (the same failure mode as the
+  // earlier API-wide lockout). Match on the portal action query param.
+  const portalAction = url.pathname === "/api/portal" ? url.searchParams.get("action") : null;
+  const isInboundWebhook = portalAction === "inbound-email" || portalAction === "ics";
+
+  const enforceReputation = isApiRequest && !isAuthPath && !isInboundWebhook;
 
   // Layer 1: IP blocklist — already-known bad actors get nothing. Reputation-
   // only auto-blocks (OSINT) are enforced on the non-auth API only so a legit

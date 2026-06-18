@@ -118,6 +118,22 @@ function PortalList({ title, rows, empty }) {
   );
 }
 
+// Per-provider "add to calendar" buttons. The .ics link covers Apple
+// Calendar (iPhone/iPad/Mac); the others open the web calendar pre-filled.
+function AddToCalendar({ links }) {
+  if (!links) return null;
+  return (
+    <div className="portal-cal-buttons">
+      <a className="btn btn-secondary btn-sm" href={links.google} target="_blank" rel="noopener noreferrer">Google</a>
+      <a className="btn btn-secondary btn-sm" href={links.outlook} target="_blank" rel="noopener noreferrer">Outlook</a>
+      <a className="btn btn-secondary btn-sm" href={links.office365} target="_blank" rel="noopener noreferrer">Office 365</a>
+      <a className="btn btn-secondary btn-sm" href={links.ics}>Apple / .ics</a>
+    </div>
+  );
+}
+
+const CHANNEL_LABEL = { email: "via email", portal: "via portal", system: "system" };
+
 function AdminTicketConsole() {
   const [bucket, setBucket] = useState("open");
   const [searchInput, setSearchInput] = useState("");
@@ -126,8 +142,11 @@ function AdminTicketConsole() {
   const [selectedCode, setSelectedCode] = useState("");
   const [detail, setDetail] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [draft, setDraft] = useState({ status: "open", priority: "normal" });
   const [reply, setReply] = useState("");
+  const [ccInput, setCcInput] = useState("");
+  const [apptForm, setApptForm] = useState({ title: "", location: "", startsAt: "", durationMin: "60", description: "" });
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [busy, setBusy] = useState("");
@@ -173,6 +192,8 @@ function AdminTicketConsole() {
       if (!res.ok) throw new Error(data?.error || "ticket_load_failed");
       setDetail(data.ticket || null);
       setMessages(data.messages || []);
+      setAppointments(data.appointments || []);
+      setCcInput("");
       setDraft({
         status: data.ticket?.status || "open",
         priority: data.ticket?.priority || "normal",
@@ -180,6 +201,7 @@ function AdminTicketConsole() {
     } catch (err) {
       setDetail(null);
       setMessages([]);
+      setAppointments([]);
       setError(err?.message || "Ticket failed to load.");
     } finally {
       setDetailLoading(false);
@@ -248,6 +270,92 @@ function AdminTicketConsole() {
       await Promise.all([loadTickets(), loadTicket(detail.code)]);
     } catch (err) {
       setError(err?.message || "Reply failed.");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const saveCc = async (nextCc) => {
+    if (!detail?.code || busy) return;
+    setBusy("cc");
+    setError("");
+    try {
+      const res = await csrfFetch("/api/portal?action=ticket-cc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: detail.code, cc: nextCc }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "cc_failed");
+      setDetail((d) => (d ? { ...d, cc: data.cc || [] } : d));
+      setCcInput("");
+    } catch (err) {
+      setError(err?.message || "CC update failed.");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const addCc = () => {
+    const entries = ccInput.split(/[,;\s]+/).map((s) => s.trim()).filter(Boolean);
+    if (!entries.length) return;
+    const next = [...new Set([...(detail?.cc || []), ...entries])];
+    saveCc(next);
+  };
+
+  const removeCc = (addr) => {
+    saveCc((detail?.cc || []).filter((e) => e !== addr));
+  };
+
+  const scheduleAppt = async () => {
+    if (!detail?.code || busy) return;
+    if (!apptForm.title.trim() || !apptForm.startsAt) {
+      setError("Appointment needs a title and a start time.");
+      return;
+    }
+    setBusy("appt");
+    setError("");
+    try {
+      const res = await csrfFetch("/api/portal?action=ticket-appointment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: detail.code,
+          title: apptForm.title.trim(),
+          location: apptForm.location.trim(),
+          description: apptForm.description.trim(),
+          // datetime-local is wall-clock with no zone; send as-is and let the
+          // browser's offset apply via Date parsing on the server side.
+          startsAt: new Date(apptForm.startsAt).toISOString(),
+          durationMin: Number.parseInt(apptForm.durationMin, 10) || 60,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "appointment_failed");
+      setApptForm({ title: "", location: "", startsAt: "", durationMin: "60", description: "" });
+      await loadTicket(detail.code);
+    } catch (err) {
+      setError(err?.message || "Scheduling failed.");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const cancelAppt = async (uid) => {
+    if (!uid || busy) return;
+    setBusy("appt");
+    setError("");
+    try {
+      const res = await csrfFetch("/api/portal?action=ticket-appointment-cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "cancel_failed");
+      await loadTicket(detail.code);
+    } catch (err) {
+      setError(err?.message || "Cancel failed.");
     } finally {
       setBusy("");
     }
@@ -357,13 +465,110 @@ function AdminTicketConsole() {
                 </button>
               </div>
 
+              <div className="portal-ticket-cc">
+                <h4>CC recipients</h4>
+                <p className="portal-muted">Everyone here is copied on updates and can reply by email.</p>
+                <div className="portal-cc-chips">
+                  {(detail.cc || []).length ? detail.cc.map((addr) => (
+                    <span className="portal-cc-chip" key={addr}>
+                      {addr}
+                      <button type="button" aria-label={`Remove ${addr}`} disabled={busy === "cc"} onClick={() => removeCc(addr)}>×</button>
+                    </span>
+                  )) : <span className="portal-muted">No CC recipients yet.</span>}
+                </div>
+                <div className="portal-cc-add">
+                  <input
+                    type="text"
+                    value={ccInput}
+                    onChange={(event) => setCcInput(event.target.value)}
+                    onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); addCc(); } }}
+                    placeholder="add email, comma-separated"
+                    aria-label="Add CC email"
+                  />
+                  <button type="button" className="btn btn-secondary" disabled={!ccInput.trim() || busy === "cc"} onClick={addCc}>Add</button>
+                </div>
+              </div>
+
+              <div className="portal-ticket-appointments">
+                <h4>Appointments</h4>
+                {appointments.length ? appointments.map((appt) => (
+                  <div className={`portal-appt portal-appt--${appt.status}`} key={appt.uid}>
+                    <div className="portal-appt-head">
+                      <strong>{appt.title}</strong>
+                      {appt.status === "cancelled"
+                        ? <span className="portal-appt-status">Cancelled</span>
+                        : <button type="button" className="portal-appt-cancel" disabled={busy === "appt"} onClick={() => cancelAppt(appt.uid)}>Cancel</button>}
+                    </div>
+                    <div className="portal-muted">
+                      {fmtDateTime(appt.startsAt)}{appt.location ? ` · ${appt.location}` : ""}
+                    </div>
+                    {appt.status !== "cancelled" && <AddToCalendar links={appt.links} />}
+                  </div>
+                )) : <p className="portal-muted">No appointments scheduled.</p>}
+
+                <div className="portal-appt-form">
+                  <h5>Schedule an appointment</h5>
+                  <input
+                    type="text"
+                    value={apptForm.title}
+                    onChange={(event) => setApptForm((f) => ({ ...f, title: event.target.value }))}
+                    placeholder="Title (e.g. On-site network visit)"
+                    aria-label="Appointment title"
+                  />
+                  <input
+                    type="text"
+                    value={apptForm.location}
+                    onChange={(event) => setApptForm((f) => ({ ...f, location: event.target.value }))}
+                    placeholder="Location (optional)"
+                    aria-label="Appointment location"
+                  />
+                  <div className="portal-appt-form-row">
+                    <label>
+                      <span>Start</span>
+                      <input
+                        type="datetime-local"
+                        value={apptForm.startsAt}
+                        onChange={(event) => setApptForm((f) => ({ ...f, startsAt: event.target.value }))}
+                        aria-label="Appointment start"
+                      />
+                    </label>
+                    <label>
+                      <span>Duration (min)</span>
+                      <input
+                        type="number"
+                        min="15"
+                        step="15"
+                        value={apptForm.durationMin}
+                        onChange={(event) => setApptForm((f) => ({ ...f, durationMin: event.target.value }))}
+                        aria-label="Appointment duration in minutes"
+                      />
+                    </label>
+                  </div>
+                  <textarea
+                    rows="2"
+                    value={apptForm.description}
+                    onChange={(event) => setApptForm((f) => ({ ...f, description: event.target.value }))}
+                    placeholder="Notes for the customer (optional)"
+                    aria-label="Appointment notes"
+                  />
+                  <button type="button" className="btn btn-primary" disabled={busy === "appt"} onClick={scheduleAppt}>
+                    {busy === "appt" ? "Saving..." : "Schedule + send invite"}
+                  </button>
+                </div>
+              </div>
+
               <div className="portal-ticket-messages">
                 <h4>Conversation</h4>
                 {messages.length ? messages.map((message) => (
                   <div className={`portal-ticket-message portal-ticket-message--${message.author}`} key={message.id}>
                     <div>
                       <strong>{message.authorName || labelize(message.author)}</strong>
-                      <span>{fmtDateTime(message.createdAt)}</span>
+                      <span>
+                        {message.via && message.via !== "portal" && (
+                          <em className={`portal-channel portal-channel--${message.via}`}>{CHANNEL_LABEL[message.via] || message.via}</em>
+                        )}
+                        {fmtDateTime(message.createdAt)}
+                      </span>
                     </div>
                     <p>{message.body}</p>
                   </div>
@@ -389,6 +594,48 @@ function AdminTicketConsole() {
         </div>
       </div>
     </section>
+  );
+}
+
+// One-click DB migration for the ticket email/CC/calendar feature. Runs
+// against Neon from the Vercel runtime (admin-session gated), so no local
+// credentials are needed. Idempotent — safe to click more than once.
+function TicketMigrationButton() {
+  const [state, setState] = useState("idle");
+  const [result, setResult] = useState(null);
+
+  const run = async () => {
+    setState("running");
+    setResult(null);
+    try {
+      const res = await csrfFetch("/api/portal?action=run-ticket-migration", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      setResult(data);
+      setState(res.ok && data.ok ? "done" : "error");
+    } catch (err) {
+      setResult({ error: err?.message || "request_failed" });
+      setState("error");
+    }
+  };
+
+  return (
+    <div className="portal-migrate">
+      <button type="button" className="btn btn-secondary" onClick={run} disabled={state === "running"}>
+        {state === "running" ? "Applying schema..." : state === "done" ? "Schema applied ✓" : "Apply ticket schema (one-time)"}
+      </button>
+      {result?.results && (
+        <ul className="portal-migrate-results">
+          {result.results.map((r) => (
+            <li key={r.step} className={r.ok ? "ok" : "fail"}>
+              {r.ok ? "✓" : "✗"} {r.step}{r.error ? ` — ${r.error}` : ""}
+            </li>
+          ))}
+        </ul>
+      )}
+      {state === "error" && !result?.results && (
+        <p className="portal-alert" role="alert">Migration failed: {result?.error || "unknown error"}</p>
+      )}
+    </div>
   );
 }
 
@@ -471,6 +718,9 @@ function Dashboard({ user, logout }) {
               <Link className="btn btn-secondary" to="/portal/ops?tab=affiliate">Affiliate signals</Link>
               <Link className="btn btn-secondary" to="/portal/leadgen">Leadgen workspace</Link>
             </div>
+            <h3 style={{ marginTop: "18px" }}>Database</h3>
+            <p className="portal-muted">Apply the reply-by-email / CC / calendar schema (migration 019). Idempotent — safe to re-run.</p>
+            <TicketMigrationButton />
           </section>
         </>
       ) : null}
