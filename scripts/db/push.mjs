@@ -10,16 +10,24 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { neon } from "@neondatabase/serverless";
+import { pickDatabaseUrl } from "../../api/_lib/db.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const url = process.env.DATABASE_URL;
+// Vercel's Neon integration often leaves DATABASE_URL empty and populates the
+// POSTGRES_* / *_UNPOOLED aliases instead, so resolve the same way the app
+// does rather than reading DATABASE_URL alone.
+const { key: urlKey, url } = pickDatabaseUrl();
 if (!url) {
   console.error(
-    "DATABASE_URL not set. Run with `node --env-file=.env.local scripts/db/push.mjs` " +
-      "or pull env vars with `vercel env pull .env.local --yes`."
+    "No database URL set. Run with `node --env-file=.env.local scripts/db/push.mjs` " +
+      "or pull env vars with `vercel env pull .env.local --yes`. Checked DATABASE_URL, " +
+      "POSTGRES_PRISMA_URL, POSTGRES_URL, DATABASE_URL_UNPOOLED, POSTGRES_URL_NON_POOLING, POSTGRES_URL_NO_SSL."
   );
   process.exit(1);
+}
+if (urlKey !== "DATABASE_URL") {
+  console.log(`→ DATABASE_URL empty; using ${urlKey}`);
 }
 
 const sql = neon(url);

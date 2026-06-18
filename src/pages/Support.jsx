@@ -55,6 +55,7 @@ const initialForm = {
   category: CATEGORIES[0],
   subject: "",
   description: "",
+  cc: "",
   _hp: "",
 };
 
@@ -293,6 +294,15 @@ export default function Support() {
                 <textarea
                   name="description" rows="7" value={form.description} onChange={update("description")}
                   placeholder="Describe the issue. When did it start? Who is affected? Any error messages? Steps you've already tried?"
+                  disabled={submitting}
+                />
+              </label>
+              <label>
+                <span>CC <span className="form-optional">(optional)</span></span>
+                <input
+                  type="text" name="cc" value={form.cc} onChange={update("cc")}
+                  maxLength={400}
+                  placeholder="Copy colleagues - comma-separated emails. They'll get updates and can reply too."
                   disabled={submitting}
                 />
               </label>

@@ -101,6 +101,49 @@ CREATE TABLE IF NOT EXISTS ticket_messages (
 
 CREATE INDEX IF NOT EXISTS ticket_messages_ticket_idx ON ticket_messages (ticket_id, created_at);
 
+-- ---------- ticket email / CC / threading (migration 019) ----------
+-- CC recipients copied on every outbound update; replies from any of these
+-- addresses thread back into the ticket.
+ALTER TABLE tickets ADD COLUMN IF NOT EXISTS cc_emails       text[] NOT NULL DEFAULT '{}';
+-- Last outbound Message-ID, so the next email sets In-Reply-To/References and
+-- nests in the client's thread.
+ALTER TABLE tickets ADD COLUMN IF NOT EXISTS last_message_id text;
+
+-- Reply-by-email plumbing on the message thread.
+ALTER TABLE ticket_messages ADD COLUMN IF NOT EXISTS author_email text;
+ALTER TABLE ticket_messages ADD COLUMN IF NOT EXISTS via          text NOT NULL DEFAULT 'portal'
+  CHECK (via IN ('portal', 'email', 'system'));
+ALTER TABLE ticket_messages ADD COLUMN IF NOT EXISTS message_id   text;  -- RFC 5322 Message-ID
+ALTER TABLE ticket_messages ADD COLUMN IF NOT EXISTS in_reply_to  text;
+
+-- Idempotency for the inbound webhook: a provider retry carrying the same
+-- Message-ID must not double-insert. Partial unique index (NULLs allowed for
+-- portal/system messages that have no Message-ID).
+CREATE UNIQUE INDEX IF NOT EXISTS ticket_messages_message_id_idx
+  ON ticket_messages (message_id) WHERE message_id IS NOT NULL;
+
+-- ---------- ticket_appointments ----------
+-- A scheduled on-site visit or call attached to a ticket. Drives the
+-- add-to-calendar (.ics + Google/Outlook/Apple) experience.
+CREATE TABLE IF NOT EXISTS ticket_appointments (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  ticket_id    uuid NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+  uid          text NOT NULL UNIQUE,           -- stable iCalendar UID
+  title        text NOT NULL,
+  location     text,
+  description  text,
+  starts_at    timestamptz NOT NULL,
+  ends_at      timestamptz NOT NULL,
+  status       text NOT NULL DEFAULT 'confirmed'
+               CHECK (status IN ('confirmed', 'tentative', 'cancelled')),
+  sequence     integer NOT NULL DEFAULT 0,     -- bumped on each edit/cancel
+  created_by   uuid REFERENCES users(id) ON DELETE SET NULL,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  updated_at   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ticket_appointments_ticket_idx ON ticket_appointments (ticket_id, starts_at);
+
 -- ---------- invoices ----------
 CREATE TABLE IF NOT EXISTS invoices (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),

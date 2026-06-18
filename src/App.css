@@ -7614,7 +7614,164 @@ select:focus-visible {
   resize: vertical;
 }
 
+/* --- Channel badge (email / system) on a message --- */
+.portal-channel {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: color-mix(in srgb, var(--brand, #0f6cbd) 14%, transparent);
+  color: var(--brand, #0f6cbd);
+}
+.portal-channel--system {
+  background: color-mix(in srgb, var(--text-muted, #6b7280) 16%, transparent);
+  color: var(--text-muted, #6b7280);
+}
+
+/* --- CC recipients --- */
+.portal-ticket-cc,
+.portal-ticket-appointments {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border, #d6d0c4);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface, #fffdf8) 84%, var(--surface-2, #f5f1e8));
+}
+.portal-ticket-cc h4,
+.portal-ticket-appointments h4,
+.portal-appt-form h5 {
+  margin: 0;
+  color: var(--text, #111827);
+}
+.portal-cc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.portal-cc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  background: var(--surface, #fffdf8);
+  border: 1px solid var(--border, #d6d0c4);
+}
+.portal-cc-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted, #6b7280) 18%, transparent);
+  color: var(--text, #111827);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.portal-cc-chip button:hover { background: #DC2626; color: #fff; }
+.portal-cc-add {
+  display: flex;
+  gap: 8px;
+}
+.portal-cc-add input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #d6d0c4);
+  border-radius: 8px;
+  background: var(--surface, #fffdf8);
+  color: var(--text, #111827);
+  font: inherit;
+}
+
+/* --- Appointments + add-to-calendar --- */
+.portal-appt {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border, #d6d0c4);
+  border-radius: 8px;
+  background: var(--surface, #fffdf8);
+}
+.portal-appt--cancelled { opacity: 0.6; }
+.portal-appt--cancelled .portal-appt-head strong { text-decoration: line-through; }
+.portal-appt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.portal-appt-status {
+  font-size: 12px;
+  font-weight: 700;
+  color: #DC2626;
+}
+.portal-appt-cancel {
+  border: 0;
+  background: transparent;
+  color: #DC2626;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.portal-cal-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.portal-appt-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border, #d6d0c4);
+}
+.portal-appt-form input,
+.portal-appt-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border, #d6d0c4);
+  border-radius: 8px;
+  background: var(--surface, #fffdf8);
+  color: var(--text, #111827);
+  font: inherit;
+}
+.portal-appt-form-row {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 10px;
+}
+.portal-appt-form-row label {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-muted, #6b7280);
+}
+
+/* --- Self-serve migration --- */
+.portal-migrate { margin-top: 10px; }
+.portal-migrate-results {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.portal-migrate-results li { padding: 2px 0; }
+.portal-migrate-results li.ok { color: #15803d; }
+.portal-migrate-results li.fail { color: #DC2626; }
+
 @media (max-width: 760px) {
+  .portal-appt-form-row { grid-template-columns: 1fr; }
   .portal-page { padding-top: 24px; }
   .portal-grid,
   .portal-stats,
