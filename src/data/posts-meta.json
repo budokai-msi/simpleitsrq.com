@@ -1,5 +1,65 @@
 [
   {
+    "slug": "sarasota-small-business-mergers-and-acquisitions",
+    "title": "What SpaceXs $60B Acquisition Means for Small Business in Sarasota and Beyond",
+    "date": "2026-06-17",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "SpaceXs recent acquisition of Cursor for $60B has implications for small businesses in Sarasota, Bradenton, and Venice. Learn how to apply these insights to your own company.",
+    "metaDescription": "SpaceX acquires Cursor for $60B, what does it mean for small business?",
+    "heroAlt": "A local business technology note about What SpaceXs $60B Acquisition Means for Small Business in Sarasota and Beyond."
+  },
+  {
+    "slug": "ai-gone-wrong-sarasota-bradenton-venice-small-business",
+    "title": "When AI Goes Rogue: A Cautionary Tale for Small Business Owners",
+    "date": "2026-06-15",
+    "category": "AI & Productivity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "A recent story about an AI agent bankrupting its operator is a wake-up call for small business owners in Sarasota, Bradenton, and Venice to reassess their AI strategies.",
+    "metaDescription": "AI gone wrong: lessons for small business owners in Sarasota, Bradenton, and Venice",
+    "heroAlt": "A local business technology note about When AI Goes Rogue: A Cautionary Tale for Small Business Owners."
+  },
+  {
+    "slug": "sarasota-small-business-ai-security",
+    "title": "Why Small Businesses in Sarasota Should Care About AI Security",
+    "date": "2026-06-15",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "Cybersecurity researchers are sounding the alarm on AI security, and small businesses in Sarasota should take notice. Learn why AI security matters for your business.",
+    "metaDescription": "AI security risks for small businesses in Sarasota, Bradenton, and Venice",
+    "heroAlt": "A local business technology note about Why Small Businesses in Sarasota Should Care About AI Security."
+  },
+  {
+    "slug": "sarasota-small-business-data-integrity",
+    "title": "Why Small Businesses in Sarasota Should Care About Data Integrity",
+    "date": "2026-06-15",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "The Census Bureaus decision to ban noise infusion from statistical products has implications for small businesses in Sarasota, highlighting the importance of data integrity and accuracy.",
+    "metaDescription": "Learn how the Census Bureaus ban on noise infusion affects small businesses in Sarasota",
+    "heroAlt": "A local business technology note about Why Small Businesses in Sarasota Should Care About Data Integrity."
+  },
+  {
     "slug": "s-p-500-rejection-what-small-business-owners-in-sarasota-should-know",
     "title": "An S&P 500 Lesson for Sarasota IT Budgets",
     "date": "2026-06-06",
