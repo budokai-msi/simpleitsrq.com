@@ -55,7 +55,7 @@
     "remark-frontmatter": "5.0.0",
     "remark-mdx-frontmatter": "5.2.0",
     "sharp": "0.34.5",
-    "vite": "8.0.10",
+    "vite": "8.0.16",
     "vitest": "4.1.5"
   },
   "overrides": {
