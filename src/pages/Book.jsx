@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   Calendar, Clock, Video, ShieldCheck, Check, Mail, Loader2,
   AlertTriangle, Send, ArrowRight,
@@ -7,6 +7,7 @@ import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { track, trackEvent } from "../lib/analytics";
+import { loadContactProfile, saveContactProfile } from "../lib/contactProfile";
 import { Link } from "../lib/Link";
 
 // Full Cal.com path, e.g. "simpleitsrq/free-consultation". Set via Vercel
@@ -124,10 +125,13 @@ function BookingEmbed({ calLink }) {
 }
 
 function ConsultationForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [company, setCompany] = useState("");
+  // Pre-fill from the visitor's own saved details (returning-visitor
+  // autofill). Read once on mount; empty for first-time visitors.
+  const saved = useMemo(() => loadContactProfile() || {}, []);
+  const [name, setName] = useState(saved.name || "");
+  const [email, setEmail] = useState(saved.email || "");
+  const [phone, setPhone] = useState(saved.phone || "");
+  const [company, setCompany] = useState(saved.company || "");
   const [window_, setWindow] = useState(TIME_WINDOWS[0]);
   const [context, setContext] = useState("");
 
@@ -179,6 +183,8 @@ function ConsultationForm() {
         throw new Error(data.error || "Send failed. Try again or email hello@simpleitsrq.com directly.");
       }
       track.lead("book-consultation", 250, { window: window_ });
+      // Remember the visitor's own details for next time (local autofill).
+      saveContactProfile({ name, email, phone, company });
       setStatus("ok");
     } catch (err) {
       setStatus("error");
