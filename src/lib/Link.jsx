@@ -1,5 +1,6 @@
 import { Link as RouterLink } from "react-router-dom";
-import { forwardRef } from "react";
+import { forwardRef, useCallback } from "react";
+import { prefetchRoute } from "./routePrefetch";
 
 // Drop-in replacement for react-router-dom's <Link> that opts every
 // navigation into the View Transitions API. Browsers that don't
@@ -12,8 +13,22 @@ import { forwardRef } from "react";
 // with the rest of the page, give it a unique `view-transition-name`
 // in CSS (e.g. the persistent navbar logo). One name per page max —
 // duplicate names abort the transition.
-const Link = forwardRef(function Link(props, ref) {
-  return <RouterLink ref={ref} viewTransition {...props} />;
+const Link = forwardRef(function Link({ to, onMouseEnter, onFocus, ...props }, ref) {
+  // Warm the destination route's lazy chunk the moment the visitor shows
+  // intent (hover or keyboard focus), so the click navigation is instant.
+  const warm = useCallback(() => {
+    if (typeof to === "string") prefetchRoute(to);
+  }, [to]);
+  return (
+    <RouterLink
+      ref={ref}
+      to={to}
+      viewTransition
+      onMouseEnter={(e) => { warm(); onMouseEnter?.(e); }}
+      onFocus={(e) => { warm(); onFocus?.(e); }}
+      {...props}
+    />
+  );
 });
 
 export { Link };
