@@ -218,7 +218,7 @@ function BuyCta({ svc }) {
 
 function ServiceCard({ svc }) {
   return (
-    <article id={svc.slug} className="svc-card reveal-up" data-reveal>
+    <article id={svc.slug} className="svc-card reveal-up">
       <header className="svc-card-head">
         <div className="svc-card-meta">
           <span className={`svc-audience svc-audience-${svc.audience.toLowerCase()}`}>{svc.audience}</span>
