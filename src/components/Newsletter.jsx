@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Mail, Check, Loader2 } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics";
+import { loadContactProfile, saveContactProfile } from "../lib/contactProfile";
 
 export default function Newsletter() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => loadContactProfile()?.email || "");
   const [state, setState] = useState("idle"); // idle | submitting | done | error
   const [err, setErr] = useState("");
 
@@ -33,6 +34,8 @@ export default function Newsletter() {
         throw new Error(j.error || `http_${res.status}`);
       }
       trackEvent("sign_up", { method: "newsletter", source: "newsletter" });
+      // Remember the email for cross-form autofill (first-party, local-only).
+      saveContactProfile({ email });
       setState("done");
     } catch (e2) {
       setErr(e2.message || "signup_failed");

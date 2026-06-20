@@ -29,6 +29,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { X, Check, Percent, ArrowRight } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
+import { loadContactProfile, saveContactProfile } from "../lib/contactProfile";
 
 const STORAGE_KEY = "srq_exit_intent_shown";
 const GRACE_MS = 30_000; // 30s on-page before eligible
@@ -68,7 +69,7 @@ const CHOICES = {
 export default function ExitIntentModal() {
   const [open, setOpen] = useState(false);
   const [choice, setChoice] = useState(null); // null | "compliance"
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => loadContactProfile()?.email || "");
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
   const [error, setError] = useState("");
 
@@ -170,6 +171,8 @@ export default function ExitIntentModal() {
       // the conversion count. $400 value as rough average of the two
       // choices (discount + security documentation intro).
       track.lead(picked.source, 400, { choice: picked.id });
+      // Remember the email for cross-form autofill (first-party, local-only).
+      saveContactProfile({ email: trimmed });
       if (res && res.ok) {
         setStatus("sent");
       } else {
