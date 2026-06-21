@@ -478,7 +478,7 @@ function BlogPreview() {
                 <p className="blog-card-excerpt">{p.excerpt}</p>
                 <div className="blog-card-meta">
                   <time dateTime={p.date}>{new Date(p.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</time>
-                  <Link to={`/blog/${p.slug}`} className="blog-card-readmore">Read more <ArrowRight size={14} /></Link>
+                  <Link to={`/blog/${p.slug}`} className="blog-card-readmore" aria-label={`Read more: ${p.title}`}>Read more <ArrowRight size={14} /></Link>
                 </div>
               </div>
             </article>
