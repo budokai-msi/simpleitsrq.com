@@ -1226,14 +1226,18 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
           <span className="leadgen-app-live"><span /> Live public-record scanner</span>
+          {/* Workspace handoff is only relevant once a list exists — surface it
+              after a scan, not as the first thing a new visitor sees. */}
+          {scan ? (
             <Link
               to={scannerWorkspaceLink}
               className="leadgen-app-portal-link"
               data-leadgen-cta="scanner_top_workspace"
               onClick={() => trackEvent("generate_lead", { source: "leadgen_scanner_toplink" })}
             >
-            Open campaign workspace
-          </Link>
+              Open campaign workspace
+            </Link>
+          ) : null}
         </div>
 
         <div className="leadgen-app-title">
@@ -1269,78 +1273,78 @@ function LeadgenScanApp() {
               {busy ? "Scanning..." : !validZip ? "Enter zip" : scan ? "Refresh scan" : "Run scan"}
             </button>
           </div>
-          <details className="leadgen-advanced-controls">
-            <summary>Campaign settings</summary>
-            <div className="leadgen-advanced-controls__grid">
-              <label>
-                <span>Offer angle</span>
-                <input
-                  value={offer}
-                  onChange={(e) => setOffer(e.target.value)}
-                  onKeyDown={onScanKeyDown}
-                  placeholder="Backup cleanup for busy offices"
-                  aria-label="Offer angle"
-                />
-              </label>
-              <label>
-                <span>Daily cap</span>
-                <input
-                  type="number"
-                  min="5"
-                  max="100"
-                  value={dailyCap}
-                  onChange={(e) => setDailyCap(e.target.value)}
-                  onKeyDown={onScanKeyDown}
-                  aria-label="Daily send cap"
-                />
-              </label>
-            </div>
-          </details>
+          {/* Outreach config (offer + send pace) only matters once there's a
+              list to act on — keep it out of the pre-scan view so the entry
+              is just "where + what + scan". */}
+          {scan ? (
+            <details className="leadgen-advanced-controls">
+              <summary>Outreach settings</summary>
+              <div className="leadgen-advanced-controls__grid">
+                <label>
+                  <span>Offer angle</span>
+                  <input
+                    value={offer}
+                    onChange={(e) => setOffer(e.target.value)}
+                    onKeyDown={onScanKeyDown}
+                    placeholder="Backup cleanup for busy offices"
+                    aria-label="Offer angle"
+                  />
+                </label>
+                <label>
+                  <span>Daily send cap</span>
+                  <input
+                    type="number"
+                    min="5"
+                    max="100"
+                    value={dailyCap}
+                    onChange={(e) => setDailyCap(e.target.value)}
+                    onKeyDown={onScanKeyDown}
+                    aria-label="Daily send cap"
+                  />
+                </label>
+              </div>
+            </details>
+          ) : null}
         </div>
 
-        <details className="leadgen-market-builder" aria-label="Change current market">
-          <summary className="leadgen-market-builder__summary">
-            <span>
-              {scan
-                ? `${scan.matched || 0} record${scan.matched === 1 ? "" : "s"} loaded`
-                : validZip ? `Ready for ${zip}` : "Choose market"}
-            </span>
-            <strong>
-              {validZip
-                ? `${niche === "All" ? "All businesses" : niche} in ${zip}`
-                : "Any 5-digit US zip"}
-            </strong>
-            <em>Change type</em>
-          </summary>
-          <div className="leadgen-market-builder__chips">
-            {marketTypeMatches.map((item) => (
-              <button
-                key={item}
-                type="button"
-                className={`leadgen-market-refinement-btn${item === niche ? " is-active" : ""}`}
-                onClick={() => applyMarketRefinement(item)}
-                onMouseEnter={() => prefetchRefinement(item)}
-                onFocus={() => prefetchRefinement(item)}
-                title={validZip ? `Scan ${item} in ${zip}` : "Choose this business type, then enter a zip"}
-                aria-label={validZip ? `Use ${item} for ZIP ${zip}` : `Use ${item} after entering a zip`}
-              >
-                <span>{item === "All" ? "All businesses" : item}</span>
-                <small>
-                  {scan && item !== "All"
-                    ? `${industryCountMap[item] || 0} found`
-                    : item === niche
-                      ? "Selected"
-                      : validZip ? `Preview ${zip}` : "Set type"}
-                </small>
-              </button>
-            ))}
-            {!marketTypeMatches.length ? (
-              <div className="leadgen-market-builder__empty">
-                No categories are available yet. Use All businesses or run the scan again.
-              </div>
-            ) : null}
-          </div>
-        </details>
+        {/* Post-scan category refinement. Pre-scan this duplicated the
+            Customer-type dropdown; now it only appears once a scan exists,
+            where it earns its place by showing the live per-category counts. */}
+        {scan ? (
+          <details className="leadgen-market-builder" aria-label="Refine by category">
+            <summary className="leadgen-market-builder__summary">
+              <span>{`${scan.matched || 0} record${scan.matched === 1 ? "" : "s"} loaded`}</span>
+              <strong>{`${niche === "All" ? "All businesses" : niche} in ${zip}`}</strong>
+              <em>Refine</em>
+            </summary>
+            <div className="leadgen-market-builder__chips">
+              {marketTypeMatches.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  className={`leadgen-market-refinement-btn${item === niche ? " is-active" : ""}`}
+                  onClick={() => applyMarketRefinement(item)}
+                  onMouseEnter={() => prefetchRefinement(item)}
+                  onFocus={() => prefetchRefinement(item)}
+                  title={`Scan ${item} in ${zip}`}
+                  aria-label={`Switch to ${item} for ZIP ${zip}`}
+                >
+                  <span>{item === "All" ? "All businesses" : item}</span>
+                  <small>
+                    {item !== "All"
+                      ? `${industryCountMap[item] || 0} found`
+                      : item === niche ? "Selected" : "Switch"}
+                  </small>
+                </button>
+              ))}
+              {!marketTypeMatches.length ? (
+                <div className="leadgen-market-builder__empty">
+                  No categories in this scan yet. Use All businesses or scan again.
+                </div>
+              ) : null}
+            </div>
+          </details>
+        ) : null}
         {zipHint ? <p className="leadgen-app-error" style={{ marginTop: 8 }}>{zipHint}</p> : null}
 
         <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
