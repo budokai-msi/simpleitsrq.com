@@ -5056,6 +5056,15 @@ main, #main {
   flex-wrap: wrap;
   margin-top: 8px;
 }
+/* Long vendor CTA labels (e.g. "Visit vendor — Microsoft 365 Business
+   Premium") inherit .btn's white-space:nowrap, whose min-content held the
+   whole stack card wider than a phone viewport (card clipped at ~435px on a
+   375px screen). Let the label wrap and the button shrink so the card fits.
+   No effect on desktop — text only wraps when space is actually tight. */
+.stack-tool__cta-row .btn {
+  white-space: normal;
+  min-width: 0;
+}
 
 .stack-tool__aff-tag {
   font-size: 0.75rem;
