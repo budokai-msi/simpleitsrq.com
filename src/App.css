@@ -6151,20 +6151,11 @@ select:focus-visible {
   }
 }
 
-/* Section reveal — outer .section and .logos-bar containers
- * fade up via the @supports (animation-timeline: view()) rule earlier
- * in this file (the one that's actually wired now). The per-element
- * opacity:0 default that used to live here was paired with a JS
- * IntersectionObserver (src/lib/useScrollReveal.js) that has since
- * been removed; without the hook every [data-reveal] child element
- * stayed at opacity 0 forever, producing huge blank gaps where cards
- * and section heads should have been. Default to visible — the
- * outer-container scroll-timeline animation still gives the "fade up
- * on scroll" polish on capable browsers. */
-[data-reveal] {
-  opacity: 1;
-  transform: none;
-}
+/* Section reveal is now fully CSS-driven via the
+ * @supports (animation-timeline: view()) rules in index.css, which animate
+ * `.reveal-*` elements directly (transform only, content stays opaque). The
+ * old JS IntersectionObserver hook and its `[data-reveal]` opt-in marker have
+ * been removed, so there are no per-element opacity defaults to reset here. */
 
 /* Visited-state nudge for Glossary + Blog index lists so visitors
  * remember what they've already read. Tiny opacity shift, not a
@@ -6182,12 +6173,12 @@ select:focus-visible {
   .glossary-card, .blog-card, .product-card, .stack-tool,
   .local-pattern-card, .solution-card, .compare-card,
   .btn, .btn-primary, .btn-secondary,
-  [data-reveal] {
+  .reveal-up, .reveal-down, .reveal-left, .reveal-right,
+  .reveal-fade, .reveal-scale {
     transition: none !important;
     transform: none !important;
     animation: none !important;
   }
-  [data-reveal] { opacity: 1; }
 }
 
 /* ============================================================
