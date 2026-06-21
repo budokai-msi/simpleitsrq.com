@@ -357,12 +357,12 @@ svg { stroke-width: 1.75; }
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .reveal-up:not([data-reveal]),
-    .reveal-down:not([data-reveal]),
-    .reveal-left:not([data-reveal]),
-    .reveal-right:not([data-reveal]),
-    .reveal-fade:not([data-reveal]),
-    .reveal-scale:not([data-reveal]) {
+    .reveal-up,
+    .reveal-down,
+    .reveal-left,
+    .reveal-right,
+    .reveal-fade,
+    .reveal-scale {
       animation: linear both;
       animation-timeline: view();
       /* Run the reveal during entry, then keep the element at the end
@@ -372,12 +372,12 @@ svg { stroke-width: 1.75; }
          once the range ends; extending into 'contain' avoids that.) */
       animation-range: entry 12% contain 100%;
     }
-    .reveal-up:not([data-reveal])    { animation-name: scroll-reveal-up;    transform: translateY(28px); }
-    .reveal-down:not([data-reveal])  { animation-name: scroll-reveal-down;  transform: translateY(-28px); }
-    .reveal-left:not([data-reveal])  { animation-name: scroll-reveal-left;  transform: translateX(28px); }
-    .reveal-right:not([data-reveal]) { animation-name: scroll-reveal-right; transform: translateX(-28px); }
-    .reveal-fade:not([data-reveal])  { animation-name: scroll-reveal-fade; }
-    .reveal-scale:not([data-reveal]) { animation-name: scroll-reveal-scale; transform: scale(0.96); }
+    .reveal-up    { animation-name: scroll-reveal-up;    transform: translateY(28px); }
+    .reveal-down  { animation-name: scroll-reveal-down;  transform: translateY(-28px); }
+    .reveal-left  { animation-name: scroll-reveal-left;  transform: translateX(28px); }
+    .reveal-right { animation-name: scroll-reveal-right; transform: translateX(-28px); }
+    .reveal-fade  { animation-name: scroll-reveal-fade; }
+    .reveal-scale { animation-name: scroll-reveal-scale; transform: scale(0.96); }
 
     @keyframes scroll-reveal-up    { to { transform: translateY(0); } }
     @keyframes scroll-reveal-down  { to { transform: translateY(0); } }
