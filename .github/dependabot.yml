@@ -29,6 +29,18 @@ updates:
       include: scope
     labels:
       - dependencies
+    ignore:
+      # js-yaml is a transitive dep of gray-matter@4, which hard-pins
+      # js-yaml@^3.13.1. The js-yaml quadratic-alias DoS advisory is only
+      # fixed in 4.2.0+, so the only resolution Dependabot can find downgrades
+      # gray-matter 4.0.3 -> 2.0.1 (breaking) -- it refuses, and the
+      # security-update job errors (security_update_not_possible) on EVERY run.
+      # gray-matter only parses our own trusted MDX frontmatter at build time
+      # (never attacker-controlled input), so the DoS is not reachable, and
+      # forcing js-yaml@4 via overrides breaks gray-matter (v4 removed the
+      # safeLoad API it calls). Ignore until gray-matter ships a js-yaml@4
+      # major; revisit then.
+      - dependency-name: "js-yaml"
 
   - package-ecosystem: github-actions
     directory: /
