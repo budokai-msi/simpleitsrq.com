@@ -3,7 +3,7 @@ import "leaflet/dist/leaflet.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, Database, Mail, Building2,
-  Search,
+  Search, Phone,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
@@ -641,6 +641,66 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
   );
 }
 
+// Animated count-up for the scan payoff numbers. Counts from 0 to `value`
+// with an easeOutCubic curve; snaps instantly under prefers-reduced-motion or
+// for zero/negative targets. Re-runs whenever the target changes (i.e. on a
+// new scan), so reviewing the list doesn't re-trigger the animation.
+function CountUp({ value }) {
+  const target = Number(value) || 0;
+  const [display, setDisplay] = useState(target);
+  const rafRef = useRef(0);
+  useEffect(() => {
+    const reduce = typeof window !== "undefined" && window.matchMedia
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || target <= 0) {
+      // Snap (no animation) but via rAF so we never setState synchronously
+      // inside the effect body.
+      rafRef.current = requestAnimationFrame(() => setDisplay(target));
+      return () => cancelAnimationFrame(rafRef.current);
+    }
+    const duration = 850;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(target * eased));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [target]);
+  return <>{display.toLocaleString()}</>;
+}
+
+// Staged, animated "we're working" sequence shown while a scan is in flight.
+// Turns a sub-second request into a deliberate input -> processing -> payoff
+// beat so the result feels earned rather than dumped.
+const SCAN_PROGRESS_STEPS = [
+  "Pulling public business records",
+  "Filtering to local independents",
+  "Crawling sites for email addresses",
+  "Flagging national chains",
+  "Building your reviewable list",
+];
+function LeadgenScanProgress() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(
+      () => setStep((s) => Math.min(s + 1, SCAN_PROGRESS_STEPS.length - 1)),
+      650
+    );
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <div className="leadgen-scan-progress" role="status" aria-live="polite">
+      <div className="leadgen-scan-progress__bar"><span /></div>
+      <p className="leadgen-scan-progress__step">
+        <Search size={14} aria-hidden="true" /> {SCAN_PROGRESS_STEPS[step]}…
+      </p>
+    </div>
+  );
+}
+
 function LeadgenScanApp() {
   const scanCacheRef = useRef(new Map());
   const scanPromisesRef = useRef(new Map());
@@ -723,6 +783,7 @@ function LeadgenScanApp() {
   const independentCount = reviewedRows.length - chainCount;
   const websites = reviewedRows.filter((row) => row.website).length;
   const phones = reviewedRows.filter((row) => row.phone).length;
+  const emailCount = reviewedRows.filter((row) => row.email || (Array.isArray(row.emails) && row.emails.length)).length;
   const websiteCoverage = reviewedRows.length ? Math.round((websites / reviewedRows.length) * 100) : 0;
   const phoneCoverage = reviewedRows.length ? Math.round((phones / reviewedRows.length) * 100) : 0;
   const projectedSendDays = Math.max(1, Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)));
@@ -1316,12 +1377,16 @@ function LeadgenScanApp() {
         ) : null}
         {zipHint ? <p className="leadgen-app-error" style={{ marginTop: 8 }}>{zipHint}</p> : null}
 
-        <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
-          <span />
-          {effectivePrefetchState === "loading" ? "Loading this market…" : null}
-          {effectivePrefetchState === "ready" ? "Ready — results load instantly." : null}
-          {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip to start.") : null}
-        </div>
+        {busy ? (
+          <LeadgenScanProgress />
+        ) : (
+          <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
+            <span />
+            {effectivePrefetchState === "loading" ? "Loading this market…" : null}
+            {effectivePrefetchState === "ready" ? "Ready — results load instantly." : null}
+            {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip to start.") : null}
+          </div>
+        )}
 
         {err ? <p className="leadgen-app-error">{err}</p> : null}
 
@@ -1807,9 +1872,12 @@ function LeadgenScanApp() {
       {scan ? (
         <div className="leadgen-scan-followup" aria-label="Scan metrics and campaign planning">
           <div className="leadgen-app-kpis" aria-label="Scan metrics">
-            <div><Building2 size={15} /><strong>{scan?.matched ?? 0}</strong><span>matching records</span></div>
-            <div><Database size={15} /><strong>{websites}</strong><span>with websites</span></div>
-            <div><Mail size={15} /><strong>{phones}</strong><span>with phone</span></div>
+            <div className="leadgen-app-kpis__hero"><Building2 size={15} /><strong><CountUp value={scan?.matched ?? 0} /></strong><span>local businesses</span></div>
+            {emailCount > 0 ? (
+              <div><Mail size={15} /><strong><CountUp value={emailCount} /></strong><span>emails found</span></div>
+            ) : null}
+            <div><Database size={15} /><strong><CountUp value={websites} /></strong><span>with websites</span></div>
+            <div><Phone size={15} /><strong><CountUp value={phones} /></strong><span>with phone</span></div>
             <div><Check size={15} /><strong>{kept.length}</strong><span>kept after review</span></div>
           </div>
           <div className="leadgen-app-brief">

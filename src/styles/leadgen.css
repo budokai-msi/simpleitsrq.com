@@ -529,7 +529,9 @@
 }
 .leadgen-app-kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* auto-fit so the strip stays even whether emails-found is present (5) or
+     not (4, the free-scan default). */
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 10px;
   margin-top: 18px;
 }
@@ -553,6 +555,58 @@
 .leadgen-app-kpis span {
   color: var(--lg-faint);
   font-size: 12px;
+}
+/* "Emails found" is the headline payoff — give it accent weight so the eye
+   lands on the thing the visitor actually came for. */
+.leadgen-app-kpis__hero {
+  border-color: var(--lg-teal, #16a34a) !important;
+  background: color-mix(in srgb, var(--lg-panel) 86%, var(--lg-teal, #16a34a) 14%) !important;
+}
+.leadgen-app-kpis__hero strong,
+.leadgen-app-kpis__hero svg { color: var(--lg-teal, #16a34a); }
+
+/* Scan-in-progress: a staged status line + an indeterminate sweeping bar so a
+   sub-second request reads as deliberate work and the result feels earned. */
+.leadgen-scan-progress {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+.leadgen-scan-progress__bar {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--lg-border-faint);
+  overflow: hidden;
+}
+.leadgen-scan-progress__bar span {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 42%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--lg-text), transparent);
+  animation: leadgen-scan-sweep 1100ms ease-in-out infinite;
+}
+@keyframes leadgen-scan-sweep {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+.leadgen-scan-progress__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--lg-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+@media (prefers-reduced-motion: reduce) {
+  .leadgen-scan-progress__bar span {
+    animation: none;
+    width: 100%;
+    opacity: 0.45;
+  }
 }
 .leadgen-app-brief {
   display: grid;
