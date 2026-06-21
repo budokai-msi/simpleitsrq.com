@@ -2217,6 +2217,9 @@ main, #main {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  /* Vertical padding lifts the tap target to >=24px tall (WCAG 2.5.8 AA);
+     the text alone was only a 20px hit area. Row stays centered, no shift. */
+  padding-block: 4px;
   color: var(--brand);
   font-weight: 600;
   text-decoration: none;
