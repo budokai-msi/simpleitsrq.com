@@ -2042,6 +2042,14 @@ main, #main {
   .steps::before { display: none; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .contact-grid { grid-template-columns: 1fr; }
+  /* Stack the two-up field rows (name/email etc.) on mobile. Without this
+     the 1fr 1fr inputs hold the form-shell wider than the viewport, so its
+     right edge was clipped on phones. */
+  .row-2 { grid-template-columns: 1fr; }
+  /* Let the single column shrink to the container instead of being held
+     open at its content's min-content width (default min-width:auto on grid
+     items), which pushed the form-shell/contact-info ~70px past the edge. */
+  .contact-grid > * { min-width: 0; }
 }
 /* Nav collapses at 1280px now that primary nav is leaner (6 items vs.
  * the previous 7 — Industries/Compliance moved to footer + mobile-only,
