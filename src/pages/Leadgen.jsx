@@ -743,43 +743,12 @@ function LeadgenScanApp() {
       assist: drawer === "assist" ? open : (current.key === drawerScanKey ? current.assist : defaultAssistDrawerOpen),
     }));
   };
-  const readinessChecks = [
-    {
-      id: "offer",
-      label: "Offer angle",
-      ok: offer.trim().length >= 12,
-      hint: "Add a specific value proposition before outreach.",
-    },
-    {
-      id: "cap",
-      label: "Daily cap",
-      ok: Number(dailyCap) > 0 && Number(dailyCap) <= 45,
-      hint: "Keep first-pass cap at 45/day or lower.",
-    },
-    {
-      id: "reviewed",
-      label: "Reviewed records",
-      ok: kept.length >= 5,
-      hint: "Keep at least 5 reviewed businesses before launch.",
-    },
-    {
-      id: "contacts",
-      label: "Contact coverage",
-      ok: websiteCoverage >= 40 || phoneCoverage >= 40,
-      hint: "Aim for >=40% website or phone coverage.",
-    },
-  ];
-  const readinessScore = readinessChecks.filter((item) => item.ok).length;
-  const readinessPercent = Math.round((readinessScore / readinessChecks.length) * 100);
-  const readinessTier = readinessPercent >= 75 ? "good" : readinessPercent >= 50 ? "wait" : "bad";
-  const primaryReadinessGap = readinessChecks.find((item) => !item.ok) || null;
   const forecastReachable = Math.round(kept.length * Math.max(websiteCoverage, phoneCoverage) / 100);
   const forecastWins = Math.max(0, forecastReachable * (closeRate / 100));
   const forecastWinsLabel = formatExpectedWins(forecastWins);
   const forecastRevenue = forecastWins * avgDealValue;
   const recommendedPlanPrice = recommendedBilling === "annual" ? recommendedTier.annual : recommendedTier.monthly;
   const projectedRoiMultiple = recommendedPlanPrice > 0 ? (forecastRevenue / recommendedPlanPrice) : 0;
-  const projectedNetValue = forecastRevenue - recommendedPlanPrice;
   const subIndustryOptions = useMemo(() => (
     Array.from(new Set(reviewedRows.map((row) => row.sub_industry).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   ), [reviewedRows]);
@@ -1856,45 +1825,11 @@ function LeadgenScanApp() {
             </div>
           </div>
           <details className="leadgen-planning-panel">
-            <summary>Readiness and forecast</summary>
-            <section className={`leadgen-readiness leadgen-readiness--${readinessTier}`} aria-label="Campaign readiness">
-              <div className="leadgen-readiness__head">
-                <span>Campaign readiness</span>
-                <strong>{readinessPercent}% ({readinessScore}/4 checks)</strong>
-              </div>
-              <div className="leadgen-readiness__checks">
-                {readinessChecks.map((item) => (
-                  <div key={item.id} className={`leadgen-readiness__check${item.ok ? " is-ok" : ""}`}>
-                    <span>{item.label}</span>
-                    <strong>{item.ok ? "Ready" : "Needs attention"}</strong>
-                  </div>
-                ))}
-              </div>
-              {primaryReadinessGap ? (
-                <div className="leadgen-readiness__action">
-                  <p>{primaryReadinessGap.hint}</p>
-                  {primaryReadinessGap.id === "cap" ? (
-                    <button
-                      type="button"
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => {
-                        setDailyCap(35);
-                        trackEvent("select_content", {
-                          content_type: "leadgen_readiness_fix",
-                          destination: "daily_cap_35",
-                        });
-                      }}
-                    >
-                      Set cap to 35/day
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-            </section>
+            <summary>Revenue forecast</summary>
             <section className="leadgen-revenue-forecast" aria-label="Revenue forecast">
               <div className="leadgen-revenue-forecast__head">
-                <span>Revenue forecast</span>
-                <strong>${formatForecastCurrency(forecastRevenue)} projected pipeline value</strong>
+                <span>If you close {closeRate}% at ${avgDealValue.toLocaleString()} avg deal</span>
+                <strong>${formatForecastCurrency(forecastRevenue)} projected pipeline</strong>
               </div>
               <div className="leadgen-revenue-forecast__controls">
                 <label>
@@ -1922,37 +1857,9 @@ function LeadgenScanApp() {
                   />
                 </label>
               </div>
-              <div className="leadgen-revenue-forecast__kpis">
-                <div><span>Reachable</span><strong>{forecastReachable}</strong></div>
-                <div><span>Expected wins</span><strong>{forecastWinsLabel}</strong></div>
-                <div><span>Kept businesses</span><strong>{kept.length}</strong></div>
-              </div>
-              <div className="leadgen-revenue-forecast__planfit" role="status" aria-live="polite">
-                <div>
-                  <span>Recommended plan cost</span>
-                  <strong>${recommendedPlanPrice}/mo ({recommendedTier.name})</strong>
-                </div>
-                <div>
-                  <span>Projected net value</span>
-                  <strong>{projectedNetValue < 0 ? "-" : ""}${formatForecastCurrency(Math.abs(projectedNetValue))}</strong>
-                </div>
-                <div>
-                  <span>Projected ROI multiple</span>
-                  <strong>{projectedRoiMultiple.toFixed(1)}x</strong>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => trackEvent("select_content", {
-                    content_type: "leadgen_forecast_planfit",
-                    destination: `plan_${recommendedTier.id}`,
-                    forecast_revenue: Math.round(forecastRevenue),
-                    projected_roi_multiple: Number(projectedRoiMultiple.toFixed(2)),
-                  })}
-                >
-                  Track plan fit
-                </button>
-              </div>
+              <p className="leadgen-revenue-forecast__note" role="status" aria-live="polite">
+                ~{forecastWinsLabel} expected wins from {kept.length} kept · {recommendedTier.name} (${recommendedPlanPrice}/mo) projects {projectedRoiMultiple.toFixed(1)}x ROI
+              </p>
             </section>
           </details>
         </div>
