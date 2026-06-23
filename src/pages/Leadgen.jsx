@@ -3,7 +3,7 @@ import "leaflet/dist/leaflet.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, Database, Mail, Building2,
-  Search,
+  Search, Phone, FileText,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
@@ -641,6 +641,66 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
   );
 }
 
+// Animated count-up for the scan payoff numbers. Counts from 0 to `value`
+// with an easeOutCubic curve; snaps instantly under prefers-reduced-motion or
+// for zero/negative targets. Re-runs whenever the target changes (i.e. on a
+// new scan), so reviewing the list doesn't re-trigger the animation.
+function CountUp({ value }) {
+  const target = Number(value) || 0;
+  const [display, setDisplay] = useState(target);
+  const rafRef = useRef(0);
+  useEffect(() => {
+    const reduce = typeof window !== "undefined" && window.matchMedia
+      && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || target <= 0) {
+      // Snap (no animation) but via rAF so we never setState synchronously
+      // inside the effect body.
+      rafRef.current = requestAnimationFrame(() => setDisplay(target));
+      return () => cancelAnimationFrame(rafRef.current);
+    }
+    const duration = 850;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(target * eased));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [target]);
+  return <>{display.toLocaleString()}</>;
+}
+
+// Staged, animated "we're working" sequence shown while a scan is in flight.
+// Turns a sub-second request into a deliberate input -> processing -> payoff
+// beat so the result feels earned rather than dumped.
+const SCAN_PROGRESS_STEPS = [
+  "Pulling public business records",
+  "Filtering to local independents",
+  "Crawling sites for email addresses",
+  "Flagging national chains",
+  "Building your reviewable list",
+];
+function LeadgenScanProgress() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(
+      () => setStep((s) => Math.min(s + 1, SCAN_PROGRESS_STEPS.length - 1)),
+      650
+    );
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <div className="leadgen-scan-progress" role="status" aria-live="polite">
+      <div className="leadgen-scan-progress__bar"><span /></div>
+      <p className="leadgen-scan-progress__step">
+        <Search size={14} aria-hidden="true" /> {SCAN_PROGRESS_STEPS[step]}…
+      </p>
+    </div>
+  );
+}
+
 function LeadgenScanApp() {
   const scanCacheRef = useRef(new Map());
   const scanPromisesRef = useRef(new Map());
@@ -717,12 +777,11 @@ function LeadgenScanApp() {
     }))
   ), [scan, review]);
   const kept = reviewedRows.filter((row) => row.status === "keep");
-  const maybe = reviewedRows.filter((row) => row.status === "maybe");
-  const rejected = reviewedRows.filter((row) => row.status === "reject");
   const chainCount = reviewedRows.filter((row) => row.is_chain).length;
   const independentCount = reviewedRows.length - chainCount;
   const websites = reviewedRows.filter((row) => row.website).length;
   const phones = reviewedRows.filter((row) => row.phone).length;
+  const emailCount = reviewedRows.filter((row) => row.email || (Array.isArray(row.emails) && row.emails.length)).length;
   const websiteCoverage = reviewedRows.length ? Math.round((websites / reviewedRows.length) * 100) : 0;
   const phoneCoverage = reviewedRows.length ? Math.round((phones / reviewedRows.length) * 100) : 0;
   const projectedSendDays = Math.max(1, Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)));
@@ -784,6 +843,8 @@ function LeadgenScanApp() {
       });
   }, [contactFilter, deferredSearchTerm, independentsOnly, reviewedRows, sortBy, statusFilter, subIndustryFilter]);
   const visibleOnlyRows = visibleRows.map(({ row }) => row);
+  const allVisibleSelected = visibleRows.length > 0
+    && visibleRows.every(({ index }) => (review[index] || "keep") === "keep");
   const effectiveSelectedIndex = visibleRows.some((item) => item.index === selectedIndex)
     ? selectedIndex
     : visibleRows[0]?.index ?? null;
@@ -1030,17 +1091,6 @@ function LeadgenScanApp() {
     runScan();
   };
 
-  const exportRows = () => {
-    if (!visibleOnlyRows.length) return;
-    trackEvent("select_content", {
-      content_type: "leadgen_export",
-      source: "leadgen_scanner",
-      zip,
-      niche,
-      count: visibleOnlyRows.length,
-    });
-    downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, visibleOnlyRows);
-  };
   const exportKeptRows = () => {
     const keptRows = visibleOnlyRows.filter((row) => row.status === "keep");
     if (!keptRows.length) return;
@@ -1316,12 +1366,16 @@ function LeadgenScanApp() {
         ) : null}
         {zipHint ? <p className="leadgen-app-error" style={{ marginTop: 8 }}>{zipHint}</p> : null}
 
-        <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
-          <span />
-          {effectivePrefetchState === "loading" ? "Loading this market…" : null}
-          {effectivePrefetchState === "ready" ? "Ready — results load instantly." : null}
-          {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip to start.") : null}
-        </div>
+        {busy ? (
+          <LeadgenScanProgress />
+        ) : (
+          <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
+            <span />
+            {effectivePrefetchState === "loading" ? "Loading this market…" : null}
+            {effectivePrefetchState === "ready" ? "Ready — results load instantly." : null}
+            {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip to start.") : null}
+          </div>
+        )}
 
         {err ? <p className="leadgen-app-error">{err}</p> : null}
 
@@ -1487,8 +1541,8 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--results">
         <div className="leadgen-app-results-head">
           <div>
-            <span>{scan ? `${visibleRows.length} visible / ${scan.matched} matched` : "Ready to scan"}</span>
-            <h2>Review list</h2>
+            <span>{scan ? `${visibleRows.length} shown of ${scan.matched}` : "Ready to scan"}</span>
+            <h2>Your list</h2>
           </div>
           <div className="leadgen-app-actions">
             {scan ? (
@@ -1518,8 +1572,7 @@ function LeadgenScanApp() {
                 >
                   {copiedView ? "Copied" : "Copy view link"}
                 </button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export visible</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export kept</button>
+                <button type="button" className="btn btn-primary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export selected ({kept.length})</button>
                 <Link
                   to={scannerResultWorkspaceLink}
                   className="btn btn-primary btn-sm"
@@ -1542,10 +1595,7 @@ function LeadgenScanApp() {
 
         {scan ? (
           <div className="leadgen-review-summary">
-            <span>{kept.length} keep</span>
-            <span>{maybe.length} maybe</span>
-            <span>{rejected.length} reject</span>
-            <span>{visibleRows.length} visible</span>
+            <span className="leadgen-review-summary__count"><strong>{kept.length}</strong> selected of {reviewedRows.length}</span>
             <span title="Independent local businesses found in this market" style={{ color: "#067647", fontWeight: 600 }}>
               {independentCount} independent
             </span>
@@ -1569,13 +1619,12 @@ function LeadgenScanApp() {
               </button>
             ) : null}
             {hasKeyboard ? (
-              <span className="leadgen-review-summary__hint">Shortcuts: J/K move, 1 keep, 2 maybe, 3 reject</span>
+              <span className="leadgen-review-summary__hint">J/K to move · 1 keep · 3 remove</span>
             ) : null}
             {visibleRows.length ? (
-              <div className="leadgen-review-summary__actions" role="group" aria-label="Bulk review actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Keep all visible</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("maybe")}>Maybe all visible</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Reject all visible</button>
+              <div className="leadgen-review-summary__actions" role="group" aria-label="Selection actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Select all</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Clear</button>
               </div>
             ) : null}
           </div>
@@ -1620,9 +1669,8 @@ function LeadgenScanApp() {
                   disabled={!reviewedRows.length}
                 >
                   <option value="all">All</option>
-                  <option value="keep">Keep</option>
-                  <option value="maybe">Maybe</option>
-                  <option value="reject">Reject</option>
+                  <option value="keep">Selected</option>
+                  <option value="reject">Removed</option>
                 </select>
               </label>
             </div>
@@ -1764,7 +1812,33 @@ function LeadgenScanApp() {
               <strong>No records match these filters</strong>
               <span>Clear the search or loosen the filters. The original scan is still cached for this zip and niche.</span>
             </div>
-          ) : visibleRows.map(({ row, index }) => (
+          ) : (
+            <>
+              <div className="leadgen-result-header">
+                <label className="leadgen-result-row__check" title={allVisibleSelected ? "Clear all shown" : "Select all shown"}>
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={() => applyVisibleReview(allVisibleSelected ? "reject" : "keep")}
+                    aria-label="Select all shown businesses"
+                  />
+                </label>
+                <button
+                  type="button"
+                  className={`leadgen-result-header__col${sortBy === "name" ? " is-sorted" : ""}`}
+                  onClick={() => setSortBy("name")}
+                >
+                  Business{sortBy === "name" ? " ↓" : ""}
+                </button>
+                <button
+                  type="button"
+                  className={`leadgen-result-header__col${sortBy === "contact" ? " is-sorted" : ""}`}
+                  onClick={() => setSortBy("contact")}
+                >
+                  Website / phone{sortBy === "contact" ? " ↓" : ""}
+                </button>
+              </div>
+              {visibleRows.map(({ row, index }) => (
             <article
               key={`${row.source_id || row.name}-${index}`}
               className={`leadgen-result-row leadgen-result-row--${review[index] || "keep"}${index === effectiveSelectedIndex ? " is-selected" : ""}`}
@@ -1772,6 +1846,14 @@ function LeadgenScanApp() {
               onMouseEnter={() => setSelectedIndex(index)}
               onFocus={() => setSelectedIndex(index)}
             >
+              <label className="leadgen-result-row__check" title="Include this business in your list">
+                <input
+                  type="checkbox"
+                  checked={(review[index] || "keep") === "keep"}
+                  onChange={(e) => setReview((current) => ({ ...current, [index]: e.target.checked ? "keep" : "reject" }))}
+                  aria-label={`Include ${row.name} in your list`}
+                />
+              </label>
               <div className="leadgen-result-row__main">
                 <strong>
                   {row.name}
@@ -1788,29 +1870,23 @@ function LeadgenScanApp() {
                 {row.phone ? <span>{row.phone}</span> : <span>Phone missing</span>}
                 <span className="leadgen-result-row__source">{sourceFor(row)}</span>
               </div>
-              <select
-                className={`leadgen-review-select leadgen-review-select--${review[index] || "keep"}`}
-                value={review[index] || "keep"}
-                onChange={(e) => setReview((current) => ({ ...current, [index]: e.target.value }))}
-                aria-label={`Review status for ${row.name}`}
-                title={REVIEW_COPY[review[index] || "keep"]}
-              >
-                <option value="keep">Keep</option>
-                <option value="maybe">Maybe</option>
-                <option value="reject">Reject</option>
-              </select>
             </article>
-          ))}
+              ))}
+            </>
+          )}
         </div>
       </div>
 
       {scan ? (
         <div className="leadgen-scan-followup" aria-label="Scan metrics and campaign planning">
           <div className="leadgen-app-kpis" aria-label="Scan metrics">
-            <div><Building2 size={15} /><strong>{scan?.matched ?? 0}</strong><span>matching records</span></div>
-            <div><Database size={15} /><strong>{websites}</strong><span>with websites</span></div>
-            <div><Mail size={15} /><strong>{phones}</strong><span>with phone</span></div>
-            <div><Check size={15} /><strong>{kept.length}</strong><span>kept after review</span></div>
+            <div className="leadgen-app-kpis__hero"><Building2 size={15} /><strong><CountUp value={scan?.matched ?? 0} /></strong><span>local businesses</span></div>
+            {emailCount > 0 ? (
+              <div><Mail size={15} /><strong><CountUp value={emailCount} /></strong><span>emails found</span></div>
+            ) : null}
+            <div><Database size={15} /><strong><CountUp value={websites} /></strong><span>with websites</span></div>
+            <div><Phone size={15} /><strong><CountUp value={phones} /></strong><span>with phone</span></div>
+            <div><Check size={15} /><strong>{kept.length}</strong><span>selected</span></div>
           </div>
           <div className="leadgen-app-brief">
             <div>
@@ -2135,37 +2211,37 @@ export default function Leadgen() {
 const INTEGRATION_LIST = [
   {
     name: "Webhook / Zapier",
-    logo: "⚡",
+    domain: "zapier.com",
     desc: "POST leads to any URL — wire into Zapier, Make, n8n, or your own backend.",
     badge: "Growth+",
   },
   {
     name: "Mailchimp",
-    logo: "🐒",
+    domain: "mailchimp.com",
     desc: "Sync leads to a Mailchimp audience. Merge tags for name, company, industry, and phone.",
     badge: "Growth+",
   },
   {
     name: "HubSpot",
-    logo: "🟠",
+    domain: "hubspot.com",
     desc: "Create contacts in HubSpot CRM with industry, website, and leadsource pre-filled.",
     badge: "Growth+",
   },
   {
     name: "ActiveCampaign",
-    logo: "✉️",
+    domain: "activecampaign.com",
     desc: "Add contacts to ActiveCampaign and tag them by industry for segmented sequences.",
     badge: "Pro",
   },
   {
     name: "GoHighLevel",
-    logo: "🚀",
+    domain: "gohighlevel.com",
     desc: "Push contacts directly to a GHL location — ideal for agencies running client pipelines.",
     badge: "Pro",
   },
   {
     name: "CSV with emails",
-    logo: "📄",
+    csv: true,
     desc: "Every export includes extracted email addresses and confidence scores as extra columns.",
     badge: "Growth+",
   },
@@ -2186,7 +2262,20 @@ function LeadgenIntegrationsSection() {
         <div className="leadgen-integrations-grid">
           {INTEGRATION_LIST.map((item) => (
             <div key={item.name} className="leadgen-integration-card">
-              <span className="leadgen-integration-card__logo" aria-hidden="true">{item.logo}</span>
+              <span className="leadgen-integration-card__logo" aria-hidden="true">
+                {item.csv ? (
+                  <FileText size={22} strokeWidth={1.75} />
+                ) : (
+                  <img
+                    src={`https://icons.duckduckgo.com/ip3/${item.domain}.ico`}
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+              </span>
               <div className="leadgen-integration-card__body">
                 <strong>{item.name}</strong>
                 <span className="leadgen-integration-card__badge">{item.badge}</span>
