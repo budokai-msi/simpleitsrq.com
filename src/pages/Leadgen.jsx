@@ -3,7 +3,7 @@ import "leaflet/dist/leaflet.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, Database, Mail, Building2,
-  Search, Phone,
+  Search, Phone, FileText,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
@@ -2211,37 +2211,37 @@ export default function Leadgen() {
 const INTEGRATION_LIST = [
   {
     name: "Webhook / Zapier",
-    logo: "⚡",
+    domain: "zapier.com",
     desc: "POST leads to any URL — wire into Zapier, Make, n8n, or your own backend.",
     badge: "Growth+",
   },
   {
     name: "Mailchimp",
-    logo: "🐒",
+    domain: "mailchimp.com",
     desc: "Sync leads to a Mailchimp audience. Merge tags for name, company, industry, and phone.",
     badge: "Growth+",
   },
   {
     name: "HubSpot",
-    logo: "🟠",
+    domain: "hubspot.com",
     desc: "Create contacts in HubSpot CRM with industry, website, and leadsource pre-filled.",
     badge: "Growth+",
   },
   {
     name: "ActiveCampaign",
-    logo: "✉️",
+    domain: "activecampaign.com",
     desc: "Add contacts to ActiveCampaign and tag them by industry for segmented sequences.",
     badge: "Pro",
   },
   {
     name: "GoHighLevel",
-    logo: "🚀",
+    domain: "gohighlevel.com",
     desc: "Push contacts directly to a GHL location — ideal for agencies running client pipelines.",
     badge: "Pro",
   },
   {
     name: "CSV with emails",
-    logo: "📄",
+    csv: true,
     desc: "Every export includes extracted email addresses and confidence scores as extra columns.",
     badge: "Growth+",
   },
@@ -2262,7 +2262,20 @@ function LeadgenIntegrationsSection() {
         <div className="leadgen-integrations-grid">
           {INTEGRATION_LIST.map((item) => (
             <div key={item.name} className="leadgen-integration-card">
-              <span className="leadgen-integration-card__logo" aria-hidden="true">{item.logo}</span>
+              <span className="leadgen-integration-card__logo" aria-hidden="true">
+                {item.csv ? (
+                  <FileText size={22} strokeWidth={1.75} />
+                ) : (
+                  <img
+                    src={`https://icons.duckduckgo.com/ip3/${item.domain}.ico`}
+                    alt=""
+                    width="26"
+                    height="26"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+              </span>
               <div className="leadgen-integration-card__body">
                 <strong>{item.name}</strong>
                 <span className="leadgen-integration-card__badge">{item.badge}</span>

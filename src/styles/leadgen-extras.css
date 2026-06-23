@@ -344,10 +344,22 @@
   border-color: var(--lg-border-soft, #353b45);
 }
 .leadgen-integration-card__logo {
-  font-size: 1.6rem;
   flex-shrink: 0;
-  line-height: 1;
-  margin-top: 2px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--lg-panel-soft, #f7f7f8);
+  border: 1px solid var(--lg-border-faint, #e4e4e7);
+  color: var(--lg-muted, #4b5563);
+}
+.leadgen-integration-card__logo img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 5px;
 }
 .leadgen-integration-card__body {
   display: flex;
