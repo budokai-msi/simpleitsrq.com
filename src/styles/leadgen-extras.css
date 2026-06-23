@@ -378,3 +378,50 @@
   line-height: 1.5;
   margin: 0;
 }
+
+/* Workspace integrations manager (sidebar of the leadgen dashboard) */
+.leadgen-integrations-mgr { display: grid; gap: 10px; margin-top: 4px; }
+.leadgen-integrations-mgr__note { font-size: 0.82rem; color: var(--text-muted, #6b7280); margin: 0; }
+.leadgen-integrations-mgr__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.leadgen-integrations-mgr__item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 10px; border: 1px solid var(--syn-border, #e5e7eb); border-radius: 8px;
+  background: var(--syn-surface, #fff);
+}
+.leadgen-integrations-mgr__item-info { display: grid; gap: 2px; min-width: 0; }
+.leadgen-integrations-mgr__item-info strong { font-size: 0.86rem; color: var(--text-1, #111827); }
+.leadgen-integrations-mgr__item-info span {
+  font-size: 0.74rem; color: var(--text-muted, #6b7280);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.leadgen-integrations-mgr__item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.leadgen-integrations-mgr .btn-ghost {
+  background: transparent; border-color: transparent; color: var(--text-muted, #6b7280);
+}
+.leadgen-integrations-mgr__add > summary {
+  cursor: pointer; font-size: 0.84rem; font-weight: 700; color: var(--text-1, #111827);
+  padding: 6px 0; list-style: none;
+}
+.leadgen-integrations-mgr__add > summary::-webkit-details-marker { display: none; }
+.leadgen-integrations-mgr__add > summary::before { content: "+ "; color: var(--text-muted, #6b7280); }
+.leadgen-integrations-mgr__add[open] > summary::before { content: "\2212 "; }
+.leadgen-integrations-mgr__form { display: grid; gap: 8px; margin-top: 6px; }
+.leadgen-integrations-mgr__form label { display: grid; gap: 3px; }
+.leadgen-integrations-mgr__form label span { font-size: 0.72rem; font-weight: 600; color: var(--text-muted, #6b7280); }
+.leadgen-integrations-mgr__form input,
+.leadgen-integrations-mgr__form select {
+  width: 100%; padding: 7px 9px; font-size: 0.84rem;
+  border: 1px solid var(--syn-border, #d0d5dd); border-radius: 7px;
+  background: var(--bg-elevated, #fff); color: var(--text-1, #111827);
+}
+.leadgen-integrations-mgr__hint { font-size: 0.72rem; color: var(--text-muted, #6b7280); margin: 6px 0 0; }
+.leadgen-integrations-mgr__msg { font-size: 0.8rem; margin: 0; font-weight: 600; color: #067647; }
+.leadgen-integrations-mgr__msg.is-error { color: #b42318; }
+[data-theme="dark"] .leadgen-integrations-mgr__item {
+  background: rgba(255, 255, 255, 0.02); border-color: rgba(255, 255, 255, 0.10);
+}
+[data-theme="dark"] .leadgen-integrations-mgr__item-info strong { color: #e8eef6; }
+[data-theme="dark"] .leadgen-integrations-mgr__form input,
+[data-theme="dark"] .leadgen-integrations-mgr__form select {
+  background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); color: #e8eef6;
+}
