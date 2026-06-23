@@ -777,8 +777,6 @@ function LeadgenScanApp() {
     }))
   ), [scan, review]);
   const kept = reviewedRows.filter((row) => row.status === "keep");
-  const maybe = reviewedRows.filter((row) => row.status === "maybe");
-  const rejected = reviewedRows.filter((row) => row.status === "reject");
   const chainCount = reviewedRows.filter((row) => row.is_chain).length;
   const independentCount = reviewedRows.length - chainCount;
   const websites = reviewedRows.filter((row) => row.website).length;
@@ -1091,17 +1089,6 @@ function LeadgenScanApp() {
     runScan();
   };
 
-  const exportRows = () => {
-    if (!visibleOnlyRows.length) return;
-    trackEvent("select_content", {
-      content_type: "leadgen_export",
-      source: "leadgen_scanner",
-      zip,
-      niche,
-      count: visibleOnlyRows.length,
-    });
-    downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.csv`, visibleOnlyRows);
-  };
   const exportKeptRows = () => {
     const keptRows = visibleOnlyRows.filter((row) => row.status === "keep");
     if (!keptRows.length) return;
@@ -1552,8 +1539,8 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--results">
         <div className="leadgen-app-results-head">
           <div>
-            <span>{scan ? `${visibleRows.length} visible / ${scan.matched} matched` : "Ready to scan"}</span>
-            <h2>Review list</h2>
+            <span>{scan ? `${visibleRows.length} shown of ${scan.matched}` : "Ready to scan"}</span>
+            <h2>Your list</h2>
           </div>
           <div className="leadgen-app-actions">
             {scan ? (
@@ -1583,8 +1570,7 @@ function LeadgenScanApp() {
                 >
                   {copiedView ? "Copied" : "Copy view link"}
                 </button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={exportRows} disabled={!reviewedRows.length}>Export visible</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export kept</button>
+                <button type="button" className="btn btn-primary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export selected ({kept.length})</button>
                 <Link
                   to={scannerResultWorkspaceLink}
                   className="btn btn-primary btn-sm"
@@ -1607,10 +1593,7 @@ function LeadgenScanApp() {
 
         {scan ? (
           <div className="leadgen-review-summary">
-            <span>{kept.length} keep</span>
-            <span>{maybe.length} maybe</span>
-            <span>{rejected.length} reject</span>
-            <span>{visibleRows.length} visible</span>
+            <span className="leadgen-review-summary__count"><strong>{kept.length}</strong> selected of {reviewedRows.length}</span>
             <span title="Independent local businesses found in this market" style={{ color: "#067647", fontWeight: 600 }}>
               {independentCount} independent
             </span>
@@ -1634,13 +1617,12 @@ function LeadgenScanApp() {
               </button>
             ) : null}
             {hasKeyboard ? (
-              <span className="leadgen-review-summary__hint">Shortcuts: J/K move, 1 keep, 2 maybe, 3 reject</span>
+              <span className="leadgen-review-summary__hint">J/K to move · 1 keep · 3 remove</span>
             ) : null}
             {visibleRows.length ? (
-              <div className="leadgen-review-summary__actions" role="group" aria-label="Bulk review actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Keep all visible</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("maybe")}>Maybe all visible</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Reject all visible</button>
+              <div className="leadgen-review-summary__actions" role="group" aria-label="Selection actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Select all</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Clear</button>
               </div>
             ) : null}
           </div>
@@ -1685,9 +1667,8 @@ function LeadgenScanApp() {
                   disabled={!reviewedRows.length}
                 >
                   <option value="all">All</option>
-                  <option value="keep">Keep</option>
-                  <option value="maybe">Maybe</option>
-                  <option value="reject">Reject</option>
+                  <option value="keep">Selected</option>
+                  <option value="reject">Removed</option>
                 </select>
               </label>
             </div>
@@ -1837,6 +1818,14 @@ function LeadgenScanApp() {
               onMouseEnter={() => setSelectedIndex(index)}
               onFocus={() => setSelectedIndex(index)}
             >
+              <label className="leadgen-result-row__check" title="Include this business in your list">
+                <input
+                  type="checkbox"
+                  checked={(review[index] || "keep") === "keep"}
+                  onChange={(e) => setReview((current) => ({ ...current, [index]: e.target.checked ? "keep" : "reject" }))}
+                  aria-label={`Include ${row.name} in your list`}
+                />
+              </label>
               <div className="leadgen-result-row__main">
                 <strong>
                   {row.name}
@@ -1853,17 +1842,6 @@ function LeadgenScanApp() {
                 {row.phone ? <span>{row.phone}</span> : <span>Phone missing</span>}
                 <span className="leadgen-result-row__source">{sourceFor(row)}</span>
               </div>
-              <select
-                className={`leadgen-review-select leadgen-review-select--${review[index] || "keep"}`}
-                value={review[index] || "keep"}
-                onChange={(e) => setReview((current) => ({ ...current, [index]: e.target.value }))}
-                aria-label={`Review status for ${row.name}`}
-                title={REVIEW_COPY[review[index] || "keep"]}
-              >
-                <option value="keep">Keep</option>
-                <option value="maybe">Maybe</option>
-                <option value="reject">Reject</option>
-              </select>
             </article>
           ))}
         </div>
@@ -1878,7 +1856,7 @@ function LeadgenScanApp() {
             ) : null}
             <div><Database size={15} /><strong><CountUp value={websites} /></strong><span>with websites</span></div>
             <div><Phone size={15} /><strong><CountUp value={phones} /></strong><span>with phone</span></div>
-            <div><Check size={15} /><strong>{kept.length}</strong><span>kept after review</span></div>
+            <div><Check size={15} /><strong>{kept.length}</strong><span>selected</span></div>
           </div>
           <div className="leadgen-app-brief">
             <div>
