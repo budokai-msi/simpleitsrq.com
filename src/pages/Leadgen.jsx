@@ -843,6 +843,8 @@ function LeadgenScanApp() {
       });
   }, [contactFilter, deferredSearchTerm, independentsOnly, reviewedRows, sortBy, statusFilter, subIndustryFilter]);
   const visibleOnlyRows = visibleRows.map(({ row }) => row);
+  const allVisibleSelected = visibleRows.length > 0
+    && visibleRows.every(({ index }) => (review[index] || "keep") === "keep");
   const effectiveSelectedIndex = visibleRows.some((item) => item.index === selectedIndex)
     ? selectedIndex
     : visibleRows[0]?.index ?? null;
@@ -1810,7 +1812,33 @@ function LeadgenScanApp() {
               <strong>No records match these filters</strong>
               <span>Clear the search or loosen the filters. The original scan is still cached for this zip and niche.</span>
             </div>
-          ) : visibleRows.map(({ row, index }) => (
+          ) : (
+            <>
+              <div className="leadgen-result-header">
+                <label className="leadgen-result-row__check" title={allVisibleSelected ? "Clear all shown" : "Select all shown"}>
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={() => applyVisibleReview(allVisibleSelected ? "reject" : "keep")}
+                    aria-label="Select all shown businesses"
+                  />
+                </label>
+                <button
+                  type="button"
+                  className={`leadgen-result-header__col${sortBy === "name" ? " is-sorted" : ""}`}
+                  onClick={() => setSortBy("name")}
+                >
+                  Business{sortBy === "name" ? " ↓" : ""}
+                </button>
+                <button
+                  type="button"
+                  className={`leadgen-result-header__col${sortBy === "contact" ? " is-sorted" : ""}`}
+                  onClick={() => setSortBy("contact")}
+                >
+                  Website / phone{sortBy === "contact" ? " ↓" : ""}
+                </button>
+              </div>
+              {visibleRows.map(({ row, index }) => (
             <article
               key={`${row.source_id || row.name}-${index}`}
               className={`leadgen-result-row leadgen-result-row--${review[index] || "keep"}${index === effectiveSelectedIndex ? " is-selected" : ""}`}
@@ -1843,7 +1871,9 @@ function LeadgenScanApp() {
                 <span className="leadgen-result-row__source">{sourceFor(row)}</span>
               </div>
             </article>
-          ))}
+              ))}
+            </>
+          )}
         </div>
       </div>
 
