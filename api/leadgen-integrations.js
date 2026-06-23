@@ -13,6 +13,7 @@ import { json } from "./_lib/http.js";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { clientIp, rateLimit } from "./_lib/security.js";
+import { encryptSecret, decryptSecret } from "./_lib/crypto.js";
 
 const ALLOWED_PLANS = new Set(["growth", "pro", "lifetime"]);
 const VALID_KINDS = new Set(["webhook", "mailchimp", "hubspot", "activecampaign", "zapier", "gohighlevel"]);
@@ -201,10 +202,14 @@ async function handleUpsert(user, body) {
   }
   const sanitizedLabel = String(label).trim().slice(0, 80);
   const sanitizedConfig = (typeof config === "object" && config !== null) ? config : {};
+  // Credentials (API keys, webhook secrets) are encrypted at the application
+  // layer before they ever touch the database — the column holds ciphertext,
+  // not the raw key. See api/_lib/crypto.js.
+  const storedConfig = encryptSecret(sanitizedConfig);
 
   const [row] = await sql`
     INSERT INTO user_integrations (user_id, kind, label, config)
-    VALUES (${user.id}, ${kind}, ${sanitizedLabel}, ${JSON.stringify(sanitizedConfig)})
+    VALUES (${user.id}, ${kind}, ${sanitizedLabel}, ${JSON.stringify(storedConfig)})
     ON CONFLICT (user_id, kind, label)
     DO UPDATE SET config = EXCLUDED.config, enabled = true, updated_at = now()
     RETURNING id, kind, label, enabled, created_at
@@ -234,7 +239,8 @@ async function handlePush(user, body) {
   if (!integration.enabled) return json(409, { ok: false, error: "disabled" });
 
   try {
-    const result = await dispatchPush(integration, leads);
+    const config = decryptSecret(integration.config);
+    const result = await dispatchPush({ ...integration, config }, leads);
     await sql`UPDATE user_integrations SET last_used_at = now(), last_error = null WHERE id = ${numericId}`;
     return json(200, { ok: true, ...result });
   } catch (err) {
