@@ -29,7 +29,7 @@ import {
   Search,
   Send,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics.js";
@@ -71,6 +71,177 @@ function fmtTime(iso) {
 function hostFor(url) {
   if (!url) return null;
   try { return new URL(url).host.replace(/^www\./, ""); } catch { return url; }
+}
+
+// ---------- integrations manager ----------
+// Lets a Growth/Pro customer (or the owner) connect a CRM/webhook destination
+// and push leads to it. Talks to /api/leadgen-integrations; credentials are
+// encrypted server-side before storage (api/_lib/crypto.js).
+
+const INTEGRATION_KINDS = [
+  { kind: "webhook", label: "Webhook / Zapier", fields: [
+    { key: "url", label: "POST URL", placeholder: "https://hooks.zapier.com/..." },
+    { key: "secret", label: "Shared secret", optional: true },
+  ] },
+  { kind: "mailchimp", label: "Mailchimp", fields: [
+    { key: "api_key", label: "API key", placeholder: "xxxxxxxx-us21" },
+    { key: "list_id", label: "Audience (list) ID" },
+  ] },
+  { kind: "hubspot", label: "HubSpot", fields: [
+    { key: "access_token", label: "Private app token", placeholder: "pat-na1-..." },
+  ] },
+  { kind: "activecampaign", label: "ActiveCampaign", fields: [
+    { key: "api_url", label: "API URL", placeholder: "https://you.api-us1.com" },
+    { key: "api_key", label: "API key" },
+  ] },
+  { kind: "gohighlevel", label: "GoHighLevel", fields: [
+    { key: "api_key", label: "Private integration token" },
+    { key: "location_id", label: "Location ID", optional: true },
+  ] },
+];
+
+function kindLabel(kind) {
+  return INTEGRATION_KINDS.find((k) => k.kind === kind)?.label || kind;
+}
+
+function LeadgenIntegrationsManager() {
+  const [list, setList] = useState(null); // null = loading
+  const [gated, setGated] = useState(false);
+  const [kind, setKind] = useState("webhook");
+  const [config, setConfig] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null); // { ok, text }
+
+  const def = INTEGRATION_KINDS.find((k) => k.kind === kind) || INTEGRATION_KINDS[0];
+
+  const load = useCallback(async () => {
+    try {
+      const j = await getJson("/api/leadgen-integrations");
+      setList(j.integrations || []);
+      setGated(false);
+    } catch (e) {
+      if (/plan_required|403/.test(String(e.message || ""))) setGated(true);
+      setList([]);
+    }
+  }, []);
+  useEffect(() => {
+    let active = true;
+    getJson("/api/leadgen-integrations")
+      .then((j) => { if (active) { setList(j.integrations || []); setGated(false); } })
+      .catch((e) => {
+        if (!active) return;
+        if (/plan_required|403/.test(String(e.message || ""))) setGated(true);
+        setList([]);
+      });
+    return () => { active = false; };
+  }, []);
+
+  const save = async (e) => {
+    e.preventDefault();
+    const missing = def.fields.filter((f) => !f.optional && !String(config[f.key] || "").trim());
+    if (missing.length) {
+      setMsg({ ok: false, text: `Required: ${missing.map((f) => f.label).join(", ")}` });
+      return;
+    }
+    setBusy(true); setMsg(null);
+    try {
+      await postJson("/api/leadgen-integrations", { kind, label: def.label, config });
+      setConfig({});
+      setMsg({ ok: true, text: `${def.label} connected.` });
+      trackEvent("select_content", { content_type: "leadgen_integration_connect", destination: kind });
+      await load();
+    } catch (err) {
+      setMsg({ ok: false, text: err.message || "Could not save." });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const test = async (id) => {
+    setMsg({ ok: true, text: "Sending a test lead…" });
+    try {
+      const j = await postJson("/api/leadgen-integrations?action=test", { id });
+      setMsg({ ok: true, text: `Test delivered (${j.sent ?? 0} sent).` });
+    } catch (err) {
+      setMsg({ ok: false, text: `Test failed: ${err.message}` });
+    }
+    await load();
+  };
+
+  const remove = async (id) => {
+    setBusy(true);
+    try {
+      await csrfFetch(`/api/leadgen-integrations?id=${id}`, { method: "DELETE" });
+      await load();
+    } catch {
+      /* state refreshes on reload */
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="leadgen-integrations-mgr">
+      {gated ? (
+        <p className="leadgen-integrations-mgr__note">Push-to-CRM is available on Growth and Pro plans.</p>
+      ) : null}
+
+      {Array.isArray(list) && list.length ? (
+        <ul className="leadgen-integrations-mgr__list">
+          {list.map((it) => (
+            <li key={it.id} className="leadgen-integrations-mgr__item">
+              <div className="leadgen-integrations-mgr__item-info">
+                <strong>{kindLabel(it.kind)}</strong>
+                <span>
+                  {it.last_error
+                    ? `Error: ${it.last_error}`
+                    : it.last_used_at ? `Last push ${fmtTime(it.last_used_at)}` : "Never used"}
+                </span>
+              </div>
+              <div className="leadgen-integrations-mgr__item-actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => test(it.id)} disabled={busy}>Test</button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => remove(it.id)} disabled={busy}>Remove</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : Array.isArray(list) ? (
+        <p className="leadgen-integrations-mgr__note">No destinations connected yet.</p>
+      ) : (
+        <p className="leadgen-integrations-mgr__note">Loading…</p>
+      )}
+
+      <details className="leadgen-integrations-mgr__add">
+        <summary>Connect a destination</summary>
+        <form onSubmit={save} className="leadgen-integrations-mgr__form">
+          <label>
+            <span>Destination</span>
+            <select value={kind} onChange={(e) => { setKind(e.target.value); setConfig({}); setMsg(null); }}>
+              {INTEGRATION_KINDS.map((k) => <option key={k.kind} value={k.kind}>{k.label}</option>)}
+            </select>
+          </label>
+          {def.fields.map((f) => (
+            <label key={f.key}>
+              <span>{f.label}{f.optional ? " (optional)" : ""}</span>
+              <input
+                type={/secret|token|key/.test(f.key) ? "password" : "text"}
+                value={config[f.key] || ""}
+                onChange={(e) => setConfig((c) => ({ ...c, [f.key]: e.target.value }))}
+                placeholder={f.placeholder || ""}
+                autoComplete="off"
+              />
+            </label>
+          ))}
+          <button type="submit" className="btn btn-primary btn-sm" disabled={busy}>{busy ? "Saving…" : "Connect"}</button>
+        </form>
+        <p className="leadgen-integrations-mgr__hint">Keys are encrypted before they're stored, and never shown again.</p>
+      </details>
+
+      {msg ? (
+        <p className={`leadgen-integrations-mgr__msg${msg.ok ? "" : " is-error"}`} role="status" aria-live="polite">{msg.text}</p>
+      ) : null}
+    </div>
+  );
 }
 
 function makePreviewFacets(rows) {
@@ -528,13 +699,7 @@ export default function LeadgenDashboard() {
             </nav>
             <section className="leadgen-side-integrations" aria-label="Marketing integrations">
               <h3>Destinations</h3>
-              <div className="leadgen-side-integrations__links">
-                <a href="https://www.hubspot.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "hubspot" })}>HubSpot</a>
-                <a href="https://mailchimp.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "mailchimp" })}>Mailchimp</a>
-                <a href="https://www.klaviyo.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "klaviyo" })}>Klaviyo</a>
-                <a href="https://ads.google.com" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "google_ads" })}>Google Ads</a>
-                <a href="https://www.facebook.com/business/ads" target="_blank" rel="noopener noreferrer" onClick={() => trackEvent("select_content", { content_type: "leadgen_integration_link", destination: "meta_ads" })}>Meta Ads</a>
-              </div>
+              <LeadgenIntegrationsManager />
               <div className="leadgen-side-integrations__actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => integrationExport("hubspot")}>Export ready CSV</button>
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => selectTab("campaigns", "leadgen_sidebar")}>Build campaign</button>
