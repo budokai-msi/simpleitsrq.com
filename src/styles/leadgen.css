@@ -310,8 +310,7 @@
 .leadgen-app-controls input,
 .leadgen-app-controls select,
 .leadgen-advanced-controls input,
-.leadgen-advanced-controls select,
-.leadgen-result-row select {
+.leadgen-advanced-controls select {
   width: 100%;
   min-height: 44px;
   border: 1px solid var(--lg-border-soft);
@@ -325,8 +324,7 @@
 .leadgen-app-controls input:focus,
 .leadgen-app-controls select:focus,
 .leadgen-advanced-controls input:focus,
-.leadgen-advanced-controls select:focus,
-.leadgen-result-row select:focus {
+.leadgen-advanced-controls select:focus {
   outline: none;
   border-color: var(--lg-border);
   box-shadow: 0 0 0 3px var(--lg-focus);
@@ -641,76 +639,6 @@
   font-size: 0.9rem;
   line-height: 1.45;
 }
-.leadgen-readiness {
-  margin-top: 12px;
-  border: 1px solid var(--lg-border);
-  border-radius: 8px;
-  padding: 12px;
-  background: var(--lg-panel);
-}
-.leadgen-readiness__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-.leadgen-readiness__head span {
-  color: var(--lg-faint);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.leadgen-readiness__head strong {
-  color: var(--lg-text);
-  font-size: 0.96rem;
-}
-.leadgen-readiness__checks {
-  margin-top: 10px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-.leadgen-readiness__check {
-  border: 1px solid var(--lg-border-soft);
-  border-radius: 8px;
-  padding: 8px;
-  background: var(--lg-panel-soft);
-}
-.leadgen-readiness__check span {
-  display: block;
-  color: var(--lg-faint);
-  font-size: 11px;
-  font-weight: 700;
-}
-.leadgen-readiness__check strong {
-  display: block;
-  margin-top: 2px;
-  color: #b45309;
-  font-size: 0.82rem;
-}
-.leadgen-readiness__check.is-ok strong {
-  color: #166534;
-}
-.leadgen-readiness__action {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.leadgen-readiness__action p {
-  margin: 0;
-  color: var(--lg-muted);
-  font-size: 0.84rem;
-}
-.leadgen-readiness--good {
-  border-color: color-mix(in srgb, #16a34a 30%, var(--lg-border));
-}
-.leadgen-readiness--bad {
-  border-color: color-mix(in srgb, #dc2626 35%, var(--lg-border));
-}
 .leadgen-planning-panel {
   margin-top: 12px;
   border: 1px solid var(--lg-border);
@@ -760,52 +688,15 @@
   color: var(--lg-text);
   font-size: 0.84rem;
 }
-.leadgen-revenue-forecast__kpis {
+.leadgen-revenue-forecast__note {
   margin-top: 10px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-.leadgen-revenue-forecast__kpis div {
-  border: 1px solid var(--lg-border-soft);
-  border-radius: 8px;
-  padding: 8px;
-  background: var(--lg-panel);
-}
-.leadgen-revenue-forecast__kpis span {
-  display: block;
-  color: var(--lg-faint);
-  font-size: 11px;
-  font-weight: 700;
-}
-.leadgen-revenue-forecast__kpis strong {
-  display: block;
-  margin-top: 2px;
-  color: var(--lg-text);
-  font-size: 0.92rem;
-}
-.leadgen-revenue-forecast__planfit {
-  margin-top: 10px;
+  padding: 8px 10px;
   border: 1px solid var(--lg-border-soft);
   border-radius: 8px;
   background: var(--lg-panel);
-  padding: 8px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  gap: 8px;
-  align-items: end;
-}
-.leadgen-revenue-forecast__planfit span {
-  display: block;
-  color: var(--lg-faint);
-  font-size: 11px;
-  font-weight: 700;
-}
-.leadgen-revenue-forecast__planfit strong {
-  display: block;
-  margin-top: 2px;
-  color: var(--lg-text);
-  font-size: 0.86rem;
+  color: var(--lg-muted);
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 .leadgen-action-drawer {
   margin-top: 10px;
@@ -1224,15 +1115,6 @@
   font-size: 12px;
   font-weight: 700;
 }
-.leadgen-review-select--keep {
-  border-color: color-mix(in srgb, #16a34a 42%, var(--lg-border-soft));
-}
-.leadgen-review-select--maybe {
-  border-color: color-mix(in srgb, #ca8a04 44%, var(--lg-border-soft));
-}
-.leadgen-review-select--reject {
-  border-color: color-mix(in srgb, #dc2626 42%, var(--lg-border-soft));
-}
 @media (max-width: 1180px) {
   .leadgen-app-shell { grid-template-columns: 1fr; }
   .leadgen-app-panel--results { max-height: none; }
@@ -1242,10 +1124,7 @@
 @media (max-width: 860px) {
   .leadgen-app-kpis,
   .leadgen-app-brief,
-  .leadgen-readiness__checks,
-  .leadgen-revenue-forecast__controls,
-  .leadgen-revenue-forecast__kpis { grid-template-columns: 1fr 1fr; }
-  .leadgen-revenue-forecast__planfit { grid-template-columns: 1fr 1fr; }
+  .leadgen-revenue-forecast__controls { grid-template-columns: 1fr 1fr; }
   .leadgen-app-controls--primary { grid-template-columns: 1fr 1fr; }
   .leadgen-app-controls--primary .btn { grid-column: 1 / -1; }
   .leadgen-result-more-filters__grid { grid-template-columns: 1fr 1fr; }
@@ -1263,10 +1142,7 @@
   .leadgen-app-controls,
   .leadgen-app-controls--primary,
   .leadgen-advanced-controls__grid,
-  .leadgen-readiness__checks,
   .leadgen-revenue-forecast__controls,
-  .leadgen-revenue-forecast__kpis,
-  .leadgen-revenue-forecast__planfit,
   .leadgen-result-tools__primary,
   .leadgen-result-more-filters__grid { grid-template-columns: 1fr; }
   .leadgen-app-controls--primary .btn { grid-column: auto; }
@@ -3437,31 +3313,6 @@
   font-size: 0.8rem;
   color: var(--text-3, #6b7280);
 }
-.leadgen-side-integrations__links {
-  margin-top: 8px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-.leadgen-side-integrations__links a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 24px;
-  padding: 0 8px;
-  border: 1px solid var(--border, #d1d5db);
-  border-radius: 999px;
-  color: var(--text-2, #4b5563);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-decoration: none;
-  text-align: center;
-}
-.leadgen-side-integrations__links a:hover,
-.leadgen-side-integrations__links a:focus-visible {
-  border-color: var(--text-1, #111827);
-  color: var(--text-1, #111827);
-}
 .leadgen-side-integrations__actions {
   margin-top: 10px;
   display: grid;
@@ -3499,16 +3350,6 @@
   border-top-color: #353B45;
 }
 [data-theme="dark"] .leadgen-side-integrations h3 {
-  color: #F4F5F7;
-}
-[data-theme="dark"] .leadgen-side-integrations__links a {
-  border-color: #353B45;
-  color: #B4BAC4;
-  background: #11151B;
-}
-[data-theme="dark"] .leadgen-side-integrations__links a:hover,
-[data-theme="dark"] .leadgen-side-integrations__links a:focus-visible {
-  border-color: #F4F5F7;
   color: #F4F5F7;
 }
 .leadgen-side-revenue {
