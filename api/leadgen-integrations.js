@@ -144,16 +144,25 @@ async function pushActiveCampaign(config, leads) {
 
 async function pushGoHighLevel(config, leads) {
   const { api_key, location_id } = config;
-  if (!api_key) throw new Error("GoHighLevel API key required.");
+  if (!api_key) throw new Error("GoHighLevel private integration token required.");
+  // The v2 API (LeadConnector) scopes every contact to a location, so the
+  // Location ID is mandatory — a Private Integration Token won't work against
+  // the deprecated v1 host.
+  if (!location_id) throw new Error("GoHighLevel Location ID is required.");
   const results = await Promise.allSettled(
     leads.filter((l) => l.email || l.phone).map((l) =>
-      fetch("https://rest.gohighlevel.com/v1/contacts/", {
+      fetch("https://services.leadconnectorhq.com/contacts/", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${api_key}` },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${api_key}`,
+          "Version": "2021-07-28",
+        },
         body: JSON.stringify({
+          locationId: location_id,
           email: l.email || undefined,
           phone: l.phone || undefined,
-          firstName: (l.name || "").split(" ")[0],
+          firstName: (l.name || "").split(" ")[0] || undefined,
           lastName: (l.name || "").split(" ").slice(1).join(" ") || undefined,
           companyName: l.name || undefined,
           address1: l.address || undefined,
@@ -162,13 +171,15 @@ async function pushGoHighLevel(config, leads) {
           postalCode: l.zip || undefined,
           website: l.website || undefined,
           source: "Leadgen Scanner",
-          ...(location_id ? { locationId: location_id } : {}),
         }),
         signal: AbortSignal.timeout(10000),
-      }).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.message || `GHL ${r.status}`); }))
+      }).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.message || e.error || `GoHighLevel ${r.status}`); }))
     )
   );
-  return { sent: results.filter((r) => r.status === "fulfilled").length };
+  return {
+    sent: results.filter((r) => r.status === "fulfilled").length,
+    failed: results.filter((r) => r.status === "rejected").length,
+  };
 }
 
 async function dispatchPush(integration, leads) {
