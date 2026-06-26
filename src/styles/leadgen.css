@@ -209,6 +209,29 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+/* One-click "push selected leads -> connected CRM" control in the results head. */
+.leadgen-push {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 6px;
+}
+.leadgen-push__select {
+  min-height: 34px;
+  max-width: 160px;
+  padding: 4px 8px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 8px;
+  background: var(--lg-panel);
+  color: var(--lg-text);
+  font: inherit;
+  font-size: 0.84rem;
+}
+.leadgen-push__msg {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #067647;
+}
+.leadgen-push__msg.is-error { color: #b42318; }
 .leadgen-app-topline {
   justify-content: space-between;
   margin-bottom: 22px;
