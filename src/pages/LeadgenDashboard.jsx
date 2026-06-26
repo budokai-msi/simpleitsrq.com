@@ -96,7 +96,7 @@ const INTEGRATION_KINDS = [
   ] },
   { kind: "gohighlevel", label: "GoHighLevel", fields: [
     { key: "api_key", label: "Private integration token" },
-    { key: "location_id", label: "Location ID", optional: true },
+    { key: "location_id", label: "Location ID" },
   ] },
 ];
 
