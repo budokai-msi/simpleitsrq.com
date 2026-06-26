@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
+import { csrfFetch } from "../lib/csrf";
 
 const LEADGEN_PROMO_CODE = "LAUNCH20";
 const LEADGEN_STRIPE_LINKS = {
@@ -754,6 +755,12 @@ function LeadgenScanApp() {
   const [drawerOpenState, setDrawerOpenState] = useState({ key: "", ready: false, assist: false });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  // Connected CRM/webhook destinations for the signed-in customer (empty for
+  // anonymous visitors — the GET 401s and we just hide the push control).
+  const [destinations, setDestinations] = useState([]);
+  const [pushTarget, setPushTarget] = useState("");
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushMsg, setPushMsg] = useState(null);
   // Default to independents-only — the prospect list an IT provider wants.
   // Off only when a shared link explicitly opts back into chains (?independents=0).
   const [independentsOnly, setIndependentsOnly] = useState(() => initialQuery.get("independents") !== "0");
@@ -1103,6 +1110,56 @@ function LeadgenScanApp() {
     });
     downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-kept.csv`, keptRows);
   };
+
+  // Load the signed-in customer's connected destinations once. Anonymous
+  // visitors get a 401 here and simply never see the push control.
+  useEffect(() => {
+    let active = true;
+    fetch("/api/leadgen-integrations", { credentials: "same-origin", headers: { Accept: "application/json" } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!active || !j || !Array.isArray(j.integrations) || !j.integrations.length) return;
+        setDestinations(j.integrations);
+        setPushTarget(String(j.integrations[0].id));
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const pushSelected = async () => {
+    if (!pushTarget || !kept.length || pushBusy) return;
+    setPushBusy(true);
+    setPushMsg(null);
+    try {
+      const leads = kept.map((r) => ({
+        name: r.name,
+        email: r.email || (Array.isArray(r.emails) ? r.emails[0]?.email : undefined),
+        phone: r.phone,
+        website: r.website,
+        address: r.address,
+        city: r.city,
+        state: r.state,
+        zip: r.zip,
+        industry_group: r.industry_group,
+        industry: r.industry,
+        sub_industry: r.sub_industry,
+      }));
+      const res = await csrfFetch("/api/leadgen-integrations?action=push", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: Number(pushTarget), leads }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || j.ok === false) throw new Error(j.message || j.error || `HTTP ${res.status}`);
+      setPushMsg({ ok: true, text: `Pushed ${j.sent ?? leads.length}${j.skipped ? ` (${j.skipped} skipped)` : ""}.` });
+      trackEvent("generate_lead", { source: "leadgen_scanner_push", count: leads.length });
+    } catch (e) {
+      setPushMsg({ ok: false, text: e.message || "Push failed." });
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
   const copyViewLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -1572,7 +1629,31 @@ function LeadgenScanApp() {
                 >
                   {copiedView ? "Copied" : "Copy view link"}
                 </button>
-                <button type="button" className="btn btn-primary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export selected ({kept.length})</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={exportKeptRows} disabled={!kept.length}>Export CSV ({kept.length})</button>
+                {destinations.length ? (
+                  <span className="leadgen-push">
+                    <select
+                      className="leadgen-push__select"
+                      value={pushTarget}
+                      onChange={(e) => setPushTarget(e.target.value)}
+                      aria-label="CRM destination"
+                      disabled={pushBusy}
+                    >
+                      {destinations.map((d) => <option key={d.id} value={d.id}>{d.label || d.kind}</option>)}
+                    </select>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm"
+                      onClick={pushSelected}
+                      disabled={pushBusy || !kept.length || !pushTarget}
+                    >
+                      {pushBusy ? "Pushing…" : `Push ${kept.length}`}
+                    </button>
+                  </span>
+                ) : null}
+                {pushMsg ? (
+                  <span className={`leadgen-push__msg${pushMsg.ok ? "" : " is-error"}`} role="status" aria-live="polite">{pushMsg.text}</span>
+                ) : null}
                 <Link
                   to={scannerResultWorkspaceLink}
                   className="btn btn-primary btn-sm"
