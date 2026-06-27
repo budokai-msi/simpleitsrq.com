@@ -852,6 +852,25 @@ function LeadgenScanApp() {
   const visibleOnlyRows = visibleRows.map(({ row }) => row);
   const allVisibleSelected = visibleRows.length > 0
     && visibleRows.every(({ index }) => (review[index] || "keep") === "keep");
+  // "Best" = reachable leads: a website plus a phone or an email. The one-click
+  // curation that saves the visitor manually triaging the long list.
+  const rowHasEmail = (row) => !!(row.email || (Array.isArray(row.emails) && row.emails.length));
+  const bestVisible = visibleRows.filter(({ row }) => row.website && (row.phone || rowHasEmail(row)));
+  const selectBest = () => {
+    if (!visibleRows.length) return;
+    setReview((current) => {
+      const next = { ...current };
+      for (const item of visibleRows) next[item.index] = "reject";
+      for (const item of bestVisible) next[item.index] = "keep";
+      return next;
+    });
+    trackEvent("select_content", {
+      content_type: "leadgen_select_best",
+      source: "leadgen_scanner",
+      best_count: bestVisible.length,
+      visible_count: visibleRows.length,
+    });
+  };
   const effectiveSelectedIndex = visibleRows.some((item) => item.index === selectedIndex)
     ? selectedIndex
     : visibleRows[0]?.index ?? null;
@@ -1705,6 +1724,16 @@ function LeadgenScanApp() {
             {visibleRows.length ? (
               <div className="leadgen-review-summary__actions" role="group" aria-label="Selection actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("keep")}>Select all</button>
+                {bestVisible.length > 0 && bestVisible.length < visibleRows.length ? (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm leadgen-select-best"
+                    onClick={selectBest}
+                    title="Keep only reachable leads — a website plus a phone or email"
+                  >
+                    ✨ Select best ({bestVisible.length})
+                  </button>
+                ) : null}
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Clear</button>
               </div>
             ) : null}
@@ -1948,6 +1977,16 @@ function LeadgenScanApp() {
               </div>
               <div className="leadgen-result-row__meta">
                 <a href={row.website || row.source_url} target="_blank" rel="noopener noreferrer">{hostFor(row.website || row.source_url)}</a>
+                {row.email || row.emails?.[0]?.email ? (
+                  <a
+                    className="leadgen-result-row__email"
+                    href={`mailto:${row.email || row.emails[0].email}`}
+                    onClick={(e) => e.stopPropagation()}
+                    title="Email this business"
+                  >
+                    <Mail size={12} aria-hidden="true" /> {row.email || row.emails[0].email}
+                  </a>
+                ) : null}
                 {row.phone ? <span>{row.phone}</span> : <span>Phone missing</span>}
                 <span className="leadgen-result-row__source">{sourceFor(row)}</span>
               </div>
