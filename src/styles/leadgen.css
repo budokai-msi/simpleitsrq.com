@@ -1038,7 +1038,9 @@
 .leadgen-result-header__col {
   background: none;
   border: 0;
-  padding: 0;
+  /* Vertical padding lifts the sort control to a >=24px tap target (WCAG
+     2.5.8 AA) — the label alone was only ~17px tall. */
+  padding: 4px 0;
   text-align: left;
   cursor: pointer;
   font: inherit;

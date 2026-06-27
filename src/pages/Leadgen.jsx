@@ -3,7 +3,7 @@ import "leaflet/dist/leaflet.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, Database, Mail, Building2,
-  Search, Phone, FileText,
+  Search, Phone, FileText, Sparkles,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
@@ -1738,13 +1738,16 @@ function LeadgenScanApp() {
                 aria-pressed={independentsOnly}
                 title="Hide national/regional chains and show only independent local businesses"
                 style={{
-                  padding: "2px 10px", borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  padding: "3px 11px", borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: "pointer",
                   border: independentsOnly ? "1px solid #067647" : "1px solid var(--syn-border, #d0d5dd)",
                   background: independentsOnly ? "#067647" : "transparent",
                   color: independentsOnly ? "#fff" : "var(--text-1)",
                 }}
               >
-                {independentsOnly ? `✓ Independents only` : `Hide ${chainCount} chain${chainCount === 1 ? "" : "s"}`}
+                {independentsOnly
+                  ? <><Check size={13} aria-hidden="true" /> Independents only</>
+                  : `Hide ${chainCount} chain${chainCount === 1 ? "" : "s"}`}
               </button>
             ) : null}
             {hasKeyboard ? (
@@ -1760,7 +1763,7 @@ function LeadgenScanApp() {
                     onClick={selectBest}
                     title="Keep only reachable leads — a website plus a phone or email"
                   >
-                    ✨ Select best ({bestVisible.length})
+                    <Sparkles size={14} aria-hidden="true" /> Select best ({bestVisible.length})
                   </button>
                 ) : null}
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Clear</button>
