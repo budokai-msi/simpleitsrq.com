@@ -1132,6 +1132,27 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+/* Extracted email — the payoff data, surfaced inline as a click-to-email link. */
+.leadgen-result-row__email {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--lg-teal, #16a34a) !important;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.leadgen-result-row__email:hover { text-decoration: underline; }
+.leadgen-result-row__email svg { flex-shrink: 0; }
+/* The clever one-click curation button gets a subtle accent edge. */
+.leadgen-select-best {
+  border-color: color-mix(in srgb, var(--lg-teal, #16a34a) 50%, var(--lg-border-soft)) !important;
+}
 .leadgen-result-row__placeholder {
   justify-self: end;
   color: var(--lg-faint);
