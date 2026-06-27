@@ -119,27 +119,39 @@ async function pushHubspot(config, leads) {
 }
 
 async function pushActiveCampaign(config, leads) {
-  const { api_url, api_key } = config;
+  const { api_url, api_key, company_field_id, industry_field_id } = config;
   if (!api_url || !api_key) throw new Error("ActiveCampaign URL and API key required.");
+  const base = api_url.replace(/\/$/, "");
   const results = await Promise.allSettled(
-    leads.filter((l) => l.email).map((l) =>
-      fetch(`${api_url.replace(/\/$/, "")}/api/3/contacts`, {
+    leads.filter((l) => l.email).map((l) => {
+      // AC custom fields are referenced by the account's NUMERIC field id, not a
+      // name — only attach them when the customer has supplied the id, otherwise
+      // AC rejects the unknown reference. (The old code hardcoded "COMPANY",
+      // which never resolved to a real field.)
+      const fieldValues = [
+        company_field_id ? { field: String(company_field_id), value: l.name || "" } : null,
+        industry_field_id ? { field: String(industry_field_id), value: l.industry_group || l.industry || "" } : null,
+      ].filter(Boolean);
+      return fetch(`${base}/api/3/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Api-Token": api_key },
         body: JSON.stringify({
           contact: {
             email: l.email,
-            firstName: (l.name || "").split(" ")[0],
-            lastName: (l.name || "").split(" ").slice(1).join(" "),
+            firstName: (l.name || "").split(" ")[0] || undefined,
+            lastName: (l.name || "").split(" ").slice(1).join(" ") || undefined,
             phone: l.phone || "",
-            fieldValues: [{ field: "COMPANY", value: l.name || "" }],
+            ...(fieldValues.length ? { fieldValues } : {}),
           },
         }),
         signal: AbortSignal.timeout(10000),
-      }).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.message || `AC ${r.status}`); }))
-    )
+      }).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.message || `ActiveCampaign ${r.status}`); }));
+    })
   );
-  return { sent: results.filter((r) => r.status === "fulfilled").length };
+  return {
+    sent: results.filter((r) => r.status === "fulfilled").length,
+    failed: results.filter((r) => r.status === "rejected").length,
+  };
 }
 
 async function pushGoHighLevel(config, leads) {
