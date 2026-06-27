@@ -232,6 +232,49 @@
   color: #067647;
 }
 .leadgen-push__msg.is-error { color: #b42318; }
+
+/* Floating selection action bar — keeps "N selected · Export · Push" within
+   reach no matter how far down a long results list the visitor has scrolled. */
+.leadgen-selbar {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: calc(100vw - 28px);
+  padding: 10px 14px;
+  border: 1px solid var(--lg-border);
+  border-radius: 12px;
+  background: var(--lg-panel);
+  box-shadow: 0 12px 34px -10px rgba(0, 0, 0, 0.34);
+  animation: leadgen-selbar-in 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes leadgen-selbar-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .leadgen-selbar { animation: none; }
+}
+.leadgen-selbar__count {
+  font-size: 0.88rem;
+  color: var(--lg-text);
+  white-space: nowrap;
+}
+.leadgen-selbar__count strong { font-weight: 800; }
+.leadgen-selbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (max-width: 560px) {
+  .leadgen-selbar { gap: 10px; bottom: 12px; padding: 9px 12px; }
+  .leadgen-selbar__count { font-size: 0.82rem; }
+}
 .leadgen-app-topline {
   justify-content: space-between;
   margin-bottom: 22px;

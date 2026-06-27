@@ -1318,6 +1318,35 @@ function LeadgenScanApp() {
 
   return (
     <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
+      {scan && kept.length > 0 ? (
+        <div className="leadgen-selbar" role="region" aria-label="Selected leads — quick actions">
+          <span className="leadgen-selbar__count"><strong>{kept.length}</strong> selected</span>
+          <div className="leadgen-selbar__actions">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={exportKeptRows}>Export CSV</button>
+            {destinations.length ? (
+              <>
+                <select
+                  className="leadgen-push__select"
+                  value={pushTarget}
+                  onChange={(e) => setPushTarget(e.target.value)}
+                  aria-label="CRM destination"
+                  disabled={pushBusy}
+                >
+                  {destinations.map((d) => <option key={d.id} value={d.id}>{d.label || d.kind}</option>)}
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={() => pushSelected()}
+                  disabled={pushBusy || !pushTarget}
+                >
+                  {pushBusy ? "Pushing…" : "Push to CRM"}
+                </button>
+              </>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
           <span className="leadgen-app-live"><span /> Live public-record scanner</span>
