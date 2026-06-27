@@ -93,6 +93,8 @@ const INTEGRATION_KINDS = [
   { kind: "activecampaign", label: "ActiveCampaign", fields: [
     { key: "api_url", label: "API URL", placeholder: "https://you.api-us1.com" },
     { key: "api_key", label: "API key" },
+    { key: "company_field_id", label: "Company field ID", placeholder: "e.g. 1", optional: true },
+    { key: "industry_field_id", label: "Industry field ID", placeholder: "e.g. 2", optional: true },
   ] },
   { kind: "gohighlevel", label: "GoHighLevel", fields: [
     { key: "api_key", label: "Private integration token" },
