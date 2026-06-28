@@ -314,6 +314,13 @@ function csvCell(value) {
   return `"${String(value ?? "").replace(/"/g, '""')}"`;
 }
 
+// A role / corporate inbox (sales@, info@, contact@…) rather than a personal
+// address — the kind you can email-blast. Surfaced as a badge in the list.
+const ROLE_EMAIL_RE = /^(sales|info|contact|hello|support|admin|office|reception|team|enquiries|enquiry|inquiries|marketing|hr|careers|jobs|help|service|billing|accounts)@/i;
+function isRoleEmail(email) {
+  return typeof email === "string" && ROLE_EMAIL_RE.test(email.trim());
+}
+
 function downloadCsv(filename, rows) {
   const hasEmails = rows.some((r) => r.email || r.emails?.length);
   const headers = ["status", "name", "industry", "sub_industry", "address", "city", "state", "zip", "website", "phone", "source_url"];
@@ -770,6 +777,7 @@ function LeadgenScanApp() {
   const kept = reviewedRows.filter((row) => row.status === "keep");
   const bestEmail = (row) => row.email || (Array.isArray(row.emails) ? row.emails[0]?.email : null) || extractedEmails[row.website] || null;
   const keptWithEmail = kept.filter((row) => bestEmail(row));
+  const keptCorporate = keptWithEmail.filter((row) => isRoleEmail(bestEmail(row))).length;
   const chainCount = reviewedRows.filter((row) => row.is_chain).length;
   const independentCount = reviewedRows.length - chainCount;
   const websites = reviewedRows.filter((row) => row.website).length;
@@ -2092,7 +2100,7 @@ function LeadgenScanApp() {
           <div className="leadgen-selected-emails" aria-label="Selected leads and emails">
             <div className="leadgen-selected-emails__head">
               <strong>{kept.length} selected</strong>
-              <span>{keptWithEmail.length} with an email</span>
+              <span>{keptWithEmail.length} with an email{keptCorporate ? ` · ${keptCorporate} corporate` : ""}</span>
               {kept.some((r) => r.website && !bestEmail(r)) ? (
                 <button type="button" className="btn btn-primary btn-sm" onClick={findEmails} disabled={extracting}>
                   {extracting ? "Finding emails…" : "Find emails"}
@@ -2115,9 +2123,14 @@ function LeadgenScanApp() {
                     <li key={`${r.source_id || r.name}-${i}`}>
                       <span className="leadgen-selected-emails__name">{r.name}</span>
                       {em ? (
-                        <a className="leadgen-selected-emails__addr" href={`mailto:${em}`}>
-                          <Mail size={12} aria-hidden="true" /> {em}
-                        </a>
+                        <span className="leadgen-selected-emails__email">
+                          {isRoleEmail(em) ? (
+                            <span className="leadgen-selected-emails__badge" title="Role / corporate inbox — good for an email blast">corporate</span>
+                          ) : null}
+                          <a className="leadgen-selected-emails__addr" href={`mailto:${em}`}>
+                            <Mail size={12} aria-hidden="true" /> {em}
+                          </a>
+                        </span>
                       ) : (
                         <span className="leadgen-selected-emails__missing">
                           {r.website ? `no email yet · ${hostFor(r.website)}` : "no website"}
