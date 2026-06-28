@@ -197,9 +197,70 @@
 .leadgen-scan-followup .leadgen-planning-panel {
   margin-top: 0;
 }
-.leadgen-scan-followup .leadgen-planning-panel {
+.leadgen-scan-followup .leadgen-planning-panel,
+.leadgen-scan-followup .leadgen-selected-emails {
   grid-column: 1 / -1;
 }
+
+/* Selected leads + their emails — the real payoff (replaces the old forecast).
+   Lists each kept business with a click-to-email mailto, plus copy-all. */
+.leadgen-selected-emails {
+  margin-top: 12px;
+  border: 1px solid var(--lg-border);
+  border-radius: 8px;
+  background: var(--lg-panel);
+  padding: 12px;
+}
+.leadgen-selected-emails__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.leadgen-selected-emails__head strong { color: var(--lg-text); font-size: 0.96rem; }
+.leadgen-selected-emails__head span { color: var(--lg-faint); font-size: 0.8rem; margin-right: auto; }
+.leadgen-selected-emails__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  max-height: 300px;
+  overflow: auto;
+}
+.leadgen-selected-emails__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.leadgen-selected-emails__list li:nth-child(odd) { background: var(--lg-panel-soft); }
+.leadgen-selected-emails__name {
+  min-width: 0;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--lg-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.leadgen-selected-emails__addr {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  color: var(--lg-teal, #16a34a);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.leadgen-selected-emails__addr:hover { text-decoration: underline; }
+.leadgen-selected-emails__missing { flex-shrink: 0; color: var(--lg-faint); font-size: 0.78rem; }
+.leadgen-selected-emails__empty,
+.leadgen-selected-emails__more { margin: 6px 0 0; color: var(--lg-faint); font-size: 0.82rem; }
 .leadgen-app-topline,
 .leadgen-app-results-head,
 .leadgen-app-actions,
