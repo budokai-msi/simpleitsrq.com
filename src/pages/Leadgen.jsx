@@ -742,6 +742,9 @@ function LeadgenScanApp() {
   const [pushBusy, setPushBusy] = useState(false);
   const [pushMsg, setPushMsg] = useState(null);
   const [copiedEmails, setCopiedEmails] = useState(false);
+  const [extractedEmails, setExtractedEmails] = useState({}); // website -> best email
+  const [extracting, setExtracting] = useState(false);
+  const [extractMsg, setExtractMsg] = useState(null);
   // Default to independents-only — the prospect list an IT provider wants.
   // Off only when a shared link explicitly opts back into chains (?independents=0).
   const [independentsOnly, setIndependentsOnly] = useState(() => initialQuery.get("independents") !== "0");
@@ -765,7 +768,8 @@ function LeadgenScanApp() {
     }))
   ), [scan, review]);
   const kept = reviewedRows.filter((row) => row.status === "keep");
-  const keptWithEmail = kept.filter((row) => row.email || (Array.isArray(row.emails) && row.emails.length));
+  const bestEmail = (row) => row.email || (Array.isArray(row.emails) ? row.emails[0]?.email : null) || extractedEmails[row.website] || null;
+  const keptWithEmail = kept.filter((row) => bestEmail(row));
   const chainCount = reviewedRows.filter((row) => row.is_chain).length;
   const independentCount = reviewedRows.length - chainCount;
   const websites = reviewedRows.filter((row) => row.website).length;
@@ -1103,9 +1107,7 @@ function LeadgenScanApp() {
   };
 
   const copyAllEmails = async () => {
-    const emails = kept
-      .map((r) => r.email || (Array.isArray(r.emails) ? r.emails[0]?.email : null))
-      .filter(Boolean);
+    const emails = kept.map((r) => bestEmail(r)).filter(Boolean);
     if (!emails.length) return;
     try {
       await navigator.clipboard.writeText(emails.join(", "));
@@ -1114,6 +1116,54 @@ function LeadgenScanApp() {
       trackEvent("select_content", { content_type: "leadgen_copy_emails", source: "leadgen_scanner", count: emails.length });
     } catch {
       setCopiedEmails(false);
+    }
+  };
+
+  // Crawl the selected businesses' domains for emails (role-based sales@/info@
+  // score highest). Premium-gated server-side; anonymous/free users get a 401/
+  // 403 and a clear message. Bulk endpoint crawls 10 domains in parallel.
+  const findEmails = async () => {
+    if (extracting) return;
+    const targets = Array.from(
+      new Map(kept.filter((r) => r.website && !bestEmail(r)).map((r) => [r.website, r])).values()
+    ).slice(0, 30);
+    if (!targets.length) {
+      setExtractMsg({ ok: true, text: keptWithEmail.length ? "Every selected lead already has an email." : "No websites to crawl in this selection." });
+      return;
+    }
+    setExtracting(true);
+    setExtractMsg(null);
+    const found = { ...extractedEmails };
+    let okCount = 0;
+    try {
+      for (let i = 0; i < targets.length; i += 10) {
+        const batch = targets.slice(i, i + 10);
+        const res = await csrfFetch("/api/leadgen-emails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domains: batch.map((r) => r.website) }),
+        });
+        const j = await res.json().catch(() => ({}));
+        if (res.status === 401) { setExtractMsg({ ok: false, text: "Sign in on a Growth or Pro plan to extract emails." }); break; }
+        if (res.status === 403) { setExtractMsg({ ok: false, text: j.message || "Bulk email extraction requires a Pro plan." }); break; }
+        if (res.status === 429) { setExtractMsg({ ok: false, text: "Hit the crawl rate limit — wait a minute and retry." }); break; }
+        if (!res.ok || !Array.isArray(j.results)) { setExtractMsg({ ok: false, text: j.message || j.error || "Extraction failed." }); break; }
+        j.results.forEach((result, idx) => {
+          const best = Array.isArray(result.emails) && result.emails.length ? result.emails[0].email : null;
+          if (best) { found[batch[idx].website] = best; okCount += 1; }
+        });
+      }
+      setExtractedEmails(found);
+      if (okCount) {
+        setExtractMsg((m) => (m && !m.ok) ? m : { ok: true, text: `Found ${okCount} email${okCount === 1 ? "" : "s"}.` });
+        trackEvent("generate_lead", { source: "leadgen_find_emails", count: okCount });
+      } else {
+        setExtractMsg((m) => m || { ok: false, text: "No emails found on those sites." });
+      }
+    } catch (e) {
+      setExtractMsg({ ok: false, text: e.message || "Extraction failed." });
+    } finally {
+      setExtracting(false);
     }
   };
 
@@ -2043,16 +2093,24 @@ function LeadgenScanApp() {
             <div className="leadgen-selected-emails__head">
               <strong>{kept.length} selected</strong>
               <span>{keptWithEmail.length} with an email</span>
+              {kept.some((r) => r.website && !bestEmail(r)) ? (
+                <button type="button" className="btn btn-primary btn-sm" onClick={findEmails} disabled={extracting}>
+                  {extracting ? "Finding emails…" : "Find emails"}
+                </button>
+              ) : null}
               {keptWithEmail.length ? (
                 <button type="button" className="btn btn-secondary btn-sm" onClick={copyAllEmails}>
                   {copiedEmails ? "Copied!" : "Copy all emails"}
                 </button>
               ) : null}
             </div>
+            {extractMsg ? (
+              <p className={`leadgen-selected-emails__msg${extractMsg.ok ? "" : " is-error"}`} role="status" aria-live="polite">{extractMsg.text}</p>
+            ) : null}
             {kept.length ? (
               <ul className="leadgen-selected-emails__list">
                 {kept.slice(0, 60).map((r, i) => {
-                  const em = r.email || (Array.isArray(r.emails) ? r.emails[0]?.email : null);
+                  const em = bestEmail(r);
                   return (
                     <li key={`${r.source_id || r.name}-${i}`}>
                       <span className="leadgen-selected-emails__name">{r.name}</span>
