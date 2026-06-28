@@ -310,16 +310,6 @@ function LeadgenPlanLink({
   );
 }
 
-function formatForecastCurrency(value) {
-  return Math.round(value).toLocaleString();
-}
-
-function formatExpectedWins(value) {
-  if (value > 0 && value < 0.1) return "<0.1";
-  if (value > 0 && value < 10) return value.toFixed(1);
-  return String(Math.round(value));
-}
-
 function csvCell(value) {
   return `"${String(value ?? "").replace(/"/g, '""')}"`;
 }
@@ -742,16 +732,6 @@ function LeadgenScanApp() {
   const [prefetchState, setPrefetchState] = useState("idle");
   const [lastScanMeta, setLastScanMeta] = useState(null);
   const [copiedView, setCopiedView] = useState(false);
-  const [closeRate, setCloseRate] = useState(() => {
-    const raw = initialQuery.get("close_rate");
-    const q = Number(raw);
-    return raw && Number.isFinite(q) ? Math.max(1, Math.min(40, Math.round(q))) : 8;
-  });
-  const [avgDealValue, setAvgDealValue] = useState(() => {
-    const raw = initialQuery.get("avg_deal");
-    const q = Number(raw);
-    return raw && Number.isFinite(q) ? Math.max(500, Math.min(50000, Math.round(q))) : 2400;
-  });
   const [drawerOpenState, setDrawerOpenState] = useState({ key: "", ready: false, assist: false });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -761,6 +741,7 @@ function LeadgenScanApp() {
   const [pushTarget, setPushTarget] = useState("");
   const [pushBusy, setPushBusy] = useState(false);
   const [pushMsg, setPushMsg] = useState(null);
+  const [copiedEmails, setCopiedEmails] = useState(false);
   // Default to independents-only — the prospect list an IT provider wants.
   // Off only when a shared link explicitly opts back into chains (?independents=0).
   const [independentsOnly, setIndependentsOnly] = useState(() => initialQuery.get("independents") !== "0");
@@ -784,13 +765,12 @@ function LeadgenScanApp() {
     }))
   ), [scan, review]);
   const kept = reviewedRows.filter((row) => row.status === "keep");
+  const keptWithEmail = kept.filter((row) => row.email || (Array.isArray(row.emails) && row.emails.length));
   const chainCount = reviewedRows.filter((row) => row.is_chain).length;
   const independentCount = reviewedRows.length - chainCount;
   const websites = reviewedRows.filter((row) => row.website).length;
   const phones = reviewedRows.filter((row) => row.phone).length;
   const emailCount = reviewedRows.filter((row) => row.email || (Array.isArray(row.emails) && row.emails.length)).length;
-  const websiteCoverage = reviewedRows.length ? Math.round((websites / reviewedRows.length) * 100) : 0;
-  const phoneCoverage = reviewedRows.length ? Math.round((phones / reviewedRows.length) * 100) : 0;
   const projectedSendDays = Math.max(1, Math.ceil(kept.length / Math.max(1, Number(dailyCap) || 35)));
   const recommendedTierId = kept.length >= 120 ? "pro" : "growth";
   const recommendedBilling = kept.length >= 120 ? "annual" : "monthly";
@@ -809,12 +789,6 @@ function LeadgenScanApp() {
       assist: drawer === "assist" ? open : (current.key === drawerScanKey ? current.assist : defaultAssistDrawerOpen),
     }));
   };
-  const forecastReachable = Math.round(kept.length * Math.max(websiteCoverage, phoneCoverage) / 100);
-  const forecastWins = Math.max(0, forecastReachable * (closeRate / 100));
-  const forecastWinsLabel = formatExpectedWins(forecastWins);
-  const forecastRevenue = forecastWins * avgDealValue;
-  const recommendedPlanPrice = recommendedBilling === "annual" ? recommendedTier.annual : recommendedTier.monthly;
-  const projectedRoiMultiple = recommendedPlanPrice > 0 ? (forecastRevenue / recommendedPlanPrice) : 0;
   const subIndustryOptions = useMemo(() => (
     Array.from(new Set(reviewedRows.map((row) => row.sub_industry).filter(Boolean))).sort((a, b) => a.localeCompare(b))
   ), [reviewedRows]);
@@ -926,13 +900,11 @@ function LeadgenScanApp() {
     setOrDelete("sub_industry", subIndustryFilter, "all");
     setOrDelete("sort", sortBy, "contact");
     setOrDelete("independents", independentsOnly ? "" : "0", "");
-    setOrDelete("close_rate", String(closeRate), "8");
-    setOrDelete("avg_deal", String(avgDealValue), "2400");
     const next = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}${window.location.hash || ""}`;
     if (next !== `${window.location.pathname}${window.location.search}${window.location.hash || ""}`) {
       window.history.replaceState({}, "", next);
     }
-  }, [zip, niche, offer, dailyCap, searchTerm, statusFilter, contactFilter, subIndustryFilter, sortBy, independentsOnly, closeRate, avgDealValue]);
+  }, [zip, niche, offer, dailyCap, searchTerm, statusFilter, contactFilter, subIndustryFilter, sortBy, independentsOnly]);
 
   useEffect(() => {
     let disposed = false;
@@ -1128,6 +1100,21 @@ function LeadgenScanApp() {
       count: keptRows.length,
     });
     downloadCsv(`leadgen-${zip}-${niche.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-kept.csv`, keptRows);
+  };
+
+  const copyAllEmails = async () => {
+    const emails = kept
+      .map((r) => r.email || (Array.isArray(r.emails) ? r.emails[0]?.email : null))
+      .filter(Boolean);
+    if (!emails.length) return;
+    try {
+      await navigator.clipboard.writeText(emails.join(", "));
+      setCopiedEmails(true);
+      window.setTimeout(() => setCopiedEmails(false), 1500);
+      trackEvent("select_content", { content_type: "leadgen_copy_emails", source: "leadgen_scanner", count: emails.length });
+    } catch {
+      setCopiedEmails(false);
+    }
   };
 
   // Load the signed-in customer's connected destinations once. Anonymous
@@ -2052,44 +2039,43 @@ function LeadgenScanApp() {
               <p>{kept.length ? `${projectedSendDays} sending day estimate for kept rows.` : lastScanMeta?.cached ? "Loaded from a warmed scan." : "Review the list first."}</p>
             </div>
           </div>
-          <details className="leadgen-planning-panel">
-            <summary>Revenue forecast</summary>
-            <section className="leadgen-revenue-forecast" aria-label="Revenue forecast">
-              <div className="leadgen-revenue-forecast__head">
-                <span>If you close {closeRate}% at ${avgDealValue.toLocaleString()} avg deal</span>
-                <strong>${formatForecastCurrency(forecastRevenue)} projected pipeline</strong>
-              </div>
-              <div className="leadgen-revenue-forecast__controls">
-                <label>
-                  <span>Close rate</span>
-                  <input
-                    type="range"
-                    min="1"
-                    max="40"
-                    value={closeRate}
-                    onChange={(e) => setCloseRate(Number(e.target.value))}
-                    onMouseUp={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "close_rate" })}
-                  />
-                  <strong>{closeRate}%</strong>
-                </label>
-                <label>
-                  <span>Average deal value</span>
-                  <input
-                    type="number"
-                    min="500"
-                    max="50000"
-                    step="100"
-                    value={avgDealValue}
-                    onChange={(e) => setAvgDealValue(Math.max(500, Math.min(50000, Number(e.target.value) || 500)))}
-                    onBlur={() => trackEvent("select_content", { content_type: "leadgen_forecast_control", destination: "avg_deal_value" })}
-                  />
-                </label>
-              </div>
-              <p className="leadgen-revenue-forecast__note" role="status" aria-live="polite">
-                ~{forecastWinsLabel} expected wins from {kept.length} kept · {recommendedTier.name} (${recommendedPlanPrice}/mo) projects {projectedRoiMultiple.toFixed(1)}x ROI
-              </p>
-            </section>
-          </details>
+          <div className="leadgen-selected-emails" aria-label="Selected leads and emails">
+            <div className="leadgen-selected-emails__head">
+              <strong>{kept.length} selected</strong>
+              <span>{keptWithEmail.length} with an email</span>
+              {keptWithEmail.length ? (
+                <button type="button" className="btn btn-secondary btn-sm" onClick={copyAllEmails}>
+                  {copiedEmails ? "Copied!" : "Copy all emails"}
+                </button>
+              ) : null}
+            </div>
+            {kept.length ? (
+              <ul className="leadgen-selected-emails__list">
+                {kept.slice(0, 60).map((r, i) => {
+                  const em = r.email || (Array.isArray(r.emails) ? r.emails[0]?.email : null);
+                  return (
+                    <li key={`${r.source_id || r.name}-${i}`}>
+                      <span className="leadgen-selected-emails__name">{r.name}</span>
+                      {em ? (
+                        <a className="leadgen-selected-emails__addr" href={`mailto:${em}`}>
+                          <Mail size={12} aria-hidden="true" /> {em}
+                        </a>
+                      ) : (
+                        <span className="leadgen-selected-emails__missing">
+                          {r.website ? `no email yet · ${hostFor(r.website)}` : "no website"}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="leadgen-selected-emails__empty">Tick businesses above to build your outreach list.</p>
+            )}
+            {kept.length > 60 ? (
+              <p className="leadgen-selected-emails__more">+{kept.length - 60} more — export or push to get them all.</p>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </section>
