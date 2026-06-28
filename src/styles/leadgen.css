@@ -561,18 +561,21 @@
   white-space: nowrap;
 }
 .leadgen-market-builder__summary em::after {
-  content: "+";
+  content: "";
   display: inline-block;
-  width: 1em;
-  margin-left: 6px;
-  color: var(--lg-text);
-  text-align: center;
+  width: 6px;
+  height: 6px;
+  margin-left: 8px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .leadgen-market-builder[open] .leadgen-market-builder__summary {
   border-bottom: 1px solid var(--lg-border-faint);
 }
 .leadgen-market-builder[open] .leadgen-market-builder__summary em::after {
-  content: "-";
+  transform: translateY(1px) rotate(225deg);
 }
 .leadgen-market-builder__chips {
   min-width: 0;
@@ -960,6 +963,50 @@
   padding-inline: 10px;
   font-size: 0.78rem;
   white-space: nowrap;
+}
+
+/* ── Smooth expand / collapse ───────────────────────────────────────
+   Animate every leadgen disclosure panel open and closed instead of
+   snapping. Uses the modern ::details-content + interpolate-size path
+   (evergreen browsers); anything that can't interpolate `auto` simply
+   toggles instantly — no JS, nothing for the React compiler to flag. */
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+.leadgen-market-builder::details-content,
+.leadgen-advanced-controls::details-content,
+.leadgen-action-drawer details::details-content,
+.leadgen-result-more-filters::details-content,
+.leadgen-advanced-filters::details-content,
+.leadgen-planning-panel::details-content {
+  block-size: 0;
+  overflow: clip;
+  opacity: 0;
+  transition:
+    block-size 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease,
+    content-visibility 300ms allow-discrete;
+}
+.leadgen-market-builder[open]::details-content,
+.leadgen-advanced-controls[open]::details-content,
+.leadgen-action-drawer details[open]::details-content,
+.leadgen-result-more-filters[open]::details-content,
+.leadgen-advanced-filters[open]::details-content,
+.leadgen-planning-panel[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .leadgen-market-builder::details-content,
+  .leadgen-advanced-controls::details-content,
+  .leadgen-action-drawer details::details-content,
+  .leadgen-result-more-filters::details-content,
+  .leadgen-advanced-filters::details-content,
+  .leadgen-planning-panel::details-content {
+    transition: opacity 200ms ease;
+  }
 }
 
 /* Legacy cached scanner bundle guard; current React renders .leadgen-action-drawer. */
