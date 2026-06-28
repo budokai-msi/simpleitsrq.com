@@ -261,6 +261,8 @@
 .leadgen-selected-emails__missing { flex-shrink: 0; color: var(--lg-faint); font-size: 0.78rem; }
 .leadgen-selected-emails__empty,
 .leadgen-selected-emails__more { margin: 6px 0 0; color: var(--lg-faint); font-size: 0.82rem; }
+.leadgen-selected-emails__msg { margin: 0 0 8px; font-size: 0.82rem; font-weight: 600; color: #067647; }
+.leadgen-selected-emails__msg.is-error { color: #b42318; }
 .leadgen-app-topline,
 .leadgen-app-results-head,
 .leadgen-app-actions,
