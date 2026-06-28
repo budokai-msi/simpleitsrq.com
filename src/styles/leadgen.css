@@ -263,6 +263,25 @@
 .leadgen-selected-emails__more { margin: 6px 0 0; color: var(--lg-faint); font-size: 0.82rem; }
 .leadgen-selected-emails__msg { margin: 0 0 8px; font-size: 0.82rem; font-weight: 600; color: #067647; }
 .leadgen-selected-emails__msg.is-error { color: #b42318; }
+.leadgen-selected-emails__email {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.leadgen-selected-emails__badge {
+  flex-shrink: 0;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--lg-teal, #16a34a) 16%, transparent);
+  color: var(--lg-teal, #16a34a);
+  border: 1px solid color-mix(in srgb, var(--lg-teal, #16a34a) 40%, transparent);
+}
 .leadgen-app-topline,
 .leadgen-app-results-head,
 .leadgen-app-actions,
