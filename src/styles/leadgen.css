@@ -1235,6 +1235,27 @@
   padding: 12px 18px;
   border-bottom: 1px solid var(--lg-border-faint);
   transition: background 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+  /* Staggered entrance — rows cascade in top-to-bottom as the list paints.
+     `backwards` fill holds each row hidden through its delay, then reverts to
+     the stylesheet so the deselected-row 0.5 opacity below is never clobbered.
+     --row-i is the visible position (capped at 16 so the tail doesn't lag). */
+  animation: leadgen-row-in 360ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(var(--row-i, 0) * 24ms);
+}
+@keyframes leadgen-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .leadgen-result-row {
+    animation: none;
+  }
 }
 /* Selection checkbox — the BizInZip-style "pick the ones you want" control. */
 .leadgen-result-row__check {
