@@ -2025,10 +2025,11 @@ function LeadgenScanApp() {
                   Website / phone{sortBy === "contact" ? " ↓" : ""}
                 </button>
               </div>
-              {visibleRows.map(({ row, index }) => (
+              {visibleRows.map(({ row, index }, pos) => (
             <article
               key={`${row.source_id || row.name}-${index}`}
               className={`leadgen-result-row leadgen-result-row--${review[index] || "keep"}${index === effectiveSelectedIndex ? " is-selected" : ""}`}
+              style={{ "--row-i": pos < 16 ? pos : 16 }}
               title={`${REVIEW_COPY[review[index] || "keep"]} Source: ${row.source_url || "not available"}`}
               onMouseEnter={() => setSelectedIndex(index)}
               onFocus={() => setSelectedIndex(index)}
