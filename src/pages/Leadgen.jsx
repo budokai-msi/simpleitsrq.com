@@ -536,12 +536,13 @@ function LeadgenMap({ rows, scan, selectedIndex, onSelect }) {
         L.control.attribution({ prefix: false }).addTo(leafletMap);
 
         const bounds = [];
-        mappedRows.forEach(({ row, index, point }) => {
+        mappedRows.forEach(({ row, index, point }, pos) => {
           bounds.push([point.lat, point.lng]);
           const marker = L.marker([point.lat, point.lng], {
             icon: L.divIcon({
               className: `leadgen-map-pin${index === selectedIndex ? " is-active" : ""}`,
-              html: "<span></span>",
+              // --pin-i staggers the drop-in to mirror the result-row cascade.
+              html: `<span style="--pin-i:${pos < 16 ? pos : 16}"></span>`,
               iconSize: [30, 30],
               iconAnchor: [15, 30],
               popupAnchor: [0, -30],
@@ -2038,7 +2039,25 @@ function LeadgenScanApp() {
                 <input
                   type="checkbox"
                   checked={(review[index] || "keep") === "keep"}
-                  onChange={(e) => setReview((current) => ({ ...current, [index]: e.target.checked ? "keep" : "reject" }))}
+                  onChange={(e) => {
+                    const checked = e.currentTarget.checked;
+                    const rowEl = e.currentTarget.closest(".leadgen-result-row");
+                    setReview((current) => ({ ...current, [index]: checked ? "keep" : "reject" }));
+                    // Confirm the toggle registered: a quick background pulse on
+                    // the row — green on keep, red on remove. WAAPI from the
+                    // event handler keeps it out of render (no state/effect),
+                    // so the React compiler never engages.
+                    if (rowEl && typeof rowEl.animate === "function"
+                      && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+                      rowEl.animate(
+                        [
+                          { backgroundColor: checked ? "rgba(22, 163, 74, 0.18)" : "rgba(180, 35, 24, 0.14)" },
+                          { backgroundColor: "transparent" },
+                        ],
+                        { duration: 460, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+                      );
+                    }
+                  }}
                   aria-label={`Include ${row.name} in your list`}
                 />
               </label>
