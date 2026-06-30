@@ -750,6 +750,7 @@ function LeadgenScanApp() {
   const [pushBusy, setPushBusy] = useState(false);
   const [pushMsg, setPushMsg] = useState(null);
   const [copiedEmails, setCopiedEmails] = useState(false);
+  const [copiedCorporate, setCopiedCorporate] = useState(false);
   const [extractedEmails, setExtractedEmails] = useState({}); // website -> best email
   const [extracting, setExtracting] = useState(false);
   const [extractMsg, setExtractMsg] = useState(null);
@@ -1125,6 +1126,31 @@ function LeadgenScanApp() {
       trackEvent("select_content", { content_type: "leadgen_copy_emails", source: "leadgen_scanner", count: emails.length });
     } catch {
       setCopiedEmails(false);
+    }
+  };
+
+  // Corporate/role inboxes only (sales@, info@, contact@, …) — a clean,
+  // deduped list ready to paste into an email-blast tool. Original casing
+  // preserved; duplicates collapsed case-insensitively.
+  const copyCorporateEmails = async () => {
+    const seen = new Set();
+    const emails = [];
+    for (const r of kept) {
+      const e = bestEmail(r);
+      if (!e || !isRoleEmail(e)) continue;
+      const key = e.trim().toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      emails.push(e.trim());
+    }
+    if (!emails.length) return;
+    try {
+      await navigator.clipboard.writeText(emails.join(", "));
+      setCopiedCorporate(true);
+      window.setTimeout(() => setCopiedCorporate(false), 1500);
+      trackEvent("select_content", { content_type: "leadgen_copy_corporate_emails", source: "leadgen_scanner", count: emails.length });
+    } catch {
+      setCopiedCorporate(false);
     }
   };
 
@@ -2129,6 +2155,16 @@ function LeadgenScanApp() {
               {keptWithEmail.length ? (
                 <button type="button" className="btn btn-secondary btn-sm" onClick={copyAllEmails}>
                   {copiedEmails ? "Copied!" : "Copy all emails"}
+                </button>
+              ) : null}
+              {keptCorporate ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm leadgen-selected-emails__copy-corp"
+                  onClick={copyCorporateEmails}
+                  title="Copy only role/corporate inboxes (sales@, info@, …) — a clean email-blast list"
+                >
+                  {copiedCorporate ? "Copied!" : `Copy corporate (${keptCorporate})`}
                 </button>
               ) : null}
             </div>

@@ -282,6 +282,17 @@
   color: var(--lg-teal, #16a34a);
   border: 1px solid color-mix(in srgb, var(--lg-teal, #16a34a) 40%, transparent);
 }
+/* "Copy corporate" — tinted to the corporate-badge green so it reads as the
+   blast-list action sitting next to the neutral "Copy all emails". */
+.leadgen-selected-emails__copy-corp {
+  border-color: color-mix(in srgb, var(--lg-teal, #16a34a) 45%, var(--lg-border-soft));
+  color: var(--lg-teal, #16a34a);
+}
+.leadgen-selected-emails__copy-corp:hover,
+.leadgen-selected-emails__copy-corp:focus-visible {
+  background: color-mix(in srgb, var(--lg-teal, #16a34a) 12%, transparent);
+  border-color: var(--lg-teal, #16a34a);
+}
 .leadgen-app-topline,
 .leadgen-app-results-head,
 .leadgen-app-actions,
