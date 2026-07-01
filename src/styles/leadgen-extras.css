@@ -426,6 +426,7 @@
   border: 1px solid var(--syn-border, #d0d5dd); border-radius: 7px;
   background: var(--bg-elevated, #fff); color: var(--text-1, #111827);
 }
+.leadgen-integrations-mgr__ac-fields { display: flex; margin-top: 2px; }
 .leadgen-integrations-mgr__hint { font-size: 0.72rem; color: var(--text-muted, #6b7280); margin: 6px 0 0; }
 .leadgen-integrations-mgr__msg { font-size: 0.8rem; margin: 0; font-weight: 600; color: #067647; }
 .leadgen-integrations-mgr__msg.is-error { color: #b42318; }

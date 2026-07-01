@@ -291,6 +291,42 @@ async function handleTest(user, body) {
   });
 }
 
+// List an ActiveCampaign account's custom fields so the UI can offer them by
+// name — a contact's Company/Industry are custom fields referenced by NUMERIC
+// id, which nobody knows offhand. Accepts either a saved integration id or the
+// raw { config } being typed into the connect form (not yet saved).
+async function handleAcFields(user, body) {
+  let apiUrl = body?.config?.api_url;
+  let apiKey = body?.config?.api_key;
+  const numericId = Number(body?.id);
+  if (Number.isInteger(numericId) && numericId > 0) {
+    const [integration] = await sql`
+      SELECT config FROM user_integrations
+      WHERE id = ${numericId} AND user_id = ${user.id} AND kind = 'activecampaign'
+    `;
+    if (!integration) return json(404, { ok: false, error: "not_found" });
+    const cfg = decryptSecret(integration.config);
+    apiUrl = cfg.api_url;
+    apiKey = cfg.api_key;
+  }
+  if (!apiUrl || !apiKey) {
+    return json(400, { ok: false, error: "missing_credentials", message: "ActiveCampaign URL and API key are required to load fields." });
+  }
+  const base = String(apiUrl).replace(/\/$/, "");
+  try {
+    const r = await fetch(`${base}/api/3/fields?limit=100`, {
+      headers: { "Api-Token": apiKey },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!r.ok) throw new Error(`ActiveCampaign ${r.status}`);
+    const data = await r.json();
+    const fields = (data.fields || []).map((f) => ({ id: String(f.id), title: f.title || `Field ${f.id}` }));
+    return json(200, { ok: true, fields });
+  } catch (err) {
+    return json(502, { ok: false, error: "ac_fields_failed", message: String(err?.message || "Could not load ActiveCampaign fields.") });
+  }
+}
+
 // ── Main handlers ─────────────────────────────────────────────────────────────
 
 export async function GET(request) {
@@ -315,6 +351,7 @@ export async function POST(request) {
 
   if (action === "push") return handlePush(user, body);
   if (action === "test") return handleTest(user, body);
+  if (action === "ac-fields") return handleAcFields(user, body);
   return handleUpsert(user, body);
 }
 
