@@ -2418,6 +2418,31 @@
   font-size: 0.78rem;
 }
 
+/* Ops/security context as one quiet line under the pipeline numbers —
+   secondary info, not a second grid of hero stats. */
+.admin-leadgen .leadgen-signal-ops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 0;
+  margin: 12px 0 0;
+  color: var(--text-3, #6b7280);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.admin-leadgen .leadgen-signal-ops span {
+  white-space: nowrap;
+}
+
+.admin-leadgen .leadgen-signal-ops span + span::before {
+  content: "·";
+  margin: 0 8px;
+  color: var(--border, #d1d5db);
+}
+
+.admin-leadgen .leadgen-signal-ops .is-good { color: #067647; }
+.admin-leadgen .leadgen-signal-ops .is-bad { color: #b42318; }
+
 .admin-leadgen .leadgen-data-board {
   margin: 0;
   padding: 18px;
