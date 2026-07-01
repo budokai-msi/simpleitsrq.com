@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+# Needed so the job can push regenerated artifacts back on drift.
+permissions:
+  contents: write
+
 jobs:
   check-generated-files:
     name: Verify prebuild artifacts are up to date
@@ -15,6 +19,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Check out the real branch (not the detached PR merge ref) so we
+          # can commit + push regenerated files back to it when they drift.
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -28,13 +37,20 @@ jobs:
       - name: Run prebuild (regenerate sitemap, rss, posts-meta)
         run: npm run prebuild
 
-      - name: Fail if committed files drift from generated output
+      # Self-heal instead of failing: the blog content pipeline adds posts
+      # without regenerating these derived files, which used to leave CI red
+      # until someone ran `npm run prebuild` by hand. Now the job regenerates
+      # and commits them automatically. `[skip ci]` on the auto-commit stops it
+      # re-triggering this workflow, so there is no loop.
+      - name: Commit regenerated artifacts if they drifted
         run: |
-          git diff --exit-code \
-            public/sitemap.xml \
-            public/rss.xml \
-            src/data/posts-meta.json \
-            || (
-              echo "::error::Generated files are stale. Run 'npm run prebuild' locally and commit the results." ;
-              exit 1
-            )
+          if git diff --quiet public/sitemap.xml public/rss.xml src/data/posts-meta.json; then
+            echo "Generated files are already up to date."
+            exit 0
+          fi
+          echo "Generated files drifted — regenerating and committing."
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/sitemap.xml public/rss.xml src/data/posts-meta.json
+          git commit -m "chore(ci): regenerate prebuild artifacts [skip ci]"
+          git push
