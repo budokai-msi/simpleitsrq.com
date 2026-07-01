@@ -1147,7 +1147,16 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
             <h2 className="title-2">Pipeline health</h2>
             <p className="admin-leadgen-muted">Coverage and activity from the real leadgen tables.</p>
           </div>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={onStatusChange} disabled={busy}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => {
+              trackEvent("select_content", { content_type: "leadgen_ops_refresh", source: "leadgen_command" });
+              onStatusChange();
+              onOpsRefresh?.();
+            }}
+            disabled={busy}
+          >
             <RefreshCw size={14} aria-hidden="true" />
             Refresh
           </button>
@@ -1158,24 +1167,15 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
           <div><strong>{pct(replies, sent)}</strong><span>reply rate on sent email</span></div>
           <div><strong>{runningJobs}</strong><span>worker jobs running</span></div>
         </div>
-        <div className="leadgen-signal-grid leadgen-signal-grid--ops">
-          <div><strong>{dbHealth}</strong><span>runtime DB status</span></div>
-          <div><strong>{criticalLastHour}</strong><span>critical security events (1h)</span></div>
-          <div><strong>{threatFeedCount}</strong><span>threat feeds active</span></div>
-          <div><strong>{threatTotalCidrs.toLocaleString()}</strong><span>OSINT CIDR entries | oldest refresh {freshnessLabel(osintOldest)}</span></div>
-        </div>
-        <div className="leadgen-signal-actions">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => {
-              trackEvent("select_content", { content_type: "leadgen_ops_refresh", source: "leadgen_command" });
-              onOpsRefresh?.();
-            }}
-          >
-            Refresh ops status
-          </button>
-        </div>
+        {/* Ops/security context lives here (the hero strip was removed as a
+            duplicate) — but it's secondary to pipeline signal, so it reads as
+            one quiet status line instead of a second grid of hero numbers. */}
+        <p className="leadgen-signal-ops" role="status">
+          <span className={dbHealth === "connected" || dbHealth === "healthy" ? "is-good" : "is-bad"}>DB {dbHealth}</span>
+          <span className={criticalLastHour > 0 ? "is-bad" : ""}>{criticalLastHour} critical events (1h)</span>
+          <span>{threatFeedCount} threat feeds · {compactNumber(threatTotalCidrs)} CIDRs</span>
+          <span>oldest sync {freshnessLabel(osintOldest)}</span>
+        </p>
       </section>
 
       <div className="leadgen-command-grid">
