@@ -5,7 +5,7 @@
 // Each entry mirrors the "shape" of cities.js so the LocalLanding-style
 // page can render either kind of vertical with the same components.
 //
-// matchPattern: regex run against each city.localPatterns entry — when it
+// matchPattern: regex run against each city.localPatterns entry - when it
 // matches, that pattern's `body` becomes the city-specific paragraph on
 // the industry page. This lets us cross-reference 6 cities × 8 industries
 // without rewriting the core copy.
@@ -20,10 +20,10 @@ export const industries = {
     matchPattern: /medical|dental|practice|imaging|physical therapy|chiropract/i,
     cities: ["sarasota", "bradenton", "lakewood-ranch", "nokomis", "venice", "bradenton-34207", "palmetto", "ellenton", "parrish", "osprey", "englewood", "north-port"],
     intro:
-      "Medical and dental practices carry IT obligations other small businesses skip: HIPAA safeguards, an EHR whose uptime defines your day, and a security renewal questionnaire that grows every year. Simple IT SRQ specializes in independent practices — 4 to 60 providers — with real HIPAA paperwork, tested backups, and a tech who shows up before morning huddle.",
+      "Medical and dental practices carry IT obligations other small businesses skip: HIPAA safeguards, an EHR whose uptime defines your day, and a security renewal questionnaire that grows every year. Simple IT SRQ specializes in independent practices - 4 to 60 providers - with real HIPAA paperwork, tested backups, and a tech who shows up before morning huddle.",
     emphasis: [
       "Written HIPAA Risk Assessment + Safeguards documentation refreshed annually",
-      "EHR vendor coordination — we book the integration calls so you don't",
+      "EHR vendor coordination - we book the integration calls so you don't",
       "security documentation binder ready before your renewal questionnaire arrives",
       "Encrypted, off-site, quarterly-tested backups (most regulators ask for this)",
       "Two-factor authentication on every account that touches PHI",
@@ -32,23 +32,23 @@ export const industries = {
     faqs: [
       {
         q: "Do you sign a BAA?",
-        a: "Yes. We're a Business Associate under HIPAA and sign a BAA with every medical client before any work begins. We can also help you collect BAAs from your other vendors (EHR, billing, secure-messaging, document storage) — most practices we onboard discover at least one missing BAA in the first 60 days.",
+        a: "Yes. We're a Business Associate under HIPAA and sign a BAA with every medical client before any work begins. We can also help you collect BAAs from your other vendors (EHR, billing, secure-messaging, document storage) - most practices we onboard discover at least one missing BAA in the first 60 days.",
       },
       {
-        q: "We use [EHR vendor] — do you know it?",
+        q: "We use [EHR vendor] - do you know it?",
         a: "Probably. We've worked alongside Dentrix, Eaglesoft, Open Dental, eClinicalWorks, Athenahealth, Practice Fusion, NextGen, Curve, and most of the imaging suites used in Sarasota and Manatee County. If your EHR is one we haven't touched, we'll be upfront and bill our learning hours at half rate.",
       },
       {
         q: "What does HIPAA paperwork actually include?",
-        a: "A written Risk Assessment listing every system that touches PHI; the three Safeguards documents (Administrative, Physical, Technical); a Workforce Sanction Policy; an Incident Response runbook; an annual Workforce Training Acknowledgement log; signed BAAs with every applicable vendor. Most practices we audit have one or two of these — we deliver the full set.",
+        a: "A written Risk Assessment listing every system that touches PHI; the three Safeguards documents (Administrative, Physical, Technical); a Workforce Sanction Policy; an Incident Response runbook; an annual Workforce Training Acknowledgement log; signed BAAs with every applicable vendor. Most practices we audit have one or two of these - we deliver the full set.",
       },
       {
         q: "How does ransomware risk affect a small practice?",
-        a: "A 5-provider practice that pays a ransom averages $48k–$120k all-in (ransom + downtime + breach reporting + insurance retention). We've never had a client pay a ransom because the path to ransomware in a typical practice — phished credentials + no MFA + flat network + missing backups — is closeable in a 2-week onboarding.",
+        a: "A 5-provider practice that pays a ransom averages $48k–$120k all-in (ransom + downtime + breach reporting + insurance retention). We've never had a client pay a ransom because the path to ransomware in a typical practice - phished credentials + no MFA + flat network + missing backups - is closeable in a 2-week onboarding.",
       },
       {
         q: "Can you sit through a state HIPAA audit with us?",
-        a: "Yes — for active managed-IT clients, audit-day attendance is included. We bring the binder, walk the surveyor through what's where, and answer the technical questions so your office manager doesn't have to.",
+        a: "Yes - for active managed-IT clients, audit-day attendance is included. We bring the binder, walk the surveyor through what's where, and answer the technical questions so your office manager doesn't have to.",
       },
     ],
   },
@@ -62,7 +62,7 @@ export const industries = {
     matchPattern: /law firm|legal|matter|clio|practice ?panther/i,
     cities: ["sarasota", "venice"],
     intro:
-      "Boutique law firms face the same compliance and risk posture as firms five times their size — without the budget. Simple IT SRQ runs IT for Sarasota County firms: matter-level document security, encrypted email that doesn't break Outlook, Florida Bar-aligned phishing evidence, and backup retention that respects attorney-client privilege.",
+      "Boutique law firms face the same compliance and risk posture as firms five times their size - without the budget. Simple IT SRQ runs IT for Sarasota County firms: matter-level document security, encrypted email that doesn't break Outlook, Florida Bar-aligned phishing evidence, and backup retention that respects attorney-client privilege.",
     emphasis: [
       "Matter-based document security with audit trails per file",
       "Clio, PracticePanther, MyCase, or LEAP integration support",
@@ -74,7 +74,7 @@ export const industries = {
     faqs: [
       {
         q: "Are you familiar with Clio / PracticePanther / MyCase?",
-        a: "Yes — we run all three at active law-firm clients. We handle Microsoft 365 + practice-management integration, document-storage governance, and the SSO setup that lets attorneys sign into the practice tool with their firm credentials.",
+        a: "Yes - we run all three at active law-firm clients. We handle Microsoft 365 + practice-management integration, document-storage governance, and the SSO setup that lets attorneys sign into the practice tool with their firm credentials.",
       },
       {
         q: "How do you handle attorney-client privileged data?",
@@ -89,7 +89,7 @@ export const industries = {
         a: "Every laptop is full-disk encrypted, MDM-enrolled, and remotely wipeable. We have a written incident-response runbook for stolen-device events that covers Florida Bar notification thresholds (depending on whether privileged data was on the device) and your insurance carrier's first-notice-of-loss requirements.",
       },
       {
-        q: "Do you support hybrid workflows — courthouse, home, office?",
+        q: "Do you support hybrid workflows - courthouse, home, office?",
         a: "Yes. Every device gets the same hardened configuration whether it's in your downtown Sarasota office, the partner's home, or a hotel near a deposition. VPN to the firm's documents is unnecessary because we run everything through SharePoint or your practice tool's native cloud.",
       },
     ],
@@ -104,7 +104,7 @@ export const industries = {
     matchPattern: /financial|advisor|wealth|sec |glba|registered investment/i,
     cities: ["lakewood-ranch"],
     intro:
-      "Registered investment advisors face an SEC enforcement environment that keeps tightening: documented MFA, a written Information Security Program (WISP), and vendor-risk reviews. Simple IT SRQ runs the IT and the documentation together — quarterly phishing tests packaged for the compliance binder, encrypted email that doesn't break Outlook, and the GLBA Safeguards paperwork your examiner reads first.",
+      "Registered investment advisors face an SEC enforcement environment that keeps tightening: documented MFA, a written Information Security Program (WISP), and vendor-risk reviews. Simple IT SRQ runs the IT and the documentation together - quarterly phishing tests packaged for the compliance binder, encrypted email that doesn't break Outlook, and the GLBA Safeguards paperwork your examiner reads first.",
     emphasis: [
       "SEC + GLBA-aligned Written Information Security Program (WISP)",
       "Hardware MFA keys (YubiKey 5C) on every admin and reviewer account",
@@ -116,19 +116,19 @@ export const industries = {
     faqs: [
       {
         q: "Do you understand SEC examination priorities?",
-        a: "Yes — we track the SEC's Division of Examinations annual priorities letter and update our compliance deliverables accordingly. The 2026 priorities are still: cybersecurity (especially MFA + identity), vendor risk, books-and-records preservation, and fee-and-expense disclosures. We cover the first three.",
+        a: "Yes - we track the SEC's Division of Examinations annual priorities letter and update our compliance deliverables accordingly. The 2026 priorities are still: cybersecurity (especially MFA + identity), vendor risk, books-and-records preservation, and fee-and-expense disclosures. We cover the first three.",
       },
       {
         q: "Can you help us pass a regulatory exam?",
-        a: "We've supported active clients through SEC + state-level adviser exams. We don't represent you to the regulator — that's your compliance officer's role — but we sit in the back, hand-deliver the technical evidence the examiner asks for, and follow up on anything they want clarified.",
+        a: "We've supported active clients through SEC + state-level adviser exams. We don't represent you to the regulator - that's your compliance officer's role - but we sit in the back, hand-deliver the technical evidence the examiner asks for, and follow up on anything they want clarified.",
       },
       {
         q: "What MFA do you require?",
-        a: "Hardware keys (YubiKey 5C NFC) on every account that has admin or client-data access — not SMS, not push-notification authenticator apps. SMS is no longer accepted by the SEC's preferred guidance and is explicitly excluded from most 2026 security reviewer questionnaires for advisor firms. We issue 2 keys per advisor.",
+        a: "Hardware keys (YubiKey 5C NFC) on every account that has admin or client-data access - not SMS, not push-notification authenticator apps. SMS is no longer accepted by the SEC's preferred guidance and is explicitly excluded from most 2026 security reviewer questionnaires for advisor firms. We issue 2 keys per advisor.",
       },
       {
         q: "Do you write the WISP?",
-        a: "Yes — we deliver a fully-customized Written Information Security Program covering all four GLBA Safeguards categories (Access Controls, Encryption, Monitoring, Disposal) plus the Information Security Risk Assessment that SEC examiners now ask for. Refreshed annually.",
+        a: "Yes - we deliver a fully-customized Written Information Security Program covering all four GLBA Safeguards categories (Access Controls, Encryption, Monitoring, Disposal) plus the Information Security Risk Assessment that SEC examiners now ask for. Refreshed annually.",
       },
       {
         q: "Can you handle our outside-vendor due diligence?",
@@ -158,19 +158,19 @@ export const industries = {
     faqs: [
       {
         q: "Can your Wi-Fi actually reach the dock?",
-        a: "Yes — outdoor-rated business APs with directional antennas can reliably cover 150–300 ft of slip and lift area depending on layout. We've installed this exact setup at active marine clients in Cortez and on the Manatee River. Initial site survey is free.",
+        a: "Yes - outdoor-rated business APs with directional antennas can reliably cover 150–300 ft of slip and lift area depending on layout. We've installed this exact setup at active marine clients in Cortez and on the Manatee River. Initial site survey is free.",
       },
       {
         q: "What happens to our IT in a hurricane?",
-        a: "Pre-storm: we run a 24-hour shutdown checklist (servers powered off properly, generators fueled, backups verified, phones forwarded to cellular). During: nothing on-site is running but your data is safe in two offsite copies. Post-storm: we bring the systems back up in priority order — invoicing first, then customer-facing tools, then back-office. Most clients are operational within 48 hours of utilities returning.",
+        a: "Pre-storm: we run a 24-hour shutdown checklist (servers powered off properly, generators fueled, backups verified, phones forwarded to cellular). During: nothing on-site is running but your data is safe in two offsite copies. Post-storm: we bring the systems back up in priority order - invoicing first, then customer-facing tools, then back-office. Most clients are operational within 48 hours of utilities returning.",
       },
       {
-        q: "We use Marina/Marine-specific software (Total Marina Concept, etc.) — do you know it?",
+        q: "We use Marina/Marine-specific software (Total Marina Concept, etc.) - do you know it?",
         a: "We don't run TMC at every marine client, but we run alongside it. Backup, integration, and secure remote access for the application database is the same regardless of vendor. We coordinate with the software vendor's support team for anything inside the application.",
       },
       {
-        q: "Our laptops keep dying in the salt air — what's the fix?",
-        a: "Standardize on enterprise laptops rated for harsher environments (Lenovo ThinkPad T-series, Dell Latitude Rugged, or Panasonic Toughbook for the truly waterfront roles). Avoid consumer laptops in slip / dock / boatyard areas — the lifecycle is 12-18 months instead of 4-5 years.",
+        q: "Our laptops keep dying in the salt air - what's the fix?",
+        a: "Standardize on enterprise laptops rated for harsher environments (Lenovo ThinkPad T-series, Dell Latitude Rugged, or Panasonic Toughbook for the truly waterfront roles). Avoid consumer laptops in slip / dock / boatyard areas - the lifecycle is 12-18 months instead of 4-5 years.",
       },
       {
         q: "Can you support our fleet of captains' phones?",
@@ -188,11 +188,11 @@ export const industries = {
     matchPattern: /construction|contractor|job ?site|builder/i,
     cities: ["bradenton", "parrish", "north-port"],
     intro:
-      "General contractors and sub-trades across Manatee County run a split IT setup — half the devices in the office, half in a truck cab, and trailer Wi-Fi that decides whether concrete pours on schedule. Simple IT SRQ delivers rugged field laptops, cellular-backup networking at the trailer, MDM for foreman tablets, and a plan for when the office loses power but the job site doesn't.",
+      "General contractors and sub-trades across Manatee County run a split IT setup - half the devices in the office, half in a truck cab, and trailer Wi-Fi that decides whether concrete pours on schedule. Simple IT SRQ delivers rugged field laptops, cellular-backup networking at the trailer, MDM for foreman tablets, and a plan for when the office loses power but the job site doesn't.",
     emphasis: [
       "Rugged field laptops sized for the truck cab + outdoor environment",
       "Cellular-backup networking at the job-site trailer (no more relying on builder Wi-Fi)",
-      "MDM for foreman tablets — Procore, Buildertrend, or whatever you run",
+      "MDM for foreman tablets - Procore, Buildertrend, or whatever you run",
       "Office IT that survives a SR-64 power outage during a pour day",
       "Document security for plans, change orders, and insurance certificates",
       "Quarterly review of which job-site setups actually need permanent infrastructure",
@@ -216,7 +216,7 @@ export const industries = {
       },
       {
         q: "Do you support job-site security cameras?",
-        a: "We can — we've installed cellular-backed perimeter camera systems on multi-month sites for theft deterrence. Direct integration into the office's central security system or a standalone cellular system depending on the project's footprint.",
+        a: "We can - we've installed cellular-backed perimeter camera systems on multi-month sites for theft deterrence. Direct integration into the office's central security system or a standalone cellular system depending on the project's footprint.",
       },
     ],
   },
@@ -230,7 +230,7 @@ export const industries = {
     matchPattern: /vacation rental|short.?term rental|airbnb|vrbo|smart.?lock/i,
     cities: ["nokomis", "englewood"],
     intro:
-      "Vacation rental managers along Casey Key, Anna Maria, and the Nokomis-Venice corridor juggle 30 to 300 properties — each with its own smart locks, Wi-Fi, and check-in that has to work at 4pm Saturday with no front desk. Simple IT SRQ delivers smart-lock-to-PMS integration, per-property guest Wi-Fi isolated from the owner network, and booking-system uptime for the Jan-Mar peak.",
+      "Vacation rental managers along Casey Key, Anna Maria, and the Nokomis-Venice corridor juggle 30 to 300 properties - each with its own smart locks, Wi-Fi, and check-in that has to work at 4pm Saturday with no front desk. Simple IT SRQ delivers smart-lock-to-PMS integration, per-property guest Wi-Fi isolated from the owner network, and booking-system uptime for the Jan-Mar peak.",
     emphasis: [
       "Smart-lock integration with your PMS (Streamline, Track, Hostfully, OwnerRez, etc.)",
       "Per-property guest Wi-Fi separated from the owner's home network",
@@ -242,19 +242,19 @@ export const industries = {
     faqs: [
       {
         q: "Do you integrate smart locks with our PMS?",
-        a: "Yes — we've integrated August, Schlage Encode, Yale Assure, and igloohome locks with active vacation-rental clients running Streamline, Hostfully, and OwnerRez. The lock auto-receives a per-stay code from the PMS at booking confirmation; the code expires at checkout. No staff intervention.",
+        a: "Yes - we've integrated August, Schlage Encode, Yale Assure, and igloohome locks with active vacation-rental clients running Streamline, Hostfully, and OwnerRez. The lock auto-receives a per-stay code from the PMS at booking confirmation; the code expires at checkout. No staff intervention.",
       },
       {
         q: "What about Wi-Fi at remote properties?",
         a: "Each property gets a business-grade router with two SSIDs: one for the guest (heavily-throttled, isolated, branded with the rental company name), one for owner / owner's contractors. The guest network never sees the owner's smart home, security cameras, or owner devices.",
       },
       {
-        q: "Our booking system slows down in February — can you fix it?",
+        q: "Our booking system slows down in February - can you fix it?",
         a: "Almost always: an undersized internet plan at the office or unpatched server software. We do a free site review during off-peak (May or Sept) and tell you which of the three usual suspects is your bottleneck. Most VRMs we onboard see 30-60% improvement in PMS responsiveness in the first 90 days.",
       },
       {
         q: "Are you PCI compliant for our payment processing?",
-        a: "Your processor (Stripe, Affinipay, etc.) handles the PCI Level 1 compliance. We deliver PCI SAQ-A documentation for the merchant — meaning we attest that no card data ever touches your local network or staff devices. Required by your processor at annual renewal.",
+        a: "Your processor (Stripe, Affinipay, etc.) handles the PCI Level 1 compliance. We deliver PCI SAQ-A documentation for the merchant - meaning we attest that no card data ever touches your local network or staff devices. Required by your processor at annual renewal.",
       },
       {
         q: "What happens to bookings during a hurricane?",
@@ -291,7 +291,7 @@ export function* industryCityPairs(citiesObj) {
       const city = citiesObj[cityKey];
       if (!city) continue;
       // Sanity-check: don't generate the page if no localPattern matches
-      // — that means the page would be thin / generic.
+      // - that means the page would be thin / generic.
       if (!matchIndustryPattern(industry, city)) continue;
       yield {
         industrySlug: industry.slug,

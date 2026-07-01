@@ -8,7 +8,7 @@ import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { track } from "../lib/analytics";
 
-// Expected revenue per sponsor tier — feeds GA4 generate_lead value so
+// Expected revenue per sponsor tier - feeds GA4 generate_lead value so
 // conversion reports rank inquiries by potential rather than count.
 const TIER_VALUE = { newsletter: 150, blog: 300, stack: 500 };
 
@@ -28,7 +28,7 @@ const TIERS = [
       "Top-of-issue placement (above the editorial)",
       "~60-word ad block + logo + CTA",
       "One primary sponsor per issue",
-      "Monthly cadence — next open slot ships ~30 days out",
+      "Monthly cadence - next open slot ships ~30 days out",
     ],
   },
   {
@@ -75,7 +75,7 @@ const MONTH_OPTIONS = [
 const FAQ = [
   {
     q: "Do you run editorial approval on sponsor copy?",
-    a: "Yes. We edit for clarity, tone, and factual accuracy — and we reserve the right to decline copy that misrepresents a product, targets consumers unrelated to our audience, or violates our \"not a good fit\" list. You get one round of revisions before we publish.",
+    a: "Yes. We edit for clarity, tone, and factual accuracy - and we reserve the right to decline copy that misrepresents a product, targets consumers unrelated to our audience, or violates our \"not a good fit\" list. You get one round of revisions before we publish.",
   },
   {
     q: "How is the sponsorship disclosed?",
@@ -91,7 +91,7 @@ const FAQ = [
   },
   {
     q: "What's your refund / make-good policy?",
-    a: "If a newsletter doesn't ship on the committed date, we'll either credit you to the next issue or refund. If a blog placement drops in rank materially within 90 days (lost indexing, URL change on our end), we re-run it in a comparable post at no charge. We don't refund based on performance — only on execution.",
+    a: "If a newsletter doesn't ship on the committed date, we'll either credit you to the next issue or refund. If a blog placement drops in rank materially within 90 days (lost indexing, URL change on our end), we re-run it in a comparable post at no charge. We don't refund based on performance - only on execution.",
   },
   {
     q: "How does payment work?",
@@ -99,7 +99,7 @@ const FAQ = [
   },
 ];
 
-// Mock newsletter preview — HTML/CSS only so it ships in the static
+// Mock newsletter preview - HTML/CSS only so it ships in the static
 // bundle and stays accessible. No inline SVG or external image means
 // we aren't shipping a "screenshot" that becomes stale when the
 // design changes.
@@ -129,7 +129,7 @@ function NewsletterMockup() {
           fontWeight: 600,
         }}
       >
-        Simple IT SRQ Monthly — Issue #X
+        Simple IT SRQ Monthly - Issue #X
       </div>
       <div
         style={{
@@ -171,13 +171,13 @@ function NewsletterMockup() {
           >
             YB
           </div>
-          <strong style={{ fontSize: "1.02rem" }}>[YourBrand] — one-line tagline</strong>
+          <strong style={{ fontSize: "1.02rem" }}>[YourBrand] - one-line tagline</strong>
         </div>
         <p style={{ margin: "0 0 14px", lineHeight: 1.55, color: "var(--syn-text, #0B0D10)" }}>
           Stop chasing paper HIPAA binders. [YourBrand] gives Florida practices
           a living risk assessment, automated policy reminders, and an audit-ready
           export whenever OCR (or your insurance agents) asks. Built for
-          offices under 50 people — set up in an afternoon. Readers of Simple IT
+          offices under 50 people - set up in an afternoon. Readers of Simple IT
           SRQ get 20% off the first year.
         </p>
         <a
@@ -239,7 +239,7 @@ export default function Advertise() {
 
     setStatus("sending");
 
-    // Piggyback on /api/contact — the source tag lets us route
+    // Piggyback on /api/contact - the source tag lets us route
     // sponsor inquiries in the inbox without touching the API.
     const message = [
       "SPONSOR / ADVERTISE INQUIRY",
@@ -295,7 +295,7 @@ export default function Advertise() {
             <p className="lede">
               Get in front of practice owners, law-firm partners, and operations
               leads who actually pay for the tools you're selling. Newsletter,
-              blog, and Stack sponsorships — transparent pricing, editorial
+              blog, and Stack sponsorships - transparent pricing, editorial
               controls, and FTC-compliant disclosure.
             </p>
           </div>
@@ -351,7 +351,7 @@ export default function Advertise() {
         <div className="container" style={{ maxWidth: 1100 }}>
           <h2 className="title-2" style={{ textAlign: "center" }}>Three ways to sponsor</h2>
           <p className="section-sub" style={{ textAlign: "center", marginBottom: "1.75rem" }}>
-            Pick the placement that matches your goal — awareness, evergreen SEO, or month-long visibility.
+            Pick the placement that matches your goal - awareness, evergreen SEO, or month-long visibility.
           </p>
 
           <div
@@ -445,7 +445,7 @@ export default function Advertise() {
         <div className="container" style={{ maxWidth: 900 }}>
           <h2 className="title-2" style={{ textAlign: "center" }}>What a sponsored slot looks like</h2>
           <p className="section-sub" style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-            We don't have past issues to link yet — here's the layout your
+            We don't have past issues to link yet - here's the layout your
             ~60-word newsletter block will ship in.
           </p>
           <NewsletterMockup />
@@ -536,7 +536,7 @@ export default function Advertise() {
                 <Check size={22} style={{ flexShrink: 0, marginTop: 2 }} />
                 <div>
                   <strong style={{ display: "block", marginBottom: 4 }}>
-                    Got it — we'll be in touch within one business day.
+                    Got it - we'll be in touch within one business day.
                   </strong>
                   <span style={{ fontSize: "0.92rem" }}>
                     Check your inbox (and spam folder) for a reply from
@@ -591,7 +591,7 @@ export default function Advertise() {
                     <select value={tier} onChange={(e) => setTier(e.target.value)}>
                       {TIERS.map((t) => (
                         <option key={t.id} value={t.label}>
-                          {t.label} — {t.price} {t.unit}
+                          {t.label} - {t.price} {t.unit}
                         </option>
                       ))}
                     </select>
@@ -616,7 +616,7 @@ export default function Advertise() {
                 </label>
                 <label className="field">
                   <span className="field-label">
-                    Ad copy / pitch (draft is fine — we'll edit with you)
+                    Ad copy / pitch (draft is fine - we'll edit with you)
                   </span>
                   <textarea
                     rows={5}

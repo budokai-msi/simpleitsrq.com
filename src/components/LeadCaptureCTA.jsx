@@ -5,7 +5,7 @@ import { track } from "../lib/analytics";
 
 export default function LeadCaptureCTA({
   title = "Get a Free 15-Min IT Assessment",
-  subtitle = "A local Sarasota/Bradenton engineer will review your Microsoft 365, security posture, and backups — no sales pitch.",
+  subtitle = "A local Sarasota/Bradenton engineer will review your Microsoft 365, security posture, and backups - no sales pitch.",
   endpoint = "/api/contact",
   source = "blog-cta",
 }) {
@@ -54,7 +54,7 @@ export default function LeadCaptureCTA({
         {sent ? (
           <div className="lead-cta-success">
             <Check size={24} color="#107C10" />
-            <strong>Thanks — we'll reach out shortly.</strong>
+            <strong>Thanks - we'll reach out shortly.</strong>
           </div>
         ) : (
           <>

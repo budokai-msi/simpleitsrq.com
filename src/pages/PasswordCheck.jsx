@@ -109,7 +109,7 @@ export default function PasswordCheck() {
             <span className="eyebrow"><ShieldCheck size={14} /> Free tool · No signup · No tracking</span>
             <h1 className="display">Is your password <span className="brand-accent">in a breach?</span></h1>
             <p className="lede">
-              Paste a password below. We'll check it against 800+ million known-breached passwords in under a second. <strong>Your password never leaves this browser</strong> — we use the same privacy-preserving k-anonymity technique 1Password Watchtower and Firefox Monitor use.
+              Paste a password below. We'll check it against 800+ million known-breached passwords in under a second. <strong>Your password never leaves this browser</strong> - we use the same privacy-preserving k-anonymity technique 1Password Watchtower and Firefox Monitor use.
             </p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function PasswordCheck() {
                 spellCheck={false}
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); if (state !== "idle") setState("idle"); }}
-                placeholder="Type or paste — this never leaves your browser"
+                placeholder="Type or paste - this never leaves your browser"
                 className="pw-check-input"
                 disabled={state === "checking"}
               />
@@ -163,7 +163,7 @@ export default function PasswordCheck() {
               <ShieldCheck size={48} />
               <h2>Not found in any known breach.</h2>
               <p>
-                That password isn't in any of the 800M+ leaked credentials that Have I Been Pwned has indexed. That's a good sign — but it's not a <em>guarantee</em> the password is strong. A short, guessable password can be safe from dumps and still trivial for a brute-force attacker.
+                That password isn't in any of the 800M+ leaked credentials that Have I Been Pwned has indexed. That's a good sign - but it's not a <em>guarantee</em> the password is strong. A short, guessable password can be safe from dumps and still trivial for a brute-force attacker.
               </p>
               <div className="pw-result-next">
                 <h3>Three things that matter more than this check passing</h3>
@@ -201,7 +201,7 @@ export default function PasswordCheck() {
             <div className="pw-result pw-result-error" role="alert">
               <AlertTriangle size={48} />
               <h2>Couldn't reach the breach database.</h2>
-              <p>Try again in a moment. The check is free and unlimited — we just hit a network hiccup. Error: <code>{error}</code></p>
+              <p>Try again in a moment. The check is free and unlimited - we just hit a network hiccup. Error: <code>{error}</code></p>
               <button onClick={reset} className="btn btn-secondary">Retry</button>
             </div>
           )}
@@ -224,7 +224,7 @@ export default function PasswordCheck() {
                 <h3 className="solution-card-title">1. Get a password manager for the whole team</h3>
               </div>
               <p className="solution-card-desc">
-                One login per staff member. Shared vaults with audit trails. Auto-generated unique passwords on every site. <AffiliateLink aff={PW_1PASSWORD}>1Password Business</AffiliateLink> or Bitwarden with seat-based pricing are both fine — the point is every person has their own login and the admin can revoke access the day someone leaves. Cost: ~$8/user/mo. Payback: a single avoided credential-stuffing incident.
+                One login per staff member. Shared vaults with audit trails. Auto-generated unique passwords on every site. <AffiliateLink aff={PW_1PASSWORD}>1Password Business</AffiliateLink> or Bitwarden with seat-based pricing are both fine - the point is every person has their own login and the admin can revoke access the day someone leaves. Cost: ~$8/user/mo. Payback: a single avoided credential-stuffing incident.
               </p>
             </article>
             <article className="solution-card">
@@ -233,7 +233,7 @@ export default function PasswordCheck() {
                 <h3 className="solution-card-title">2. Hardware security keys for admin accounts</h3>
               </div>
               <p className="solution-card-desc">
-                A <AffiliateLink aff={PW_YUBIKEY}>YubiKey 5C NFC</AffiliateLink> at each admin desk, ~$55 each. Closes the phishing path that software-token MFA doesn't. If you have an owner account, a bookkeeper account, and an M365 admin account on your network — those three seats are where an attacker wants to land. Keys make that impossible.
+                A <AffiliateLink aff={PW_YUBIKEY}>YubiKey 5C NFC</AffiliateLink> at each admin desk, ~$55 each. Closes the phishing path that software-token MFA doesn't. If you have an owner account, a bookkeeper account, and an M365 admin account on your network - those three seats are where an attacker wants to land. Keys make that impossible.
               </p>
             </article>
             <article className="solution-card">

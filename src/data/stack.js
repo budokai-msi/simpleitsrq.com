@@ -1,6 +1,6 @@
 // The Simple IT SRQ tech stack. Categorized list of every tool we install
 // or recommend for Florida small businesses. Rendered on /stack as the
-// passive-income hub — each item resolves through src/data/affiliates.js
+// passive-income hub - each item resolves through src/data/affiliates.js
 // when the corresponding VITE_AFF_* env var is set in Vercel, and
 // degrades to a plain-text entry (no link) when it isn't.
 //
@@ -13,12 +13,12 @@ import { resolveAffiliate } from "./affiliates";
 
 /**
  * @typedef {Object} StackTool
- * @property {string} id              Internal key — stable, used in URL
+ * @property {string} id              Internal key - stable, used in URL
  *                                    anchors and analytics.
  * @property {string} name            Human-readable vendor + product.
  * @property {string} tagline         One-line description of what it is.
  * @property {string} whyThis         The sentence explaining why we picked
- *                                    it over alternatives — specific to
+ *                                    it over alternatives - specific to
  *                                    Florida small businesses where
  *                                    possible.
  * @property {string} [tier]          Recommended tier (e.g. "Business
@@ -26,7 +26,7 @@ import { resolveAffiliate } from "./affiliates";
  * @property {string} [priceHint]     Ballpark price (e.g. "$8/user/mo").
  *                                    Optional.
  * @property {string} [affiliateKey]  Token consumed by resolveAffiliate()
- *                                    — when the corresponding env var is
+ * - when the corresponding env var is
  *                                    unset, the link degrades to plain
  *                                    text.
  * @property {string} [fallbackUrl]   Vendor homepage used when no
@@ -57,14 +57,14 @@ export const STACK = [
     id: "productivity-suite",
     title: "Email + Productivity Suite",
     intro:
-      "Your email, shared drive, Teams/Meet, and calendar all live here. Get the tier right the first time — the cheaper tiers fail a HIPAA audit and get a review bump on security renewal.",
+      "Your email, shared drive, Teams/Meet, and calendar all live here. Get the tier right the first time - the cheaper tiers fail a HIPAA audit and get a review bump on security renewal.",
     tools: [
       {
         id: "m365-business-review",
         name: "Microsoft 365 Business Premium",
         tagline: "Email, Word/Excel/Teams, OneDrive, and the security controls reviewers usually ask to see.",
         whyThis:
-          "Business Premium is the smallest tier that meets security review Controls §164.312(b) and HIPAA technical safeguards. Business Basic and Standard fail both. For offices under 10 people the tier math usually works out to $22/user/mo instead of $12 — but the insurance rate savings on a single policy pay for five years of the delta.",
+          "Business Premium is the smallest tier that meets security review Controls §164.312(b) and HIPAA technical safeguards. Business Basic and Standard fail both. For offices under 10 people the tier math usually works out to $22/user/mo instead of $12 - but the insurance rate savings on a single policy pay for five years of the delta.",
         tier: "Business Premium (not Basic or Standard)",
         priceHint: "$22/user/mo",
         cost: { type: "per_seat", usd: 22 },
@@ -79,7 +79,7 @@ export const STACK = [
         name: "Google Workspace Business Plus",
         tagline: "Same deal as M365 Business Premium, on the Google side.",
         whyThis:
-          "Business Plus is the smallest Google Workspace tier with Vault, eDiscovery, and advanced endpoint management — the three features a HIPAA audit or security renewal will ask about. Starter and Standard tiers won't pass.",
+          "Business Plus is the smallest Google Workspace tier with Vault, eDiscovery, and advanced endpoint management - the three features a HIPAA audit or security renewal will ask about. Starter and Standard tiers won't pass.",
         tier: "Business Plus (not Starter or Standard)",
         priceHint: "$22/user/mo",
         cost: { type: "per_seat", usd: 22 },
@@ -117,14 +117,14 @@ export const STACK = [
     id: "backup-disaster-recovery",
     title: "Backup + Disaster Recovery",
     intro:
-      "Hurricanes, ransomware, and human error — three ways your data can disappear in one afternoon. A 2026 security renewal asks if you've tested a restore in the last 12 months. Having backups isn't enough; having tested backups is.",
+      "Hurricanes, ransomware, and human error - three ways your data can disappear in one afternoon. A 2026 security renewal asks if you've tested a restore in the last 12 months. Having backups isn't enough; having tested backups is.",
     tools: [
       {
         id: "acronis-cyber-protect",
         name: "Acronis Cyber Protect",
         tagline: "Integrated backup + anti-ransomware + endpoint protection in one agent.",
         whyThis:
-          "For 5-50 person Florida offices, the friction of running Veeam + SentinelOne + a separate DR tool exceeds what Acronis does in one install. Hurricane season is the forcing function — we've restored client data from Acronis cloud backups three times post-storm while other tools were still syncing. Their 30-day retention default is where most small offices should start.",
+          "For 5-50 person Florida offices, the friction of running Veeam + SentinelOne + a separate DR tool exceeds what Acronis does in one install. Hurricane season is the forcing function - we've restored client data from Acronis cloud backups three times post-storm while other tools were still syncing. Their 30-day retention default is where most small offices should start.",
         priceHint: "$80–$200/month per 10 devices",
         cost: { type: "per_seat", usd: 14, note: "$140/mo per 10 devices, midpoint" },
         affiliateKey: "acronis",
@@ -176,7 +176,7 @@ export const STACK = [
         fallbackUrl: "https://www.honeybook.com/",
         alternatives: ["Dubsado (similar), 17hats (lighter), Clio (law firms)"],
         goodFor: "Photographers, designers, event planners, coaches, consultants. Not for law firms (use Clio).",
-        // calculatorDefault: false — service-business specific, off by default
+        // calculatorDefault: false - service-business specific, off by default
       },
     ],
   },
@@ -191,7 +191,7 @@ export const STACK = [
         name: "YubiKey 5C NFC",
         tagline: "USB-C + NFC hardware key that works with every mainstream IdP.",
         whyThis:
-          "The 5C NFC is the single SKU that covers every laptop (USB-C), every phone (NFC tap), and every cloud admin console (WebAuthn). We issue two per employee — one for the desk and one for the person — so a lost key isn't a lockout event. The $55 per employee is roughly what a Florida office pays for one hour of downtime.",
+          "The 5C NFC is the single SKU that covers every laptop (USB-C), every phone (NFC tap), and every cloud admin console (WebAuthn). We issue two per employee - one for the desk and one for the person - so a lost key isn't a lockout event. The $55 per employee is roughly what a Florida office pays for one hour of downtime.",
         priceHint: "$55/key (buy 2 per person)",
         cost: { type: "upfront_per_seat", usd: 55, multiplier: 2, amortizeMonths: 36, note: "$110/seat, 3-yr amortized" },
         affiliateKey: "amazon:B07HBD71HL|YubiKey 5C NFC",
@@ -213,7 +213,7 @@ export const STACK = [
         name: "Business-grade Line-Interactive UPS",
         tagline: "Keeps the server, switch, and phone system alive long enough to shut down cleanly.",
         whyThis:
-          "Consumer UPS units from big-box stores handle 5-8 minutes and then cut power without warning. Business-grade Line-Interactive units hold 15-30 minutes and signal the server to initiate a graceful shutdown. We standardize on CyberPower or APC for the exact product slot — both have next-business-day replacement programs that matter post-storm.",
+          "Consumer UPS units from big-box stores handle 5-8 minutes and then cut power without warning. Business-grade Line-Interactive units hold 15-30 minutes and signal the server to initiate a graceful shutdown. We standardize on CyberPower or APC for the exact product slot - both have next-business-day replacement programs that matter post-storm.",
         priceHint: "$180–$400/unit",
         cost: { type: "upfront_flat_per_office", usd: 280, amortizeMonths: 36, note: "$280 midpoint, 3-yr amortized, 1 per office" },
         affiliateKey: "amazon_search:business grade UPS cyberpower apc 1500va|Business-grade UPS (CyberPower / APC, 1500VA+)",
@@ -263,7 +263,7 @@ export function monthlyCostFor(tool, seats) {
 }
 
 /**
- * Resolve every tool's outbound link. Returns `{ href, isAffiliate }` —
+ * Resolve every tool's outbound link. Returns `{ href, isAffiliate }` -
  * `isAffiliate: true` when the link carries a referral tag, otherwise the
  * vendor's plain homepage (or an internal route for managed services).
  *

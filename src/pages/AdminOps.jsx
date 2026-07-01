@@ -285,7 +285,7 @@ export default function AdminOps() {
   const authConfirmed = Object.keys(data).length > 0;
 
   // Opsec: never confirm this route exists to a non-admin. A probe that isn't
-  // authorized — or any visitor before the admin check resolves — sees the
+  // authorized - or any visitor before the admin check resolves - sees the
   // ordinary site 404, not a "restricted, sign in" page that reveals an admin
   // surface lives here. The real gate is server-side (requireAdmin on every
   // action); this just removes the client-side disclosure.
@@ -469,11 +469,11 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
         </div>
         <p className="ops-panel__copy">
           Every contact form, service reservation, and city-page audit request lands here with full
-          detail — work them like a CRM by setting a status. If this stays empty after a real
+          detail - work them like a CRM by setting a status. If this stays empty after a real
           submission, run <code>npm run db:push</code> once to create the leads table.
         </p>
         {error ? <EmptyState>{error}</EmptyState> : null}
-        {!error && leads.length === 0 ? <EmptyState>No leads yet — form submissions appear here in real time.</EmptyState> : null}
+        {!error && leads.length === 0 ? <EmptyState>No leads yet - form submissions appear here in real time.</EmptyState> : null}
         {leads.length ? (
           <table className="admin-aff-table ops-table">
             <thead>
@@ -484,15 +484,15 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
                 <tr key={l.id}>
                   <td className="admin-leadgen-muted" style={{ whiteSpace: "nowrap", fontSize: 11 }}>{fmtDate(l.created_at)}</td>
                   <td>
-                    <strong>{l.name || "—"}</strong>
+                    <strong>{l.name || " - "}</strong>
                     {[l.city, l.region].filter(Boolean).length ? <><br /><span style={{ fontSize: 11, opacity: 0.7 }}>{[l.city, l.region].filter(Boolean).join(", ")}</span></> : null}
                   </td>
                   <td style={{ fontSize: 12 }}>
-                    {l.email ? <a href={`mailto:${l.email}`}>{l.email}</a> : "—"}
+                    {l.email ? <a href={`mailto:${l.email}`}>{l.email}</a> : " - "}
                     {l.phone ? <><br /><a href={`tel:${l.phone}`}>{l.phone}</a></> : null}
                   </td>
-                  <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{l.source || "—"}{l.page ? <><br />{l.page}</> : null}</td>
-                  <td style={{ fontSize: 12, maxWidth: 280, whiteSpace: "pre-wrap" }}>{l.message || "—"}</td>
+                  <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{l.source || " - "}{l.page ? <><br />{l.page}</> : null}</td>
+                  <td style={{ fontSize: 12, maxWidth: 280, whiteSpace: "pre-wrap" }}>{l.message || " - "}</td>
                   <td>
                     <select
                       defaultValue={l.status || "new"}
@@ -528,11 +528,11 @@ function HotLeadsPanel({ hotLeads, error }) {
         </SignalPill>
       </div>
       <p className="ops-panel__copy">
-        Recent visitors scored by how likely they are to become an IT client — local geo,
+        Recent visitors scored by how likely they are to become an IT client - local geo,
         high-intent pages (services, booking, leadgen, contact, city pages), time on site, and depth.
       </p>
       {error ? <EmptyState>{error}</EmptyState> : null}
-      {!error && leads.length === 0 ? <EmptyState>No ranked sessions yet — leads appear here as visitors engage.</EmptyState> : null}
+      {!error && leads.length === 0 ? <EmptyState>No ranked sessions yet - leads appear here as visitors engage.</EmptyState> : null}
       {leads.length > 0 ? (
         <div className="hotlead-grid">
           {leads.map((l) => {
@@ -625,7 +625,7 @@ function LeadIntelPanels({ leadIntel, error }) {
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head"><h2>Returning visitors</h2><SignalPill state={returning.length ? "good" : "neutral"}>{fmtNumber(returning.length)} watching · 30d</SignalPill></div>
         {error ? <EmptyState>{error}</EmptyState> : null}
-        {!error && returning.length === 0 ? <EmptyState>No repeat visitors yet — they show up here after a second visit.</EmptyState> : null}
+        {!error && returning.length === 0 ? <EmptyState>No repeat visitors yet - they show up here after a second visit.</EmptyState> : null}
         {returning.length ? (
           <table className="admin-aff-table ops-table">
             <thead><tr><th>Location</th><th style={{ textAlign: "right" }}>Visits</th><th style={{ textAlign: "right" }}>Days</th><th style={{ textAlign: "right" }}>Pages</th><th>Engaged</th></tr></thead>
@@ -636,7 +636,7 @@ function LeadIntelPanels({ leadIntel, error }) {
                   <td style={{ textAlign: "right" }}>{fmtNumber(r.sessions)}</td>
                   <td style={{ textAlign: "right" }}>{fmtNumber(r.days)}</td>
                   <td style={{ textAlign: "right" }}>{fmtNumber(r.total_pages)}</td>
-                  <td>{r.ever_engaged ? "✓" : "—"}</td>
+                  <td>{r.ever_engaged ? "✓" : " - "}</td>
                 </tr>
               ))}
             </tbody>

@@ -2,7 +2,7 @@
 //
 // Fires a POST to /api/track on every route change AND on initial load.
 // The server records IP, geolocation, user-agent, referrer, path, and the
-// signed-in user id (if any). This runs for *every* visitor — the server
+// signed-in user id (if any). This runs for *every* visitor - the server
 // side of tracking is legitimate-interest logging (security, fraud, abuse
 // prevention) and does not require cookie consent under either CCPA or
 // GDPR for first-party pseudonymous data.
@@ -79,7 +79,7 @@ function randomUUID() {
 // Visitor session: a logical grouping of pageviews with a 30-minute idle
 // timeout. Stored in sessionStorage (dies with the tab) *and* a rolling
 // cookie (survives a tab close if the visitor comes back within 30 min).
-// Distinct from the `sessions` auth table — this tracks anonymous browsing.
+// Distinct from the `sessions` auth table - this tracks anonymous browsing.
 const SESSION_COOKIE = "sirq_sess";
 const SESSION_TS_COOKIE = "sirq_sess_ts";
 const SESSION_IDLE_MS = 30 * 60 * 1000;
@@ -122,7 +122,7 @@ export default function VisitorTracker() {
   const lastSent = useRef(null);
 
   // One-time install of the behavior-beacon listeners (scroll, click,
-  // visibilitychange, pagehide). Idempotent — safe under StrictMode.
+  // visibilitychange, pagehide). Idempotent - safe under StrictMode.
   useEffect(() => {
     installBehaviorBeacon();
   }, []);
@@ -165,7 +165,7 @@ export default function VisitorTracker() {
       setAnonIdCookie(anonId);
     }
 
-    // Passive device signals — no canvas/WebGL/audio probing. Only reads
+    // Passive device signals - no canvas/WebGL/audio probing. Only reads
     // properties the browser already exposes in the standard API surface.
     const nav = typeof navigator !== "undefined" ? navigator : {};
     const scr = typeof window !== "undefined" ? window.screen : {};

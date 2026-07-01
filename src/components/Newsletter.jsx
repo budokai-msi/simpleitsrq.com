@@ -53,7 +53,7 @@ export default function Newsletter() {
         </p>
         {state === "done" ? (
           <p className="newsletter-success">
-            <Check size={16} color="#107C10" /> Check your inbox — we sent a confirmation link. Click it and you&apos;re on the list.
+            <Check size={16} color="#107C10" /> Check your inbox - we sent a confirmation link. Click it and you&apos;re on the list.
           </p>
         ) : (
           <form className="newsletter-form" onSubmit={submit} noValidate>
