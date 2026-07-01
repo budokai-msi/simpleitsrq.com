@@ -671,6 +671,113 @@ function CountUp({ value }) {
   return <>{display.toLocaleString()}</>;
 }
 
+// Command palette (Ctrl/⌘K). Deliberately self-contained: every hook lives in
+// THIS component so LeadgenScanApp's hook graph is untouched — the parent only
+// renders pure JSX and passes plain action objects. (A previous version put
+// the keydown effect inside LeadgenScanApp and the React Compiler rules
+// cascaded across the whole 2,000-line component; keeping the palette isolated
+// avoids that entirely.) The toolbar button opens it by dispatching the
+// "leadgen:palette" window event rather than lifting open-state to the parent.
+function LeadgenCommandPalette({ actions }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [cursor, setCursor] = useState(0);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if ((event.metaKey || event.ctrlKey) && String(event.key).toLowerCase() === "k") {
+        event.preventDefault();
+        setOpen((current) => {
+          const next = !current;
+          if (next) trackEvent("select_content", { content_type: "leadgen_palette_open", source: "keyboard" });
+          return next;
+        });
+        setQuery("");
+        setCursor(0);
+      }
+    };
+    const onOpenEvent = () => {
+      setOpen(true);
+      setQuery("");
+      setCursor(0);
+      trackEvent("select_content", { content_type: "leadgen_palette_open", source: "button" });
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("leadgen:palette", onOpenEvent);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("leadgen:palette", onOpenEvent);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (open) inputRef.current?.focus();
+  }, [open]);
+
+  if (!open) return null;
+
+  const q = query.trim().toLowerCase();
+  const visible = actions.filter((a) => !a.hidden && (!q || a.label.toLowerCase().includes(q) || (a.hint || "").toLowerCase().includes(q)));
+  const active = Math.min(cursor, Math.max(visible.length - 1, 0));
+
+  const close = () => {
+    setOpen(false);
+    setQuery("");
+    setCursor(0);
+  };
+  const runAction = (action) => {
+    if (!action || action.disabled) return;
+    close();
+    trackEvent("select_content", { content_type: "leadgen_palette_run", action: action.id });
+    action.run();
+  };
+  const onInputKeyDown = (event) => {
+    if (event.key === "Escape") { event.preventDefault(); close(); return; }
+    if (event.key === "ArrowDown") { event.preventDefault(); setCursor(Math.min(active + 1, visible.length - 1)); return; }
+    if (event.key === "ArrowUp") { event.preventDefault(); setCursor(Math.max(active - 1, 0)); return; }
+    if (event.key === "Enter") { event.preventDefault(); runAction(visible[active]); }
+  };
+
+  return (
+    <div className="leadgen-palette" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) close(); }}>
+      <div className="leadgen-palette__box" role="dialog" aria-modal="true" aria-label="Scanner commands">
+        <div className="leadgen-palette__input">
+          <Search size={15} aria-hidden="true" />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setCursor(0); }}
+            onKeyDown={onInputKeyDown}
+            placeholder="Type a command…"
+            aria-label="Search commands"
+            autoComplete="off"
+            spellCheck="false"
+          />
+          <kbd>esc</kbd>
+        </div>
+        <ul className="leadgen-palette__list" role="listbox" aria-label="Commands">
+          {visible.map((a, i) => (
+            <li key={a.id} role="option" aria-selected={i === active}>
+              <button
+                type="button"
+                className={`leadgen-palette__item${i === active ? " is-active" : ""}${a.disabled ? " is-disabled" : ""}`}
+                onMouseEnter={() => setCursor(i)}
+                onClick={() => runAction(a)}
+                disabled={a.disabled}
+              >
+                <span>{a.label}</span>
+                {a.hint ? <em>{a.hint}</em> : null}
+              </button>
+            </li>
+          ))}
+          {!visible.length ? <li className="leadgen-palette__empty">No matching command.</li> : null}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 // Staged, animated "we're working" sequence shown while a scan is in flight.
 // Turns a sub-second request into a deliberate input -> processing -> payoff
 // beat so the result feels earned rather than dumped.
@@ -1390,6 +1497,20 @@ function LeadgenScanApp() {
 
   return (
     <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
+      <LeadgenCommandPalette
+        actions={[
+          { id: "run_scan", label: scan ? "Refresh scan" : "Run scan", hint: `${niche} in ${validZip ? zip : "…"}`, run: runScan, disabled: busy || !validZip },
+          { id: "select_best", label: "Select best leads", hint: "website + phone or email", run: selectBest, hidden: !scan },
+          { id: "select_all", label: "Select all shown", run: () => applyVisibleReview("keep"), hidden: !scan },
+          { id: "clear_selection", label: "Clear selection", run: () => applyVisibleReview("reject"), hidden: !scan },
+          { id: "find_emails", label: "Find emails", hint: "crawl selected websites", run: findEmails, disabled: extracting, hidden: !scan },
+          { id: "copy_emails", label: "Copy all emails", run: copyAllEmails, hidden: !scan || !keptWithEmail.length },
+          { id: "copy_corporate", label: "Copy corporate emails", hint: "sales@, info@, …", run: copyCorporateEmails, hidden: !keptCorporate },
+          { id: "export_csv", label: `Export CSV (${kept.length})`, run: exportKeptRows, disabled: !kept.length, hidden: !scan },
+          { id: "push_crm", label: `Push ${kept.length} to CRM`, run: pushSelected, disabled: pushBusy || !kept.length || !pushTarget, hidden: !scan || !destinations.length },
+          { id: "toggle_independents", label: independentsOnly ? "Show chains too" : "Hide chains", run: () => setIndependentsOnly((v) => !v), hidden: !scan || !chainCount },
+        ]}
+      />
       {scan && kept.length > 0 ? (
         <div className="leadgen-selbar" role="region" aria-label="Selected leads — quick actions">
           <span className="leadgen-selbar__count"><strong>{kept.length}</strong> selected</span>
@@ -1724,6 +1845,14 @@ function LeadgenScanApp() {
           <div className="leadgen-app-actions">
             {scan ? (
               <>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm leadgen-palette-open"
+                  onClick={() => window.dispatchEvent(new Event("leadgen:palette"))}
+                  title="Open the command palette (Ctrl/⌘ K)"
+                >
+                  <kbd>⌘K</kbd> Commands
+                </button>
                 {kept.length >= 5 ? (
                   <LeadgenPlanLink
                     tierId={recommendedTierId}
@@ -1823,7 +1952,7 @@ function LeadgenScanApp() {
               </button>
             ) : null}
             {hasKeyboard ? (
-              <span className="leadgen-review-summary__hint">J/K to move · 1 keep · 3 remove</span>
+              <span className="leadgen-review-summary__hint">J/K to move · 1 keep · 3 remove · ⌘K commands</span>
             ) : null}
             {visibleRows.length ? (
               <div className="leadgen-review-summary__actions" role="group" aria-label="Selection actions">
