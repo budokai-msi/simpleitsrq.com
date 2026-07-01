@@ -11,7 +11,7 @@ const CLIENT_ID =
 // Per-placement slot IDs live in src/lib/adsenseSlots.js so this file
 // stays component-only (fast-refresh requires it). Each call site
 // passes its slot via the `slot` prop; without one, AdUnit fails closed
-// — that's the fix for the silent-no-ad bug where empty data-ad-slot=""
+// - that's the fix for the silent-no-ad bug where empty data-ad-slot=""
 // tags rendered but AdSense couldn't fill them.
 
 // The adsbygoogle.js script is loaded from <head> in index.html so
@@ -20,7 +20,7 @@ const CLIENT_ID =
 // additional gate on top: marketing consent must be granted before we
 // push() any ad slots or render any <ins> elements. AdSense's own
 // Consent Mode v2 (set in public/ga-init.js) already prevents
-// personalized advertising when consent is denied — this gate is
+// personalized advertising when consent is denied - this gate is
 // stricter, suppressing the ad request entirely until the visitor
 // opts in. Belt + suspenders for GDPR / state-privacy-law audits.
 
@@ -40,7 +40,7 @@ function useMarketingConsent() {
   return ok;
 }
 
-// Per-page-load health beacon state — we send one summary per page
+// Per-page-load health beacon state - we send one summary per page
 // load instead of one per slot, so a 5-AdUnit page doesn't create 5
 // network calls. Shared module-level state keyed by a sampled load.
 const HEALTH = {
@@ -55,7 +55,7 @@ function resetHealth() {
   HEALTH.timer = null;
 }
 
-// Debounced flush — wait 4s after the last slot resolves so we
+// Debounced flush - wait 4s after the last slot resolves so we
 // capture every AdUnit on the page in a single beacon.
 function scheduleFlush() {
   if (HEALTH.timer) clearTimeout(HEALTH.timer);
@@ -73,7 +73,7 @@ function flush() {
     // The real script replaces the shim with a proxy that has loaded=true
     (window.adsbygoogle.loaded === true ||
       // Fallback: if we pushed entries and they were consumed, the length
-      // tends to drop — but that's noisy. Be conservative: only count
+      // tends to drop - but that's noisy. Be conservative: only count
       // scriptLoaded=true if the loaded flag is present OR we saw any
       // data-ad-status reported by Google.
       HEALTH.slots.some((s) => s.status === "filled" || s.status === "unfilled"));
@@ -150,7 +150,7 @@ function observeSlot(el) {
   obs.observe(el, { attributes: true, attributeFilter: ["data-ad-status"] });
 
   // If Google never writes data-ad-status within 8s it's effectively
-  // a no-op — could be approval pending, quota, or policy hold.
+  // a no-op - could be approval pending, quota, or policy hold.
   const timeoutCheck = setTimeout(() => finalize("timeout"), 8000);
 }
 
@@ -193,7 +193,7 @@ export default function AdUnit({ slot, format = "auto", responsive = true, class
 
 // AutoAds is a no-op now that the script loads from index.html and
 // AdSense's auto-placement runs server-side. Kept exported so the
-// existing import in src/App.jsx doesn't break — remove the import +
+// existing import in src/App.jsx doesn't break - remove the import +
 // this stub on the next pass through App.jsx if you want.
 export function AutoAds() {
   return null;

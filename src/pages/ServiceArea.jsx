@@ -4,7 +4,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 
 // Coverage cards. Coords are relative (0-100) inside the SVG viewBox so
 // nudging the map art later doesn't require recomputing pin positions.
-// Drive-time + SLA fields were retired — we don't promise response
+// Drive-time + SLA fields were retired - we don't promise response
 // windows or trip times publicly anymore.
 const COVERAGE = [
   {
@@ -87,7 +87,7 @@ const COVERAGE = [
 ];
 
 // Simplified SVG of the SW Florida coastline between Anna Maria Island
-// and Englewood. Not cartographically exact — this is a wayfinding
+// and Englewood. Not cartographically exact - this is a wayfinding
 // illustration, not a reference map.
 function CoverageMap() {
   return (
@@ -176,7 +176,7 @@ export default function ServiceArea() {
           <p className="lede">
             On-site engineering coverage from Bradenton through Lakewood Ranch,
             down to Sarasota, Venice, and Nokomis. One operations team across
-            the region — same engineers, same SLAs, same response times for
+            the region - same engineers, same SLAs, same response times for
             commercial offices, retail, residential, and seasonal condos.
           </p>
           <div className="service-area-meta">
@@ -196,7 +196,7 @@ export default function ServiceArea() {
         <div className="container">
           <h2 className="title-2">Our covered markets</h2>
           <p className="section-lede">
-            Click any market below to see the local landing page — neighborhood
+            Click any market below to see the local landing page - neighborhood
             detail, FAQ, pricing examples, and the specific industries we
             support in that town.
           </p>

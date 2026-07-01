@@ -390,7 +390,7 @@ export default function Support() {
           <div style={{ maxWidth: 800, margin: "48px auto 0" }}>
             <LeadCaptureCTA
               title="Not a client yet? Get a free 15-min IT assessment"
-              subtitle="A local Sarasota/Bradenton engineer will spot-check your Microsoft 365, backups, and security posture. No sales pitch — you leave with a written punch list either way."
+              subtitle="A local Sarasota/Bradenton engineer will spot-check your Microsoft 365, backups, and security posture. No sales pitch - you leave with a written punch list either way."
             />
           </div>
         </div>

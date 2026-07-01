@@ -24,7 +24,7 @@ export default function WhyIndex() {
           <h1 className="display">Pick the model that matches the risk you actually carry.</h1>
           <p className="lede">
             Side-by-side comparisons against the alternatives Sarasota and
-            Bradenton buyers are actually weighing — written to be defensible
+            Bradenton buyers are actually weighing - written to be defensible
             in a sales call, not to score on a marketing scorecard.
           </p>
         </div>

@@ -16,7 +16,7 @@ import { trackSiteSearch } from "../lib/behaviorBeacon.js";
  *
  * The component owns two pieces of state: the live `query` (raw input, 1:1
  * with keystrokes) and the `committed` query (debounced). Only the debounced
- * value triggers the filter — typing "cybersecurity" no longer runs 13
+ * value triggers the filter - typing "cybersecurity" no longer runs 13
  * filter passes across 50+ posts.
  */
 const DEBOUNCE_MS = 150;
@@ -143,7 +143,7 @@ export default function BlogSearch({ posts, onFilter, initialQuery = "", onQuery
         )}
       </div>
       {/* Screen-reader live region announces the result count whenever the
-          committed query changes. Visually hidden — sighted users get the
+          committed query changes. Visually hidden - sighted users get the
           visual feedback of the list updating. */}
       <div id="blog-search-status" className="sr-only" aria-live="polite" aria-atomic="true">
         {hasQuery

@@ -16,10 +16,10 @@ import Breadcrumbs from "../components/Breadcrumbs";
 const SERVICES = [
   { Icon: Headphones, title: "Managed IT Support and Helpdesk", desc: "Unlimited help desk, proactive 24x7 monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
   { Icon: Wrench, title: "Computer Repair (Business and Residential)", desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade you've been putting off. We work on home machines too." },
-  { Icon: Camera, title: "Security Camera Installation", desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording." },
+  { Icon: Camera, title: "Security Camera Installation", desc: "IP camera systems for shops, offices, warehouses, and homes - wired or PoE, indoor or outdoor, with mobile viewing and on-site recording." },
   { Icon: Network, title: "Enterprise Domain Environments", desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one." },
   { Icon: RefreshCw, title: "Migrations and Upgrades", desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, file-share moves, Windows 11 rollouts, and hardware refreshes." },
-  { Icon: Lock, title: "Cybersecurity and Virus Protection", desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring — plus the written proof your security reviewer asks for at renewal." },
+  { Icon: Lock, title: "Cybersecurity and Virus Protection", desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring - plus the written proof your security reviewer asks for at renewal." },
   { Icon: Cloud, title: "Microsoft 365, Email, and Cloud Apps", desc: "We set up your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone." },
   { Icon: Server, title: "Backups and Disaster Recovery", desc: "Automatic backups of every computer and server, with a second copy stored off-site. We test the backups every quarter so a restore actually works when you need it." },
   { Icon: Phone, title: "Business Phone, Copiers, and Fax", desc: "Modern phones that work from anywhere, plus Fax-over-Email and copier integration. Ditch the analog lines and scan straight to your cloud." },
@@ -30,7 +30,7 @@ const SERVICES = [
 ];
 
 function buildLocalBusinessLd(city) {
-  // telephone intentionally omitted — the business is email + form first,
+  // telephone intentionally omitted - the business is email + form first,
   // and Google treats a placeholder (000-0000) phone as a bad-schema signal
   // that can downgrade the LocalBusiness rich result. If/when a tracked
   // phone number is set up, add it here.
@@ -43,7 +43,7 @@ function buildLocalBusinessLd(city) {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${SITE_URL}/${city.slug}#business`,
-    name: `Simple IT SRQ — ${city.city}`,
+    name: `Simple IT SRQ - ${city.city}`,
     image: `${SITE_URL}/logo.png`,
     url: `${SITE_URL}/${city.slug}`,
     email: "hello@simpleitsrq.com",
@@ -76,7 +76,7 @@ function buildLocalBusinessLd(city) {
 
 // Emit one Service node per offering so Google associates each named
 // IT service with the city's geo + service area. Significantly stronger
-// signal than the flat LocalBusiness node alone — when someone searches
+// signal than the flat LocalBusiness node alone - when someone searches
 // "managed IT services Bradenton" Google can match the Service node's
 // areaServed instead of inferring from page copy.
 function buildServiceLd(city) {
@@ -210,7 +210,7 @@ export default function LocalLanding() {
           name: form.name.trim(),
           email: form.email.trim(),
           company: form.company.trim(),
-          // /api/contact requires a non-empty message — synthesize one from the
+          // /api/contact requires a non-empty message - synthesize one from the
           // city + company context when the visitor leaves the field blank.
           message:
             form.message.trim() ||
@@ -256,7 +256,7 @@ export default function LocalLanding() {
             <span className="eyebrow">Neighborhoods we serve</span>
             <h2 className="title-1">Local IT support across {city.city}</h2>
             <p className="section-sub">
-              We support businesses and residential clients across {city.neighborhoods}. Our engineers live in Sarasota and Bradenton — local, no drive-downs from Tampa.
+              We support businesses and residential clients across {city.neighborhoods}. Our engineers live in Sarasota and Bradenton - local, no drive-downs from Tampa.
             </p>
           </div>
         </div>
@@ -292,7 +292,7 @@ export default function LocalLanding() {
               <span className="eyebrow">What we see locally</span>
               <h2 className="title-1">Three {city.city} client patterns, and how the playbook changes</h2>
               <p className="section-sub">
-                The generic services list applies to every office. What changes between Sarasota, Bradenton, Lakewood Ranch, Nokomis, and Venice is the emphasis — what matters most for the specific work happening here. These are the three recurring shapes of {city.city} engagements.
+                The generic services list applies to every office. What changes between Sarasota, Bradenton, Lakewood Ranch, Nokomis, and Venice is the emphasis - what matters most for the specific work happening here. These are the three recurring shapes of {city.city} engagements.
               </p>
             </div>
             <div className="local-patterns-grid">
@@ -304,7 +304,7 @@ export default function LocalLanding() {
               ))}
             </div>
 
-            {/* Industry deep-links — for each pattern that matches a vertical
+            {/* Industry deep-links - for each pattern that matches a vertical
                 we ship a dedicated landing page for, surface that page so
                 visitors can drill into industry-specific FAQs and so Google
                 sees the parent → child entity link. */}
@@ -360,7 +360,7 @@ export default function LocalLanding() {
 
       <RecommendedTools
         title={`Tool shelf for ${city.city} small offices`}
-        subtitle="The three purchases we recommend every new client make before signing with an MSP — or with us."
+        subtitle="The three purchases we recommend every new client make before signing with an MSP - or with us."
       />
 
       <section className="section section-alt">
@@ -386,7 +386,7 @@ export default function LocalLanding() {
             <div>
               <span className="eyebrow">Free IT audit</span>
               <h2 className="title-2">Get a free 15-minute IT assessment for your {city.city} business</h2>
-              <p>Tell us a little about your team and we'll schedule a no-pressure call with a local engineer. No sales pitch — just a clear read on your risk, your Microsoft 365, and what good would look like.</p>
+              <p>Tell us a little about your team and we'll schedule a no-pressure call with a local engineer. No sales pitch - just a clear read on your risk, your Microsoft 365, and what good would look like.</p>
               <ul className="feature-list">
                 <li><Check size={16} color="#111827" /> Local Sarasota/Bradenton engineer</li>
                 <li><Check size={16} color="#111827" /> No long-term contract required</li>
@@ -397,7 +397,7 @@ export default function LocalLanding() {
               {sent ? (
                 <div className="lead-capture-success">
                   <Check size={28} color="#107C10" />
-                  <h3>Thanks — we'll be in touch.</h3>
+                  <h3>Thanks - we'll be in touch.</h3>
                   <p>A local engineer will reach out within one business day.</p>
                 </div>
               ) : (

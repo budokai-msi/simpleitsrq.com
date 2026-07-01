@@ -601,7 +601,7 @@ function Contact() {
         reason: errorCode,
         http_status: r.status,
       });
-      // Turnstile tokens are single-use — get a fresh one for the retry.
+      // Turnstile tokens are single-use - get a fresh one for the retry.
       setTurnstileToken("");
       resetTurnstile();
     } catch {
@@ -694,7 +694,7 @@ function Contact() {
                 </div>
               </details>
 
-              {/* Honeypot — hidden from real users, catches bots.
+              {/* Honeypot - hidden from real users, catches bots.
                   Inline styles + class so no layout rule can leak it. */}
               <div
                 aria-hidden="true"
@@ -718,7 +718,7 @@ function Contact() {
                 />
               </div>
 
-              {/* Cloudflare Turnstile — renders only when VITE_TURNSTILE_SITE_KEY is set. */}
+              {/* Cloudflare Turnstile - renders only when VITE_TURNSTILE_SITE_KEY is set. */}
               {TURNSTILE_SITE_KEY && (
                 <div
                   ref={turnstileRef}

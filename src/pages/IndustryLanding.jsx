@@ -10,19 +10,19 @@ import { cities } from "../data/cities";
 import { industries, matchIndustryPattern } from "../data/industries";
 import { useSEO, SITE_URL } from "../lib/seo";
 
-// Same service tiles the city pages use — kept identical so the
+// Same service tiles the city pages use - kept identical so the
 // industry pages don't drift in copy + so visitors recognize the
 // pattern when they navigate from a city page to an industry page.
 const SERVICES = [
   { Icon: Headphones, title: "Helpdesk and Everyday IT Support",      desc: "Unlimited help desk, monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
   { Icon: Wrench,     title: "Computer Repair (Business and Residential)", desc: "Slow PCs, dead laptops, failed drives, virus removal, screen swaps, and the upgrade you've been putting off. We work on home machines too." },
-  { Icon: Camera,     title: "Security Camera Installation",          desc: "IP camera systems for shops, offices, warehouses, and homes — wired or PoE, indoor or outdoor, with mobile viewing and on-site recording." },
+  { Icon: Camera,     title: "Security Camera Installation",          desc: "IP camera systems for shops, offices, warehouses, and homes - wired or PoE, indoor or outdoor, with mobile viewing and on-site recording." },
   { Icon: Network,    title: "Enterprise Domain Environments",        desc: "Active Directory, Entra/Azure AD, Group Policy, file shares, and the user/computer setup that lets a 20-person office act like one." },
   { Icon: RefreshCw,  title: "Migrations and Upgrades",               desc: "Email migrations to Microsoft 365 or Google Workspace, server replacements, file-share moves, Windows 11 rollouts, and hardware refreshes." },
-  { Icon: Lock,       title: "Cybersecurity and Virus Protection",    desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring — plus the written proof your security reviewer asks for at renewal." },
+  { Icon: Lock,       title: "Cybersecurity and Virus Protection",    desc: "Antivirus, email scam filtering, safer web browsing, and 24/7 monitoring - plus the written proof your security reviewer asks for at renewal." },
   { Icon: Cloud,      title: "Microsoft 365, Email, and Cloud Apps",  desc: "We set up your email, Teams, shared drives, and company devices so everything works the same on every laptop and phone." },
   { Icon: Server,     title: "Backups and Disaster Recovery",         desc: "Automatic backups of every computer and server, with a second copy stored off-site. We test the backups every quarter so a restore actually works when you need it." },
-  { Icon: Phone,      title: "Business Phone Systems",                desc: "Modern phones that work from your desk, your cell, or your laptop — with voicemail in your email, text messaging, and fax-over-email." },
+  { Icon: Phone,      title: "Business Phone Systems",                desc: "Modern phones that work from your desk, your cell, or your laptop - with voicemail in your email, text messaging, and fax-over-email." },
   { Icon: Wifi,       title: "Networking, Wi-Fi, and Cabling",        desc: "Business-grade firewalls, Wi-Fi that reaches every corner, guest-separated networks, and clean cable runs with every jack labeled." },
   { Icon: FileCheck,  title: "HIPAA and Security Documentation",   desc: "Written security reviews, the protections auditors and reviewers expect, and a binder of documents you can hand them on audit day." },
   { Icon: Briefcase,  title: "IT Planning and Budgeting",             desc: "Quarterly check-ins with a senior tech, a simple 12-month plan, and an IT budget you can explain to anyone in plain English." },
@@ -33,7 +33,7 @@ function buildLocalBusinessLd(industry, city, url) {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "@id": `${SITE_URL}${url}#business`,
-    name: `Simple IT SRQ — ${industry.displayName} in ${city.city}`,
+    name: `Simple IT SRQ - ${industry.displayName} in ${city.city}`,
     image: `${SITE_URL}/logo.png`,
     url: `${SITE_URL}${url}`,
     email: "hello@simpleitsrq.com",
@@ -46,7 +46,7 @@ function buildLocalBusinessLd(industry, city, url) {
     },
     areaServed: city.city,
     priceRange: "$$",
-    description: `${industry.displayName} IT support in ${city.city} — ${industry.serviceType}. ${city.metaDescription}`,
+    description: `${industry.displayName} IT support in ${city.city} - ${industry.serviceType}. ${city.metaDescription}`,
     openingHours: "Mo-Fr 08:00-18:00",
   };
 
@@ -240,7 +240,7 @@ export default function IndustryLanding() {
         </div>
       </section>
 
-      {/* Standard 8-service grid — same as city pages, IT-services first. */}
+      {/* Standard 8-service grid - same as city pages, IT-services first. */}
       <section className="section section-alt" id="solutions">
         <div className="container">
           <div className="section-head">
@@ -261,10 +261,10 @@ export default function IndustryLanding() {
         </div>
       </section>
 
-      {/* FAQ — industry-level, applies across cities. */}
+      {/* FAQ - industry-level, applies across cities. */}
       <section className="section">
         <div className="container" style={{ maxWidth: 880 }}>
-          <h2 className="title-1">Frequently asked — {industry.displayName.toLowerCase()}</h2>
+          <h2 className="title-1">Frequently asked - {industry.displayName.toLowerCase()}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
             {industry.faqs.map((f, i) => (
               <details key={i} style={{ padding: "14px 18px", borderRadius: 10, background: "var(--syn-surface-2, #fff)", border: "1px solid var(--syn-border, #e5e7eb)" }}>

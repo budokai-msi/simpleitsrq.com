@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { hasMarketingConsent } from "../lib/consent.js";
 
-// Tawk.to live chat widget — free tier, lazy-loaded only AFTER:
+// Tawk.to live chat widget - free tier, lazy-loaded only AFTER:
 //   1. The visitor has granted marketing consent in the cookie banner
 //   2. requestIdleCallback has fired (post-LCP, doesn't fight for the
 //      main thread during initial paint)
 //
 // Activation is two-gated so a fresh visitor sees no third-party request
 // until they've explicitly opted in. Visitors who decline marketing
-// cookies never load Tawk at all — the contact form remains the
+// cookies never load Tawk at all - the contact form remains the
 // fallback.
 //
 // To enable: set VITE_TAWK_PROPERTY_ID and VITE_TAWK_WIDGET_ID in
@@ -38,7 +38,7 @@ function loadTawk() {
 
 function unloadTawk() {
   if (typeof window === "undefined") return;
-  // Tawk doesn't expose a clean teardown — but we can hide the widget
+  // Tawk doesn't expose a clean teardown - but we can hide the widget
   // when consent is revoked mid-session. The script tag persists so
   // re-granting consent flips the widget visible without reload.
   try {

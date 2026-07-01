@@ -2,13 +2,13 @@
 //
 // These pages target high-intent "X vs Y" Google queries ("1Password vs
 // Bitwarden", "M365 Business Premium vs Google Workspace Business Plus").
-// The searcher is near-buying — a good page converts several multiples
+// The searcher is near-buying - a good page converts several multiples
 // higher than a general blog post on the same topic.
 //
 // Opinions here are grounded in publicly documented feature differences or
 // hands-on Florida-SMB deployment experience. If we can't verify an
 // attribute (e.g. exact SOC 2 Type II report date for a given vendor),
-// omit that row rather than guess — a fabricated row is worse than a
+// omit that row rather than guess - a fabricated row is worse than a
 // missing one for a page Google will eventually rank.
 //
 // Schema:
@@ -17,7 +17,7 @@
 //   metaDescription   <meta name="description">.
 //   h1                Page H1. Usually a trimmed version of title.
 //   subhead           One-line tension statement rendered under the H1.
-//   date              ISO date of last editorial pass — used by sitemap
+//   date              ISO date of last editorial pass - used by sitemap
 //                     lastmod and shown to readers.
 //   products[]        Exactly two products, side-by-side. Each entry:
 //                       - name           display name
@@ -69,7 +69,7 @@ export const COMPARISONS = [
     slug: "1password-vs-bitwarden",
     title: "1Password Business vs Bitwarden Business (2026 Florida SMB Comparison)",
     metaDescription:
-      "1Password Business vs Bitwarden Business for Sarasota-Bradenton offices. Price, UX, directory sync, SSO, self-host — and which one your staff will actually use.",
+      "1Password Business vs Bitwarden Business for Sarasota-Bradenton offices. Price, UX, directory sync, SSO, self-host - and which one your staff will actually use.",
     h1: "1Password Business vs Bitwarden Business",
     subhead:
       "Both pass your security renewal. Here's which one your staff will actually use.",
@@ -82,15 +82,15 @@ export const COMPARISONS = [
         fallbackUrl: "https://1password.com/business",
         priceHint: "$7.99/user/mo",
         pros: [
-          "Browser and mobile UX is the one where staff actually adopt it — the single biggest variable for a password manager rollout.",
+          "Browser and mobile UX is the one where staff actually adopt it - the single biggest variable for a password manager rollout.",
           "Directory sync with M365 Entra ID and Google Workspace included in Business tier, so onboarding/offboarding is one checkbox.",
-          "Watchtower surfaces breached, reused, and weak passwords inline — not in a separate report nobody reads.",
+          "Watchtower surfaces breached, reused, and weak passwords inline - not in a separate report nobody reads.",
           "Travel Mode removes selected vaults from devices before a border crossing, which a handful of our clients actually use.",
           "Best-in-class secret-scanning in shared developer/admin vaults.",
         ],
         cons: [
           "More expensive per seat at $7.99/user/mo.",
-          "Closed-source — no community audit option.",
+          "Closed-source - no community audit option.",
           "No self-hosted deployment path.",
         ],
         bestFor:
@@ -102,13 +102,13 @@ export const COMPARISONS = [
         priceHint: "$6/user/mo",
         pros: [
           "Roughly 25% cheaper per seat than 1Password Business.",
-          "Open-source codebase — independently audited and community-inspectable.",
+          "Open-source codebase - independently audited and community-inspectable.",
           "Self-hosted deployment path (Docker/Helm) if you have a hard data-residency requirement.",
           "SSO with SAML 2.0 included in the Business (Enterprise) tier.",
           "Directory Connector syncs users from Entra ID, Google Workspace, Okta, or LDAP.",
         ],
         cons: [
-          "Browser extension and desktop UX are visibly rougher than 1Password — more clicks, less polish, and our onboarding data shows higher abandonment.",
+          "Browser extension and desktop UX are visibly rougher than 1Password - more clicks, less polish, and our onboarding data shows higher abandonment.",
           "Admin console is functional but spartan compared to 1Password's.",
           "Mobile autofill works, but with more edge cases that end up in a support ticket.",
         ],
@@ -155,16 +155,16 @@ export const COMPARISONS = [
           "https://www.microsoft.com/en-us/microsoft-365/business/microsoft-365-business-premium",
         priceHint: "$22/user/mo",
         pros: [
-          "Desktop Office apps (Word, Excel, Outlook, PowerPoint) installed locally — the version most Florida CPAs, attorneys, and insurance agents are trained on.",
+          "Desktop Office apps (Word, Excel, Outlook, PowerPoint) installed locally - the version most Florida CPAs, attorneys, and insurance agents are trained on.",
           "Intune endpoint management covers Windows laptops, iPads, and iPhones from one console.",
-          "Defender for Business adds EDR-class protection at no extra seat cost — on Google's side you bring your own.",
+          "Defender for Business adds EDR-class protection at no extra seat cost - on Google's side you bring your own.",
           "Conditional Access policies let you block sign-in from outside the US, enforce compliant devices, and gate privileged actions.",
-          "Email-archiving and eDiscovery built in — the specific line a HIPAA or FTC Safeguards auditor points at.",
+          "Email-archiving and eDiscovery built in - the specific line a HIPAA or FTC Safeguards auditor points at.",
         ],
         cons: [
           "Licensing labyrinth: Business Basic, Standard, Premium, Apps for Business, and the Copilot add-ons are not easy to tell apart.",
           "Teams meetings and file-sharing UX are heavier than Google's.",
-          "Admin console is split across portal.office.com, admin.microsoft.com, security.microsoft.com, Entra — every vendor's least-favorite thing.",
+          "Admin console is split across portal.office.com, admin.microsoft.com, security.microsoft.com, Entra - every vendor's least-favorite thing.",
         ],
         bestFor:
           "Offices already running Windows laptops and Office desktop apps, especially HIPAA-covered practices and insurance/accounting firms.",
@@ -176,13 +176,13 @@ export const COMPARISONS = [
         priceHint: "$22/user/mo",
         pros: [
           "Gmail, Drive, Docs, Meet UX is simpler and faster for staff not trained on Office.",
-          "Vault covers retention + eDiscovery — the exact pair a HIPAA or audit review asks about.",
+          "Vault covers retention + eDiscovery - the exact pair a HIPAA or audit review asks about.",
           "Advanced endpoint management with enforced screen lock, device encryption checks, and remote wipe.",
-          "One admin console — admin.google.com — instead of Microsoft's four.",
+          "One admin console - admin.google.com - instead of Microsoft's four.",
           "Realtime collaboration in Docs/Sheets/Slides is visibly smoother than the equivalent flow in Office.",
         ],
         cons: [
-          "No local desktop apps — offices with heavy Excel macro or Outlook workflow will feel it.",
+          "No local desktop apps - offices with heavy Excel macro or Outlook workflow will feel it.",
           "No included EDR-class endpoint protection; you'll bring SentinelOne, Huntress, or equivalent separately.",
           "Less flexible conditional-access controls than Microsoft Entra ID.",
           "Third-party integrations around GovCon, legal practice management, and tax software skew Microsoft-first.",
@@ -204,7 +204,7 @@ export const COMPARISONS = [
       { label: "Satisfies 2026 security documentation MFA + endpoint box", values: ["Yes", "Yes"] },
     ],
     verdict:
-      "Pick Microsoft 365 Business Premium if your office is already Windows-first, runs desktop Office apps, or operates in HIPAA/insurance/accounting/legal — you'll save the cost of a separate EDR and match the software your clients send you. Pick Google Workspace Business Plus if staff is browser-native, works heavily in realtime docs, and doesn't need the Office desktop fidelity. Most Florida small offices we see end up on M365 Business Premium specifically because Defender for Business is bundled — that's a $3-7/user/mo bill you skip.",
+      "Pick Microsoft 365 Business Premium if your office is already Windows-first, runs desktop Office apps, or operates in HIPAA/insurance/accounting/legal - you'll save the cost of a separate EDR and match the software your clients send you. Pick Google Workspace Business Plus if staff is browser-native, works heavily in realtime docs, and doesn't need the Office desktop fidelity. Most Florida small offices we see end up on M365 Business Premium specifically because Defender for Business is bundled - that's a $3-7/user/mo bill you skip.",
     relatedComparisons: ["1password-vs-bitwarden"],
   },
 
@@ -225,7 +225,7 @@ export const COMPARISONS = [
         fallbackUrl: "https://www.acronis.com/en-us/business/cyber-protect/",
         priceHint: "$80–$200/mo per 10 devices",
         pros: [
-          "Single agent covers backup, anti-ransomware, and endpoint protection — meaningful for a 10-person office that can't run three separate tools.",
+          "Single agent covers backup, anti-ransomware, and endpoint protection - meaningful for a 10-person office that can't run three separate tools.",
           "Direct-buy option is viable; you don't have to go through an MSP reseller to get a license.",
           "Cloud + local hybrid storage, so a Gulf Coast office keeps a local copy but also survives losing the office to flooding.",
           "30-day retention default lines up with what most security reviewers want to see.",
@@ -237,23 +237,23 @@ export const COMPARISONS = [
           "Anti-ransomware rollback works well on Windows; Mac support is thinner.",
         ],
         bestFor:
-          "5–50 person Florida offices without a dedicated IT team — one tool, direct-buy, local + cloud.",
+          "5–50 person Florida offices without a dedicated IT team - one tool, direct-buy, local + cloud.",
       },
       {
         name: "Datto",
         fallbackUrl: "https://www.datto.com/",
         priceHint: "MSP-quoted (varies; $150–$500/mo typical for a small office)",
         pros: [
-          "Purpose-built BCDR appliances with image-level failover — a dead server can spin up as a local VM on the Datto appliance in minutes.",
+          "Purpose-built BCDR appliances with image-level failover - a dead server can spin up as a local VM on the Datto appliance in minutes.",
           "Instant virtualization (local and cloud) is the gold standard for RTO; for an office that can't tolerate an hour offline this is meaningful.",
-          "Extensive MSP channel tooling — reporting, SLAs, billing — if you buy through an MSP.",
+          "Extensive MSP channel tooling - reporting, SLAs, billing - if you buy through an MSP.",
           "SIRIS and ALTO product families cover a wide range of environments, from a single server to multi-site.",
         ],
         cons: [
           "Effectively MSP-only: buying direct is not the normal flow. You'll go through a reseller.",
           "Price is usually 1.5–3x Acronis on a comparable workload, especially including the appliance.",
-          "Appliance-based architecture means a piece of hardware you have to site, power, and maintain — something to think about in a small FL office with limited rack space.",
-          "Pricing is opaque — you won't get a public per-seat number without a conversation.",
+          "Appliance-based architecture means a piece of hardware you have to site, power, and maintain - something to think about in a small FL office with limited rack space.",
+          "Pricing is opaque - you won't get a public per-seat number without a conversation.",
         ],
         bestFor:
           "Offices with a dedicated MSP relationship and a hard recovery-time objective under an hour.",
@@ -272,7 +272,7 @@ export const COMPARISONS = [
       { label: "Fit for sub-1-hour RTO requirement", values: ["B+", "A"] },
     ],
     verdict:
-      "For the typical Sarasota-Bradenton small office — 5–25 seats, a file server, one or two line-of-business apps — Acronis is the right answer. Direct purchasing, one agent, local + cloud, and a price point that doesn't require a conversation. Datto is the right answer when you have an MSP partner, a real sub-hour RTO requirement, and the budget that goes with it. If you find yourself being quoted Datto without a clear RTO justification, that's usually a sign your MSP is optimizing for their margin instead of your use case.",
+      "For the typical Sarasota-Bradenton small office - 5–25 seats, a file server, one or two line-of-business apps - Acronis is the right answer. Direct purchasing, one agent, local + cloud, and a price point that doesn't require a conversation. Datto is the right answer when you have an MSP partner, a real sub-hour RTO requirement, and the budget that goes with it. If you find yourself being quoted Datto without a clear RTO justification, that's usually a sign your MSP is optimizing for their margin instead of your use case.",
     relatedComparisons: [],
   },
 
@@ -293,11 +293,11 @@ export const COMPARISONS = [
         fallbackUrl: "https://gusto.com/",
         priceHint: "$40/mo base + $6/person (Core) up to $80 + $12 (Plus)",
         pros: [
-          "Onboarding and payroll run UI is genuinely usable by a non-accountant office manager — which is the entire sales pitch for SMB payroll.",
+          "Onboarding and payroll run UI is genuinely usable by a non-accountant office manager - which is the entire sales pitch for SMB payroll.",
           "Florida unemployment filing is automatic and we've yet to see a mis-file in our client base.",
           "Flat, published pricing on the website. The number you quote is the number you pay.",
-          "Benefits (health, dental, vision, 401k) integrate cleanly — no separate broker login.",
-          "SOC 2 Type II and BAAs available — clears the security documentation vendor-risk questionnaire row.",
+          "Benefits (health, dental, vision, 401k) integrate cleanly - no separate broker login.",
+          "SOC 2 Type II and BAAs available - clears the security documentation vendor-risk questionnaire row.",
           "I-9 and W-4 e-signing built in; no separate DocuSign.",
         ],
         cons: [
@@ -314,7 +314,7 @@ export const COMPARISONS = [
         priceHint: "Quote-only; typically $60–$180/mo base + $4–$10/person",
         pros: [
           "Deep bench: every tax form, state, and edge case has been filed by ADP a million times. Low blast radius on weird-payroll situations.",
-          "Named dedicated support available on the paid tiers — the selling point for offices that want a phone number.",
+          "Named dedicated support available on the paid tiers - the selling point for offices that want a phone number.",
           "Integrates with a broad set of 401k providers and legacy HRIS systems.",
           "Scales upmarket without a re-platform if you grow.",
         ],
@@ -342,7 +342,7 @@ export const COMPARISONS = [
       { label: "Fit for 1–25 person Florida office", values: ["A", "B"] },
     ],
     verdict:
-      "For 95% of the Sarasota-Bradenton offices we work with — 1–25 people, one state, a mix of W-2 and 1099 — Gusto is the right answer. Transparent pricing, a UI a non-accountant can drive, and Florida unemployment filing that just works. ADP RUN is the right answer when you already have a payroll specialist, span multiple states, or want a dedicated phone rep handling questions. If you're on ADP today paying $150+/mo for a 5-person office, it's worth at least getting a Gusto quote — the delta usually pays for a year of your password manager.",
+      "For 95% of the Sarasota-Bradenton offices we work with - 1–25 people, one state, a mix of W-2 and 1099 - Gusto is the right answer. Transparent pricing, a UI a non-accountant can drive, and Florida unemployment filing that just works. ADP RUN is the right answer when you already have a payroll specialist, span multiple states, or want a dedicated phone rep handling questions. If you're on ADP today paying $150+/mo for a 5-person office, it's worth at least getting a Gusto quote - the delta usually pays for a year of your password manager.",
     relatedComparisons: [],
   },
 ];

@@ -52,7 +52,7 @@ export default function BlogIndex() {
 
   // Keep ?q=... in sync with the committed search query. We use replace
   // (not push) to avoid polluting the browser history on every debounced
-  // keystroke — the back button should escape the blog, not walk back
+  // keystroke - the back button should escape the blog, not walk back
   // through 20 query states.
   const handleQueryChange = useCallback((q) => {
     setCommittedQuery(q);
@@ -194,7 +194,7 @@ export default function BlogIndex() {
             <EmptyState
               icon={committedQuery ? "search" : "inbox"}
               title={committedQuery ? `No posts match “${committedQuery}”` : "No posts in this category yet"}
-              body={committedQuery ? "Try different keywords or clear the filter to see every recent post." : "Check back tomorrow — we publish every business day."}
+              body={committedQuery ? "Try different keywords or clear the filter to see every recent post." : "Check back tomorrow - we publish every business day."}
             />
           )}
           {hasMore && (

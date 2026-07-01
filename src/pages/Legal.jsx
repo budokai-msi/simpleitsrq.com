@@ -36,7 +36,7 @@ function LegalShell({ title, lede, children }) {
 export function PrivacyPage() {
   useSEO({
     title: "Privacy Policy | Simple IT SRQ",
-    description: "How Simple IT SRQ handles visitor and client data on simpleitsrq.com — what we collect, the lawful basis, our sub-processors, your rights under GDPR / CCPA / FIPA, and our retention schedule.",
+    description: "How Simple IT SRQ handles visitor and client data on simpleitsrq.com - what we collect, the lawful basis, our sub-processors, your rights under GDPR / CCPA / FIPA, and our retention schedule.",
     canonical: "https://simpleitsrq.com/privacy",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
@@ -47,7 +47,7 @@ export function PrivacyPage() {
   return (
     <LegalShell
       title="Privacy Policy"
-      lede="Simple IT SRQ is committed to handling your data the way we expect our clients to handle their own. This policy is the specifics — what we collect, why, who processes it, how long we keep it, and what you can do about it."
+      lede="Simple IT SRQ is committed to handling your data the way we expect our clients to handle their own. This policy is the specifics - what we collect, why, who processes it, how long we keep it, and what you can do about it."
     >
       <h2>1. Who we are</h2>
       <p>
@@ -106,11 +106,11 @@ export function PrivacyPage() {
         <li>
           <strong>Honeypot beacons</strong> (security, legitimate interest):
           if an automated scanner hits a fake admin path or submits a fake
-          login, we log the attempt and any volunteered credentials — only
+          login, we log the attempt and any volunteered credentials - only
           for threat intelligence, never used to authenticate.
         </li>
         <li>
-          <strong>Cookies and local storage</strong> — see §3.
+          <strong>Cookies and local storage</strong> - see §3.
         </li>
       </ul>
 
@@ -159,28 +159,27 @@ export function PrivacyPage() {
       <p>
         Google Analytics is configured with <strong>Consent Mode v2</strong>:
         until you opt in to analytics, GA runs in cookieless-ping mode and
-        does not persist any identifiers. Opt-in is revocable at any time —
-        re-open the banner from the footer link and choose again.
+        does not persist any identifiers. Opt-in is revocable at any time - re-open the banner from the footer link and choose again.
       </p>
 
       <h2>4. Why we process your data (lawful basis)</h2>
       <ul>
         <li>
-          <strong>Contract</strong> — to perform services you've signed up for
+          <strong>Contract</strong> - to perform services you've signed up for
           (client portal, ticketing, managed IT, digital product delivery).
         </li>
         <li>
-          <strong>Legitimate interest</strong> — website operation, security,
+          <strong>Legitimate interest</strong> - website operation, security,
           fraud prevention, server logging, abuse mitigation, honeypot
           intelligence, rate limiting, audit trail.
         </li>
         <li>
-          <strong>Consent</strong> — analytics, marketing cookies, AdSense,
+          <strong>Consent</strong> - analytics, marketing cookies, AdSense,
           marketing emails beyond transactional replies. Withdrawable in one
           click.
         </li>
         <li>
-          <strong>Legal obligation</strong> — HIPAA documentation retention,
+          <strong>Legal obligation</strong> - HIPAA documentation retention,
           Florida tax-record retention, subpoena response.
         </li>
       </ul>
@@ -197,11 +196,11 @@ export function PrivacyPage() {
         </thead>
         <tbody>
           <tr><td>Vercel, Inc.</td><td>Hosting, edge functions, analytics, speed insights, BotID</td><td>US</td></tr>
-          <tr><td>Neon (Databricks)</td><td>Primary PostgreSQL database — tickets, sessions, security events, newsletter</td><td>US</td></tr>
+          <tr><td>Neon (Databricks)</td><td>Primary PostgreSQL database - tickets, sessions, security events, newsletter</td><td>US</td></tr>
           <tr><td>Resend, Inc.</td><td>Outbound transactional and newsletter email</td><td>US</td></tr>
           <tr><td>Cloudflare</td><td>Turnstile bot challenge</td><td>Global edge</td></tr>
           <tr><td>Google LLC</td><td>Google Analytics 4 (cookieless until you opt in via the consent banner), Google AdSense (only renders ads when you opt in to marketing cookies), and OAuth sign-in</td><td>US / Global</td></tr>
-          <tr><td>Stripe, Inc.</td><td>Payment processing for fixed-fee services and subscriptions (handled entirely by Stripe — we never see your card number)</td><td>US / Global</td></tr>
+          <tr><td>Stripe, Inc.</td><td>Payment processing for fixed-fee services and subscriptions (handled entirely by Stripe - we never see your card number)</td><td>US / Global</td></tr>
           <tr><td>GitHub, Inc.</td><td>OAuth sign-in (optional)</td><td>US</td></tr>
           <tr><td>AbuseIPDB / IPinfo / Spamhaus / Emerging Threats</td><td>Threat intelligence feeds queried against incoming IPs</td><td>US / EU</td></tr>
         </tbody>
@@ -209,7 +208,7 @@ export function PrivacyPage() {
       <p>
         For EU / UK visitors: transfers to the US rely on the EU-US Data
         Privacy Framework or Standard Contractual Clauses in each vendor's
-        DPA. No EU-specific processor is used for servicing EU clients — if
+        DPA. No EU-specific processor is used for servicing EU clients - if
         you require EU-regional hosting (data residency), contact us before
         engaging.
       </p>
@@ -232,12 +231,12 @@ export function PrivacyPage() {
         with the subject line <em>Privacy Request</em>:
       </p>
       <ul>
-        <li><strong>Access</strong> — a copy of the personal information we hold about you.</li>
-        <li><strong>Rectification</strong> — correction of inaccurate data.</li>
-        <li><strong>Deletion</strong> — removal of your data, subject to legal retention obligations.</li>
-        <li><strong>Portability</strong> — a structured, machine-readable export.</li>
-        <li><strong>Objection</strong> — opt out of marketing, analytics, or any legitimate-interest processing you disagree with.</li>
-        <li><strong>Withdraw consent</strong> — reopen the cookie banner from the footer link; your choice takes effect immediately.</li>
+        <li><strong>Access</strong> - a copy of the personal information we hold about you.</li>
+        <li><strong>Rectification</strong> - correction of inaccurate data.</li>
+        <li><strong>Deletion</strong> - removal of your data, subject to legal retention obligations.</li>
+        <li><strong>Portability</strong> - a structured, machine-readable export.</li>
+        <li><strong>Objection</strong> - opt out of marketing, analytics, or any legitimate-interest processing you disagree with.</li>
+        <li><strong>Withdraw consent</strong> - reopen the cookie banner from the footer link; your choice takes effect immediately.</li>
       </ul>
       <p>
         We verify requests by asking for information that matches what we
@@ -254,7 +253,7 @@ export function PrivacyPage() {
       </p>
       <p>
         Florida residents have rights under the Florida Information Protection
-        Act (FIPA) — primarily breach-notification requirements we observe on
+        Act (FIPA) - primarily breach-notification requirements we observe on
         our side; FIPA does not itself grant consumer access / deletion
         rights the way FDBR / GDPR / CCPA do.
       </p>
@@ -265,7 +264,7 @@ export function PrivacyPage() {
         <li><strong>Newsletter subscribers:</strong> until you unsubscribe. Every newsletter includes a one-click unsubscribe link.</li>
         <li><strong>Security events + audit log:</strong> 12 months by default; high-severity events retained 24 months. Audit chain hashes are immutable by design.</li>
         <li><strong>Server logs:</strong> 12 months.</li>
-        <li><strong>Honeypot intelligence:</strong> indefinite — used for threat modeling and blocklist lineage.</li>
+        <li><strong>Honeypot intelligence:</strong> indefinite - used for threat modeling and blocklist lineage.</li>
         <li><strong>Client records (managed services):</strong> duration of engagement plus 7 years, or longer where required (e.g. HIPAA-covered practices).</li>
         <li><strong>Stripe payment records:</strong> per Stripe's retention policy, which we have no control over; usually 7 years for tax records.</li>
       </ul>
@@ -302,8 +301,8 @@ export function PrivacyPage() {
 
       <h2>11. Changes to this policy</h2>
       <p>
-        Material changes — new sub-processors, new cookie categories, new
-        retention windows — are announced on the home page for at least 14
+        Material changes - new sub-processors, new cookie categories, new
+        retention windows - are announced on the home page for at least 14
         days before taking effect, and the "Last updated" date at the top of
         this page is bumped. Non-material clarifications may be made silently.
       </p>
@@ -326,7 +325,7 @@ export function PrivacyPage() {
 export function TermsPage() {
   useSEO({
     title: "Terms of Service | Simple IT SRQ",
-    description: "Terms governing use of simpleitsrq.com — website use, fixed-fee services, affiliate disclosures, newsletter, referrals, and the standard limitations of liability. Paid engagements are governed separately by a signed MSA.",
+    description: "Terms governing use of simpleitsrq.com - website use, fixed-fee services, affiliate disclosures, newsletter, referrals, and the standard limitations of liability. Paid engagements are governed separately by a signed MSA.",
     canonical: "https://simpleitsrq.com/terms",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
@@ -412,7 +411,7 @@ export function TermsPage() {
         You subscribe by entering your email and confirming via the
         double-opt-in link we send. Every issue includes a one-click
         unsubscribe link. We don't sell, rent, or trade the list. Frequency
-        is typically monthly — we stop sending if you unsubscribe, hard-bounce,
+        is typically monthly - we stop sending if you unsubscribe, hard-bounce,
         or mark a message as spam.
       </p>
 
@@ -465,7 +464,7 @@ export function TermsPage() {
       <h2>11. Disclaimers</h2>
       <p>
         The site and digital products are provided <strong>"as is"</strong>{" "}
-        without warranties of any kind — express or implied — including
+        without warranties of any kind - express or implied - including
         merchantability, fitness for a particular purpose, and
         non-infringement. We don't warrant that the site will be
         uninterrupted, secure, or error-free.
@@ -487,7 +486,7 @@ export function TermsPage() {
       <p>
         You agree to indemnify Simple IT SRQ against any third-party claim
         arising out of your misuse of the site, violation of these terms, or
-        violation of any applicable law — including attorneys' fees and
+        violation of any applicable law - including attorneys' fees and
         costs. This clause survives termination.
       </p>
 
@@ -521,7 +520,7 @@ export function TermsPage() {
 export function AccessibilityPage() {
   useSEO({
     title: "Accessibility Statement | Simple IT SRQ",
-    description: "simpleitsrq.com's WCAG 2.2 Level AA conformance approach — what we do, how we test (axe-core + Playwright), known limitations, and how to report a barrier.",
+    description: "simpleitsrq.com's WCAG 2.2 Level AA conformance approach - what we do, how we test (axe-core + Playwright), known limitations, and how to report a barrier.",
     canonical: "https://simpleitsrq.com/accessibility",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
@@ -551,44 +550,44 @@ export function AccessibilityPage() {
       <h2>2. What we do</h2>
       <ul>
         <li>
-          <strong>Semantic HTML</strong> — every page uses proper landmarks
+          <strong>Semantic HTML</strong> - every page uses proper landmarks
           (<code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>,
           <code>&lt;main&gt;</code>, <code>&lt;footer&gt;</code>), heading
           hierarchy, and form labels.
         </li>
         <li>
-          <strong>Color contrast</strong> — primary text, buttons, and focus
+          <strong>Color contrast</strong> - primary text, buttons, and focus
           states are verified against WCAG AA contrast ratios in both light
           and dark themes.
         </li>
         <li>
-          <strong>Keyboard navigation</strong> — every interactive element is
+          <strong>Keyboard navigation</strong> - every interactive element is
           reachable and operable with Tab / Shift-Tab / Enter / Space / Esc.
           Focus indicators are visible and distinct.
         </li>
         <li>
-          <strong>Alt text and ARIA</strong> — decorative images are marked
+          <strong>Alt text and ARIA</strong> - decorative images are marked
           <code>aria-hidden</code>; meaningful images have descriptive alt
           text; icons inside interactive elements have <code>aria-label</code>
           or accessible text.
         </li>
         <li>
-          <strong>Form handling</strong> — labels are programmatically
+          <strong>Form handling</strong> - labels are programmatically
           associated with inputs, required fields are announced, and
           validation errors are conveyed via <code>role="alert"</code>.
         </li>
         <li>
-          <strong>Responsive layout</strong> — content reflows from 320 px
+          <strong>Responsive layout</strong> - content reflows from 320 px
           mobile up to large desktop displays without horizontal scrolling
           or clipped content.
         </li>
         <li>
-          <strong>Motion and animation</strong> — we respect
+          <strong>Motion and animation</strong> - we respect
           <code>prefers-reduced-motion</code>; any decorative animation
           stops when the user's OS requests it.
         </li>
         <li>
-          <strong>Dark mode</strong> — a full dark theme is available; color
+          <strong>Dark mode</strong> - a full dark theme is available; color
           tokens are verified for AA contrast in both modes.
         </li>
       </ul>
@@ -616,7 +615,7 @@ export function AccessibilityPage() {
 
       <h2>4. Known limitations</h2>
       <p>
-        Honest list — these are on our backlog; the rest are periodically
+        Honest list - these are on our backlog; the rest are periodically
         re-audited:
       </p>
       <ul>
@@ -642,8 +641,8 @@ export function AccessibilityPage() {
 
       <h2>5. Reporting a barrier</h2>
       <p>
-        If you encounter any difficulty using this site — or if you'd like
-        specific content in an alternative format — please contact us:
+        If you encounter any difficulty using this site - or if you'd like
+        specific content in an alternative format - please contact us:
       </p>
       <ul>
         <li>Email: <a href="mailto:hello@simpleitsrq.com">hello@simpleitsrq.com</a> (subject line: <em>Accessibility</em>)</li>

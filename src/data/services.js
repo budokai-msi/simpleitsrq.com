@@ -7,10 +7,10 @@
 // CTA for a real Buy Now button on the next deploy.
 //
 // Status flags:
-//   "live"     — buyLink set; full Buy CTA renders, hard-conversion path
-//   "waitlist" — no buyLink yet; email-capture CTA renders so we measure
+//   "live" - buyLink set; full Buy CTA renders, hard-conversion path
+//   "waitlist" - no buyLink yet; email-capture CTA renders so we measure
 //                demand BEFORE you spend time wiring the Stripe link
-//   "consult"  — $0 lead-gen entry tier; routes to /book instead of Stripe
+//   "consult" - $0 lead-gen entry tier; routes to /book instead of Stripe
 //
 // Cross-link from blog posts: every service has a `slug` so you can deep-link
 // /services#computer-tune-up from anywhere in the content.
@@ -35,12 +35,12 @@ export const services = [
       "Startup-list cleanup and unnecessary-service removal",
       "Driver sweep and Windows Update / macOS update pass",
       "Browser reset + extension audit (the #1 cause of slow browsing)",
-      "Disk health report — we tell you if a replacement is coming",
+      "Disk health report - we tell you if a replacement is coming",
     ],
     notInScope: [
       "Hardware replacement (we'll quote separately if a part is dying)",
       "Data recovery from a failed drive",
-      "Full OS reinstall (priced as 'Computer Reset' — different SKU)",
+      "Full OS reinstall (priced as 'Computer Reset' - different SKU)",
     ],
     bookingNote: "Drop off at our Bradenton location by appointment.",
     buyLink: env.VITE_STRIPE_LINK_TUNEUP || "",
@@ -62,12 +62,12 @@ export const services = [
       "Multi-engine malware scan with Windows Defender, Malwarebytes, ESET, and HitmanPro",
       "Browser cleanup and extension audit",
       "Boot-sector / rootkit scan via offline tooling (catches what in-OS scans miss)",
-      "Post-clean hardening — UAC, firewall, browser settings re-tightened",
+      "Post-clean hardening - UAC, firewall, browser settings re-tightened",
       "Optional: full backup of your data before we start (highly recommended for any ransomware case)",
       "Written summary of what was found, what it did, what's been done",
     ],
     notInScope: [
-      "Ransomware DECRYPTION (almost always impossible without paying ransom — we restore from backup instead)",
+      "Ransomware DECRYPTION (almost always impossible without paying ransom - we restore from backup instead)",
       "Reinstall of paid software (we'll preserve license keys if accessible)",
     ],
     bookingNote: "If you suspect ransomware: power off the machine, do NOT plug in any external drives, and call us first.",
@@ -77,7 +77,7 @@ export const services = [
   },
   {
     slug: "ssd-upgrade",
-    title: "SSD Upgrade — 1TB",
+    title: "SSD Upgrade - 1TB",
     tagline: "The single best upgrade for any 5-year-old PC. Boot in seconds, app launches feel instant.",
     audience: "Both",
     audiences: ["Residential", "Business"],
@@ -86,14 +86,14 @@ export const services = [
     priceNote: "Includes 1TB Crucial or Samsung SSD, full data migration, and 1-year drive warranty.",
     duration: "Same-day drop-off",
     contents: [
-      "Full disk-clone migration — every file, every program, every setting preserved",
+      "Full disk-clone migration - every file, every program, every setting preserved",
       "1TB SSD installed (Crucial MX500 SATA or Samsung 970/990 NVMe depending on machine)",
       "Original drive returned to you (use as external backup or wipe and reuse)",
       "Boot performance benchmark before + after (we'll show you the receipts)",
       "1-year warranty on the SSD against drive failure",
     ],
     notInScope: [
-      "Machines older than 8 years — we'll honestly recommend replacement instead",
+      "Machines older than 8 years - we'll honestly recommend replacement instead",
       "Custom drive sizes larger than 1TB (separate quote, but we can do up to 4TB)",
     ],
     buyLink: env.VITE_STRIPE_LINK_SSD || "",
@@ -112,13 +112,13 @@ export const services = [
     priceNote: "$169 for most consumer laptops · up to $249 for ultrabooks with sealed batteries.",
     duration: "Same-day drop-off",
     contents: [
-      "Genuine brand-name OEM battery (Dell / Lenovo / HP / Asus parts — no aftermarket)",
+      "Genuine brand-name OEM battery (Dell / Lenovo / HP / Asus parts - no aftermarket)",
       "Battery health report on the old battery (so you can see why it died)",
       "Calibration cycle on the new battery before pickup",
       "Replacement of the battery connector seal if it's worn",
     ],
     notInScope: [
-      "Replacement of internal motherboard battery (CMOS) — that's a separate $79 service",
+      "Replacement of internal motherboard battery (CMOS) - that's a separate $79 service",
       "MacBook batteries (we partner with an Apple-authorized shop in Sarasota)",
     ],
     buyLink: env.VITE_STRIPE_LINK_BATTERY || "",
@@ -130,7 +130,7 @@ export const services = [
   {
     slug: "network-audit",
     title: "Network + Wi-Fi Audit",
-    tagline: "On-site survey, written report, fixed-fee — no commitment to a managed plan.",
+    tagline: "On-site survey, written report, fixed-fee - no commitment to a managed plan.",
     audience: "Business",
     audiences: ["Business"],
     price: 399,
@@ -147,7 +147,7 @@ export const services = [
       "Quote for the install if you want us to do the fixes (not required)",
     ],
     notInScope: [
-      "Implementation of any fixes — that's a separate engagement",
+      "Implementation of any fixes - that's a separate engagement",
       "Penetration testing (we'll refer you to a partner pentest firm)",
     ],
     buyLink: env.VITE_STRIPE_LINK_NETWORK_AUDIT || "",
@@ -156,7 +156,7 @@ export const services = [
   },
   {
     slug: "camera-install-deposit",
-    title: "4-Camera Security System — Reservation Deposit",
+    title: "4-Camera Security System - Reservation Deposit",
     tagline: "$500 deposit reserves your install slot. Applied to the $3,500 total.",
     audience: "Both",
     audiences: ["Residential", "Business"],
@@ -166,17 +166,17 @@ export const services = [
     duration: "Install scheduled 2–3 weeks out",
     contents: [
       "Pre-install site walkthrough with the tech who'll do the install",
-      "4 UniFi Protect G5 cameras — Bullet, Dome, or Pro depending on placement",
-      "UniFi Cloud Key or Dream Machine NVR — local recording, no monthly fees",
+      "4 UniFi Protect G5 cameras - Bullet, Dome, or Pro depending on placement",
+      "UniFi Cloud Key or Dream Machine NVR - local recording, no monthly fees",
       "Cat6 cable runs to each camera, labeled and documented",
       "Hurricane-rated mounting hardware (lag bolts into framing, marine-grade stainless on barrier islands)",
-      "$2 silica-gel pack in every outdoor camera housing — eliminates morning lens fog",
+      "$2 silica-gel pack in every outdoor camera housing - eliminates morning lens fog",
       "$40 PoE surge protector at the rack (saved more cameras than any other line item)",
       "App setup, mobile viewing test, and a 15-minute training session",
     ],
     notInScope: [
-      "Cameras 5+ — pay-per-camera add-on at $400–$700 each, deposited separately",
-      "Existing-system swap-outs — we'll quote those after a free walkthrough",
+      "Cameras 5+ - pay-per-camera add-on at $400–$700 each, deposited separately",
+      "Existing-system swap-outs - we'll quote those after a free walkthrough",
     ],
     bookingNote: "Read the buyer's guide first → /blog/business-security-cameras-sarasota-honest-guide-2026",
     buyLink: env.VITE_STRIPE_LINK_CAMERA_DEPOSIT || "",
@@ -203,7 +203,7 @@ export const services = [
       "Written documentation handed to your office manager",
     ],
     notInScope: [
-      "M365 license costs — billed by Microsoft, not us. We'll guide you to the right SKU.",
+      "M365 license costs - billed by Microsoft, not us. We'll guide you to the right SKU.",
       "Custom add-on apps (Power Apps, Dynamics, etc.)",
     ],
     buyLink: env.VITE_STRIPE_LINK_M365_MIGRATION || "",
@@ -222,7 +222,7 @@ export const services = [
     contents: [
       "Static IP assignment and network wiring for up to 3 MFP/Copiers",
       "Scan-to-Email and Scan-to-Folder (SMB/SharePoint) configuration",
-      "Fax-over-Email migration — keep your Sarasota/Bradenton number, ditch the $60 line",
+      "Fax-over-Email migration - keep your Sarasota/Bradenton number, ditch the $60 line",
       "Printer-driver deployment to every workstation via group policy or manual install",
       "Security audit of the copier's web interface (disabling default passwords)",
     ],
@@ -245,7 +245,7 @@ export const services = [
     duration: "2-week prep + phased rollout",
     contents: [
       "Windows 11 Enterprise licensing review and procurement",
-      "Entra ID join for every device — no local server needed",
+      "Entra ID join for every device - no local server needed",
       "Intune / Autopilot setup for zero-touch deployment of new machines",
       "M365 Copilot & Google Gemini security governance (Data Loss Prevention)",
       "Security baseline deployment (BitLocker, Phishing-resistant MFA, Passkeys)",
@@ -261,7 +261,7 @@ export const services = [
     priority: 9,
   },
 
-  // ─────── Sarasota seasonal — UNIQUE LOCAL PLAY ───────
+  // ─────── Sarasota seasonal - UNIQUE LOCAL PLAY ───────
   {
     slug: "snowbird-arrival-setup",
     title: "Snowbird Pre-Arrival IT Setup",
@@ -273,7 +273,7 @@ export const services = [
     priceNote: "$349 per visit · book by Nov 1 for first week of arrival · Sarasota / Bradenton / Venice / Casey Key only.",
     duration: "Single visit, 2–3 hours",
     contents: [
-      "Full Wi-Fi network test from every room — modem reset, range extender check",
+      "Full Wi-Fi network test from every room - modem reset, range extender check",
       "Smart-TV, Apple TV, and streaming-device login verification",
       "Security-camera health check and recording-storage validation",
       "Computer wake-up: install pending updates, run a malware scan, verify backups",
@@ -283,7 +283,7 @@ export const services = [
     ],
     notInScope: [
       "Hardware replacements (we'll quote on-site)",
-      "Long-term monthly monitoring — see Snowbird Watch (coming soon)",
+      "Long-term monthly monitoring - see Snowbird Watch (coming soon)",
     ],
     bookingNote: "Book at least 5 days before arrival. We can also accept pickup keys via your property manager.",
     buyLink: env.VITE_STRIPE_LINK_SNOWBIRD || "",
@@ -309,7 +309,7 @@ export const services = [
       "Written follow-up email summarizing the conversation",
     ],
     notInScope: [
-      "We won't quote a managed-services contract on this call — that comes after a paid audit if you want one.",
+      "We won't quote a managed-services contract on this call - that comes after a paid audit if you want one.",
     ],
     buyLink: "/book",
     status: "consult",
