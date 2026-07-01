@@ -855,7 +855,6 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
       ?? 0,
   );
   const dbHealth = opsStatus?.runtime?.db || runtimeHealth?.checks?.db || (runtimeHealth?.ok ? "healthy" : "unknown");
-  const dbHealthGood = dbHealth === "connected" || dbHealth === "healthy";
   const stages = [
     {
       icon: Search,
@@ -925,38 +924,23 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
         <div className="leadgen-console-main">
           <div className="leadgen-console-topline">
             <span className="eyebrow">Live leadgen workspace</span>
-            <span className="leadgen-powered-pill">{queuedJobs} queued jobs</span>
+            <div className="leadgen-console-topline__right">
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm leadgen-console-topline__map"
+                onClick={() => onSelectTab("discover")}
+              >
+                <MapPinned size={14} aria-hidden="true" />
+                Open map + filters
+              </button>
+              <span className="leadgen-powered-pill">{queuedJobs} queued jobs</span>
+            </div>
           </div>
           <h2>Start with map + zip, then move leads to outreach.</h2>
           <p>
             Pick a local market, discover businesses, verify contact paths, and
             launch a controlled campaign from one workspace.
           </p>
-          <div className="leadgen-console-health" role="status" aria-live="polite">
-            <span className={`leadgen-status-chip ${dbHealthGood ? "leadgen-status-chip--good" : "leadgen-status-chip--bad"}`}>
-              DB {dbHealth}
-            </span>
-            <span className={`leadgen-status-chip ${criticalLastHour > 0 ? "leadgen-status-chip--bad" : "leadgen-status-chip--good"}`}>
-              {criticalLastHour} critical events / hour
-            </span>
-            <span className={`leadgen-status-chip ${threatFeedCount > 0 ? "leadgen-status-chip--good" : "leadgen-status-chip--wait"}`}>
-              {threatFeedCount} threat feeds ({compactNumber(threatTotalCidrs)} CIDRs)
-            </span>
-            <span className="leadgen-status-chip leadgen-status-chip--other">
-              Oldest feed sync {freshnessLabel(osintOldest)}
-            </span>
-          </div>
-          <div className="leadgen-console-focus" role="status" aria-live="polite">
-            <span className="leadgen-console-focus__label">
-              <MapPinned size={15} aria-hidden="true" />
-              Map + zip workspace
-            </span>
-            <strong>{zip && /^\d{5}$/.test(zip) ? `Targeting ${zip}` : "Pick a 5-digit zip to populate the map and queue jobs"}</strong>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => onSelectTab("discover")}>
-              Open map + filters
-              <ArrowRight size={14} aria-hidden="true" />
-            </button>
-          </div>
 
           <div className="leadgen-console-actions" aria-label="Leadgen pipeline controls">
             <label className="leadgen-zip-field">
