@@ -21,7 +21,7 @@ const TIME_WINDOWS = [
   "Weekday mornings (8am–12pm)",
   "Weekday afternoons (12pm–5pm)",
   "Weekday evenings (5pm–7pm)",
-  "Whenever — flexible",
+  "Whenever - flexible",
 ];
 
 const BOOK_FAQS = [
@@ -197,7 +197,7 @@ function ConsultationForm() {
     return (
       <div className="form-shell" style={{ textAlign: "center", padding: "2.5rem 1.5rem" }}>
         <Check size={42} color="#107C10" style={{ display: "block", margin: "0 auto 0.75rem" }} />
-        <h3 className="title-2" style={{ marginTop: 0 }}>Got it — check your inbox.</h3>
+        <h3 className="title-2" style={{ marginTop: 0 }}>Got it - check your inbox.</h3>
         <p className="section-sub" style={{ maxWidth: "42ch", margin: "0.5rem auto 0" }}>
           We'll reply from hello@simpleitsrq.com within one business hour with
           two or three time slots that match your window. If you don't see it
@@ -213,7 +213,7 @@ function ConsultationForm() {
       <p className="section-sub" style={{ marginBottom: "1.5rem" }}>
         Fill this out and a Simple IT SRQ engineer will reply within one business
         hour with 2–3 time slots that match your availability. Google Meet, Zoom,
-        or Microsoft Teams — whichever your team uses.
+        or Microsoft Teams - whichever your team uses.
       </p>
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: "1rem" }} noValidate>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
@@ -358,7 +358,7 @@ export default function Book() {
             <h1 id="book-title" className="title-1">Talk to a local engineer</h1>
             <p className="section-sub">
               Pick a time that works for you. We'll meet on Google Meet, Zoom, or
-              Microsoft Teams — whichever your team prefers. Calendar invite
+              Microsoft Teams - whichever your team prefers. Calendar invite
               fires automatically on every device: Android, iPhone, Google
               Workspace, or Microsoft 365.
             </p>
@@ -445,8 +445,7 @@ function BookPromoBanner() {
           {params.promo ? (
             <>
               <strong>Promo applied:</strong>{" "}
-              <code className="book-promo-banner__code">{params.promo}</code>{" "}
-              — 20% off your first 3 months on any Leadgen plan.
+              <code className="book-promo-banner__code">{params.promo}</code>{" "} - 20% off your first 3 months on any Leadgen plan.
             </>
           ) : (
             <>

@@ -4,7 +4,7 @@ import { trackEvent } from "../lib/analytics";
 
 // Web Share API button with clipboard fallback. On mobile this opens the
 // system share sheet (iOS, Android, Mac Safari). On browsers without
-// navigator.share — primarily desktop Chrome / Firefox — it copies the
+// navigator.share - primarily desktop Chrome / Firefox - it copies the
 // URL to the clipboard with a "Link copied" affordance.
 //
 // Both paths fire a "share_click" analytics event with the channel,
@@ -43,7 +43,7 @@ export default function ShareButton({ title, url, slug, className = "" }) {
       trackEvent("share", { method: "execCommand", content_type: "blog_post", content_id: slug });
       setTimeout(() => setState("idle"), 1800);
     } catch (err) {
-      // AbortError fires when the user dismisses the share sheet — not
+      // AbortError fires when the user dismisses the share sheet - not
       // a real failure, swallow it silently.
       if (err?.name === "AbortError") return;
       setState("error");

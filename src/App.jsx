@@ -543,7 +543,7 @@ function Navbar() {
                 to="/portal"
                 className={`nav-mobile-cta nav-mobile-cta--user${portalActive ? " is-active" : ""}`}
                 aria-current={portalActive ? "page" : undefined}
-                aria-label={`Open portal — signed in as ${user.email}`}
+                aria-label={`Open portal - signed in as ${user.email}`}
               >
                 {user.avatarUrl
                   ? <img src={user.avatarUrl} alt="" className="nav-avatar" />
@@ -621,7 +621,7 @@ function Footer() {
       <div className="container footer-grid">
         <div>
           <Logo />
-          <p className="footer-desc">Local IT support, helpdesk, computer repair, security cameras, and enterprise IT — for businesses and homes across Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
+          <p className="footer-desc">Local IT support, helpdesk, computer repair, security cameras, and enterprise IT - for businesses and homes across Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
           <div style={{ marginTop: 20 }}>
             <a className="footer-email" href="mailto:hello@simpleitsrq.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}>
               <AtSign size={16} color="var(--brand)" /> hello@simpleitsrq.com
@@ -674,7 +674,7 @@ function Footer() {
             ))}
             <li><Link to="/service-area" className="footer-cities-all">View all markets →</Link></li>
           </ul>
-          <p className="footer-area-note">Serving Southwest Florida — Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
+          <p className="footer-area-note">Serving Southwest Florida - Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
         </div>
       </div>
       <div className="footer-bottom">

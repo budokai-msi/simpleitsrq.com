@@ -7,7 +7,7 @@ const industryLandingPattern =
 
 // Core markets surfaced in the footer / nav. The full set of city pages still
 // exists (routes + sitemap) for SEO, but listing all of them everywhere is
-// bloat — the footer shows these few plus a "View all markets" link.
+// bloat - the footer shows these few plus a "View all markets" link.
 const PRIMARY_CITY_SLUGS = new Set([
   "sarasota-it-support",
   "bradenton-it-support",

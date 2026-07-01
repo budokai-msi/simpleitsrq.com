@@ -599,7 +599,7 @@ function AdminTicketConsole() {
 
 // One-click DB migration for the ticket email/CC/calendar feature. Runs
 // against Neon from the Vercel runtime (admin-session gated), so no local
-// credentials are needed. Idempotent — safe to click more than once.
+// credentials are needed. Idempotent - safe to click more than once.
 function TicketMigrationButton() {
   const [state, setState] = useState("idle");
   const [result, setResult] = useState(null);
@@ -627,7 +627,7 @@ function TicketMigrationButton() {
         <ul className="portal-migrate-results">
           {result.results.map((r) => (
             <li key={r.step} className={r.ok ? "ok" : "fail"}>
-              {r.ok ? "✓" : "✗"} {r.step}{r.error ? ` — ${r.error}` : ""}
+              {r.ok ? "✓" : "✗"} {r.step}{r.error ? ` - ${r.error}` : ""}
             </li>
           ))}
         </ul>
@@ -719,7 +719,7 @@ function Dashboard({ user, logout }) {
               <Link className="btn btn-secondary" to="/portal/leadgen">Leadgen workspace</Link>
             </div>
             <h3 style={{ marginTop: "18px" }}>Database</h3>
-            <p className="portal-muted">Apply the reply-by-email / CC / calendar schema (migration 019). Idempotent — safe to re-run.</p>
+            <p className="portal-muted">Apply the reply-by-email / CC / calendar schema (migration 019). Idempotent - safe to re-run.</p>
             <TicketMigrationButton />
           </section>
         </>

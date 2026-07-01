@@ -3,8 +3,8 @@
 // Exit-intent capture modal. When the visitor's pointer crosses the top of
 // the viewport (suggesting they're reaching for the tab bar / close button)
 // after being on the page long enough to rule out instant bounce, we offer
-// a single bite-sized choice — compliance library discount OR a free
-// security documentation intro — in exchange for an email.
+// a single bite-sized choice - compliance library discount OR a free
+// security documentation intro - in exchange for an email.
 //
 // Trigger rules:
 //   * `mouseout` with e.clientY <= 0 AND e.relatedTarget === null
@@ -15,7 +15,7 @@
 //
 // Mobile fallback: none. `mouseout` has no touch equivalent; a scroll-speed
 // heuristic produced too many false positives in dogfooding, so mobile
-// visitors just don't see this — they have MobileStickyCTA and the
+// visitors just don't see this - they have MobileStickyCTA and the
 // in-page CTAs instead.
 //
 // Submission: piggybacks on /api/contact via csrfFetch. Because /api/contact
@@ -44,7 +44,7 @@ function isEligible() {
     if (!Number.isFinite(ts)) return true;
     return Date.now() - ts > REELIGIBLE_MS;
   } catch {
-    // localStorage blocked — fall through and allow one showing this session.
+    // localStorage blocked - fall through and allow one showing this session.
     return true;
   }
 }
@@ -107,19 +107,19 @@ export default function ExitIntentModal() {
   // CSS rule), backdrop, focus return, focus trap, and Escape closing
   // for free. We just drive showModal/close from React state. The
   // dialog also self-fires a "close" event when the user hits Escape
-  // — we listen so React state stays in sync.
+  // - we listen so React state stays in sync.
   useEffect(() => {
     const el = dialogRef.current;
     if (!el) return undefined;
 
     if (open && !el.open) {
-      try { el.showModal(); } catch { /* invalid state — likely re-mount races */ }
+      try { el.showModal(); } catch { /* invalid state - likely re-mount races */ }
     } else if (!open && el.open) {
       try { el.close(); } catch { /* already closing */ }
     }
 
     const onCancel = (e) => {
-      // Native Escape close — sync React state. Calling close() also
+      // Native Escape close - sync React state. Calling close() also
       // emits this so the listener has to be defensive against
       // duplicate fires; React's state setter is idempotent.
       e.preventDefault();
@@ -166,7 +166,7 @@ export default function ExitIntentModal() {
           source: picked.source,
         }),
       });
-      // Fire-and-forget GA4 lead event regardless of server response — if
+      // Fire-and-forget GA4 lead event regardless of server response - if
       // the beacon was dropped, the user still wanted it and we still want
       // the conversion count. $400 value as rough average of the two
       // choices (discount + security documentation intro).
@@ -187,7 +187,7 @@ export default function ExitIntentModal() {
   };
 
   // We render the <dialog> unconditionally so showModal/close can run
-  // against a stable DOM node — gating on `open` here would unmount
+  // against a stable DOM node - gating on `open` here would unmount
   // and break the imperative API.
   const picked = choice ? CHOICES[choice] : null;
   const titleId = "exit-intent-title";
@@ -224,7 +224,7 @@ export default function ExitIntentModal() {
             <div className="exit-intent-success-icon">
               <Check size={28} aria-hidden="true" />
             </div>
-            <h2 id={titleId} className="exit-intent-title">Thanks — check your inbox.</h2>
+            <h2 id={titleId} className="exit-intent-title">Thanks - check your inbox.</h2>
             <p id={descId} className="exit-intent-sub">
               We'll be in touch within one business day from hello@simpleitsrq.com.
             </p>
@@ -241,7 +241,7 @@ export default function ExitIntentModal() {
           <div className="exit-intent-body">
             <span className="exit-intent-eyebrow">One last thing</span>
             <h2 id={titleId} className="exit-intent-title">
-              Before you go — renewal coming up?
+              Before you go - renewal coming up?
             </h2>
             <p id={descId} className="exit-intent-sub">
               Pick whichever is more useful. One quick email, no phone tree.

@@ -7,7 +7,7 @@ import { findGlossaryEntry, GLOSSARY } from "../data/glossary";
 import AdUnit from "../components/AdSense";
 
 function buildDefinedTermSchema(entry) {
-  // schema.org/DefinedTerm — Google sometimes surfaces this as the
+  // schema.org/DefinedTerm - Google sometimes surfaces this as the
   // featured-snippet source for "what is X" queries. Keep it minimal
   // and fact-only.
   return {
@@ -51,7 +51,7 @@ export default function GlossaryEntry() {
       : {}
   );
 
-  // Defensive — if someone hits /glossary/<typo>, send them to the index.
+  // Defensive - if someone hits /glossary/<typo>, send them to the index.
   if (!entry) return <Navigate to="/glossary" replace />;
 
   return (
@@ -120,7 +120,7 @@ export default function GlossaryEntry() {
 
           <AdUnit format="auto" className="ad-in-article" />
 
-          {/* Related glossary terms — multi-pageview engine. Each click
+          {/* Related glossary terms - multi-pageview engine. Each click
               is another AdSense impression set on a high-CPM keyword. */}
           {relatedEntries.length > 0 && (
             <section style={{ marginTop: 40, paddingTop: 32, borderTop: "1px solid var(--syn-border, #e5e7eb)" }}>

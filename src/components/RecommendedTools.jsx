@@ -22,7 +22,7 @@ const PICKS = [
   {
     Icon: HardDrive,
     name: "Portable 2TB SSD",
-    desc: "Overnight backups that unplug in the morning — ransomware can't reach what isn't mounted.",
+    desc: "Overnight backups that unplug in the morning - ransomware can't reach what isn't mounted.",
     query: "samsung t7 portable ssd 2tb",
   },
   {
@@ -65,7 +65,7 @@ export default function RecommendedTools({
         </div>
         <div className="rec-tools-footer">
           <Link to="/tools" className="btn btn-secondary">See the full list of recommended tools <ArrowRight size={14} /></Link>
-          <p className="rec-tools-disclosure">Simple IT SRQ is an Amazon Associate — qualifying purchases may earn us a small commission at no extra cost to you.</p>
+          <p className="rec-tools-disclosure">Simple IT SRQ is an Amazon Associate - qualifying purchases may earn us a small commission at no extra cost to you.</p>
         </div>
       </div>
     </section>

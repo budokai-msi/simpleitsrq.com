@@ -25,7 +25,7 @@ export default function NotFound() {
     description: "The page you were looking for does not exist. Try the home page, the blog, or contact Simple IT SRQ directly.",
     canonical: "https://simpleitsrq.com/404",
     image: "https://simpleitsrq.com/og-image.png",
-    // Don't index 404s — search engines should drop the broken URL
+    // Don't index 404s - search engines should drop the broken URL
     // they followed instead of caching a "Page not found" entry.
     robots: "noindex, nofollow",
     breadcrumbs: [
@@ -52,7 +52,7 @@ export default function NotFound() {
     <main id="main">
       <section className="section">
         <div className="container" style={{ maxWidth: 920 }}>
-          {/* Header — short, honest, no over-apology. Shows the path
+          {/* Header - short, honest, no over-apology. Shows the path
               they actually requested so they can spot a typo immediately. */}
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <div style={{
@@ -73,8 +73,7 @@ export default function NotFound() {
               <code style={{
                 background: "var(--surface-2)", padding: "2px 8px", borderRadius: 6,
                 fontFamily: "ui-monospace, Menlo, monospace", fontSize: "0.85em",
-              }}>{pathname}</code>{" "}
-              — typo, dead link, or moved page. Pick a working destination below.
+              }}>{pathname}</code>{" "} - typo, dead link, or moved page. Pick a working destination below.
             </p>
             <div className="hero-ctas" style={{ justifyContent: "center", marginTop: 24 }}>
               <Link to="/" className="btn btn-primary btn-lg">
@@ -86,7 +85,7 @@ export default function NotFound() {
             </div>
           </div>
 
-          {/* Suggestions grid — every link goes somewhere real and useful.
+          {/* Suggestions grid - every link goes somewhere real and useful.
               Replaces the previous home/blog-only dead end. */}
           <div style={{
             display: "grid",

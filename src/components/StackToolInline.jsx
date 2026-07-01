@@ -1,10 +1,10 @@
-// Inline "stack tool card" — renders a compact affiliate-aware card for
+// Inline "stack tool card" - renders a compact affiliate-aware card for
 // any tool defined in src/data/stack.js.
 //
 // Two entry points feed this component:
-//   1. Legacy markdown `[[tool:<id>]]` shortcode — parsed inside
+//   1. Legacy markdown `[[tool:<id>]]` shortcode - parsed inside
 //      BlogPost.renderInline() and dispatched here.
-//   2. MDX `<Tool id="..." />` component — bound via getMdxComponents()
+//   2. MDX `<Tool id="..." />` component - bound via getMdxComponents()
 //      in BlogPost.jsx so `slug` is carried through for tracking.
 //
 // If the tool id doesn't resolve, we render the raw id as plain text so a
@@ -37,7 +37,7 @@ export default function StackToolInline({ toolId, id, compact = false, slug = nu
   const className = `stack-tool-inline${compact ? " stack-tool-inline--compact" : ""}`;
 
   const ctaLabel = link.isAffiliate
-    ? `Check price — ${tool.name}`
+    ? `Check price - ${tool.name}`
     : `Visit ${tool.name}`;
 
   const handleClick = () => {
@@ -86,7 +86,7 @@ export default function StackToolInline({ toolId, id, compact = false, slug = nu
   }
 
   return (
-    <span className={className} role="group" aria-label={`${tool.name} — stack tool`}>
+    <span className={className} role="group" aria-label={`${tool.name} - stack tool`}>
       <span className="stack-tool-inline__row">
         <strong className="stack-tool-inline__name">{tool.name}</strong>
         {tool.priceHint && (

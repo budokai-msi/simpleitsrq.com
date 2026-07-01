@@ -130,7 +130,7 @@ function LeadgenIntegrationsManager() {
       setMsg({
         ok: true,
         text: j.fields?.length
-          ? `Loaded ${j.fields.length} field${j.fields.length === 1 ? "" : "s"} — pick from the field boxes below.`
+          ? `Loaded ${j.fields.length} field${j.fields.length === 1 ? "" : "s"} - pick from the field boxes below.`
           : "No custom fields found on this ActiveCampaign account.",
       });
     } catch (err) {
@@ -676,9 +676,9 @@ export default function LeadgenDashboard() {
                 {Object.entries(status.preflight.checks).map(([name, c]) => (
                   <li key={name}>
                     {c.ok ? "✓" : "✗"} <code>{name}</code>
-                    {c.missing?.length ? ` — missing: ${c.missing.join(", ")}` : ""}
-                    {c.hint ? ` — ${c.hint}` : ""}
-                    {!c.ok && c.detail ? ` — ${c.detail}` : ""}
+                    {c.missing?.length ? ` - missing: ${c.missing.join(", ")}` : ""}
+                    {c.hint ? ` - ${c.hint}` : ""}
+                    {!c.ok && c.detail ? ` - ${c.detail}` : ""}
                   </li>
                 ))}
               </ul>
@@ -1168,7 +1168,7 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
           <div><strong>{runningJobs}</strong><span>worker jobs running</span></div>
         </div>
         {/* Ops/security context lives here (the hero strip was removed as a
-            duplicate) — but it's secondary to pipeline signal, so it reads as
+            duplicate) - but it's secondary to pipeline signal, so it reads as
             one quiet status line instead of a second grid of hero numbers. */}
         <p className="leadgen-signal-ops" role="status">
           <span className={dbHealth === "connected" || dbHealth === "healthy" ? "is-good" : "is-bad"}>DB {dbHealth}</span>

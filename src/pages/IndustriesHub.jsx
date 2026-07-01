@@ -7,7 +7,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { industries, matchIndustryPattern } from "../data/industries";
 import { cities } from "../data/cities";
 
-// Lucide icon per industry — keeps the hub page visually scannable so
+// Lucide icon per industry - keeps the hub page visually scannable so
 // a visitor can find their vertical in 3 seconds without reading copy.
 const ICONS = {
   medical:           Stethoscope,
@@ -18,10 +18,10 @@ const ICONS = {
   "vacation-rental": KeyRound,
 };
 
-// Service-area umbrella copy — Florida-flavored so the page can rank
+// Service-area umbrella copy - Florida-flavored so the page can rank
 // for "florida [industry] it support" queries that don't include a
 // specific city. Each industry section then cascades into city links.
-const HUB_INTRO = `Florida small-business IT looks different from the national playbook. Hurricane season, snowbird traffic, FIPA + FTC Safeguards on top of HIPAA, a healthcare market the size of some entire states packed into Sarasota and Manatee counties — every industry we serve has its own version of "what works on the Gulf Coast." This page is the index: pick your industry, then drill into the city closest to your office.`;
+const HUB_INTRO = `Florida small-business IT looks different from the national playbook. Hurricane season, snowbird traffic, FIPA + FTC Safeguards on top of HIPAA, a healthcare market the size of some entire states packed into Sarasota and Manatee counties - every industry we serve has its own version of "what works on the Gulf Coast." This page is the index: pick your industry, then drill into the city closest to your office.`;
 
 export default function IndustriesHub() {
   useSEO({
@@ -46,7 +46,7 @@ export default function IndustriesHub() {
               <Briefcase size={14} /> Industries we serve
             </span>
             <h1 id="industries-title" className="display">
-              IT support by industry — across the Florida Gulf Coast
+              IT support by industry - across the Florida Gulf Coast
             </h1>
             <p className="lede">{HUB_INTRO}</p>
           </div>
@@ -56,7 +56,7 @@ export default function IndustriesHub() {
               const Icon = ICONS[Object.keys(industries).find((k) => industries[k] === industry)] || Briefcase;
               // Build a list of (cityKey, city) for cities where this
               // industry has a real matching pattern. Hides verticals
-              // we don't actually serve in a particular city — keeps the
+              // we don't actually serve in a particular city - keeps the
               // hub page honest, no thin links.
               const liveCityPairs = industry.cities
                 .map((cityKey) => ({ cityKey, city: cities[cityKey] }))
@@ -139,7 +139,7 @@ export default function IndustriesHub() {
             <p className="section-sub" style={{ marginBottom: 14 }}>
               The page above lists the verticals we have city-specific
               dedicated copy for. We also support most other small-business
-              types — accounting, marketing/PR, professional services,
+              types - accounting, marketing/PR, professional services,
               property management, retail, light manufacturing, and similar.
               The IT services and the engagement model are the same; the
               compliance specifics shift. Tell us what you do and we'll

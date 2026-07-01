@@ -36,7 +36,7 @@ export default class ErrorBoundary extends Component {
     // Two reporters in parallel: our own /api/track beacon (always-on,
     // self-hosted, lands in security_events as kind='client_error') AND
     // Sentry if configured (richer context, no-op without VITE_SENTRY_DSN).
-    // Both wrapped — reporting must never break the error UI.
+    // Both wrapped - reporting must never break the error UI.
     reportError(err);
     import("../lib/sentry.js")
       .then(({ captureException, initSentry }) => {
