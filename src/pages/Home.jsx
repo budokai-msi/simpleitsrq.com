@@ -76,9 +76,19 @@ function Hero() {
             </Link>
           </div>
           <ul className="home-hero__proof" aria-label="What we support">
+            <li>
+              <Phone size={15} />{" "}
+              <a
+                href="tel:+14072421456"
+                className="home-hero__phone"
+                onClick={() => trackEvent("generate_lead", { source: "home_hero_phone" })}
+              >
+                (407) 242-1456
+              </a>
+              {" "}- a tech picks up
+            </li>
             <li><MapPin size={15} /> Sarasota, Bradenton, Venice</li>
             <li><Clock size={15} /> One-time repair or monthly support</li>
-            <li><ShieldCheck size={15} /> Documentation without insurance sales</li>
           </ul>
         </div>
         <aside className="home-hero__panel" aria-label="Choose a service">
