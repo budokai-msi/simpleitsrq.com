@@ -9,7 +9,7 @@ const RECENCY_WINDOW_DAYS = 90;
 
 // Score every post in `pool` relative to `current`:
 //   +3 per shared tag, +2 same category, +1 if within 90 days,
-//   -10 for self (belt-and-suspenders — we also filter by slug).
+//   -10 for self (belt-and-suspenders - we also filter by slug).
 // Ties break by date descending so the freshest of equal-relevance wins.
 function scoreRelated(current, pool) {
   const currentTags = new Set(current.tags || []);

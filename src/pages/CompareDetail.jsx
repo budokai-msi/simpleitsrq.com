@@ -64,7 +64,7 @@ function ProductHeroCard({ product, slug, side }) {
           className="btn btn-primary compare-vs-card__cta"
           onClick={onClick}
         >
-          {link.isAffiliate ? "Check price — " : "Visit — "}
+          {link.isAffiliate ? "Check price - " : "Visit - "}
           {product.name}
           <ExternalLink size={14} />
         </a>
@@ -110,7 +110,7 @@ export default function CompareDetail() {
   const { slug } = useParams();
   const comparison = useMemo(() => getComparison(slug), [slug]);
 
-  // Per-product Product JSON-LD — two separate blobs so Google understands
+  // Per-product Product JSON-LD - two separate blobs so Google understands
   // these are two products being compared, not a single comparison article.
   // Injected/cleaned up imperatively because useSEO only owns its standard
   // slot IDs.
@@ -191,7 +191,7 @@ export default function CompareDetail() {
         </div>
       </section>
 
-      {/* VS hero — two product cards with a "VS" divider between them. */}
+      {/* VS hero - two product cards with a "VS" divider between them. */}
       <section className="section section-alt">
         <div className="container" style={{ maxWidth: 1040 }}>
           <div className="compare-vs">

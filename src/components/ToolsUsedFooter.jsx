@@ -12,7 +12,7 @@ import { trackAffiliateClick } from "../lib/trackClick";
 const TOKEN_RE = /\[\[(amazon(?:_search)?:[^\]]+)\]\]/g;
 
 function extractTools(content) {
-  // Defensive typeof guard — `content` can be a lazy-imported MDX module
+  // Defensive typeof guard - `content` can be a lazy-imported MDX module
   // (object) in some dynamic-import paths; .exec() against a non-string
   // would throw during render.
   if (!content || typeof content !== "string") return [];
@@ -39,7 +39,7 @@ export default function ToolsUsedFooter({ content, slug }) {
   return (
     <aside className="tools-used-footer" aria-label="Tools mentioned in this article">
       <h3 className="tools-used-title">Tools mentioned in this article</h3>
-      <p className="tools-used-sub">Every product below is on Amazon. The links are affiliate — buying through them helps support the blog at no cost to you.</p>
+      <p className="tools-used-sub">Every product below is on Amazon. The links are affiliate - buying through them helps support the blog at no cost to you.</p>
       <ul className="tools-used-list">
         {tools.map((t, i) => (
           <li key={i} className="tools-used-item">
@@ -55,7 +55,7 @@ export default function ToolsUsedFooter({ content, slug }) {
             >
               {t.label}
             </a>
-            {t.blurb && <span className="tools-used-blurb"> — {t.blurb}</span>}
+            {t.blurb && <span className="tools-used-blurb"> - {t.blurb}</span>}
           </li>
         ))}
       </ul>

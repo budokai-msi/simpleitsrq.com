@@ -33,7 +33,7 @@ export default function Glossary() {
             </h1>
             <p className="lede">
               Every term Florida small-business owners hear from auditors,
-              insurance carriers, and IT vendors — defined in 30 seconds, with
+              insurance carriers, and IT vendors - defined in 30 seconds, with
               the "why it matters" and "what to do" attached.
             </p>
           </div>

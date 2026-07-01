@@ -1,6 +1,6 @@
 // City-specific data for local landing pages.
 // Each entry feeds src/pages/LocalLanding.jsx and the sitemap generator.
-// Copy is intentionally written in plain English — a small business owner
+// Copy is intentionally written in plain English - a small business owner
 // searching for "IT help in Sarasota" shouldn't need to know what EDR,
 // MDR, or QBR mean to understand what we do.
 
@@ -17,24 +17,24 @@ export const cities = {
     h1: "IT Support in Sarasota, FL",
     title: "Sarasota IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
     metaDescription: "Local IT support, computer repair, copiers and fax, migrations, and Windows Enterprise for Sarasota businesses. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone. Free IT check-up.",
-    intro: "Sarasota's dental groups, law firms, brokerages, and professional offices need IT that just works. Simple IT SRQ runs managed services across the city — Microsoft 365 migrations, Windows Enterprise, cybersecurity, and the office hardware most MSPs subcontract. Local engineers, networks monitored 24x7.",
-    servicesIntro: "We operate full-stack IT for Sarasota organizations — from endpoint repair and cloud migrations through complex Windows Enterprise environments and integrated office hardware. The accounts we run typically map to one of three operating profiles:",
+    intro: "Sarasota's dental groups, law firms, brokerages, and professional offices need IT that just works. Simple IT SRQ runs managed services across the city - Microsoft 365 migrations, Windows Enterprise, cybersecurity, and the office hardware most MSPs subcontract. Local engineers, networks monitored 24x7.",
+    servicesIntro: "We operate full-stack IT for Sarasota organizations - from endpoint repair and cloud migrations through complex Windows Enterprise environments and integrated office hardware. The accounts we run typically map to one of three operating profiles:",
     localPatterns: [
       { title: "Medical practice, Fruitville corridor", body: "EHR uptime on whatever platform the practice uses, HIPAA paperwork built for security renewals, and a Wi-Fi plan that handles 10 providers plus chair-side tablets on the same network without dropping the imaging software." },
-      { title: "Law firm, downtown Sarasota", body: "Microsoft 365 security tuned for law firms, Clio or PracticePanther integrations, encrypted client-document sharing with audit trails, and the security documentation package reviewers ask for at renewal — ready to hand over on day one." },
+      { title: "Law firm, downtown Sarasota", body: "Microsoft 365 security tuned for law firms, Clio or PracticePanther integrations, encrypted client-document sharing with audit trails, and the security documentation package reviewers ask for at renewal - ready to hand over on day one." },
       { title: "Boutique retailer, St. Armands / Main Street", body: "Point-of-sale uptime during peak tourist weekends, guest Wi-Fi that's isolated from the register network, security cameras that actually get reviewed after an incident, and back-office systems that survive a hurricane-season power dip." },
     ],
     landmarks: ["Main Street Sarasota", "St. Armands Circle", "Lido Key", "Fruitville Road medical corridor", "Downtown Sarasota"],
     neighborhoods: "downtown Sarasota, St. Armands, Lido Key, Siesta Key, Osprey, the Rosemary District, and the Fruitville medical corridor",
     whyLocal: [
-      "Local engineers dispatched from Sarasota — never handed off to a Tampa subcontractor.",
+      "Local engineers dispatched from Sarasota - never handed off to a Tampa subcontractor.",
       "A named primary engineer on every account who knows your setup and the controls your insurer keeps asking about.",
-      "Deep healthcare/HIPAA work — risk assessments, Safeguards docs, and BAAs for Sarasota's independent practices.",
+      "Deep healthcare/HIPAA work - risk assessments, Safeguards docs, and BAAs for Sarasota's independent practices.",
     ],
     faqs: [
       {
         q: "How do you handle on-site visits in Sarasota?",
-        a: "We schedule on-site visits across downtown Sarasota, Lido Key, and the Fruitville corridor as quickly as our calendar allows. Most issues we can start working on remotely first, and we'll be straight with you about when a tech can actually be there — no fake response-time promises."
+        a: "We schedule on-site visits across downtown Sarasota, Lido Key, and the Fruitville corridor as quickly as our calendar allows. Most issues we can start working on remotely first, and we'll be straight with you about when a tech can actually be there - no fake response-time promises."
       },
       {
         q: "Do you support medical practices and handle HIPAA paperwork?",
@@ -42,15 +42,15 @@ export const cities = {
       },
       {
         q: "What does IT support cost for a small Sarasota business?",
-        a: "Our flat-rate plans start around $95 per person per month for fully managed IT — covering antivirus, security monitoring, help desk, and on-site support. We give every business a specific quote after a free 30-minute call so you're never surprised."
+        a: "Our flat-rate plans start around $95 per person per month for fully managed IT - covering antivirus, security monitoring, help desk, and on-site support. We give every business a specific quote after a free 30-minute call so you're never surprised."
       },
       {
         q: "Do you replace our in-house IT person or work alongside them?",
-        a: "Both. We run IT end-to-end for teams of 5 to 80 people, and we also co-manage alongside in-house IT at larger firms — usually taking on security, email, and after-hours coverage while your internal person handles day-to-day apps."
+        a: "Both. We run IT end-to-end for teams of 5 to 80 people, and we also co-manage alongside in-house IT at larger firms - usually taking on security, email, and after-hours coverage while your internal person handles day-to-day apps."
       },
       {
         q: "Are you really local, or a national company with a Sarasota phone number?",
-        a: "We're based right here in Sarasota and Bradenton with techs who live in town. When you call, you get a Bradenton or Sarasota engineer — not an overseas call center."
+        a: "We're based right here in Sarasota and Bradenton with techs who live in town. When you call, you get a Bradenton or Sarasota engineer - not an overseas call center."
       },
     ],
   },
@@ -66,8 +66,8 @@ export const cities = {
     h1: "IT Support in Bradenton, FL",
     title: "Bradenton IT Support | Local Tech Team | Simple IT SRQ",
     metaDescription: "Local IT support, computer repair, copiers and fax, migrations, and Windows Enterprise for Bradenton, FL businesses. Flat monthly pricing, HIPAA paperwork, and a local Manatee County team. Free IT check-up.",
-    intro: "Bradenton is our home market. Simple IT SRQ runs managed IT for the businesses that keep Manatee County moving — medical offices on Manatee Avenue, construction and marine operations near the Port, and professional firms across Bradenton, Palmetto, and Ellenton. Microsoft 365, Windows Enterprise, backups, and local on-site support.",
-    servicesIntro: "Our Bradenton engagements span the full stack — endpoint repair, Windows Enterprise migrations, integrated office hardware, and continuity planning. Accounts split roughly into three operating profiles:",
+    intro: "Bradenton is our home market. Simple IT SRQ runs managed IT for the businesses that keep Manatee County moving - medical offices on Manatee Avenue, construction and marine operations near the Port, and professional firms across Bradenton, Palmetto, and Ellenton. Microsoft 365, Windows Enterprise, backups, and local on-site support.",
+    servicesIntro: "Our Bradenton engagements span the full stack - endpoint repair, Windows Enterprise migrations, integrated office hardware, and continuity planning. Accounts split roughly into three operating profiles:",
     localPatterns: [
       { title: "Construction firm, SR-64 corridor", body: "Rugged field laptops that survive the truck cab, cellular-backup networks at the job-site trailer, MDM for the foreman tablets, and a plan for the days when the office loses power but a concrete pour is still on the schedule." },
       { title: "Marine business, Bradenton / Palmetto waterfront", body: "Reliable Wi-Fi that reaches the dock and the lift, mobile-device management for fleet iPads, invoicing systems that survive a hurricane-season power outage, and offsite backups that don't assume the mainland is online." },
@@ -76,7 +76,7 @@ export const cities = {
     landmarks: ["Bradenton Riverwalk", "Old Main Street", "Manatee Avenue medical corridor", "SR-64 business parks", "Downtown Bradenton"],
     neighborhoods: "downtown Bradenton, the Riverwalk and Old Main Street, West Bradenton, Palma Sola, Bayshore Gardens, and the Manatee Avenue medical corridor",
     whyLocal: [
-      "Headquartered in Manatee County — engineers dispatched locally, no per-trip charge from Tampa.",
+      "Headquartered in Manatee County - engineers dispatched locally, no per-trip charge from Tampa.",
       "Gulf Coast hurricane continuity: replicated off-site backups, generator-rated gear, and a tested DR runbook.",
       "A named engineer, a phone answered on the first ring, and flat monthly pricing that doesn't balloon.",
     ],
@@ -91,7 +91,7 @@ export const cities = {
       },
       {
         q: "Can you help our Bradenton medical practice with HIPAA?",
-        a: "Absolutely. We run the written security review, turn on two-step sign-in, install antivirus, back everything up, and give you the paperwork your auditors and insurance carrier expect — all in plain English."
+        a: "Absolutely. We run the written security review, turn on two-step sign-in, install antivirus, back everything up, and give you the paperwork your auditors and insurance carrier expect - all in plain English."
       },
       {
         q: "How long does it take to switch IT companies?",
@@ -99,7 +99,7 @@ export const cities = {
       },
       {
         q: "Do you work with construction and marine businesses?",
-        a: "Yes — we support several SRQ-area construction firms and marine businesses. Rugged laptops for the job site, reliable Wi-Fi on the water, company phone systems, and remote tracking for company devices are all things we do every day."
+        a: "Yes - we support several SRQ-area construction firms and marine businesses. Rugged laptops for the job site, reliable Wi-Fi on the water, company phone systems, and remote tracking for company devices are all things we do every day."
       },
     ],
   },
@@ -115,24 +115,24 @@ export const cities = {
     h1: "IT Support in Lakewood Ranch, FL",
     title: "Lakewood Ranch IT Support | Local IT Help | Simple IT SRQ",
     metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Lakewood Ranch professional offices and residential clients. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone.",
-    intro: "Lakewood Ranch is a fast-growing professional hub. Simple IT SRQ runs managed IT for the law firms, financial advisors, medical specialists, and brokerages around Main Street, the Medical Center, and the UTC corridor — security, Microsoft 365, and compliance documentation that scales with you.",
-    servicesIntro: "Lakewood Ranch is a professional-services market: law, finance, medical, insurance, real estate. Most LWR engagements run 15-to-50 seats, framed by a security renewal cycle or a buildout at Center Point or Waterside Place. The capabilities below ship on every engagement — only the prioritization changes.",
+    intro: "Lakewood Ranch is a fast-growing professional hub. Simple IT SRQ runs managed IT for the law firms, financial advisors, medical specialists, and brokerages around Main Street, the Medical Center, and the UTC corridor - security, Microsoft 365, and compliance documentation that scales with you.",
+    servicesIntro: "Lakewood Ranch is a professional-services market: law, finance, medical, insurance, real estate. Most LWR engagements run 15-to-50 seats, framed by a security renewal cycle or a buildout at Center Point or Waterside Place. The capabilities below ship on every engagement - only the prioritization changes.",
     localPatterns: [
       { title: "Financial advisory firm, LWR Main Street", body: "SEC + GLBA documentation written to what examiners actually ask in 2026, MFA hardware keys on every admin account, encrypted email workflows that don't break Outlook, and quarterly phishing tests with results packaged for the compliance binder." },
       { title: "Real estate brokerage, UTC corridor", body: "Agent account churn without the lost-email drama, shared-drive governance per team, MLS and transaction-management integrations, and commission-software uptime the day before every closing." },
-      { title: "Medical specialist, LWR Medical Center area", body: "HIPAA, security documentation, and the EHR-vendor coordination nobody wants to do themselves — we book the vendor calls, document the integrations, and keep the audit file current between renewal cycles." },
+      { title: "Medical specialist, LWR Medical Center area", body: "HIPAA, security documentation, and the EHR-vendor coordination nobody wants to do themselves - we book the vendor calls, document the integrations, and keep the audit file current between renewal cycles." },
     ],
     landmarks: ["Lakewood Ranch Main Street", "University Town Center (UTC) mall", "Waterside Place", "Lakewood Ranch Medical Center", "Center Point corporate park"],
     neighborhoods: "Lakewood Ranch Main Street, Waterside Place, Country Club East, Central Park, the UTC corridor, and the business parks along SR-70",
     whyLocal: [
-      "Built for LWR's 10-80 seat professional offices — law, finance, medical, insurance, real estate — with the controls each regulator expects.",
+      "Built for LWR's 10-80 seat professional offices - law, finance, medical, insurance, real estate - with the controls each regulator expects.",
       "Security-renewal evidence carriers actually score: phishing-resistant MFA, modern EDR, tested off-site backups, and a written incident-response plan.",
-      "Quarterly strategic IT reviews in plain English — what's working, what's about to fail, and what belongs in next year's budget.",
+      "Quarterly strategic IT reviews in plain English - what's working, what's about to fail, and what belongs in next year's budget.",
     ],
     faqs: [
       {
         q: "Do you support businesses around UTC and Lakewood Ranch Main Street?",
-        a: "Yes — a big share of our clients are right there. We work directly with offices around UTC and Main Street, and remote help is the norm with on-site visits scheduled into the same week when possible."
+        a: "Yes - a big share of our clients are right there. We work directly with offices around UTC and Main Street, and remote help is the norm with on-site visits scheduled into the same week when possible."
       },
       {
         q: "We're a financial advisory firm. Can you help with the security rules we're held to?",
@@ -164,8 +164,8 @@ export const cities = {
     h1: "IT Support in Nokomis, FL",
     title: "Nokomis IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
     metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Nokomis and Casey Key businesses and residential clients. Flat monthly pricing, HIPAA paperwork, and a real team based in Sarasota County. Free IT check-up.",
-    intro: "Nokomis sits at the south end of Sarasota County around Casey Key. Simple IT SRQ supports its vacation-rental managers, marine services, medical offices, and professional practices along US-41 and Albee Road — plus Casey Key residential. Local engineers dispatched from Sarasota County, not Tampa.",
-    servicesIntro: "Nokomis accounts cluster in 5-to-30-seat offices along US-41 and Casey Key — weighted toward vacation rental, marine services, and independent medical, each carrying its own seasonal load curve. Capacity is sized for the November-through-April surge, not the summer baseline.",
+    intro: "Nokomis sits at the south end of Sarasota County around Casey Key. Simple IT SRQ supports its vacation-rental managers, marine services, medical offices, and professional practices along US-41 and Albee Road - plus Casey Key residential. Local engineers dispatched from Sarasota County, not Tampa.",
+    servicesIntro: "Nokomis accounts cluster in 5-to-30-seat offices along US-41 and Casey Key - weighted toward vacation rental, marine services, and independent medical, each carrying its own seasonal load curve. Capacity is sized for the November-through-April surge, not the summer baseline.",
     localPatterns: [
       { title: "Vacation rental management, Casey Key", body: "Smart-lock integrations that stay synced with the booking calendar, guest Wi-Fi per property separated from the owner network, booking-system uptime during Jan-Mar peak, and an off-island data backup nobody in the Casey Key rental world is actually doing." },
       { title: "Marine services, US-41 corridor", body: "Shop-floor Wi-Fi that reaches past the lift, invoicing systems that work from a captain's phone when the tech is at the dock, inventory for parts that ride out the SR-681 gap during a storm, and hurricane plans written for a week without power." },
@@ -174,14 +174,14 @@ export const cities = {
     landmarks: ["Nokomis Beach", "Casey Key", "US-41 corridor", "Albee Road", "North Jetty Park"],
     neighborhoods: "Nokomis, Casey Key, Laurel, south Osprey, and the US-41 business corridor between Venice and Sarasota",
     whyLocal: [
-      "Sarasota County engineers dispatched locally — not driven in from Tampa under a per-mile clause.",
+      "Sarasota County engineers dispatched locally - not driven in from Tampa under a per-mile clause.",
       "Right-sized for 5-30 seat operators and residences: vacation-rental managers, marine services, medical, and pro firms.",
       "Barrier-island hurricane recovery: replicated off-site backups, generator-rated networks, and a tested runbook.",
     ],
     faqs: [
       {
         q: "Do you cover Nokomis from your Sarasota office?",
-        a: "Yes — Nokomis is right inside our regular service area. We're based in Sarasota and Bradenton, so we cover Nokomis, Casey Key, and Laurel as part of our normal route. Most issues we start on remotely first, and we'll be straight with you about when a tech can be on-site."
+        a: "Yes - Nokomis is right inside our regular service area. We're based in Sarasota and Bradenton, so we cover Nokomis, Casey Key, and Laurel as part of our normal route. Most issues we start on remotely first, and we'll be straight with you about when a tech can be on-site."
       },
       {
         q: "Do you support vacation rental management companies?",
@@ -212,9 +212,9 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Venice, FL",
     title: "Venice IT Support | Local IT Help and HIPAA Compliance | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Venice, FL — businesses and residential. Helpdesk for medical, legal, and professional offices along Venice Avenue, Jacaranda, and the airport corridor. Flat monthly pricing and HIPAA-ready compliance work.",
-    intro: "Venice runs two markets at once — a healthcare cluster around the hospital and a historic downtown of professional practices — plus a snowbird season that doubles network load November through April. Simple IT SRQ runs managed IT for Venice medical, legal, accounting, dental, and real-estate offices, sized for the seasonal peak and the year-round compliance load.",
-    servicesIntro: "Venice operates as two markets at once — a downtown of long-running professional practices, and a healthcare cluster around ShoreView Hospital. Both roughly double in network load November through April. Capacity is engineered against the seasonal peak, not the summer baseline.",
+    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Venice, FL - businesses and residential. Helpdesk for medical, legal, and professional offices along Venice Avenue, Jacaranda, and the airport corridor. Flat monthly pricing and HIPAA-ready compliance work.",
+    intro: "Venice runs two markets at once - a healthcare cluster around the hospital and a historic downtown of professional practices - plus a snowbird season that doubles network load November through April. Simple IT SRQ runs managed IT for Venice medical, legal, accounting, dental, and real-estate offices, sized for the seasonal peak and the year-round compliance load.",
+    servicesIntro: "Venice operates as two markets at once - a downtown of long-running professional practices, and a healthcare cluster around ShoreView Hospital. Both roughly double in network load November through April. Capacity is engineered against the seasonal peak, not the summer baseline.",
     localPatterns: [
       { title: "Dental or medical specialist, Venice Avenue / near ShoreView", body: "Snowbird-season network sizing (firewalls, APs, and ISP plans spec'd for the peak), HIPAA paperwork aligned to 2026 security renewal forms, and an EHR vendor point-of-contact log that saves an hour on every support call." },
       { title: "Law firm, historic downtown Venice", body: "Document security with matter-level access, client portal uptime, matter-based backups that ignore the rest of the drive, and the three-times-a-year phishing-simulation evidence the Florida Bar's risk-management CLEs now quietly expect." },
@@ -223,26 +223,26 @@ export const cities = {
     landmarks: ["Historic Venice Avenue", "Shamrock Park business corridor", "ShoreView Hospital (formerly Venice Regional Bayfront Health)", "Venice Municipal Airport", "Jacaranda Plaza", "The Legacy Trail"],
     neighborhoods: "Historic downtown Venice, Venice Island, the Jacaranda corridor, East Venice, the Venice airport business district, South Venice, and Englewood-adjacent offices off River Road",
     whyLocal: [
-      "Seasonal capacity planning — firewalls, Wi-Fi, and ISP sized for the Nov-Apr snowbird surge so the network never saturates.",
+      "Seasonal capacity planning - firewalls, Wi-Fi, and ISP sized for the Nov-Apr snowbird surge so the network never saturates.",
       "Deep healthcare/HIPAA work for one of Florida's densest medical markets: risk assessments, Safeguards docs, BAAs, and audit-ready evidence.",
-      "Sarasota County engineers — Venice is part of our regular dispatch zone, not a contracted-out trip from Tampa.",
+      "Sarasota County engineers - Venice is part of our regular dispatch zone, not a contracted-out trip from Tampa.",
     ],
     faqs: [
       {
         q: "Do you cover Venice from your Sarasota office?",
-        a: "Yes — Venice is part of our regular service area, not a special trip. We're based in Sarasota and Bradenton, and Venice is part of our normal weekly run. Most issues we start on remotely first; on-site visits get scheduled as quickly as our calendar allows. Several Venice medical and legal clients have pre-scheduled weekly slots for predictable on-site coverage."
+        a: "Yes - Venice is part of our regular service area, not a special trip. We're based in Sarasota and Bradenton, and Venice is part of our normal weekly run. Most issues we start on remotely first; on-site visits get scheduled as quickly as our calendar allows. Several Venice medical and legal clients have pre-scheduled weekly slots for predictable on-site coverage."
       },
       {
         q: "Do you specialize in medical practice IT around the hospital?",
         a: "Yes. A big share of our Venice work is dental offices, physical therapy groups, imaging centers, and specialty practices clustered near ShoreView Hospital and along Venice Avenue. We run written HIPAA risk assessments, sign BAAs, manage EHR uptime, and hand over audit-ready documentation for state and insurance renewals."
       },
       {
-        q: "Our office is dead slow during snowbird season — can you fix that?",
-        a: "That's one of the most common calls we get from November to April. It's almost always one of three things: an undersized firewall, Wi-Fi access points mounted for a half-empty office, or an ISP plan that hasn't been revisited since 2019. We do a free site survey, tell you which of the three is actually the bottleneck, and size the fix to the seasonal peak — not the summer lull."
+        q: "Our office is dead slow during snowbird season - can you fix that?",
+        a: "That's one of the most common calls we get from November to April. It's almost always one of three things: an undersized firewall, Wi-Fi access points mounted for a half-empty office, or an ISP plan that hasn't been revisited since 2019. We do a free site survey, tell you which of the three is actually the bottleneck, and size the fix to the seasonal peak - not the summer lull."
       },
       {
         q: "We're a 4-person Venice law firm. Is that too small for a managed IT plan?",
-        a: "Not at all — several of our clients are exactly that size. A 4-person firm runs about $380 a month for fully managed IT, which covers help desk, antivirus, backups, Microsoft 365 security, and onsite support. No long-term contract, no per-ticket billing, and you get the same written security documentation a 40-person firm would."
+        a: "Not at all - several of our clients are exactly that size. A 4-person firm runs about $380 a month for fully managed IT, which covers help desk, antivirus, backups, Microsoft 365 security, and onsite support. No long-term contract, no per-ticket billing, and you get the same written security documentation a 40-person firm would."
       },
       {
         q: "Can you help us move into a new Venice office?",
@@ -250,14 +250,14 @@ export const cities = {
       },
       {
         q: "Do you also cover Englewood and North Port?",
-        a: "We cover Englewood from our Venice service area — same flat pricing. North Port is on the edge of our range; we do support a handful of North Port offices, but we'll be upfront during the intake call about scheduling for any onsite work."
+        a: "We cover Englewood from our Venice service area - same flat pricing. North Port is on the edge of our range; we do support a handful of North Port offices, but we'll be upfront during the intake call about scheduling for any onsite work."
       },
     ],
   },
   "bradenton-34207": {
     slug: "bradenton-34207-it-support",
     city: "Bayshore Gardens / West Bradenton (34207)",
-    cityFull: "Bayshore Gardens — West Bradenton, FL 34207",
+    cityFull: "Bayshore Gardens - West Bradenton, FL 34207",
     h1: "IT Support for West Bradenton and Bayshore Gardens (ZIP 34207)",
     // Geo + radius for LocalBusiness schema. 34207 centroid is roughly
     // 27.455°N, 82.588°W; a 10-mile radius covers every ZIP listed in the
@@ -269,8 +269,8 @@ export const cities = {
     radiusMiles: 10,
     title: "Bradenton 34207 IT Support | Bayshore Gardens, West Bradenton | Simple IT SRQ",
     metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for businesses and residential clients in West Bradenton, Bayshore Gardens, Samoset, Oneco, and every address inside a 10-mile radius of ZIP 34207. Local Manatee County team, flat monthly pricing for businesses, no-contract repair for residential.",
-    intro: "34207 is where Simple IT SRQ is headquartered. We run managed IT for businesses and homes across West Bradenton, Bayshore Gardens, Samoset, and Oneco — and everywhere inside a 10-mile dispatch radius: downtown Bradenton, Palmetto, Ellenton, the Anna Maria barrier islands, Cortez, and north Longboat Key.",
-    servicesIntro: "Accounts inside this dispatch radius split across three operating profiles: medical and dental practices along Cortez Road and 14th Street West; construction, marine, and trades operations near the Port and along SR-64; and retail + hospitality across the barrier-island tourist corridor. The capabilities ship on every engagement — only the emphasis shifts.",
+    intro: "34207 is where Simple IT SRQ is headquartered. We run managed IT for businesses and homes across West Bradenton, Bayshore Gardens, Samoset, and Oneco - and everywhere inside a 10-mile dispatch radius: downtown Bradenton, Palmetto, Ellenton, the Anna Maria barrier islands, Cortez, and north Longboat Key.",
+    servicesIntro: "Accounts inside this dispatch radius split across three operating profiles: medical and dental practices along Cortez Road and 14th Street West; construction, marine, and trades operations near the Port and along SR-64; and retail + hospitality across the barrier-island tourist corridor. The capabilities ship on every engagement - only the emphasis shifts.",
     localPatterns: [
       { title: "Medical or dental practice, Cortez Road / 14th Street West", body: "EHR and imaging vendor uptime, HIPAA Risk Assessment + Safeguards paperwork, security documentation binder your carrier asks for at renewal, and two-step sign-in on every account so the one staff click that would otherwise cost you $40,000 in ransomware doesn't." },
       { title: "Marine or waterfront business, Bayshore Gardens / Cortez / Palma Sola", body: "Dock and lift Wi-Fi that actually reaches the waterfront, ruggedized fleet tablets for the captains, invoicing that survives a summer power outage, and off-site backups stored far enough inland that a tropical storm hitting Anna Maria doesn't take both copies offline." },
@@ -280,22 +280,22 @@ export const cities = {
     landmarks: ["Bayshore Gardens Park", "Cortez Road", "14th Street West medical corridor", "SR-64 construction corridor", "Manatee River Riverwalk", "Anna Maria Island Bridge", "Port Manatee"],
     neighborhoods: "Bayshore Gardens, West Bradenton, Samoset, Oneco, Palma Sola, downtown Bradenton, Cortez, Palmetto, Ellenton, Holmes Beach, Bradenton Beach, Anna Maria, northern Longboat Key, Tallevast, and the SR-64 business corridor",
     whyLocal: [
-      "Headquartered inside 34207 — on-site engineering across the 10-mile radius is standard, not a per-trip surcharge.",
+      "Headquartered inside 34207 - on-site engineering across the 10-mile radius is standard, not a per-trip surcharge.",
       "Three post-hurricane restorations here in five years; backups restored on a documented quarterly cadence, not just 'checked.'",
       "A named primary engineer who knows your office by name and your gear by serial number.",
     ],
     faqs: [
       {
-        q: "I'm in 34207 — do you cover my address?",
-        a: "Yes — we're inside 34207, so the inner ZIPs (34209, 34205, 34208, 34203) are part of our daily run. Anna Maria Island (34216 / 34217) and Palmetto / Ellenton (34221 / 34222) are also in our regular service area. We schedule on-site visits as quickly as our calendar allows and we'll be straight with you about timing — no fake response-window promises."
+        q: "I'm in 34207 - do you cover my address?",
+        a: "Yes - we're inside 34207, so the inner ZIPs (34209, 34205, 34208, 34203) are part of our daily run. Anna Maria Island (34216 / 34217) and Palmetto / Ellenton (34221 / 34222) are also in our regular service area. We schedule on-site visits as quickly as our calendar allows and we'll be straight with you about timing - no fake response-window promises."
       },
       {
         q: "What ZIP codes are inside your 10-mile Bradenton radius?",
-        a: "Inside 10 miles of 34207: 34203, 34205, 34206, 34207, 34208, 34209, 34210, 34215 (Cortez), 34216 (Anna Maria), 34217 (Holmes Beach / Bradenton Beach), 34221 (Palmetto), 34222 (Ellenton), 34228 (north Longboat Key), and the northern edge of 34236 (Sarasota downtown). Outside 10 miles we still cover you — we just schedule rather than scramble."
+        a: "Inside 10 miles of 34207: 34203, 34205, 34206, 34207, 34208, 34209, 34210, 34215 (Cortez), 34216 (Anna Maria), 34217 (Holmes Beach / Bradenton Beach), 34221 (Palmetto), 34222 (Ellenton), 34228 (north Longboat Key), and the northern edge of 34236 (Sarasota downtown). Outside 10 miles we still cover you - we just schedule rather than scramble."
       },
       {
         q: "Do you handle HIPAA for medical and dental practices on Cortez Road?",
-        a: "Yes — a big chunk of our 34207-radius clients are independent medical, dental, physical-therapy, and chiropractic practices. We run the written HIPAA Risk Assessment, put the Administrative / Physical / Technical Safeguards in place, issue the BAAs you need for every vendor, and hand you a binder the state surveyor or your security reviewer opens first."
+        a: "Yes - a big chunk of our 34207-radius clients are independent medical, dental, physical-therapy, and chiropractic practices. We run the written HIPAA Risk Assessment, put the Administrative / Physical / Technical Safeguards in place, issue the BAAs you need for every vendor, and hand you a binder the state surveyor or your security reviewer opens first."
       },
       {
         q: "Can you support my restaurant or boutique on Anna Maria Island during tourist season?",
@@ -303,7 +303,7 @@ export const cities = {
       },
       {
         q: "How much does managed IT cost for a 10-person office in 34207?",
-        a: "Flat rates start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and onsite support. Every 34207-area business gets a specific quote after a free 30-minute intake call so you're never surprised. Book a call and we'll run the numbers for your exact headcount and tools."
+        a: "Flat rates start around $95 per person per month for fully managed IT - antivirus, security monitoring, help desk, and onsite support. Every 34207-area business gets a specific quote after a free 30-minute intake call so you're never surprised. Book a call and we'll run the numbers for your exact headcount and tools."
       },
     ],
   },
@@ -318,9 +318,9 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Palmetto, FL",
     title: "Palmetto IT Support | Local IT Help for Manatee County | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Palmetto, FL businesses — from the US-301 produce corridor to the Regatta Pointe waterfront. Flat monthly pricing and a Manatee County team that answers the phone.",
-    intro: "Palmetto runs on industries most IT vendors skip — produce and agribusiness along US-301, marine operations at Snead Island and Regatta Pointe, and light manufacturing near Port Manatee. Simple IT SRQ is minutes away across the river: cold-storage and logistics networks, dock Wi-Fi that survives salt air, and reliable support for the offices along Riverside Drive.",
-    servicesIntro: "Palmetto accounts cluster into three operating profiles — agribusiness and distribution along the US-301 corridor, marine and waterfront operations on the river, and professional and medical offices downtown. The capabilities below ship on every engagement; only the emphasis changes.",
+    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Palmetto, FL businesses - from the US-301 produce corridor to the Regatta Pointe waterfront. Flat monthly pricing and a Manatee County team that answers the phone.",
+    intro: "Palmetto runs on industries most IT vendors skip - produce and agribusiness along US-301, marine operations at Snead Island and Regatta Pointe, and light manufacturing near Port Manatee. Simple IT SRQ is minutes away across the river: cold-storage and logistics networks, dock Wi-Fi that survives salt air, and reliable support for the offices along Riverside Drive.",
+    servicesIntro: "Palmetto accounts cluster into three operating profiles - agribusiness and distribution along the US-301 corridor, marine and waterfront operations on the river, and professional and medical offices downtown. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
       { title: "Produce or agribusiness, US-301 corridor", body: "Packing-house and cold-storage networks that have to stay online through a harvest shift, ruggedized scanners and fleet tablets that survive a loading dock, seasonal-labor device and account turnover handled without a security hole, and an off-site backup that does not assume the building has power after a summer storm." },
       { title: "Marine business, Regatta Pointe / Snead Island", body: "Outdoor-rated Wi-Fi that actually reaches the slips and the lift, ruggedized laptops and tablets standardized for the salt-air lifecycle, invoicing that works from a captain's phone when the office is down, and off-site backups stored far enough inland to survive a Gulf landfall." },
@@ -329,14 +329,14 @@ export const cities = {
     landmarks: ["Regatta Pointe Marina", "Historic Palmetto / Riverside Drive", "US-301 produce corridor", "Snead Island", "Port Manatee", "Sutton Park"],
     neighborhoods: "downtown Palmetto, Riverside Drive, Snead Island, Terra Ceia, Rubonia, the US-301 agribusiness corridor, and the industrial district toward Port Manatee",
     whyLocal: [
-      "Headquartered minutes away in 34207 — Palmetto is part of our daily dispatch run, no per-trip charge from Tampa.",
+      "Headquartered minutes away in 34207 - Palmetto is part of our daily dispatch run, no per-trip charge from Tampa.",
       "Real depth in Palmetto's industries: agribusiness and cold-storage logistics, marine operations, and light manufacturing near Port Manatee.",
       "Gulf Coast hurricane continuity: replicated off-site backups, generator-rated gear, and a tested recovery runbook.",
     ],
     faqs: [
       {
         q: "Are you actually local to Palmetto, or driving in from Tampa?",
-        a: "We're headquartered in Bradenton (34207), just across the Manatee River, so Palmetto is part of our regular daily route — not a special trip. When you call, you get a Manatee County engineer, not an overseas call center or a Tampa subcontractor."
+        a: "We're headquartered in Bradenton (34207), just across the Manatee River, so Palmetto is part of our regular daily route - not a special trip. When you call, you get a Manatee County engineer, not an overseas call center or a Tampa subcontractor."
       },
       {
         q: "Do you support agribusiness, packing houses, and cold-storage operations?",
@@ -344,7 +344,7 @@ export const cities = {
       },
       {
         q: "Can your Wi-Fi reach the docks at Regatta Pointe or Snead Island?",
-        a: "Yes — outdoor-rated business access points with directional antennas reliably cover slip and lift areas. We've installed this exact setup at marine clients in Cortez and on the Manatee River. The initial site survey is free."
+        a: "Yes - outdoor-rated business access points with directional antennas reliably cover slip and lift areas. We've installed this exact setup at marine clients in Cortez and on the Manatee River. The initial site survey is free."
       },
       {
         q: "Can you handle HIPAA for a Palmetto medical or dental office?",
@@ -352,7 +352,7 @@ export const cities = {
       },
       {
         q: "What does managed IT cost for a small Palmetto business?",
-        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call so you're never surprised."
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT - antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call so you're never surprised."
       },
     ],
   },
@@ -367,8 +367,8 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Ellenton, FL",
     title: "Ellenton IT Support | Local IT for Retail & Logistics | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, networking, and PCI-ready point-of-sale help for Ellenton, FL — from the Premium Outlets to the I-75 logistics corridor. Flat monthly pricing and a local Manatee County team.",
-    intro: "Ellenton is retail and logistics — the Premium Outlets off I-75 exit 224, the Gateway distribution corridor, and professional and medical offices serving the growth toward Parrish. Simple IT SRQ runs the IT: point-of-sale uptime through peak weekends, warehouse Wi-Fi that reaches every rack, and the security paperwork your processor expects. Local Manatee County team.",
+    metaDescription: "Local IT support, computer repair, networking, and PCI-ready point-of-sale help for Ellenton, FL - from the Premium Outlets to the I-75 logistics corridor. Flat monthly pricing and a local Manatee County team.",
+    intro: "Ellenton is retail and logistics - the Premium Outlets off I-75 exit 224, the Gateway distribution corridor, and professional and medical offices serving the growth toward Parrish. Simple IT SRQ runs the IT: point-of-sale uptime through peak weekends, warehouse Wi-Fi that reaches every rack, and the security paperwork your processor expects. Local Manatee County team.",
     servicesIntro: "Ellenton accounts split across retail and hospitality near the outlets, distribution and logistics along the I-75 / Gateway corridor, and professional and medical offices on US-301. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
       { title: "Retailer or outlet tenant, Ellenton Premium Outlets", body: "Point-of-sale uptime through holiday and tax-free weekends, guest Wi-Fi isolated from the register network, credit-card processing documented for PCI SAQ-A, and security cameras that actually get reviewed after an incident instead of just blinking on the wall." },
@@ -378,7 +378,7 @@ export const cities = {
     landmarks: ["Ellenton Premium Outlets", "I-75 Exit 224", "Gamble Plantation Historic State Park", "US-301 Gateway business parks", "Manatee River"],
     neighborhoods: "Ellenton, the Premium Outlets district, the I-75 Gateway logistics corridor, Memphis, Rubonia, and the US-301 business parks toward Palmetto and Parrish",
     whyLocal: [
-      "A Manatee County team minutes away — Ellenton is part of our daily run, not a billable trip from Tampa.",
+      "A Manatee County team minutes away - Ellenton is part of our daily run, not a billable trip from Tampa.",
       "Retail and logistics depth: PCI-ready point-of-sale, register-isolated guest Wi-Fi, warehouse wireless, and cellular backup.",
       "A named engineer, flat monthly pricing that doesn't balloon, and a phone answered by a local tech.",
     ],
@@ -389,11 +389,11 @@ export const cities = {
       },
       {
         q: "Can you handle warehouse and distribution Wi-Fi along the I-75 corridor?",
-        a: "Yes — warehouse Wi-Fi that reaches every rack and handheld, ruggedized scanners, warehouse-management uptime, and cellular-backup networking so one ISP outage doesn't stop shipping. The initial site walk is free."
+        a: "Yes - warehouse Wi-Fi that reaches every rack and handheld, ruggedized scanners, warehouse-management uptime, and cellular-backup networking so one ISP outage doesn't stop shipping. The initial site walk is free."
       },
       {
         q: "Are you really local, or a national company with an Ellenton number?",
-        a: "We're based in Bradenton and Sarasota with techs who live here. Ellenton is part of our regular Manatee County service area, so you get a local engineer — not a Tampa subcontractor on a per-trip charge."
+        a: "We're based in Bradenton and Sarasota with techs who live here. Ellenton is part of our regular Manatee County service area, so you get a local engineer - not a Tampa subcontractor on a per-trip charge."
       },
       {
         q: "Do you cover Parrish and Palmetto from Ellenton too?",
@@ -401,7 +401,7 @@ export const cities = {
       },
       {
         q: "What does managed IT cost for a small Ellenton business?",
-        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call so there are no surprises."
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT - antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call so there are no surprises."
       },
     ],
   },
@@ -416,41 +416,41 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Parrish, FL",
     title: "Parrish IT Support | Local IT for a Growing Town | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, office buildouts, and HIPAA documentation for Parrish, FL — the fastest-growing corner of Manatee County. New-office network setup, flat monthly pricing, and a real local team.",
-    intro: "Parrish is the fastest-growing corner of Manatee County, and the IT needs are new-office needs: a practice opening in North River Ranch, a builder working the growth corridors, an office setting up on US-301. Simple IT SRQ runs the buildout — cabling, Wi-Fi, Microsoft 365 done right, HIPAA paperwork, and field-ready IT for contractors.",
+    metaDescription: "Local IT support, computer repair, office buildouts, and HIPAA documentation for Parrish, FL - the fastest-growing corner of Manatee County. New-office network setup, flat monthly pricing, and a real local team.",
+    intro: "Parrish is the fastest-growing corner of Manatee County, and the IT needs are new-office needs: a practice opening in North River Ranch, a builder working the growth corridors, an office setting up on US-301. Simple IT SRQ runs the buildout - cabling, Wi-Fi, Microsoft 365 done right, HIPAA paperwork, and field-ready IT for contractors.",
     servicesIntro: "Parrish accounts skew new: medical and dental practices opening in master-planned communities, construction and development firms building the growth corridors, and professional offices setting up for the first time. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
-      { title: "Medical or dental practice, North River Ranch / US-301", body: "A clean new-office buildout — structured cabling, business firewall, and Wi-Fi sized for exam rooms and chair-side tablets — plus a written HIPAA Risk Assessment and Safeguards binder, EHR and imaging-vendor coordination, and two-step sign-in on every account from day one instead of bolted on later." },
+      { title: "Medical or dental practice, North River Ranch / US-301", body: "A clean new-office buildout - structured cabling, business firewall, and Wi-Fi sized for exam rooms and chair-side tablets - plus a written HIPAA Risk Assessment and Safeguards binder, EHR and imaging-vendor coordination, and two-step sign-in on every account from day one instead of bolted on later." },
       { title: "Construction or development firm, Parrish growth corridor", body: "Rugged field laptops sized for the truck cab, cellular-backup networking at the job-site trailer so a pour stays on schedule when builder Wi-Fi fails, MDM for foreman tablets running Procore or Buildertrend, and document security for plans, change orders, and insurance certificates." },
-      { title: "New professional office, Fort Hamer / US-301", body: "Microsoft 365 set up correctly the first time — email, shared drives, secure sign-in, and company devices that all behave the same — plus business-grade Wi-Fi, labeled cabling, and a backup plan, so a brand-new office runs like an established one on opening day." },
+      { title: "New professional office, Fort Hamer / US-301", body: "Microsoft 365 set up correctly the first time - email, shared drives, secure sign-in, and company devices that all behave the same - plus business-grade Wi-Fi, labeled cabling, and a backup plan, so a brand-new office runs like an established one on opening day." },
     ],
     landmarks: ["North River Ranch", "Fort Hamer Bridge", "US-301 growth corridor", "Parrish Historic District", "Fort Hamer Park", "the new north-Manatee hospital district"],
     neighborhoods: "North River Ranch, the US-301 growth corridor, the Fort Hamer area, Old Parrish, Ellenton-adjacent business parks, and the new master-planned communities along Moccasin Wallow Road",
     whyLocal: [
-      "A Manatee County team that's actually close — Parrish is on our north-county dispatch run, not a trip from Tampa.",
+      "A Manatee County team that's actually close - Parrish is on our north-county dispatch run, not a trip from Tampa.",
       "New-buildout depth: structured cabling, firewall and Wi-Fi design, and Microsoft 365 done right the first time.",
       "A named engineer, flat pricing with no per-ticket surprises, and HIPAA docs ready for a new practice's first renewal.",
     ],
     faqs: [
       {
-        q: "We're opening a new office in Parrish — can you handle the buildout?",
+        q: "We're opening a new office in Parrish - can you handle the buildout?",
         a: "Yes. We run the network cabling, install and tune the firewall and Wi-Fi, set up Microsoft 365 and your company devices, configure the security cameras, and stay on-site on opening day. We've done new-office buildouts across Manatee County and into the new Parrish communities."
       },
       {
         q: "Do you support construction and development firms working the Parrish corridor?",
-        a: "Yes — rugged field laptops, cellular-backup networking at the job-site trailer, MDM for foreman tablets running Procore or Buildertrend, and document security for plans and change orders. Office IT that survives a power outage on a pour day is part of the plan."
+        a: "Yes - rugged field laptops, cellular-backup networking at the job-site trailer, MDM for foreman tablets running Procore or Buildertrend, and document security for plans and change orders. Office IT that survives a power outage on a pour day is part of the plan."
       },
       {
         q: "Can you set up HIPAA paperwork for a new Parrish medical practice?",
-        a: "Absolutely — and it's much easier to do right when the office is new. We run the written HIPAA Risk Assessment, build the network and security controls in from day one, sign a BAA, and hand you an audit-ready binder for your first security renewal."
+        a: "Absolutely - and it's much easier to do right when the office is new. We run the written HIPAA Risk Assessment, build the network and security controls in from day one, sign a BAA, and hand you an audit-ready binder for your first security renewal."
       },
       {
         q: "Are you local to Parrish, or coming from Tampa?",
-        a: "We're based in Bradenton and Sarasota — Parrish is part of our regular north-Manatee service area. You get a local engineer who knows the area, not a Tampa subcontractor on a per-mile charge."
+        a: "We're based in Bradenton and Sarasota - Parrish is part of our regular north-Manatee service area. You get a local engineer who knows the area, not a Tampa subcontractor on a per-mile charge."
       },
       {
         q: "How much does managed IT cost for a small Parrish business?",
-        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and on-site support. New offices also get a one-time setup quote for cabling, Wi-Fi, and devices after a free 30-minute call."
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT - antivirus, security monitoring, help desk, and on-site support. New offices also get a one-time setup quote for cabling, Wi-Fi, and devices after a free 30-minute call."
       },
     ],
   },
@@ -465,29 +465,29 @@ export const cities = {
     radiusMiles: 8,
     h1: "IT Support in Osprey, FL",
     title: "Osprey IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Osprey, FL businesses and Casey Key residences — from Bay Street to Blackburn Point. Flat monthly pricing and a Sarasota County team that picks up.",
-    intro: "Osprey sits on US-41 between Sarasota and Venice. Simple IT SRQ supports its small professional offices, independent medical practices, and the waterfront businesses around Blackburn Point and Casey Key — Microsoft 365, backups, security paperwork, and a local tech who answers the phone. Dispatched from Sarasota County, not Tampa.",
-    servicesIntro: "Osprey accounts are small and personal — professional and medical offices along US-41, marine and waterfront operations near Blackburn Point, and high-end residential and home offices on Casey Key. The capabilities below ship on every engagement; only the emphasis changes.",
+    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Osprey, FL businesses and Casey Key residences - from Bay Street to Blackburn Point. Flat monthly pricing and a Sarasota County team that picks up.",
+    intro: "Osprey sits on US-41 between Sarasota and Venice. Simple IT SRQ supports its small professional offices, independent medical practices, and the waterfront businesses around Blackburn Point and Casey Key - Microsoft 365, backups, security paperwork, and a local tech who answers the phone. Dispatched from Sarasota County, not Tampa.",
+    servicesIntro: "Osprey accounts are small and personal - professional and medical offices along US-41, marine and waterfront operations near Blackburn Point, and high-end residential and home offices on Casey Key. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
-      { title: "Medical or professional office, US-41 / Bay Street", body: "A right-sized setup for a small practice or firm — Microsoft 365 done correctly, business Wi-Fi, labeled cabling, and a written HIPAA Risk Assessment and Safeguards binder for the medical offices, all without the overhead a 50-person firm would carry." },
+      { title: "Medical or professional office, US-41 / Bay Street", body: "A right-sized setup for a small practice or firm - Microsoft 365 done correctly, business Wi-Fi, labeled cabling, and a written HIPAA Risk Assessment and Safeguards binder for the medical offices, all without the overhead a 50-person firm would carry." },
       { title: "Marine or waterfront business, Blackburn Point / Casey Key", body: "Outdoor-rated Wi-Fi that reaches the dock and the lift, ruggedized laptops and tablets standardized for the salt-air lifecycle, invoicing that works from a phone when the office is down, and off-site backups stored well inland." },
       { title: "Residential and home office, Casey Key & Oscar Scherer area", body: "Whole-home and home-office networking that actually covers the property, security cameras with mobile viewing, a tested backup for the home machine, and no-contract repair when a laptop or drive fails." },
     ],
     landmarks: ["Historic Spanish Point", "Blackburn Point Bridge", "Oscar Scherer State Park", "Bay Street / US-41", "north Casey Key", "Pine View area"],
     neighborhoods: "Osprey, north Casey Key, Blackburn Point, the Bay Street / US-41 corridor, Southbay, and the south-Sarasota offices toward Vamo and Oscar Scherer",
     whyLocal: [
-      "Sarasota County engineers — Osprey is on our regular US-41 dispatch run, not a drive-down from Tampa.",
+      "Sarasota County engineers - Osprey is on our regular US-41 dispatch run, not a drive-down from Tampa.",
       "Right-sized for small offices and residences: professional and medical practices, marine businesses, and Casey Key homes.",
       "A named engineer, flat monthly pricing, and no-contract repair for residential clients.",
     ],
     faqs: [
       {
         q: "Do you cover Osprey from your Sarasota office?",
-        a: "Yes — Osprey sits right inside our regular service area on the US-41 corridor between Sarasota and Venice. We're based in Sarasota and Bradenton, so Osprey, Blackburn Point, and north Casey Key are part of our normal route. Most issues we start on remotely first and we'll be straight with you about when a tech can be on-site."
+        a: "Yes - Osprey sits right inside our regular service area on the US-41 corridor between Sarasota and Venice. We're based in Sarasota and Bradenton, so Osprey, Blackburn Point, and north Casey Key are part of our normal route. Most issues we start on remotely first and we'll be straight with you about when a tech can be on-site."
       },
       {
         q: "Do you work with residential clients and home offices on Casey Key?",
-        a: "Yes. We do whole-home networking, Wi-Fi that covers the whole property, security cameras with mobile viewing, home-machine backups, and no-contract computer repair for residential clients across Osprey and Casey Key — not just business accounts."
+        a: "Yes. We do whole-home networking, Wi-Fi that covers the whole property, security cameras with mobile viewing, home-machine backups, and no-contract computer repair for residential clients across Osprey and Casey Key - not just business accounts."
       },
       {
         q: "Can you handle HIPAA for a small Osprey medical office?",
@@ -495,11 +495,11 @@ export const cities = {
       },
       {
         q: "Can your Wi-Fi reach a dock near Blackburn Point?",
-        a: "Yes — outdoor-rated business access points with directional antennas reliably cover slip and lift areas. We've installed this exact setup at marine clients on the Manatee River and in Cortez. The initial site survey is free."
+        a: "Yes - outdoor-rated business access points with directional antennas reliably cover slip and lift areas. We've installed this exact setup at marine clients on the Manatee River and in Cortez. The initial site survey is free."
       },
       {
         q: "What does managed IT cost for a small Osprey business?",
-        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call, and residential repair is billed no-contract by the visit."
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT - antivirus, security monitoring, help desk, and on-site support. Every business gets a specific quote after a free 30-minute call, and residential repair is billed no-contract by the visit."
       },
     ],
   },
@@ -514,9 +514,9 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Englewood, FL",
     title: "Englewood IT Support | Local IT Help and HIPAA | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Englewood, FL — Dearborn Street, Manasota Key, and Lemon Bay. Medical, marine, and vacation-rental IT with flat monthly pricing and a local team.",
-    intro: "Englewood straddles the Sarasota–Charlotte line, shaped by the water — fishing and marine on Lemon Bay, vacation rentals on Manasota Key, and medical practices serving a retiree-heavy population. Simple IT SRQ covers Englewood from Venice: HIPAA paperwork, salt-air-ready hardware, and a tech who shows up.",
-    servicesIntro: "Englewood accounts cluster into three operating profiles — medical and dental practices serving a retiree-heavy population, marine and fishing operations on Lemon Bay, and vacation-rental and hospitality on Manasota Key. The capabilities below ship on every engagement; only the emphasis changes.",
+    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Englewood, FL - Dearborn Street, Manasota Key, and Lemon Bay. Medical, marine, and vacation-rental IT with flat monthly pricing and a local team.",
+    intro: "Englewood straddles the Sarasota–Charlotte line, shaped by the water - fishing and marine on Lemon Bay, vacation rentals on Manasota Key, and medical practices serving a retiree-heavy population. Simple IT SRQ covers Englewood from Venice: HIPAA paperwork, salt-air-ready hardware, and a tech who shows up.",
+    servicesIntro: "Englewood accounts cluster into three operating profiles - medical and dental practices serving a retiree-heavy population, marine and fishing operations on Lemon Bay, and vacation-rental and hospitality on Manasota Key. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
       { title: "Medical or dental practice, Dearborn Street / near the hospital", body: "EHR and imaging-vendor uptime for a high-volume, retiree-heavy patient load, a written HIPAA Risk Assessment and Safeguards binder built for the security-renewal questionnaire, two-step sign-in on every account that touches PHI, and phone coverage that survives barrier-island weather." },
       { title: "Marine or fishing business, Lemon Bay / Manasota Key", body: "Outdoor-rated Wi-Fi that reaches the dock and the fish house, ruggedized devices standardized for the salt-air lifecycle, invoicing and charter booking that work from a captain's phone, and off-site backups stored far enough inland to survive a Gulf landfall." },
@@ -525,22 +525,22 @@ export const cities = {
     landmarks: ["Historic Dearborn Street", "Manasota Key", "Lemon Bay", "Englewood Beach", "Englewood Community Hospital", "Stump Pass"],
     neighborhoods: "Englewood, Dearborn Street, Manasota Key, Grove City, Rotonda-adjacent offices, and the Lemon Bay waterfront along both sides of the county line",
     whyLocal: [
-      "Covered from Venice on the same flat pricing — a local Gulf Coast team, not a per-trip dispatch from Fort Myers.",
+      "Covered from Venice on the same flat pricing - a local Gulf Coast team, not a per-trip dispatch from Fort Myers.",
       "Real depth in Englewood's industries: retiree-heavy medical, marine and fishing, and Manasota Key vacation rentals.",
       "Barrier-island hurricane continuity: replicated off-site backups, generator-rated networking, and a tested runbook.",
     ],
     faqs: [
       {
         q: "Do you cover Englewood, including Manasota Key?",
-        a: "Yes — we cover Englewood and Manasota Key from our Venice service area on the same flat pricing. Most issues we start on remotely first, and we schedule on-site visits as quickly as our calendar allows. We'll always be upfront about timing for island work."
+        a: "Yes - we cover Englewood and Manasota Key from our Venice service area on the same flat pricing. Most issues we start on remotely first, and we schedule on-site visits as quickly as our calendar allows. We'll always be upfront about timing for island work."
       },
       {
         q: "Do you specialize in medical practice IT near Englewood Community Hospital?",
-        a: "Yes. A big share of our Gulf Coast work is medical, dental, physical-therapy, and imaging practices. We run written HIPAA Risk Assessments, sign BAAs, manage EHR uptime, and hand over audit-ready documentation for state and insurance renewals — built for the high patient volume an Englewood practice sees."
+        a: "Yes. A big share of our Gulf Coast work is medical, dental, physical-therapy, and imaging practices. We run written HIPAA Risk Assessments, sign BAAs, manage EHR uptime, and hand over audit-ready documentation for state and insurance renewals - built for the high patient volume an Englewood practice sees."
       },
       {
         q: "Can you support a fishing or marine business on Lemon Bay?",
-        a: "Yes — dock and fish-house Wi-Fi, ruggedized devices that survive salt air, charter-booking and invoicing that work from a phone, and off-site backups stored well inland. The initial site survey is free."
+        a: "Yes - dock and fish-house Wi-Fi, ruggedized devices that survive salt air, charter-booking and invoicing that work from a phone, and off-site backups stored well inland. The initial site survey is free."
       },
       {
         q: "Do you handle vacation rentals on Manasota Key?",
@@ -563,18 +563,18 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in North Port, FL",
     title: "North Port IT Support | Local IT for a Growing City | Simple IT SRQ",
-    metaDescription: "IT support, new-office buildouts, computer repair, and HIPAA documentation for North Port, FL — Wellen Park, West Villages, and the Sumter/Toledo Blade corridors. Flat monthly pricing and a Gulf Coast team.",
-    intro: "North Port is booming around Wellen Park and the West Villages — new practices, new offices, and the builders behind them. Simple IT SRQ handles new-office IT from our Venice base: cabling, Wi-Fi, Microsoft 365, and HIPAA paperwork. It's the south edge of our range, so on-site is scheduled, not same-day — same engineering, same flat pricing.",
+    metaDescription: "IT support, new-office buildouts, computer repair, and HIPAA documentation for North Port, FL - Wellen Park, West Villages, and the Sumter/Toledo Blade corridors. Flat monthly pricing and a Gulf Coast team.",
+    intro: "North Port is booming around Wellen Park and the West Villages - new practices, new offices, and the builders behind them. Simple IT SRQ handles new-office IT from our Venice base: cabling, Wi-Fi, Microsoft 365, and HIPAA paperwork. It's the south edge of our range, so on-site is scheduled, not same-day - same engineering, same flat pricing.",
     servicesIntro: "North Port accounts skew new and fast-growing: medical and dental practices opening in Wellen Park, construction and development firms building the West Villages, and professional offices setting up along Sumter and Toledo Blade. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
-      { title: "Medical or dental practice, Wellen Park / Sumter Blvd", body: "A clean new-office buildout — structured cabling, business firewall, and exam-room Wi-Fi — plus a written HIPAA Risk Assessment and Safeguards binder, EHR and imaging-vendor coordination, and two-step sign-in on every account from day one instead of bolted on later." },
+      { title: "Medical or dental practice, Wellen Park / Sumter Blvd", body: "A clean new-office buildout - structured cabling, business firewall, and exam-room Wi-Fi - plus a written HIPAA Risk Assessment and Safeguards binder, EHR and imaging-vendor coordination, and two-step sign-in on every account from day one instead of bolted on later." },
       { title: "Construction or development firm, Wellen Park / West Villages", body: "Rugged field laptops sized for the truck cab, cellular-backup networking at the job-site trailer so a pour stays on schedule when builder Wi-Fi fails, MDM for foreman tablets running Procore or Buildertrend, and document security for plans, change orders, and insurance certificates." },
-      { title: "New professional office, Toledo Blade / US-41", body: "Microsoft 365 set up correctly the first time — email, shared drives, secure sign-in, and company devices that all behave the same — plus business-grade Wi-Fi, labeled cabling, and a tested backup, so a brand-new North Port office runs like an established one." },
+      { title: "New professional office, Toledo Blade / US-41", body: "Microsoft 365 set up correctly the first time - email, shared drives, secure sign-in, and company devices that all behave the same - plus business-grade Wi-Fi, labeled cabling, and a tested backup, so a brand-new North Port office runs like an established one." },
     ],
     landmarks: ["Wellen Park", "CoolToday Park (Atlanta Braves)", "Warm Mineral Springs", "Sumter Boulevard corridor", "Toledo Blade Boulevard", "Myakka State Forest"],
     neighborhoods: "Wellen Park, the West Villages, the Sumter Boulevard corridor, Toledo Blade, the US-41 corridor toward Venice, and the new master-planned communities across North Port",
     whyLocal: [
-      "Served from our Venice base on the same flat pricing — North Port is our southern edge, so on-site is scheduled, not same-day.",
+      "Served from our Venice base on the same flat pricing - North Port is our southern edge, so on-site is scheduled, not same-day.",
       "New-buildout depth: structured cabling, firewall and Wi-Fi design, and Microsoft 365 done right the first time.",
       "A named engineer, HIPAA docs ready for a new practice's first renewal, and no per-ticket surprises.",
     ],
@@ -584,20 +584,20 @@ export const cities = {
         a: "We cover North Port from our Venice base, and we'll be straight with you: it's the southern edge of our service area, so we schedule on-site visits rather than promising same-day. Most issues we handle remotely first, and the engineering, security, and flat pricing are identical to the rest of our markets."
       },
       {
-        q: "We're opening a new office in Wellen Park — can you handle the buildout?",
+        q: "We're opening a new office in Wellen Park - can you handle the buildout?",
         a: "Yes. We run the network cabling, install and tune the firewall and Wi-Fi, set up Microsoft 365 and your company devices, configure security cameras, and coordinate the opening. New-office buildouts are one of the most common things we do in fast-growing areas like Wellen Park and the West Villages."
       },
       {
         q: "Can you set up HIPAA paperwork for a new North Port practice?",
-        a: "Yes — and it's easiest to do right when the office is new. We run the written HIPAA Risk Assessment, build the security controls in from day one, sign a BAA, and hand you an audit-ready binder for your first security renewal."
+        a: "Yes - and it's easiest to do right when the office is new. We run the written HIPAA Risk Assessment, build the security controls in from day one, sign a BAA, and hand you an audit-ready binder for your first security renewal."
       },
       {
         q: "Do you support construction firms building in North Port?",
-        a: "Yes — rugged field laptops, cellular-backup networking at the job-site trailer, MDM for foreman tablets running Procore or Buildertrend, and document security for plans and change orders. Office IT that survives a power outage on a pour day is part of the plan."
+        a: "Yes - rugged field laptops, cellular-backup networking at the job-site trailer, MDM for foreman tablets running Procore or Buildertrend, and document security for plans and change orders. Office IT that survives a power outage on a pour day is part of the plan."
       },
       {
         q: "How much does managed IT cost for a small North Port business?",
-        a: "Flat-rate plans start around $95 per person per month for fully managed IT — antivirus, security monitoring, help desk, and remote support, with scheduled on-site visits. New offices also get a one-time setup quote for cabling, Wi-Fi, and devices after a free 30-minute call."
+        a: "Flat-rate plans start around $95 per person per month for fully managed IT - antivirus, security monitoring, help desk, and remote support, with scheduled on-site visits. New offices also get a one-time setup quote for cabling, Wi-Fi, and devices after a free 30-minute call."
       },
     ],
   },

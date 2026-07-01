@@ -4,7 +4,7 @@ import { Star, ExternalLink } from "lucide-react";
 // Live Google Business Profile reviews block. Pulls from /api/reviews
 // (server-side Place Details proxy). When the backend isn't configured
 // (GOOGLE_PLACES_API_KEY / GOOGLE_PLACE_ID missing) the component
-// renders nothing — no fake placeholder, no broken-card flash.
+// renders nothing - no fake placeholder, no broken-card flash.
 //
 // Caches aggressively at the edge (6h fresh, 24h SWR) so this is one
 // fetch per region per 6h, not per pageview.

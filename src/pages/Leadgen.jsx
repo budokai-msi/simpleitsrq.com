@@ -125,7 +125,7 @@ const TIERS = [
       "Up to 500 verified business records / month",
       "Email extraction from business websites",
       "1 reviewed outreach campaign",
-      "All industries — any local niche",
+      "All industries - any local niche",
       "CSV export with emails included",
       "Webhook + Mailchimp + HubSpot integrations",
       "1-business-day onboarding review",
@@ -184,7 +184,7 @@ const PROOF_POINTS = [
 
 const SERVICE_USE_CASES = [
   { title: "Trades & home services", body: "Plumbers, roofers, HVAC, landscapers, pest control, cleaners. Independent shops that need more work and actually answer their phone." },
-  { title: "Healthcare & professional offices", body: "Dentists, clinics, law firms, accountants, insurance offices. Steady buyers with real budgets — filter by zip and go." },
+  { title: "Healthcare & professional offices", body: "Dentists, clinics, law firms, accountants, insurance offices. Steady buyers with real budgets - filter by zip and go." },
   { title: "Restaurants, shops & hospitality", body: "Cafés, salons, gyms, boutiques, hotels. Any local business that writes checks to vendors is a prospect." },
 ];
 
@@ -227,7 +227,7 @@ const LEADGEN_FAQS = [
   },
   {
     q: "Is this limited to IT or technology businesses?",
-    a: "No. The scanner covers every industry — food & drink, retail, healthcare, trades, professional services, automotive, hospitality, and more. Pick the niche you serve.",
+    a: "No. The scanner covers every industry - food & drink, retail, healthcare, trades, professional services, automotive, hospitality, and more. Pick the niche you serve.",
   },
   {
     q: "Does it find email addresses?",
@@ -315,7 +315,7 @@ function csvCell(value) {
 }
 
 // A role / corporate inbox (sales@, info@, contact@…) rather than a personal
-// address — the kind you can email-blast. Surfaced as a badge in the list.
+// address - the kind you can email-blast. Surfaced as a badge in the list.
 const ROLE_EMAIL_RE = /^(sales|info|contact|hello|support|admin|office|reception|team|enquiries|enquiry|inquiries|marketing|hr|careers|jobs|help|service|billing|accounts)@/i;
 function isRoleEmail(email) {
   return typeof email === "string" && ROLE_EMAIL_RE.test(email.trim());
@@ -672,7 +672,7 @@ function CountUp({ value }) {
 }
 
 // Command palette (Ctrl/⌘K). Deliberately self-contained: every hook lives in
-// THIS component so LeadgenScanApp's hook graph is untouched — the parent only
+// THIS component so LeadgenScanApp's hook graph is untouched - the parent only
 // renders pure JSX and passes plain action objects. (A previous version put
 // the keydown effect inside LeadgenScanApp and the React Compiler rules
 // cascaded across the whole 2,000-line component; keeping the palette isolated
@@ -851,7 +851,7 @@ function LeadgenScanApp() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   // Connected CRM/webhook destinations for the signed-in customer (empty for
-  // anonymous visitors — the GET 401s and we just hide the push control).
+  // anonymous visitors - the GET 401s and we just hide the push control).
   const [destinations, setDestinations] = useState([]);
   const [pushTarget, setPushTarget] = useState("");
   const [pushBusy, setPushBusy] = useState(false);
@@ -861,13 +861,13 @@ function LeadgenScanApp() {
   const [extractedEmails, setExtractedEmails] = useState({}); // website -> best email
   const [extracting, setExtracting] = useState(false);
   const [extractMsg, setExtractMsg] = useState(null);
-  // Default to independents-only — the prospect list an IT provider wants.
+  // Default to independents-only - the prospect list an IT provider wants.
   // Off only when a shared link explicitly opts back into chains (?independents=0).
   const [independentsOnly, setIndependentsOnly] = useState(() => initialQuery.get("independents") !== "0");
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const validZip = /^\d{5}$/.test(zip);
   // Only surface keyboard-shortcut hints on devices that actually have a
-  // keyboard — on touch screens they're noise that makes the tool look complex.
+  // keyboard - on touch screens they're noise that makes the tool look complex.
   const hasKeyboard = typeof window !== "undefined" && window.matchMedia
     ? window.matchMedia("(pointer: fine)").matches
     : true;
@@ -931,7 +931,7 @@ function LeadgenScanApp() {
         return true;
       })
       .sort((a, b) => {
-        // Independent local businesses always lead — they're the prospects an
+        // Independent local businesses always lead - they're the prospects an
         // IT-services provider actually wants; chains sink to the bottom.
         const chainDelta = (a.row.is_chain ? 1 : 0) - (b.row.is_chain ? 1 : 0);
         if (chainDelta) return chainDelta;
@@ -1073,7 +1073,7 @@ function LeadgenScanApp() {
   const applyScan = (data, meta = {}) => {
     setScan(data);
     // Default the first 20 *independent* businesses to "keep" and leave chains
-    // out of the kept set (they default to "maybe") — the prospect list an IT
+    // out of the kept set (they default to "maybe") - the prospect list an IT
     // provider starts from should be local independents, not national chains.
     let keptSoFar = 0;
     setReview(Object.fromEntries((data.rows || []).map((row, index) => {
@@ -1236,7 +1236,7 @@ function LeadgenScanApp() {
     }
   };
 
-  // Corporate/role inboxes only (sales@, info@, contact@, …) — a clean,
+  // Corporate/role inboxes only (sales@, info@, contact@, …) - a clean,
   // deduped list ready to paste into an email-blast tool. Original casing
   // preserved; duplicates collapsed case-insensitively.
   const copyCorporateEmails = async () => {
@@ -1288,7 +1288,7 @@ function LeadgenScanApp() {
         const j = await res.json().catch(() => ({}));
         if (res.status === 401) { setExtractMsg({ ok: false, text: "Sign in on a Growth or Pro plan to extract emails." }); break; }
         if (res.status === 403) { setExtractMsg({ ok: false, text: j.message || "Bulk email extraction requires a Pro plan." }); break; }
-        if (res.status === 429) { setExtractMsg({ ok: false, text: "Hit the crawl rate limit — wait a minute and retry." }); break; }
+        if (res.status === 429) { setExtractMsg({ ok: false, text: "Hit the crawl rate limit - wait a minute and retry." }); break; }
         if (!res.ok || !Array.isArray(j.results)) { setExtractMsg({ ok: false, text: j.message || j.error || "Extraction failed." }); break; }
         j.results.forEach((result, idx) => {
           const best = Array.isArray(result.emails) && result.emails.length ? result.emails[0].email : null;
@@ -1512,7 +1512,7 @@ function LeadgenScanApp() {
         ]}
       />
       {scan && kept.length > 0 ? (
-        <div className="leadgen-selbar" role="region" aria-label="Selected leads — quick actions">
+        <div className="leadgen-selbar" role="region" aria-label="Selected leads - quick actions">
           <span className="leadgen-selbar__count"><strong>{kept.length}</strong> selected</span>
           <div className="leadgen-selbar__actions">
             <button type="button" className="btn btn-secondary btn-sm" onClick={exportKeptRows}>Export CSV</button>
@@ -1543,7 +1543,7 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
           <span className="leadgen-app-live"><span /> Live public-record scanner</span>
-          {/* Workspace handoff is only relevant once a list exists — surface it
+          {/* Workspace handoff is only relevant once a list exists - surface it
               after a scan, not as the first thing a new visitor sees. */}
           {scan ? (
             <Link
@@ -1558,7 +1558,7 @@ function LeadgenScanApp() {
         </div>
 
         <div className="leadgen-app-title">
-          <h1 className="display">Find local businesses in any industry — with emails.</h1>
+          <h1 className="display">Find local businesses in any industry - with emails.</h1>
           <p>
             Enter any zip and choose an industry. We surface independent local
             businesses, extract email addresses from their websites, flag national
@@ -1591,7 +1591,7 @@ function LeadgenScanApp() {
             </button>
           </div>
           {/* Outreach config (offer + send pace) only matters once there's a
-              list to act on — keep it out of the pre-scan view so the entry
+              list to act on - keep it out of the pre-scan view so the entry
               is just "where + what + scan". */}
           {scan ? (
             <details className="leadgen-advanced-controls">
@@ -1670,7 +1670,7 @@ function LeadgenScanApp() {
           <div className={`leadgen-prefetch leadgen-prefetch--${effectivePrefetchState}`}>
             <span />
             {effectivePrefetchState === "loading" ? "Loading this market…" : null}
-            {effectivePrefetchState === "ready" ? "Ready — results load instantly." : null}
+            {effectivePrefetchState === "ready" ? "Ready - results load instantly." : null}
             {effectivePrefetchState === "idle" ? (validZip ? "Ready to scan this market." : "Enter a 5-digit zip to start.") : null}
           </div>
         )}
@@ -1962,7 +1962,7 @@ function LeadgenScanApp() {
                     type="button"
                     className="btn btn-secondary btn-sm leadgen-select-best"
                     onClick={selectBest}
-                    title="Keep only reachable leads — a website plus a phone or email"
+                    title="Keep only reachable leads - a website plus a phone or email"
                   >
                     <Sparkles size={14} aria-hidden="true" /> Select best ({bestVisible.length})
                   </button>
@@ -2199,7 +2199,7 @@ function LeadgenScanApp() {
                     const rowEl = e.currentTarget.closest(".leadgen-result-row");
                     setReview((current) => ({ ...current, [index]: checked ? "keep" : "reject" }));
                     // Confirm the toggle registered: a quick background pulse on
-                    // the row — green on keep, red on remove. WAAPI from the
+                    // the row - green on keep, red on remove. WAAPI from the
                     // event handler keeps it out of render (no state/effect),
                     // so the React compiler never engages.
                     if (rowEl && typeof rowEl.animate === "function"
@@ -2220,9 +2220,9 @@ function LeadgenScanApp() {
                 <strong>
                   {row.name}
                   {row.is_chain ? (
-                    <span className="lead-tag lead-tag--chain" title="National or regional chain — usually not an independent local prospect">Chain</span>
+                    <span className="lead-tag lead-tag--chain" title="National or regional chain - usually not an independent local prospect">Chain</span>
                   ) : !independentsOnly ? (
-                    <span className="lead-tag lead-tag--local" title="Independent local business — a good IT-services prospect">Local</span>
+                    <span className="lead-tag lead-tag--local" title="Independent local business - a good IT-services prospect">Local</span>
                   ) : null}
                 </strong>
                 <span>{[row.sub_industry || row.industry_group, row.city || row.address, row.zip].filter(Boolean).join(" - ")}</span>
@@ -2291,7 +2291,7 @@ function LeadgenScanApp() {
                   type="button"
                   className="btn btn-secondary btn-sm leadgen-selected-emails__copy-corp"
                   onClick={copyCorporateEmails}
-                  title="Copy only role/corporate inboxes (sales@, info@, …) — a clean email-blast list"
+                  title="Copy only role/corporate inboxes (sales@, info@, …) - a clean email-blast list"
                 >
                   {copiedCorporate ? "Copied!" : `Copy corporate (${keptCorporate})`}
                 </button>
@@ -2310,7 +2310,7 @@ function LeadgenScanApp() {
                       {em ? (
                         <span className="leadgen-selected-emails__email">
                           {isRoleEmail(em) ? (
-                            <span className="leadgen-selected-emails__badge" title="Role / corporate inbox — good for an email blast">corporate</span>
+                            <span className="leadgen-selected-emails__badge" title="Role / corporate inbox - good for an email blast">corporate</span>
                           ) : null}
                           <a className="leadgen-selected-emails__addr" href={`mailto:${em}`}>
                             <Mail size={12} aria-hidden="true" /> {em}
@@ -2329,7 +2329,7 @@ function LeadgenScanApp() {
               <p className="leadgen-selected-emails__empty">Tick businesses above to build your outreach list.</p>
             )}
             {kept.length > 60 ? (
-              <p className="leadgen-selected-emails__more">+{kept.length - 60} more — export or push to get them all.</p>
+              <p className="leadgen-selected-emails__more">+{kept.length - 60} more - export or push to get them all.</p>
             ) : null}
           </div>
         </div>
@@ -2460,7 +2460,7 @@ export default function Leadgen() {
             <p className="lede">
               Pick an industry, drop in a zip. We find the independents,
               pull their emails, and skip the national chains.
-              You review the short list and reach out — no guesswork, no list brokers.
+              You review the short list and reach out - no guesswork, no list brokers.
             </p>
           </div>
           <div className="leadgen-product-rules">
@@ -2606,7 +2606,7 @@ const INTEGRATION_LIST = [
   {
     name: "Webhook / Zapier",
     domain: "zapier.com",
-    desc: "POST leads to any URL — wire into Zapier, Make, n8n, or your own backend.",
+    desc: "POST leads to any URL - wire into Zapier, Make, n8n, or your own backend.",
     badge: "Growth+",
   },
   {
@@ -2630,7 +2630,7 @@ const INTEGRATION_LIST = [
   {
     name: "GoHighLevel",
     domain: "gohighlevel.com",
-    desc: "Push contacts directly to a GHL location — ideal for agencies running client pipelines.",
+    desc: "Push contacts directly to a GHL location - ideal for agencies running client pipelines.",
     badge: "Pro",
   },
   {

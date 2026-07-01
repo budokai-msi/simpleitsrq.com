@@ -32,7 +32,7 @@ function slugToPath(slug) {
 
 // Module-scope cache so React.lazy isn't re-invoked on every render. Calling
 // lazy() inside a component would reset Suspense state and re-trigger the
-// dynamic import every rerender — bad for state, bad for network.
+// dynamic import every rerender - bad for state, bad for network.
 const lazyBySlug = new Map();
 function getLazyMdxComponent(slug) {
   if (!slug) return null;
@@ -51,7 +51,7 @@ function getLazyMdxComponent(slug) {
 // External and hash-only links go through a plain <a>.
 function MdxLink({ href = "", children, ...rest }) {
   if (typeof href === "string" && href.startsWith("/")) {
-    // Strip target/rel for internal Links — react-router's <Link> handles
+    // Strip target/rel for internal Links - react-router's <Link> handles
     // the navigation, and those attrs would degrade the SPA transition.
     // eslint-disable-next-line no-unused-vars
     const { target, rel, ...linkProps } = rest;
@@ -61,13 +61,13 @@ function MdxLink({ href = "", children, ...rest }) {
 }
 
 // Stable binder so the `components` prop identity stays the same across
-// renders for a given slug — avoids re-rendering the whole MDX subtree.
+// renders for a given slug - avoids re-rendering the whole MDX subtree.
 const componentsBySlug = new Map();
 function getMdxComponents(slug) {
   if (!componentsBySlug.has(slug)) {
     function BoundAffiliate(props) { return <Affiliate slug={slug} {...props} />; }
     BoundAffiliate.displayName = `Affiliate(${slug})`;
-    // <Tool id="..." /> for MDX authors — wraps StackToolInline and
+    // <Tool id="..." /> for MDX authors - wraps StackToolInline and
     // binds `slug` from the rendering post so affiliate-click tracking
     // carries proper attribution.
     function BoundTool(props) { return <StackToolInline slug={slug} {...props} />; }
@@ -159,7 +159,7 @@ function renderInline(text, key = 0, slug = null) {
       remaining = remaining.slice(nextIdx + full.length);
     } else {
       const [full, token] = affMatch;
-      // `[[tool:<id>]]` is our stack-tool shortcode — dispatch to
+      // `[[tool:<id>]]` is our stack-tool shortcode - dispatch to
       // StackToolInline instead of the generic affiliate-token resolver.
       // Everything else (`[[acronis]]`, `[[amazon:ASIN|label]]`, etc.)
       // keeps going through the existing affiliate path.
@@ -182,7 +182,7 @@ function renderInline(text, key = 0, slug = null) {
 }
 
 function renderMarkdown(md, slug = null) {
-  // Same defensive coercion as readingTime — guards against the markdown
+  // Same defensive coercion as readingTime - guards against the markdown
   // path being called with a non-string (e.g. a module import result).
   const lines = String(md || "").split("\n");
   const out = [];
@@ -222,7 +222,7 @@ function renderMarkdown(md, slug = null) {
 }
 
 function readingTime(text) {
-  // Defensive String() wrap — `text` is sometimes a module / object when a
+  // Defensive String() wrap - `text` is sometimes a module / object when a
   // dynamic MDX import's shape shifts between dev and prod; without the
   // coercion, .split() would throw "is not a function" and kill render.
   const words = String(text || "").split(/\s+/).length;
@@ -276,7 +276,7 @@ export default function BlogPost() {
   const legacyPost = !isMdx && legacyEntry?.slug === slug ? legacyEntry : null;
   const post = metaEntry || legacyPost;
 
-  // Raw MDX source — loaded lazily alongside the compiled module so the
+  // Raw MDX source - loaded lazily alongside the compiled module so the
   // ToolsUsedFooter and reading-time heuristic keep working without a
   // second round trip.
   useEffect(() => {
@@ -340,7 +340,7 @@ export default function BlogPost() {
           </div>
           <div className="blog-post-content">
             {isMdx ? (
-              // MDX path — one lazy chunk per post, sandwiched between the
+              // MDX path - one lazy chunk per post, sandwiched between the
               // same ad units the legacy renderer uses.
               <>
                 <AdUnit key="ad-top" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />

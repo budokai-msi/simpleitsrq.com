@@ -21,11 +21,11 @@ const ACRONIS_REF   = env.VITE_AFF_ACRONIS_REF   || "";
 // Hardware affiliate programs targeted at the camera + repair + backup
 // content series. Each is a paste-the-full-URL env var (so the affiliate
 // tracking parameters are baked into the value rather than constructed
-// here — different programs use different param names).
-//   VITE_AFF_UBNT_REF      — Ubiquiti Partner Program landing URL
-//   VITE_AFF_REOLINK_REF   — Reolink affiliate (Impact) landing URL
-//   VITE_AFF_BH_REF        — B&H Photo Pro Affiliate landing URL
-//   VITE_AFF_BACKBLAZE_REF — Backblaze Cloud Backup affiliate landing URL
+// here - different programs use different param names).
+//   VITE_AFF_UBNT_REF - Ubiquiti Partner Program landing URL
+//   VITE_AFF_REOLINK_REF - Reolink affiliate (Impact) landing URL
+//   VITE_AFF_BH_REF - B&H Photo Pro Affiliate landing URL
+//   VITE_AFF_BACKBLAZE_REF - Backblaze Cloud Backup affiliate landing URL
 const UBNT_REF      = env.VITE_AFF_UBNT_REF      || "";
 const REOLINK_REF   = env.VITE_AFF_REOLINK_REF   || "";
 const BH_REF        = env.VITE_AFF_BH_REF        || "";
@@ -100,7 +100,7 @@ export const AFFILIATES = {
       }
     : null,
 
-  // === Ubiquiti UniFi Partner Program — typical 3-8% on UniFi gear ===
+  // === Ubiquiti UniFi Partner Program - typical 3-8% on UniFi gear ===
   // Cameras, switches, gateways, Cloud Keys. Drives traffic to the camera
   // buyer's guide blog post and the /tools page rack-mount section.
   ubiquiti: UBNT_REF
@@ -108,11 +108,11 @@ export const AFFILIATES = {
         vendor: "Ubiquiti",
         label: "UniFi Protect cameras + Cloud Key / Dream Machine",
         href: UBNT_REF,
-        blurb: "Affiliate link — we earn a commission on UniFi gear ordered through Ubiquiti's store.",
+        blurb: "Affiliate link - we earn a commission on UniFi gear ordered through Ubiquiti's store.",
       }
     : null,
 
-  // === Reolink affiliate (Impact network) — 5-10% on residential cams ===
+  // === Reolink affiliate (Impact network) - 5-10% on residential cams ===
   // Drives the Tier-1 (under-$1,200 install) recommendation in the camera
   // buyer's guide.
   reolink: REOLINK_REF
@@ -120,23 +120,23 @@ export const AFFILIATES = {
         vendor: "Reolink",
         label: "Reolink IP cameras + NVRs",
         href: REOLINK_REF,
-        blurb: "Affiliate link — we earn a commission on Reolink gear ordered through this link.",
+        blurb: "Affiliate link - we earn a commission on Reolink gear ordered through this link.",
       }
     : null,
 
-  // === B&H Photo Pro Affiliate — 1-8% on AV / networking / pro hardware ===
+  // === B&H Photo Pro Affiliate - 1-8% on AV / networking / pro hardware ===
   // Backup channel for any UniFi or pro-AV gear that's better-priced at
   // B&H than at Amazon (and frequently is).
   bhphoto: BH_REF
     ? {
         vendor: "B&H Photo",
-        label: "B&H Photo Video — pro AV + networking",
+        label: "B&H Photo Video - pro AV + networking",
         href: BH_REF,
-        blurb: "Affiliate link — we earn a commission on B&H Photo orders.",
+        blurb: "Affiliate link - we earn a commission on B&H Photo orders.",
       }
     : null,
 
-  // === Backblaze Cloud Backup — flat $25-45 per signup, recurring on B2 ===
+  // === Backblaze Cloud Backup - flat $25-45 per signup, recurring on B2 ===
   // Hardware-blog cross-sell: every PC tune-up / SSD upgrade post is a
   // good place to remind the reader to set up off-machine backup.
   backblaze: BACKBLAZE_REF
@@ -144,7 +144,7 @@ export const AFFILIATES = {
         vendor: "Backblaze",
         label: "Backblaze unlimited cloud backup",
         href: BACKBLAZE_REF,
-        blurb: "Affiliate link — we earn a commission on Backblaze signups.",
+        blurb: "Affiliate link - we earn a commission on Backblaze signups.",
       }
     : null,
 
@@ -201,7 +201,7 @@ const TOKEN_RE = new RegExp(
 
 export function postHasAffiliateContent(markdown) {
   if (!markdown || typeof markdown !== "string") return false;
-  // Reset lastIndex — the module-scope RegExp with /g flag otherwise
+  // Reset lastIndex - the module-scope RegExp with /g flag otherwise
   // carries state across calls, yielding stale "no match" verdicts on
   // the second invocation with the same content.
   TOKEN_RE.lastIndex = 0;

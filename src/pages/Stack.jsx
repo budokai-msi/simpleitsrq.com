@@ -9,7 +9,7 @@ import AffiliateDisclosure from "../components/AffiliateDisclosure";
 
 // Map each stack tool to { Product, Offer } JSON-LD so Google surfaces rich
 // pricing snippets under the page in search results. Only tools with a
-// concrete priceHint are emitted — we're not going to synthesize an offer
+// concrete priceHint are emitted - we're not going to synthesize an offer
 // for managed-services rows.
 function buildItemListSchema() {
   const items = [];
@@ -42,14 +42,14 @@ function buildItemListSchema() {
 // Headcount-driven monthly cost calculator. Reads each tool's `cost`
 // field, multiplies by the office size + included flags, and shows the
 // running total + itemized breakdown. The "Get this priced for my office"
-// CTA fires GA4 generate_lead and routes to /book with a source tag —
+// CTA fires GA4 generate_lead and routes to /book with a source tag -
 // turns a passive read-the-list page into an active lead-capture surface.
 function StackCalculator() {
   const [seats, setSeats] = useState(10);
 
   // Flat list of every tool with a structured cost, plus the category
   // it belongs to. The "productivity" mutex group only counts the chosen
-  // tool (M365 by default — both can't be true at once).
+  // tool (M365 by default - both can't be true at once).
   const allCalcTools = useMemo(() => {
     const list = [];
     for (const cat of STACK) {
@@ -120,7 +120,7 @@ function StackCalculator() {
             What this stack actually costs
           </h2>
           <p className="section-sub">
-            Plug in your headcount. Numbers are real — pulled from the same
+            Plug in your headcount. Numbers are real - pulled from the same
             vendor pricing on this page. Hardware items (YubiKeys, UPS) are
             amortized over 36 months so the figure reflects monthly cash flow,
             not upfront capex.
@@ -272,7 +272,7 @@ export default function Stack() {
             <p className="lede">
               Every tool we install for a new Sarasota or Bradenton client, grouped
               by what it does. Tier recommendations are the ones that pass a
-              security renewal — not the cheapest that works. Links to
+              security renewal - not the cheapest that works. Links to
               vendors we have a referral relationship with are marked; others are
               just plain vendor links.
             </p>
@@ -309,7 +309,7 @@ export default function Stack() {
         </div>
       </section>
 
-      {/* Anchor nav for the categories — turns the page into a glanceable menu. */}
+      {/* Anchor nav for the categories - turns the page into a glanceable menu. */}
       <nav
         aria-label="Stack categories"
         style={{
@@ -389,7 +389,7 @@ export default function Stack() {
                       <div className="stack-tool__cta-row">
                         {isInternal ? (
                           <Link to={link.href} className="btn btn-primary">
-                            {link.isAffiliate ? "Go to " : "More details — "}{tool.name}
+                            {link.isAffiliate ? "Go to " : "More details - "}{tool.name}
                             <ArrowRight size={16} />
                           </Link>
                         ) : (
@@ -409,7 +409,7 @@ export default function Stack() {
                               }
                             }}
                           >
-                            {link.isAffiliate ? "Check price — " : "Visit vendor — "}
+                            {link.isAffiliate ? "Check price - " : "Visit vendor - "}
                             {tool.name}
                             <ExternalLink size={14} />
                           </a>

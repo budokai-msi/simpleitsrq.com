@@ -410,7 +410,7 @@ export default function Services() {
         <div className="container" style={{ textAlign: "center" }}>
           <h2 className="title-2">Don't see what you need?</h2>
           <p className="lede" style={{ maxWidth: 640, margin: "0 auto 24px" }}>
-            We do plenty of work that's harder to productize — Active Directory
+            We do plenty of work that's harder to productize - Active Directory
             rebuilds, server replacements, multi-site cabling, and the awkward
             half-managed environments where a former IT person left things in a
             state. Book a free call and we'll quote it after a real

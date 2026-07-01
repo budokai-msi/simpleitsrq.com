@@ -63,7 +63,7 @@ export const WHY_VS = {
     closer: {
       h2: "When does picking the Tampa MSP actually make sense?",
       body:
-        "When the buying organization has a corporate footprint already standardized on a Tampa-headquartered vendor — typically a regional bank, hospital system, or franchise with central procurement — the Tampa MSP relationship may already be in place at the parent level. For independent Sarasota and Bradenton businesses operating on their own contract, the regional dispatch model is a structural disadvantage that doesn't get better with a bigger MSA.",
+        "When the buying organization has a corporate footprint already standardized on a Tampa-headquartered vendor - typically a regional bank, hospital system, or franchise with central procurement - the Tampa MSP relationship may already be in place at the parent level. For independent Sarasota and Bradenton businesses operating on their own contract, the regional dispatch model is a structural disadvantage that doesn't get better with a bigger MSA.",
     },
   },
 
@@ -76,12 +76,12 @@ export const WHY_VS = {
     eyebrow: "Why Simple IT SRQ · vs Geek Squad",
     h1: "Business IT operations vs. retail computer repair.",
     subhead:
-      "Geek Squad is the in-store consumer-electronics service desk at Best Buy. It's a strong product for what it is. It is not a managed-services provider, and a small business running on it accumulates risk every quarter. Here's the honest comparison — including the cases where Geek Squad is genuinely the right call.",
+      "Geek Squad is the in-store consumer-electronics service desk at Best Buy. It's a strong product for what it is. It is not a managed-services provider, and a small business running on it accumulates risk every quarter. Here's the honest comparison - including the cases where Geek Squad is genuinely the right call.",
     cta: { primary: "Request an IT assessment", primaryHref: "/book", secondary: "See capabilities", secondaryHref: "/#solutions" },
     rows: [
       {
         attribute: "Engagement model",
-        sirq: "Managed services. Flat monthly contract covering identity, security, network, endpoint, backup, continuity, and compliance — operated as a single program.",
+        sirq: "Managed services. Flat monthly contract covering identity, security, network, endpoint, backup, continuity, and compliance - operated as a single program.",
         them: "Per-incident retail service. Walk-in or scheduled appointment. Each ticket is a one-shot transaction.",
       },
       {
@@ -123,7 +123,7 @@ export const WHY_VS = {
     closer: {
       h2: "Where the line actually sits",
       body:
-        "Geek Squad is excellent at what Best Buy designed it to be: a retail service desk for consumer electronics. The mismatch starts when a 15-person dental practice or a 30-person law firm tries to operate on it. There's no managed-services contract underneath — no monitoring, no compliance documentation, no continuity plan, no named engineer. A single ransomware incident in a regulated practice with no incident-response plan isn't a $300 service ticket; it's a reportable breach. Pick the model that matches the risk you actually carry.",
+        "Geek Squad is excellent at what Best Buy designed it to be: a retail service desk for consumer electronics. The mismatch starts when a 15-person dental practice or a 30-person law firm tries to operate on it. There's no managed-services contract underneath - no monitoring, no compliance documentation, no continuity plan, no named engineer. A single ransomware incident in a regulated practice with no incident-response plan isn't a $300 service ticket; it's a reportable breach. Pick the model that matches the risk you actually carry.",
     },
   },
 };
