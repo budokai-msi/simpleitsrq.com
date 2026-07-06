@@ -23,6 +23,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cities } from "../src/data/cities.js";
 import { industries, industryCityPairs } from "../src/data/industries.js";
+import { writePngIfChanged } from "./_write-if-changed.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -274,12 +275,19 @@ async function main() {
       continue;
     }
     const svg = buildIndustryCitySvg(industry, city, pair.url);
-    await sharp(Buffer.from(svg), { density: 384 })
+    // Render to buffer and only touch the file when the pixels changed —
+    // keeps committed cards byte-stable when the cache sidecar is absent
+    // (fresh checkout, CI) but the rendered card is identical.
+    const png = await sharp(Buffer.from(svg), { density: 384 })
       .resize(WIDTH, HEIGHT, { fit: "contain", background: { r: 11, g: 13, b: 16, alpha: 1 } })
       .png({ compressionLevel: 9 })
-      .toFile(out);
-    generated += 1;
-    console.log(`  ✓ ${filename}`);
+      .toBuffer();
+    if (await writePngIfChanged(out, png)) {
+      generated += 1;
+      console.log(`  ✓ ${filename}`);
+    } else {
+      skipped += 1;
+    }
   }
 
   // Hub card
@@ -289,12 +297,16 @@ async function main() {
   next[hubFilename] = hubHash;
   if (FORCE || !existsSync(hubOut) || cache[hubFilename] !== hubHash) {
     const hubSvg = buildHubSvg();
-    await sharp(Buffer.from(hubSvg), { density: 384 })
+    const hubPng = await sharp(Buffer.from(hubSvg), { density: 384 })
       .resize(WIDTH, HEIGHT, { fit: "contain", background: { r: 11, g: 13, b: 16, alpha: 1 } })
       .png({ compressionLevel: 9 })
-      .toFile(hubOut);
-    generated += 1;
-    console.log(`  ✓ ${hubFilename}`);
+      .toBuffer();
+    if (await writePngIfChanged(hubOut, hubPng)) {
+      generated += 1;
+      console.log(`  ✓ ${hubFilename}`);
+    } else {
+      skipped += 1;
+    }
   } else {
     skipped += 1;
   }
