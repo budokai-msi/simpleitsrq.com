@@ -32,6 +32,7 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadAllPosts } from "./_posts-source.mjs";
+import { writePngIfChanged } from "./_write-if-changed.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -268,10 +269,17 @@ async function renderCard({ kind, slug, fields, outPath, cache, nextCache, count
     return;
   }
   const svg = buildSvg(fields);
-  await sharp(Buffer.from(svg))
+  // Render to buffer and only touch the file when the pixels changed —
+  // keeps `git status` clean when the cache sidecar is absent (fresh
+  // checkout, CI) but the rendered card is identical.
+  const png = await sharp(Buffer.from(svg))
     .png({ compressionLevel: 9, palette: true })
-    .toFile(outPath);
-  counters.generated++;
+    .toBuffer();
+  if (await writePngIfChanged(outPath, png)) {
+    counters.generated++;
+  } else {
+    counters.skipped++;
+  }
 }
 
 function removeStaleCards(validBlogSlugs) {

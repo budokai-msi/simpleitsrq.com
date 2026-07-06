@@ -1,10 +1,10 @@
 // Generates public/sitemap.xml from MDX posts + legacy posts.js + cities.
 // Run with: node scripts/generate-sitemap.mjs
 
-import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { loadAllPosts } from "./_posts-source.mjs";
+import { writeTextIfChanged } from "./_write-if-changed.mjs";
 import { cityList, cities } from "../src/data/cities.js";
 import { COMPARISONS } from "../src/data/comparisons.js";
 import { GLOSSARY } from "../src/data/glossary.js";
@@ -108,5 +108,10 @@ ${body}
 `;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-writeFileSync(join(__dirname, "..", "public", "sitemap.xml"), xml, "utf8");
-console.log(`sitemap.xml written: ${all.length} URLs`);
+const wrote = writeTextIfChanged(
+  join(__dirname, "..", "public", "sitemap.xml"),
+  xml,
+);
+console.log(
+  `sitemap.xml ${wrote ? "written" : "unchanged"}: ${all.length} URLs`,
+);

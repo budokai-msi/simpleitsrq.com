@@ -22,6 +22,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { cityList } from "../src/data/cities.js";
+import { writePngIfChanged } from "./_write-if-changed.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -178,12 +179,19 @@ async function main() {
       continue;
     }
     const svg = buildSvg(city);
-    await sharp(Buffer.from(svg), { density: 384 })
+    // Render to buffer and only touch the file when the pixels changed —
+    // keeps committed cards byte-stable when the cache sidecar is absent
+    // (fresh checkout, CI) but the rendered card is identical.
+    const png = await sharp(Buffer.from(svg), { density: 384 })
       .resize(WIDTH, HEIGHT, { fit: "contain", background: { r: 11, g: 13, b: 16, alpha: 1 } })
       .png({ compressionLevel: 9 })
-      .toFile(out);
-    generated += 1;
-    console.log(`  ✓ og-city-${slug}.png`);
+      .toBuffer();
+    if (await writePngIfChanged(out, png)) {
+      generated += 1;
+      console.log(`  ✓ og-city-${slug}.png`);
+    } else {
+      skipped += 1;
+    }
   }
 
   writeFileSync(CACHE_PATH, JSON.stringify(next, null, 2));
