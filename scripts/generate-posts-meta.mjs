@@ -13,11 +13,12 @@
 // the edited copy. Regenerated as part of `prebuild`; committed so dev-mode
 // finds it without running prebuild first.
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import matter from "gray-matter";
 import { posts as legacyPosts } from "../src/data/posts.js";
+import { writeTextIfChanged } from "./_write-if-changed.mjs";
 
 const PREVIEW_FIELDS = [
   "slug",
@@ -74,7 +75,7 @@ const meta = [...mdxEntries, ...legacyEntries].sort((a, b) =>
   (b.date || "").localeCompare(a.date || ""),
 );
 
-writeFileSync(OUT_PATH, JSON.stringify(meta, null, 2) + "\n", "utf8");
+const wrote = writeTextIfChanged(OUT_PATH, JSON.stringify(meta, null, 2) + "\n");
 console.log(
-  `posts-meta.json written: ${meta.length} posts (${mdxEntries.length} MDX, ${legacyEntries.length} legacy)`,
+  `posts-meta.json ${wrote ? "written" : "unchanged"}: ${meta.length} posts (${mdxEntries.length} MDX, ${legacyEntries.length} legacy)`,
 );

@@ -1,0 +1,7 @@
+# Prebuild-generated text artifacts are always written with LF by the
+# scripts/generate-*.mjs generators. Pin the checkout to LF so running
+# `npm run prebuild` on Windows (core.autocrlf=true) can't leave phantom
+# modifications in `git status` from line-ending smudging.
+public/sitemap.xml text eol=lf
+public/rss.xml text eol=lf
+src/data/posts-meta.json text eol=lf
