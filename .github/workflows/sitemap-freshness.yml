@@ -8,7 +8,10 @@ on:
     branches:
       - main
 
-# Needed so the job can push regenerated artifacts back on drift.
+# contents: write is only needed on push to main, where the job commits
+# regenerated artifacts after the blog auto-publish cron lands a new MDX
+# post (the cron writes content/posts/*.mdx via the GitHub Contents API
+# and can't run prebuild itself).
 permissions:
   contents: write
 
@@ -20,8 +23,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          # Check out the real branch (not the detached PR merge ref) so we
-          # can commit + push regenerated files back to it when they drift.
+          # Check out the real branch (not the detached PR merge ref) so the
+          # push job can commit regenerated files back when content drifted.
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -37,18 +40,33 @@ jobs:
       - name: Run prebuild (regenerate sitemap, rss, posts-meta)
         run: npm run prebuild
 
-      # Self-heal instead of failing: the blog content pipeline adds posts
-      # without regenerating these derived files, which used to leave CI red
-      # until someone ran `npm run prebuild` by hand. Now the job regenerates
-      # and commits them automatically. `[skip ci]` on the auto-commit stops it
+      # The generators are deterministic and skip writes when nothing
+      # changed (scripts/_write-if-changed.mjs), so any diff here means the
+      # PR really changed content without regenerating the derived files.
+      - name: Verify generated artifacts are committed (PRs)
+        if: github.event_name == 'pull_request'
+        run: |
+          if git diff --quiet public/sitemap.xml public/rss.xml src/data/posts-meta.json; then
+            echo "Generated files are up to date."
+            exit 0
+          fi
+          echo "::error::public/sitemap.xml, public/rss.xml, or src/data/posts-meta.json is stale."
+          echo "Run 'npm run prebuild' locally and commit the regenerated files."
+          git --no-pager diff --stat public/sitemap.xml public/rss.xml src/data/posts-meta.json
+          exit 1
+
+      # On main, drift is expected: the daily blog cron publishes MDX posts
+      # via the Contents API without regenerating these derived files, so the
+      # job commits them here. `[skip ci]` stops the auto-commit from
       # re-triggering this workflow, so there is no loop.
-      - name: Commit regenerated artifacts if they drifted
+      - name: Commit regenerated artifacts (main)
+        if: github.event_name == 'push'
         run: |
           if git diff --quiet public/sitemap.xml public/rss.xml src/data/posts-meta.json; then
             echo "Generated files are already up to date."
             exit 0
           fi
-          echo "Generated files drifted — regenerating and committing."
+          echo "Generated files drifted (new cron-published content) — committing."
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/sitemap.xml public/rss.xml src/data/posts-meta.json
