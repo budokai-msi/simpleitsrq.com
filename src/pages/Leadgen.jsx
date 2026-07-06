@@ -1,5 +1,9 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
+// Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
+// in a lazy CSS chunk instead of the global render-blocking bundle. Vite
+// dedupes the import across the leadgen routes.
+import "../styles/leadgen.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, Database, Mail, Building2,

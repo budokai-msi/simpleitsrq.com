@@ -21,6 +21,10 @@ import {
 import { csrfFetch } from "../lib/csrf";
 import { useSEO } from "../lib/seo";
 import NotFound from "./NotFound";
+// Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
+// in a lazy CSS chunk instead of the global render-blocking bundle. Vite
+// dedupes the import across the leadgen routes.
+import "../styles/leadgen.css";
 
 const TABS = [
   ["ops", "Ops", Activity],
