@@ -1,10 +1,10 @@
 // Generates public/rss.xml from MDX posts + legacy posts.js.
 // Run with: node scripts/generate-rss.mjs
 
-import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { loadAllPosts } from "./_posts-source.mjs";
+import { writeTextIfChanged } from "./_write-if-changed.mjs";
 
 const posts = loadAllPosts();
 
@@ -54,5 +54,8 @@ ${items}
 `;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-writeFileSync(join(__dirname, "..", "public", "rss.xml"), xml, "utf8");
-console.log(`rss.xml written: ${sorted.length} items`);
+const wrote = writeTextIfChanged(
+  join(__dirname, "..", "public", "rss.xml"),
+  xml,
+);
+console.log(`rss.xml ${wrote ? "written" : "unchanged"}: ${sorted.length} items`);
