@@ -17,6 +17,10 @@
 // App.css so the leadgen command center stays visually aligned.
 
 import "leaflet/dist/leaflet.css";
+// Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
+// in a lazy CSS chunk instead of the global render-blocking bundle. Vite
+// dedupes the import across the leadgen routes.
+import "../styles/leadgen.css";
 import {
   Activity,
   ArrowRight,
