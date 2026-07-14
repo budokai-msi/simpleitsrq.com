@@ -1,5 +1,80 @@
 [
   {
+    "slug": "right-to-repair-sarasota-bradenton-venice-small-business",
+    "title": "Right to Repair: What Small Business Owners in Sarasota Need to Know",
+    "date": "2026-07-14",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "The right to repair movement is gaining momentum, and small business owners in Sarasota, Bradenton, and Venice should take note. A recent settlement between John Deere and the FTC has implications for equipment owners and users.",
+    "metaDescription": "Right to repair movement gains momentum, what does it mean for small business owners in Sarasota, Bradenton, and Venice?",
+    "heroAlt": "A local business technology note about Right to Repair: What Small Business Owners in Sarasota Need to Know."
+  },
+  {
+    "slug": "right-to-repair-sarasota-small-business",
+    "title": "Right to Repair: What Small Business Owners in Sarasota Need to Know",
+    "date": "2026-07-14",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "The right to repair movement is gaining momentum, and small business owners in Sarasota, Bradenton, and Venice should take note. A recent settlement between the FTC and John Deere has significant implications for equipment owners.",
+    "metaDescription": "Learn about the right to repair movement and its impact on small businesses in Sarasota, FL",
+    "heroAlt": "A local business technology note about Right to Repair: What Small Business Owners in Sarasota Need to Know."
+  },
+  {
+    "slug": "running-ai-models-locally-sarasota-bradenton-venice-small-business",
+    "title": "Running AI Models Locally: What Small Business Owners Need to Know",
+    "date": "2026-07-14",
+    "category": "AI & Productivity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "Learn how running AI models locally can benefit your small business in Sarasota, Bradenton, or Venice, and what you need to consider before making the switch.",
+    "metaDescription": "Discover the benefits of running AI models locally for small businesses in Sarasota, Bradenton, and Venice, Florida.",
+    "heroAlt": "A local business technology note about Running AI Models Locally: What Small Business Owners Need to Know."
+  },
+  {
+    "slug": "sarasota-bradenton-venice-small-business-android-malware-alert",
+    "title": "New Android Malware Alert for Small Businesses in Sarasota and Beyond",
+    "date": "2026-07-14",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "A new Android malware strain is targeting devices, and small business owners in Sarasota, Bradenton, and Venice need to take notice. Learn how to protect your companys devices and data.",
+    "metaDescription": "Android malware alert for small businesses in Sarasota, Bradenton, and Venice",
+    "heroAlt": "A local business technology note about New Android Malware Alert for Small Businesses in Sarasota and Beyond."
+  },
+  {
+    "slug": "sarasota-small-business-xai-data-collection",
+    "title": "What Your Business Needs to Know About xAIs Data Collection",
+    "date": "2026-07-14",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "xAIs Grok build CLI sends sensitive data to xAI, posing a risk to small businesses in Sarasota, Bradenton, and Venice. Learn how to protect your companys information.",
+    "metaDescription": "xAIs Grok build CLI data collection poses a risk to small businesses",
+    "heroAlt": "A local business technology note about What Your Business Needs to Know About xAIs Data Collection."
+  },
+  {
     "slug": "sarasota-small-business-hiring-tools",
     "title": "The Surprising Truth About Automated Hiring Tools",
     "date": "2026-07-01",

@@ -6,7 +6,52 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Wed, 01 Jul 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 14 Jul 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>Right to Repair: What Small Business Owners in Sarasota Need to Know</title>
+      <link>https://simpleitsrq.com/blog/right-to-repair-sarasota-bradenton-venice-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/right-to-repair-sarasota-bradenton-venice-small-business</guid>
+      <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>The right to repair movement is gaining momentum, and small business owners in Sarasota, Bradenton, and Venice should take note. A recent settlement between John Deere and the FTC has implications for equipment owners and users.</description>
+    </item>
+    <item>
+      <title>Right to Repair: What Small Business Owners in Sarasota Need to Know</title>
+      <link>https://simpleitsrq.com/blog/right-to-repair-sarasota-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/right-to-repair-sarasota-small-business</guid>
+      <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>The right to repair movement is gaining momentum, and small business owners in Sarasota, Bradenton, and Venice should take note. A recent settlement between the FTC and John Deere has significant implications for equipment owners.</description>
+    </item>
+    <item>
+      <title>Running AI Models Locally: What Small Business Owners Need to Know</title>
+      <link>https://simpleitsrq.com/blog/running-ai-models-locally-sarasota-bradenton-venice-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/running-ai-models-locally-sarasota-bradenton-venice-small-business</guid>
+      <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>AI &amp; Productivity</category>
+      <description>Learn how running AI models locally can benefit your small business in Sarasota, Bradenton, or Venice, and what you need to consider before making the switch.</description>
+    </item>
+    <item>
+      <title>New Android Malware Alert for Small Businesses in Sarasota and Beyond</title>
+      <link>https://simpleitsrq.com/blog/sarasota-bradenton-venice-small-business-android-malware-alert</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-bradenton-venice-small-business-android-malware-alert</guid>
+      <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>A new Android malware strain is targeting devices, and small business owners in Sarasota, Bradenton, and Venice need to take notice. Learn how to protect your companys devices and data.</description>
+    </item>
+    <item>
+      <title>What Your Business Needs to Know About xAIs Data Collection</title>
+      <link>https://simpleitsrq.com/blog/sarasota-small-business-xai-data-collection</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-small-business-xai-data-collection</guid>
+      <pubDate>Tue, 14 Jul 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>xAIs Grok build CLI sends sensitive data to xAI, posing a risk to small businesses in Sarasota, Bradenton, and Venice. Learn how to protect your companys information.</description>
+    </item>
     <item>
       <title>The Surprising Truth About Automated Hiring Tools</title>
       <link>https://simpleitsrq.com/blog/sarasota-small-business-hiring-tools</link>
