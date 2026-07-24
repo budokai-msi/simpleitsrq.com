@@ -85,8 +85,9 @@ validateEnv({
   TURNSTILE_SECRET_KEY: "required",
 });
 
-const CONTACT_FROM = "Simple IT SRQ Website <contact@simpleitsrq.com>";
-const NEWSLETTER_FROM = "Simple IT Brief <hello@simpleitsrq.com>";
+const FROM_DOMAIN = process.env.RESEND_FROM_DOMAIN || "mail.simpleitsrq.com";
+const CONTACT_FROM = `Simple IT SRQ Website <contact@${FROM_DOMAIN}>`;
+const NEWSLETTER_FROM = `Simple IT Brief <hello@${FROM_DOMAIN}>`;
 // Routed to hello@simpleitsrq.com via ImprovMX (mx1/mx2.improvmx.com) which
 // forwards to the Gmail catch-all. Override with CONTACT_TO_EMAIL if the
 // destination needs to change (e.g. shared team inbox).
