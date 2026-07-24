@@ -1546,7 +1546,12 @@ function LeadgenScanApp() {
       ) : null}
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
-          <span className="leadgen-app-live"><span /> Live public-record scanner</span>
+          <div className="leadgen-app-traffic-dots" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <span className="leadgen-app-live"><span /> Live public-record & email scanner</span>
           {/* Workspace handoff is only relevant once a list exists - surface it
               after a scan, not as the first thing a new visitor sees. */}
           {scan ? (
@@ -1562,11 +1567,9 @@ function LeadgenScanApp() {
         </div>
 
         <div className="leadgen-app-title">
-          <h1 className="display">Find local businesses in any industry - with emails.</h1>
+          <h2 className="title-2">Find local businesses & extract verified emails</h2>
           <p>
-            Enter any zip and choose an industry. We surface independent local
-            businesses, extract email addresses from their websites, flag national
-            chains, and hand off a clean reviewed list ready for outreach or CRM import.
+            Enter any U.S. zip code and select an industry vertical. Our scraper surfaces independent local businesses, extracts verified emails & direct phone numbers, and builds export-ready campaign lists.
           </p>
         </div>
 
@@ -2468,6 +2471,8 @@ export default function Leadgen() {
 
       <LeadgenFeaturesSection />
 
+      <LeadgenComparisonMatrix />
+
       <LeadgenProofStrip />
 
       <section className="section leadgen-product-focus">
@@ -2743,6 +2748,54 @@ function LeadgenFeaturesSection() {
               </div>
             );
           })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LeadgenComparisonMatrix() {
+  const comparison = [
+    { feature: "Data Freshness", us: "Real-time web crawl & MX deliverability check", legacy: "Stale static database (6-12 mos old)" },
+    { feature: "Targeting Precision", us: "Hyper-local U.S. Zip code & radius search", legacy: "Generic state/MSA broad filters" },
+    { feature: "Chain / Franchise Exclusion", us: "Automatic AI exclusion of national chains", legacy: "Manual sorting & wasted budget" },
+    { feature: "Direct Executive Emails", us: "Included & verified (mailto: + domain crawl)", legacy: "Gated behind expensive tier upgrades" },
+    { feature: "Verified Direct Phone Lines", us: "Included in standard CSV export", legacy: "Requires extra phone credits" },
+    { feature: "CRM & Webhook Push", us: "1-Click push to HubSpot, Mailchimp, GHL, Zapier", legacy: "Manual CSV re-formatting needed" },
+    { feature: "Pricing & Contracts", us: "$19/mo flat rate (no per-lead markup)", legacy: "$5,000+ annual contracts" },
+  ];
+
+  return (
+    <section className="section leadgen-matrix-section">
+      <div className="container">
+        <div className="section-head" style={{ maxWidth: 760, textAlign: "center", margin: "0 auto 2.5rem" }}>
+          <span className="eyebrow">Comparison</span>
+          <h2 className="title-1">Built for local teams tired of stale broker data.</h2>
+          <p className="lede">
+            Compare our real-time B2B web scraper against traditional legacy list brokers.
+          </p>
+        </div>
+        <div className="leadgen-matrix-table-wrap">
+          <table className="leadgen-matrix-table">
+            <thead>
+              <tr>
+                <th>Feature / Capability</th>
+                <th className="is-us">Simple IT SRQ Scraper</th>
+                <th>Legacy List Brokers</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparison.map((row) => (
+                <tr key={row.feature}>
+                  <td><strong>{row.feature}</strong></td>
+                  <td className="is-us">
+                    <Check size={16} style={{ color: "#10b981", verticalAlign: "middle", marginRight: 6 }} /> {row.us}
+                  </td>
+                  <td className="is-legacy">{row.legacy}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
