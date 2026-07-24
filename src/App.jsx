@@ -18,7 +18,7 @@ import {
   isNavSectionActive,
 } from "./data/navigation";
 import { cityList } from "./data/cities";
-import { selectionHaptic } from "./lib/haptics";
+import { initGlobalHaptics, selectionHaptic } from "./lib/haptics";
 import { ThemeContext, useTheme } from "./lib/theme";
 import { AuthProvider } from "./lib/auth.jsx";
 import { useAuth } from "./lib/authContext.js";
@@ -975,6 +975,10 @@ function AnimatedRoutes() {
 }
 
 export default function App() {
+  useEffect(() => {
+    return initGlobalHaptics();
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>
