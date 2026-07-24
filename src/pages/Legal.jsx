@@ -426,14 +426,9 @@ export function TermsPage() {
         {" "}§6 for related data handling.
       </p>
 
-      <h2>7. Sponsor / advertiser program</h2>
+      <h2>7. Sponsor & partner disclosures</h2>
       <p>
-        Sponsor placements (purchased via <Link to="/advertise">/advertise</Link>)
-        are clearly labeled as sponsored content. We retain editorial control
-        over which sponsors we accept and reserve the right to decline or
-        remove any placement that conflicts with our audience's interests.
-        Refund and make-good terms are spelled out on the /advertise page
-        and supersede any informal expectation.
+        Sponsor placements are clearly labeled as sponsored content in accordance with FTC guidelines. We retain strict editorial control over any third-party placements and reserve the right to decline or remove any placement that conflicts with our audience's interests or safety.
       </p>
 
       <h2>8. Client portal</h2>

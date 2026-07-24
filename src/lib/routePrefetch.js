@@ -28,10 +28,10 @@ const EXACT = {
   "/services": () => import("../pages/Services"),
   "/stack": () => import("../pages/Stack"),
   "/tools-we-use": () => import("../pages/Stack"),
-  "/advertise": () => import("../pages/Advertise"),
-  "/sponsor": () => import("../pages/Advertise"),
+  "/advertise": () => import("../pages/Services"),
+  "/sponsor": () => import("../pages/Services"),
   "/compare": () => import("../pages/CompareIndex"),
-  "/why": () => import("../pages/WhyIndex"),
+  "/why": () => import("../pages/CompareIndex"),
   "/leadgen": () => import("../pages/Leadgen"),
   "/glossary": () => import("../pages/Glossary"),
   "/exposure-scan": () => import("../pages/ExposureScan"),
@@ -46,7 +46,7 @@ const EXACT = {
 const PREFIX = [
   ["/blog/", () => import("../pages/BlogPost")],
   ["/compare/", () => import("../pages/CompareDetail")],
-  ["/why/", () => import("../pages/WhyVs")],
+  ["/why/", () => import("../pages/CompareDetail")],
   ["/glossary/", () => import("../pages/GlossaryEntry")],
 ];
 
