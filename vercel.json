@@ -72,6 +72,7 @@
         { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
         { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
         { "key": "X-DNS-Prefetch-Control", "value": "on" },
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
         { "key": "X-Powered-By", "value": "" },
         { "key": "Server", "value": "" }
       ]
