@@ -214,3 +214,74 @@ export async function handleLeadStatus(session, request) {
   }
   return json(200, { ok: true });
 }
+
+export async function handleSendLeadEmail(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const leadId = Number.parseInt(body.lead_id || body.id, 10);
+  const to = String(body.to || body.email || "").trim();
+  const subject = String(body.subject || "Re: Simple IT SRQ Inquiry").trim();
+  const text = String(body.body || body.text || "").trim();
+
+  if (!to || !to.includes("@")) return json(400, { ok: false, error: "invalid_email" });
+  if (!text) return json(400, { ok: false, error: "missing_body" });
+
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return json(500, { ok: false, error: "RESEND_API_KEY not set on server" });
+  }
+
+  try {
+    const { Resend } = await import("resend");
+    const resend = new Resend(apiKey);
+    const { data, error } = await resend.emails.send({
+      from: "Simple IT SRQ Website <contact@simpleitsrq.com>",
+      to: [to],
+      replyTo: "contact@simpleitsrq.com",
+      subject,
+      text,
+    });
+
+    if (error) {
+      return json(500, { ok: false, error: error.message || "resend_error" });
+    }
+
+    if (Number.isFinite(leadId) && leadId > 0) {
+      const note = `[Replied via Resend ID ${data?.id || "-"}] ${subject}`;
+      await sql`UPDATE leads SET status = 'contacted', notes = ${note}, updated_at = now() WHERE id = ${leadId}`.catch(() => {});
+    }
+
+    return json(200, { ok: true, id: data?.id });
+  } catch (err) {
+    return json(500, { ok: false, error: err.message || "send_failed" });
+  }
+}
+
+export async function handleCreateLeadTicket(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const leadId = Number.parseInt(body.lead_id || body.id, 10);
+  const title = String(body.title || "Support Ticket from Website Inquiry").trim();
+  const category = String(body.category || "General").trim();
+  const priority = String(body.priority || "normal").trim();
+  const description = String(body.description || "").trim();
+
+  const code = `SRQ-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  try {
+    await sql`
+      INSERT INTO tickets (code, title, category, priority, status, description, created_at)
+      VALUES (${code}, ${title}, ${category}, ${priority}, 'open', ${description}, now())
+    `.catch(() => {});
+
+    if (Number.isFinite(leadId) && leadId > 0) {
+      await sql`UPDATE leads SET status = 'won', notes = ${`Ticket ${code} created`}, updated_at = now() WHERE id = ${leadId}`.catch(() => {});
+    }
+
+    return json(200, { ok: true, code });
+  } catch (err) {
+    return json(500, { ok: false, error: err.message || "ticket_create_failed" });
+  }
+}

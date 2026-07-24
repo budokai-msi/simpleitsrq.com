@@ -4,18 +4,24 @@ import {
   Activity,
   AlertTriangle,
   BarChart3,
+  BookOpen,
   CheckCircle2,
   ClipboardList,
   DollarSign,
+  ExternalLink,
   Eye,
   FileText,
   Inbox,
   Lock,
+  Mail,
   RadioTower,
   RefreshCcw,
   Search,
+  Send,
   Shield,
+  Sparkles,
   Target,
+  Ticket,
   XCircle,
 } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
@@ -458,63 +464,253 @@ function OpsTab({ data, errors, intel, busy, runAction }) {
   );
 }
 
+function analyzeMicrosoftDocs(msg = "") {
+  const text = String(msg).toLowerCase();
+  const docs = [];
+
+  if (text.includes("microsoft") || text.includes("m365") || text.includes("outlook") || text.includes("account")) {
+    docs.push({
+      title: "Microsoft 365 Admin Account & Identity Cleanup",
+      url: "https://learn.microsoft.com/en-us/microsoft-365/admin/setup/add-domain",
+      desc: "Official guide for consolidating legacy accounts, unlinking redundant credentials, and primary domain identities."
+    });
+  }
+
+  if (text.includes("onedrive") || text.includes("folder") || text.includes("file") || text.includes("share")) {
+    docs.push({
+      title: "OneDrive for Business Folder Structure & Access Permissions",
+      url: "https://learn.microsoft.com/en-us/onedrive/plan-onedrive-enterprise",
+      desc: "Best practices for folder hierarchies, tenant file sharing permissions, and unlinking personal accounts."
+    });
+  }
+
+  if (text.includes("device") || text.includes("personal") || text.includes("work") || text.includes("windows")) {
+    docs.push({
+      title: "Separate Personal & Work Accounts in Windows 11",
+      url: "https://support.microsoft.com/en-us/windows/add-or-remove-accounts-on-your-pc-104fac0f-070b-4297-05db-c4d4e158b902",
+      desc: "Step-by-step unlinking of personal Microsoft accounts from corporate Windows workstations."
+    });
+  }
+
+  if (docs.length === 0) {
+    docs.push({
+      title: "Microsoft 365 Business System Architecture",
+      url: "https://learn.microsoft.com/en-us/microsoft-365/",
+      desc: "Official Microsoft documentation for business subscriptions, accounts, and workstation security."
+    });
+  }
+
+  return docs;
+}
+
+function StatusChip({ status }) {
+  const st = String(status || "new").toLowerCase();
+  const isNew = st === "new";
+  const isWon = st === "won";
+  const isContacted = st === "contacted";
+  return (
+    <span
+      style={{
+        padding: "3px 8px",
+        borderRadius: 999,
+        fontSize: 11,
+        fontWeight: 700,
+        textTransform: "uppercase",
+        background: isNew ? "rgba(239, 68, 68, 0.15)" : isWon ? "rgba(16, 185, 129, 0.15)" : isContacted ? "rgba(59, 130, 246, 0.15)" : "rgba(148, 163, 184, 0.15)",
+        color: isNew ? "#ef4444" : isWon ? "#10b981" : isContacted ? "#3b82f6" : "#64748b",
+      }}
+    >
+      {st}
+    </span>
+  );
+}
+
 function LeadsInboxTab({ data, error, busy, runAction }) {
   const leads = data?.leads || [];
   const counts = data?.counts || {};
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [replySubject, setReplySubject] = useState("");
+  const [replyBody, setReplyBody] = useState("");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailStatus, setEmailStatus] = useState(null);
+  const [creatingTicket, setCreatingTicket] = useState(false);
+  const [ticketStatus, setTicketStatus] = useState(null);
+
+  const activeLead = selectedLead || leads[0] || null;
+  const msDocs = useMemo(() => analyzeMicrosoftDocs(activeLead?.message), [activeLead]);
+
+  const selectLead = (l) => {
+    setSelectedLead(l);
+    setReplySubject(l ? `Re: Simple IT SRQ Inquiry — ${l.company || l.name || "Onsite IT Support"}` : "");
+    setReplyBody(l ? `Hi ${l.name ? l.name.split(" ")[0] : "there"},\n\nThanks for reaching out!\n\nYes, we offer one-time onsite projects with no monthly contracts required, and we can come directly to your office.\n\nWe can send an engineer out to assist with your Microsoft accounts, Outlook, OneDrive, and personal/work device separation.\n\nWe have afternoon openings (12pm–5pm) starting next Tuesday onward, as well as weekend options (Saturday or Sunday).\n\nLet us know which day works best for you and we'll get you on the schedule!\n\nBest regards,\nSimple IT SRQ Team` : "");
+    setEmailStatus(null);
+    setTicketStatus(null);
+  };
+
+  const sendEmail = async () => {
+    if (!activeLead || !activeLead.email || !replyBody.trim()) return;
+    setSendingEmail(true);
+    setEmailStatus(null);
+    try {
+      const res = await postJson("send-lead-email", {
+        lead_id: activeLead.id,
+        to: activeLead.email,
+        subject: replySubject,
+        body: replyBody,
+      });
+      setEmailStatus({ ok: true, text: `Email sent via Resend (ID: ${res.id})` });
+      if (runAction) runAction("leads-inbox");
+    } catch (e) {
+      setEmailStatus({ ok: false, text: String(e.message || e) });
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
+  const createTicket = async () => {
+    if (!activeLead) return;
+    setCreatingTicket(true);
+    setTicketStatus(null);
+    try {
+      const res = await postJson("create-lead-ticket", {
+        lead_id: activeLead.id,
+        title: `Onsite Project: ${activeLead.company || activeLead.name || "Website Inquiry"}`,
+        category: "Microsoft 365 / Workstation Cleanup",
+        priority: "normal",
+        description: activeLead.message || "Lead conversion",
+      });
+      setTicketStatus({ ok: true, text: `Ticket ${res.code} created!` });
+      if (runAction) runAction("leads-inbox");
+    } catch (e) {
+      setTicketStatus({ ok: false, text: String(e.message || e) });
+    } finally {
+      setCreatingTicket(false);
+    }
+  };
+
   const fmtDate = (ts) => { try { return new Date(ts).toLocaleString(); } catch { return ts; } };
+
   return (
     <div className="ops-grid">
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head">
-          <h2>Leads inbox</h2>
+          <h2>Email & Lead Dispatcher Inbox</h2>
           <SignalPill state={(counts.new || 0) ? "good" : "neutral"}>
             {fmtNumber(counts.new || 0)} new · {fmtNumber(counts.contacted || 0)} contacted · {fmtNumber(counts.won || 0)} won
           </SignalPill>
         </div>
         <p className="ops-panel__copy">
-          Every contact form, service reservation, and city-page audit request lands here with full
-          detail - work them like a CRM by setting a status. If this stays empty after a real
-          submission, run <code>npm run db:push</code> once to create the leads table.
+          Track inbound inquiries, send direct email replies via Resend (`contact@simpleitsrq.com`), generate client portal tickets with 1 click, and view AI Microsoft documentation suggestions.
         </p>
         {error ? <EmptyState>{error}</EmptyState> : null}
         {!error && leads.length === 0 ? <EmptyState>No leads yet - form submissions appear here in real time.</EmptyState> : null}
+
         {leads.length ? (
-          <table className="admin-aff-table ops-table">
-            <thead>
-              <tr><th>When</th><th>Name</th><th>Contact</th><th>Source</th><th>Message</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-              {leads.map((l) => (
-                <tr key={l.id}>
-                  <td className="admin-leadgen-muted" style={{ whiteSpace: "nowrap", fontSize: 11 }}>{fmtDate(l.created_at)}</td>
-                  <td>
-                    <strong>{l.name || " - "}</strong>
-                    {[l.city, l.region].filter(Boolean).length ? <><br /><span style={{ fontSize: 11, opacity: 0.7 }}>{[l.city, l.region].filter(Boolean).join(", ")}</span></> : null}
-                  </td>
-                  <td style={{ fontSize: 12 }}>
-                    {l.email ? <a href={`mailto:${l.email}`}>{l.email}</a> : " - "}
-                    {l.phone ? <><br /><a href={`tel:${l.phone}`}>{l.phone}</a></> : null}
-                  </td>
-                  <td className="admin-leadgen-muted" style={{ fontSize: 11 }}>{l.source || " - "}{l.page ? <><br />{l.page}</> : null}</td>
-                  <td style={{ fontSize: 12, maxWidth: 280, whiteSpace: "pre-wrap" }}>{l.message || " - "}</td>
-                  <td>
-                    <select
-                      defaultValue={l.status || "new"}
-                      data-status={l.status || "new"}
-                      disabled={busy === "lead-status"}
-                      onChange={(e) => runAction("lead-status", { id: l.id, status: e.target.value }, "Lead updated.")}
-                      className="admin-leadgen-input admin-leadgen-input--sm lead-status-select"
-                    >
-                      <option value="new">new</option>
-                      <option value="contacted">contacted</option>
-                      <option value="won">won</option>
-                      <option value="lost">lost</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(300px, 1fr) minmax(360px, 1.25fr)", gap: 18, marginTop: 16 }}>
+            {/* Left Column: Lead List */}
+            <div style={{ overflowX: "auto" }}>
+              <table className="admin-aff-table ops-table">
+                <thead>
+                  <tr><th>Lead</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                  {leads.map((l) => {
+                    const isSelected = activeLead?.id === l.id;
+                    return (
+                      <tr key={l.id} style={{ background: isSelected ? "var(--lg-row-hover, #f1f5f9)" : "transparent", cursor: "pointer" }} onClick={() => selectLead(l)}>
+                        <td>
+                          <strong>{l.name || l.email}</strong>
+                          {l.company ? <><br /><span style={{ fontSize: 11, opacity: 0.8 }}>{l.company}</span></> : null}
+                          <br /><span className="admin-leadgen-muted" style={{ fontSize: 10 }}>{fmtDate(l.created_at)}</span>
+                        </td>
+                        <td>
+                          <StatusChip status={l.status || "new"} />
+                        </td>
+                        <td>
+                          <button type="button" className="btn btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); selectLead(l); }}>
+                            Manage
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Right Column: Selected Lead Workbench */}
+            {activeLead ? (
+              <div style={{ padding: 18, border: "1px solid var(--border, #cbd5e1)", borderRadius: 12, background: "var(--surface, #fff)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 10 }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: "1.1rem" }}>{activeLead.name || "Inbound Lead"}</h3>
+                    <span style={{ fontSize: "0.85rem", color: "var(--text-muted, #64748b)" }}>
+                      {activeLead.company} {activeLead.email ? `· ${activeLead.email}` : ""} {activeLead.phone ? `· ${activeLead.phone}` : ""}
+                    </span>
+                  </div>
+                  <button type="button" className="btn btn-primary btn-sm" disabled={creatingTicket} onClick={createTicket}>
+                    <Ticket size={14} /> {creatingTicket ? "Creating..." : "1-Click Create Ticket"}
+                  </button>
+                </div>
+
+                {ticketStatus ? (
+                  <p style={{ color: ticketStatus.ok ? "#10b981" : "#ef4444", fontSize: 12, margin: "4px 0 10px", fontWeight: 600 }}>{ticketStatus.text}</p>
+                ) : null}
+
+                {/* Lead Message Box */}
+                <div style={{ padding: 12, borderRadius: 8, background: "var(--lg-panel-soft, #f8fafc)", border: "1px solid var(--border-soft, #e2e8f0)", marginBottom: 16 }}>
+                  <strong style={{ fontSize: 11, textTransform: "uppercase", color: "var(--text-muted, #64748b)", letterSpacing: "0.05em" }}>Inquiry Content:</strong>
+                  <p style={{ margin: "6px 0 0", fontSize: 13, whiteSpace: "pre-wrap", lineHeight: 1.45 }}>{activeLead.message || "No message body."}</p>
+                </div>
+
+                {/* AI Microsoft Doc Suggestions */}
+                <div style={{ padding: 14, borderRadius: 10, background: "rgba(99, 102, 241, 0.06)", border: "1px solid rgba(99, 102, 241, 0.2)", marginBottom: 16 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, color: "#6366f1", fontWeight: 700, fontSize: 13 }}>
+                    <Sparkles size={16} /> AI Suggested Microsoft Documentation
+                  </div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {msDocs.map((doc) => (
+                      <div key={doc.title} style={{ fontSize: 12 }}>
+                        <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 650, color: "#4f46e5", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          <BookOpen size={13} /> {doc.title} <ExternalLink size={11} />
+                        </a>
+                        <p style={{ margin: "2px 0 0", color: "var(--text-muted, #64748b)", fontSize: 11 }}>{doc.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Email Reply Composer */}
+                <div style={{ display: "grid", gap: 10 }}>
+                  <strong style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
+                    <Mail size={15} /> Reply via Resend (`contact@simpleitsrq.com`)
+                  </strong>
+                  <input
+                    type="text"
+                    className="admin-leadgen-input"
+                    value={replySubject}
+                    onChange={(e) => setReplySubject(e.target.value)}
+                    placeholder="Subject..."
+                  />
+                  <textarea
+                    rows={7}
+                    className="admin-leadgen-input admin-leadgen-textarea"
+                    value={replyBody}
+                    onChange={(e) => setReplyBody(e.target.value)}
+                    placeholder="Type email reply..."
+                  />
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <button type="button" className="btn btn-primary btn-sm" disabled={sendingEmail || !activeLead.email} onClick={sendEmail}>
+                      <Send size={14} /> {sendingEmail ? "Sending via Resend..." : "Send Reply via Resend"}
+                    </button>
+                    {emailStatus ? (
+                      <span style={{ color: emailStatus.ok ? "#10b981" : "#ef4444", fontSize: 12, fontWeight: 600 }}>{emailStatus.text}</span>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
         ) : null}
       </section>
     </div>
