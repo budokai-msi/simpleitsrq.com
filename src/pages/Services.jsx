@@ -357,24 +357,6 @@ export default function Services() {
               Book consultation <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="services-stat-band" role="list" aria-label="Service catalog at a glance">
-            <div role="listitem" className="services-stat">
-              <div className="services-stat__num">{services.length}</div>
-              <div className="services-stat__label">Productized SKUs</div>
-            </div>
-            <div role="listitem" className="services-stat">
-              <div className="services-stat__num">{SERVICES_SECOND_STAT.value}</div>
-              <div className="services-stat__label">{SERVICES_SECOND_STAT.label}</div>
-            </div>
-            <div role="listitem" className="services-stat">
-              <div className="services-stat__num">Written</div>
-              <div className="services-stat__label">Scope before scheduling</div>
-            </div>
-            <div role="listitem" className="services-stat">
-              <div className="services-stat__num">5-city</div>
-              <div className="services-stat__label">SWFL service area</div>
-            </div>
-          </div>
         </div>
       </section>
 
