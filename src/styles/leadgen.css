@@ -1,7 +1,3 @@
-/* =====================================================================
-   LEADGEN PRODUCT — public marketing surface (/leadgen)
-   ===================================================================== */
-
 .leadgen-public {
   --lg-page: #ffffff;
   --lg-panel: #ffffff;
@@ -19,26 +15,133 @@
   --lg-amber: #9ca3af;
   --lg-teal: #374151;
   --lg-violet: #6b7280;
+  --lg-accent-glow: rgba(99, 102, 241, 0.15);
   background: var(--lg-page);
   color: var(--lg-text);
 }
 [data-theme="dark"] .leadgen-public {
-  --lg-page: #0f1217;
-  --lg-panel: #121720;
-  --lg-panel-soft: #171d27;
-  --lg-row-hover: #1c2431;
-  --lg-border: #e5e7eb;
-  --lg-border-soft: #353b45;
-  --lg-border-faint: #2a303a;
+  --lg-page: #0b0d13;
+  --lg-panel: #131722;
+  --lg-panel-soft: #19202e;
+  --lg-row-hover: #1e2738;
+  --lg-border: #3b4252;
+  --lg-border-soft: #2b3240;
+  --lg-border-faint: #1f2633;
   --lg-text: #f4f5f7;
-  --lg-muted: #c3cad4;
-  --lg-faint: #a5afbc;
-  --lg-focus: rgba(229, 231, 235, 0.18);
-  --lg-blue: #e5e7eb;
-  --lg-blue-deep: #ffffff;
-  --lg-amber: #f59e0b;
+  --lg-muted: #cbd5e1;
+  --lg-faint: #94a3b8;
+  --lg-focus: rgba(99, 102, 241, 0.25);
+  --lg-blue: #818cf8;
+  --lg-blue-deep: #6366f1;
+  --lg-amber: #fbbf24;
   --lg-teal: #34d399;
-  --lg-violet: #a78bfa;
+  --lg-violet: #c084fc;
+  --lg-accent-glow: rgba(99, 102, 241, 0.25);
+}
+
+/* Hero Badge & Header Visuals */
+.leadgen-hero-header {
+  text-align: center;
+  max-width: 840px;
+  margin: 0 auto 2.5rem;
+}
+.leadgen-badge-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.10);
+  border: 1px solid rgba(99, 102, 241, 0.30);
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
+  margin-bottom: 1.25rem;
+}
+[data-theme="dark"] .leadgen-badge-hero {
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(165, 180, 252, 0.35);
+}
+.leadgen-hero-title {
+  font-size: clamp(2.1rem, 4.2vw, 3.4rem);
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  margin-bottom: 1rem;
+}
+.leadgen-hero-sub {
+  font-size: clamp(1.05rem, 1.8vw, 1.22rem);
+  line-height: 1.55;
+  color: var(--lg-muted);
+  max-width: 740px;
+  margin: 0 auto;
+}
+
+/* 4-Column Feature Grid */
+.leadgen-features-grid-section {
+  padding-top: clamp(48px, 6vw, 84px);
+  padding-bottom: clamp(48px, 6vw, 84px);
+  background: var(--lg-panel-soft);
+  border-top: 1px solid var(--lg-border-soft);
+  border-bottom: 1px solid var(--lg-border-soft);
+}
+.leadgen-features-4col {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+@media (max-width: 1024px) {
+  .leadgen-features-4col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .leadgen-features-4col {
+    grid-template-columns: 1fr;
+  }
+}
+.leadgen-feature-card {
+  background: var(--lg-panel);
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 14px;
+  padding: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.leadgen-feature-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08);
+}
+.leadgen-feature-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+  margin-bottom: 16px;
+}
+[data-theme="dark"] .leadgen-feature-card__icon {
+  background: rgba(129, 140, 248, 0.2);
+  color: #a5b4fc;
+}
+.leadgen-feature-card h3 {
+  font-size: 1.08rem;
+  font-weight: 750;
+  margin: 0 0 8px;
+  color: var(--lg-text);
+  line-height: 1.3;
+}
+.leadgen-feature-card p {
+  font-size: 0.88rem;
+  color: var(--lg-muted);
+  line-height: 1.5;
+  margin: 0;
 }
 .leadgen-public .section-alt {
   background: var(--lg-panel-soft);

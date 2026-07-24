@@ -2451,9 +2451,22 @@ export default function Leadgen() {
       <LeadgenCheckoutSuccess />
       <section className="section hero hero-clean leadgen-hero">
         <div className="container">
+          <div className="leadgen-hero-header">
+            <span className="leadgen-badge-hero">
+              <Sparkles size={14} /> AI-Powered B2B Scraping Engine
+            </span>
+            <h1 className="leadgen-hero-title">
+              Instant B2B Lead Generator & Web Scraper
+            </h1>
+            <p className="leadgen-hero-sub">
+              Extract decision-maker emails, direct phone numbers, and company intelligence across any U.S. zip code. Build hyper-targeted outreach campaigns in seconds.
+            </p>
+          </div>
           <LeadgenScanApp />
         </div>
       </section>
+
+      <LeadgenFeaturesSection />
 
       <LeadgenProofStrip />
 
@@ -2685,6 +2698,52 @@ function LeadgenIntegrationsSection() {
         <p style={{ textAlign: "center", marginTop: "2rem", color: "var(--text-2, #64748b)", fontSize: 14 }}>
           Configure integrations from your campaign workspace after signup.
         </p>
+      </div>
+    </section>
+  );
+}
+
+function LeadgenFeaturesSection() {
+  const features = [
+    {
+      icon: Search,
+      title: "Targeted Zip & Niche Search",
+      desc: "Instantly scan any U.S. zip code across 14+ industry verticals to discover active independent local businesses.",
+    },
+    {
+      icon: Mail,
+      title: "Real-Time Email Scraping",
+      desc: "Deep-crawl company websites to extract verified executive and corporate email addresses (`sales@`, `contact@`, `info@`).",
+    },
+    {
+      icon: Phone,
+      title: "Verified Phone & Contact Info",
+      desc: "Scrape direct office phone numbers, street addresses, and social links to power multi-channel sales outreach.",
+    },
+    {
+      icon: Database,
+      title: "Instant CSV & CRM Handoff",
+      desc: "Export clean lists to CSV or push contacts directly into Mailchimp, HubSpot, GoHighLevel, ActiveCampaign, and Zapier.",
+    },
+  ];
+
+  return (
+    <section className="leadgen-features-grid-section">
+      <div className="container">
+        <div className="leadgen-features-4col">
+          {features.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="leadgen-feature-card">
+                <div className="leadgen-feature-card__icon">
+                  <Icon size={24} />
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.desc}</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
