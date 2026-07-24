@@ -235,8 +235,10 @@ export async function handleSendLeadEmail(session, request) {
   try {
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
+    const fromDomain = process.env.RESEND_FROM_DOMAIN || "mail.simpleitsrq.com";
+    const fromAddress = `Simple IT SRQ Website <contact@${fromDomain}>`;
     const { data, error } = await resend.emails.send({
-      from: "Simple IT SRQ Website <contact@simpleitsrq.com>",
+      from: fromAddress,
       to: [to],
       replyTo: "contact@simpleitsrq.com",
       subject,
