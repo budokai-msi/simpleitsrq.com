@@ -118,6 +118,8 @@ import {
   handleLeadIntel,
   handleLeadsInbox,
   handleLeadStatus,
+  handleSendLeadEmail,
+  handleCreateLeadTicket,
 } from "./_lib/portal/leads.js";
 
 // Vercel function config: lead-gen Discover + Crawl run their workers
@@ -317,6 +319,8 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "lead-intel"           && method === "GET")  return handleLeadIntel(session);
   if (action === "leads-inbox"          && method === "GET")  return handleLeadsInbox(session, url);
   if (action === "lead-status"          && method === "POST") return handleLeadStatus(session, request);
+  if (action === "send-lead-email"      && method === "POST") return handleSendLeadEmail(session, request);
+  if (action === "create-lead-ticket"   && method === "POST") return handleCreateLeadTicket(session, request);
   if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);
   if (action === "affiliate-stats"      && method === "GET")  return handleAffiliateStats(session, url);
   if (action === "testimonials"         && method === "GET")  return handleTestimonialsList(session);
