@@ -33,13 +33,11 @@ const staticUrls = [
   { loc: "/book", priority: "0.8", changefreq: "monthly" },
   { loc: "/service-area", priority: "0.85", changefreq: "monthly" },
   { loc: "/partners", priority: "0.8", changefreq: "monthly" },
-  { loc: "/compare", priority: "0.8", changefreq: "monthly" },
-  { loc: "/why", priority: "0.85", changefreq: "monthly" },
+  { loc: "/compare", priority: "0.85", changefreq: "monthly" },
   { loc: "/leadgen", priority: "0.95", changefreq: "weekly" },
   { loc: "/glossary", priority: "0.85", changefreq: "monthly" },
   { loc: "/industries", priority: "0.85", changefreq: "monthly" },
   { loc: "/exposure-scan", priority: "0.9", changefreq: "monthly" },
-  { loc: "/advertise", priority: "0.7", changefreq: "monthly" },
   { loc: "/support", priority: "0.6", changefreq: "monthly" },
   { loc: "/privacy", priority: "0.3", changefreq: "yearly" },
   { loc: "/terms", priority: "0.3", changefreq: "yearly" },
@@ -67,7 +65,7 @@ const compareUrls = COMPARISONS.map((c) => ({
 }));
 
 const whyUrls = WHY_VS_LIST.map((w) => ({
-  loc: `/why/${w.slug}`,
+  loc: `/compare/${w.slug}`,
   priority: "0.85",
   changefreq: "monthly",
 }));
