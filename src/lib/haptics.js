@@ -1,34 +1,56 @@
-// Lightweight haptic helper.
-//
-// Uses the Vibration API where supported (Android Chrome, Samsung Internet,
-// Firefox Android, etc.). Silently no-ops on iOS Safari, which does not
-// expose vibration to web pages — visual press feedback covers iOS instead.
-//
-// Patterns are short by design: long buzzes feel cheap and annoy users.
-
-const canVibrate = () =>
-  typeof navigator !== "undefined" &&
-  typeof navigator.vibrate === "function";
-
-export function haptic(pattern) {
-  if (!canVibrate()) return false;
+// Mobile tactile haptic feedback utility using Web Vibration API.
+export function triggerHaptic(type = "light") {
+  if (typeof window === "undefined" || typeof navigator === "undefined" || typeof navigator.vibrate !== "function") {
+    return;
+  }
   try {
-    return navigator.vibrate(pattern);
+    if (type === "light") {
+      navigator.vibrate(12);
+    } else if (type === "medium") {
+      navigator.vibrate(24);
+    } else if (type === "heavy") {
+      navigator.vibrate([30, 20, 30]);
+    } else if (type === "success") {
+      navigator.vibrate([10, 25, 15]);
+    } else if (type === "error") {
+      navigator.vibrate([25, 40, 25]);
+    }
   } catch {
-    return false;
+    // Vibration API may fail if disabled or unprivileged context
   }
 }
 
-// Semantic presets — pick these instead of raw patterns at call sites.
-export const HAPTICS = {
-  tap: 8,                       // light press, e.g. button down
-  selection: 12,                // committed action, e.g. submit click
-  success: [14, 40, 14],        // double tap
-  warning: [20, 50, 20, 50, 20],// triple buzz
-  error: [40, 60, 40],          // strong double thump
-};
+export function tapHaptic() {
+  triggerHaptic("light");
+}
 
-export const tapHaptic = () => haptic(HAPTICS.tap);
-export const selectionHaptic = () => haptic(HAPTICS.selection);
-export const successHaptic = () => haptic(HAPTICS.success);
-export const errorHaptic = () => haptic(HAPTICS.error);
+export function selectionHaptic() {
+  triggerHaptic("medium");
+}
+
+export function successHaptic() {
+  triggerHaptic("success");
+}
+
+export function errorHaptic() {
+  triggerHaptic("error");
+}
+
+// Global listener attachable to root window
+export function initGlobalHaptics() {
+  if (typeof window === "undefined") return () => {};
+
+  const handlePointerDown = (e) => {
+    const target = e.target && e.target.closest
+      ? e.target.closest("button, .btn, a, [role='button'], [role='tab'], .leadgen-quest-card, .leadgen-playbook-chip, select, input[type='button'], input[type='submit']")
+      : null;
+    if (target && !target.disabled) {
+      triggerHaptic("light");
+    }
+  };
+
+  window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+  return () => {
+    window.removeEventListener("pointerdown", handlePointerDown);
+  };
+}
