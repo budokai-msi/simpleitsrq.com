@@ -1,13 +1,15 @@
 import { useEffect, useMemo } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Link } from "../lib/Link";
-import { Check, X, ArrowRight, ExternalLink, ArrowLeft } from "lucide-react";
+import { Check, X, ArrowRight, ExternalLink, ArrowLeft, MapPin } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { getComparison, COMPARISONS } from "../data/comparisons";
+import { getWhyVs, WHY_VS_LIST } from "../data/why-vs";
 import { STACK, resolveStackLink } from "../data/stack";
 import { resolveAffiliate } from "../data/affiliates";
 import { trackAffiliateClick } from "../lib/trackClick";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
+
 
 // Resolve the outbound link for one side of a comparison. Preference order:
 //   1. product.stackToolId → resolveStackLink (picks up affiliateKey set on
@@ -167,10 +169,107 @@ export default function CompareDetail() {
             { name: comparison.h1, url: `${SITE_URL}/compare/${comparison.slug}` },
           ],
         }
-      : {},
+      : whyData
+      ? {
+          title: whyData.title,
+          description: whyData.metaDescription,
+          canonical: `${SITE_URL}/compare/${whyData.slug}`,
+          image: `${SITE_URL}/og-image.png`,
+          breadcrumbs: [
+            { name: "Home", url: `${SITE_URL}/` },
+            { name: "Compare", url: `${SITE_URL}/compare` },
+            { name: whyData.competitor, url: `${SITE_URL}/compare/${whyData.slug}` },
+          ],
+        }
+      : { title: "Not Found | Simple IT SRQ" }
   );
 
-  if (!comparison) return <Navigate to="/" replace />;
+  if (!comparison && !whyData) return <Navigate to="/compare" replace />;
+
+  if (whyData) {
+    const others = WHY_VS_LIST.filter((w) => w.slug !== whyData.slug);
+    return (
+      <main id="main" className="why-vs compare-detail">
+        <section className="section hero hero-clean">
+          <div className="container" style={{ maxWidth: 880 }}>
+            <Link to="/compare" className="why-vs__back">
+              <ArrowLeft size={14} /> All comparisons
+            </Link>
+            <span className="eyebrow">{whyData.eyebrow}</span>
+            <h1 className="display">{whyData.h1}</h1>
+            <p className="lede">{whyData.subhead}</p>
+            <div className="hero-ctas">
+              <Link to={whyData.cta.primaryHref} className="btn btn-primary btn-lg">
+                {whyData.cta.primary} <ArrowRight size={16} />
+              </Link>
+              <Link to={whyData.cta.secondaryHref} className="btn btn-secondary btn-lg">
+                {whyData.cta.secondary}
+              </Link>
+            </div>
+            <div className="services-trust-row" style={{ marginTop: 18 }}>
+              <span><MapPin size={14} /> Sarasota / Bradenton dispatch</span>
+              <span><Check size={14} /> Flat monthly contract · named engineers</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="section section-alt">
+          <div className="container" style={{ maxWidth: 1080 }}>
+            <h2 className="title-1" style={{ marginBottom: 18 }}>Side-by-side</h2>
+            <div className="why-vs__table-wrap">
+              <table className="why-vs__table">
+                <thead>
+                  <tr>
+                    <th scope="col" className="why-vs__th-attr">Attribute</th>
+                    <th scope="col" className="why-vs__th-sirq">Simple IT SRQ</th>
+                    <th scope="col" className="why-vs__th-them">{whyData.competitor}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {whyData.rows.map((r) => (
+                    <tr key={r.attribute}>
+                      <th scope="row" className="why-vs__row-attr">{r.attribute}</th>
+                      <td className="why-vs__cell-sirq">{r.sirq}</td>
+                      <td className="why-vs__cell-them">{r.them}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section className="section">
+          <div className="container" style={{ maxWidth: 760 }}>
+            <h2 className="title-2">{whyData.closer.h2}</h2>
+            <p className="lede" style={{ marginTop: 12 }}>{whyData.closer.body}</p>
+            <div className="hero-ctas" style={{ marginTop: 24 }}>
+              <Link to={whyData.cta.primaryHref} className="btn btn-primary btn-lg">
+                {whyData.cta.primary} <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {others.length > 0 && (
+          <section className="section section-alt">
+            <div className="container" style={{ maxWidth: 880 }}>
+              <h2 className="title-2" style={{ marginBottom: 14 }}>Other service model comparisons</h2>
+              <div className="why-vs__related">
+                {others.map((w) => (
+                  <Link key={w.slug} to={`/compare/${w.slug}`} className="why-vs__card">
+                    <h3>{w.h1}</h3>
+                    <p>{w.subhead.split(". ")[0]}.</p>
+                    <span>Read comparison →</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+      </main>
+    );
+  }
 
   const [a, b] = comparison.products;
   const related = (comparison.relatedComparisons || [])

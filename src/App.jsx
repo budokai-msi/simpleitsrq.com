@@ -1,5 +1,5 @@
 import { detectPreferredContact } from "./lib/detectPreferredContact";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Link } from "./lib/Link";
 import { useEffect, useState, useMemo, useRef, lazy, Suspense } from "react";
 import {
@@ -949,12 +949,12 @@ function AnimatedRoutes() {
         <Route path="/services" element={<Services />} />
         <Route path="/stack" element={<Stack />} />
         <Route path="/tools-we-use" element={<Stack />} />
-        <Route path="/advertise" element={<Advertise />} />
-        <Route path="/sponsor" element={<Advertise />} />
         <Route path="/compare" element={<CompareIndex />} />
         <Route path="/compare/:slug" element={<CompareDetail />} />
-        <Route path="/why" element={<WhyIndex />} />
-        <Route path="/why/:slug" element={<WhyVs />} />
+        <Route path="/why" element={<Navigate to="/compare" replace />} />
+        <Route path="/why/:slug" element={<Navigate to="/compare" replace />} />
+        <Route path="/advertise" element={<Navigate to="/services" replace />} />
+        <Route path="/sponsor" element={<Navigate to="/services" replace />} />
         <Route path="/leadgen" element={<Leadgen />} />
         <Route path="/glossary" element={<Glossary />} />
         <Route path="/glossary/:slug" element={<GlossaryEntry />} />
