@@ -123,19 +123,11 @@ export const PRIMARY_NAV = [
       },
       {
         id: "compare",
-        label: "Compare vendors",
+        label: "Compare vendors & models",
         to: "/compare",
         icon: "Search",
-        description: "Side-by-side product and service comparisons.",
-        activePrefixes: ["/compare"],
-      },
-      {
-        id: "why",
-        label: "Why Simple IT",
-        to: "/why",
-        icon: "Shield",
-        description: "How we stack up against common alternatives.",
-        activePrefixes: ["/why"],
+        description: "Side-by-side product and IT service model comparisons.",
+        activePrefixes: ["/compare", "/why"],
       },
       {
         id: "password-check",
