@@ -533,14 +533,6 @@ function Navbar() {
           {/* Every Sarasota MSP competitor leads with a phone number, and
               "a tech who picks up" is our differentiator — so the number
               belongs in the header, not buried on /support. */}
-          <a
-            href="tel:+14072421456"
-            className="nav-phone"
-            onClick={() => trackEvent("generate_lead", { source: "header_phone" })}
-          >
-            <Phone size={15} aria-hidden="true" />
-            (407) 242-1456
-          </a>
           <ThemeToggle />
           {portalCta}
           <Link to="/book" className="btn btn-primary">Book a Call</Link>
