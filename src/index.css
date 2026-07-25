@@ -62,20 +62,17 @@
   --error: #B50D1A;
   --error-bg: #F8D7DA;
 
-  /* Shadows — much stronger in light mode so cards actually lift */
-  --shadow2:  0 0 0 1px rgba(15, 23, 42, 0.12),
-              0 1px 3px -1px rgba(15, 23, 42, 0.12);
-  --shadow4:  0 0 0 1px rgba(15, 23, 42, 0.12),
-              0 1px 3px -1px rgba(15, 23, 42, 0.12),
-              0 4px 10px -2px rgba(15, 23, 42, 0.12);
-  --shadow8:  0 0 0 1px rgba(15, 23, 42, 0.12),
-              0 2px 6px -2px rgba(15, 23, 42, 0.12),
-              0 8px 20px -4px rgba(15, 23, 42, 0.16);
-  --shadow16: 0 0 0 1px rgba(15, 23, 42, 0.14),
-              0 4px 10px -2px rgba(15, 23, 42, 0.12),
-              0 16px 40px -8px rgba(15, 23, 42, 0.18),
-              0 32px 64px -16px rgba(15, 23, 42, 0.16);
+  /* Shadows — Refined multi-stop shadows for premium depth */
+  --shadow2:  0 1px 2px rgba(15, 23, 42, 0.05),
+              0 1px 3px -1px rgba(15, 23, 42, 0.08);
+  --shadow4:  0 2px 4px rgba(15, 23, 42, 0.05),
+              0 4px 10px -2px rgba(15, 23, 42, 0.10);
+  --shadow8:  0 4px 6px -1px rgba(15, 23, 42, 0.05),
+              0 10px 24px -4px rgba(15, 23, 42, 0.12);
+  --shadow16: 0 8px 12px -2px rgba(15, 23, 42, 0.06),
+              0 20px 48px -8px rgba(15, 23, 42, 0.14);
   --shadow-glow: 0 0 0 4px var(--brand-glow);
+  --shadow-luminate: 0 0 24px -4px color-mix(in srgb, var(--brand) 25%, transparent), 0 8px 16px -4px rgba(15, 23, 42, 0.12);
 
   color-scheme: light;
 }
@@ -114,11 +111,12 @@
   --error-bg: rgba(255, 107, 122, 0.14);
 
   /* Shadows — softer in dark, since pure black blocks already */
-  --shadow2:  0 1px 2px rgba(0, 0, 0, 0.40);
-  --shadow4:  0 2px 4px rgba(0, 0, 0, 0.40), 0 4px 8px rgba(0, 0, 0, 0.30);
-  --shadow8:  0 4px 8px rgba(0, 0, 0, 0.45), 0 8px 16px rgba(0, 0, 0, 0.35);
-  --shadow16: 0 8px 16px rgba(0, 0, 0, 0.50), 0 16px 32px rgba(0, 0, 0, 0.40);
+  --shadow2:  0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow4:  0 2px 4px rgba(0, 0, 0, 0.30), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow8:  0 4px 8px rgba(0, 0, 0, 0.40), 0 12px 24px rgba(0, 0, 0, 0.30);
+  --shadow16: 0 8px 16px rgba(0, 0, 0, 0.45), 0 24px 48px rgba(0, 0, 0, 0.35);
   --shadow-glow: 0 0 0 4px var(--brand-glow);
+  --shadow-luminate: 0 0 24px -4px color-mix(in srgb, var(--brand) 18%, transparent), 0 8px 16px -4px rgba(0, 0, 0, 0.4);
 
   color-scheme: dark;
 }
