@@ -197,11 +197,11 @@ const SOLUTIONS = [
 
 function Solutions() {
   return (
-    <section className="section" id="solutions" aria-labelledby="solutions-title">
+    <section className="premium-section" id="solutions" aria-labelledby="solutions-title">
       <div className="container">
         <div className="section-head reveal-up">
           <span className="eyebrow">Common Calls</span>
-          <h2 id="solutions-title" className="title-1">When tech stops work, call us.</h2>
+          <h2 id="solutions-title" className="display-3">When tech stops work, call us.</h2>
           <p className="section-sub">Most calls start with one broken thing: a laptop, printer, email account, Wi-Fi room, camera, or backup. We fix that first, then check the setup so the same issue is less likely to come back.</p>
         </div>
         <div className="solution-grid">
@@ -209,7 +209,7 @@ function Solutions() {
             <a
               key={title}
               href="#contact"
-              className="solution-card reveal-up"
+              className="solution-card premium-glass-card reveal-up"
               data-reveal-delay={Math.min(i + 1, 5)}
               onClick={() => trackEvent("generate_lead", { source: "home_solution_card", solution: title })}
             >
@@ -362,11 +362,11 @@ function Industries() {
   };
 
   return (
-    <section ref={sectionRef} className="section section-alt" id="industries" aria-labelledby="industries-title">
+    <section ref={sectionRef} className="premium-section section-alt" id="industries" aria-labelledby="industries-title">
       <div className="container">
         <div className="section-head reveal-up">
           <span className="eyebrow">Where We Help Most</span>
-          <h2 id="industries-title" className="title-1">Pick your situation. See the exact fix path.</h2>
+          <h2 id="industries-title" className="display-3">Pick your situation. See the exact fix path.</h2>
           <p className="section-sub">Instead of broad industry cards, choose the environment that matches your team and we show what we stabilize first.</p>
         </div>
         <div className="situation-shell reveal-up">
@@ -383,7 +383,7 @@ function Industries() {
               </button>
             ))}
           </nav>
-          <article className="situation-body" aria-live="polite">
+          <article className="situation-body premium-glass-card" aria-live="polite">
             <header className="situation-body__head">
               <span className="situation-body__icon"><active.Icon size={18} /></span>
               <h3>{active.label}</h3>
@@ -415,11 +415,11 @@ function Compliance() {
     "Full-disk encryption on every laptop and mobile device",
   ];
   return (
-    <section className="section" id="compliance" aria-labelledby="compliance-title">
+    <section className="premium-section" id="compliance" aria-labelledby="compliance-title">
       <div className="container compliance-grid reveal-up">
         <div>
           <span className="eyebrow">Paperwork and proof</span>
-          <h2 id="compliance-title" className="title-1">The IT evidence people keep asking you for</h2>
+          <h2 id="compliance-title" className="display-3">The IT evidence people keep asking you for</h2>
           <p className="section-sub">
             HIPAA risk assessments, security renewals, disaster-recovery
             runbooks, and the evidence trail behind them. We do the engineering
@@ -432,7 +432,7 @@ function Compliance() {
             ))}
           </ul>
         </div>
-        <aside className="compliance-card" aria-label="Documentation package">
+        <aside className="compliance-card premium-glass-card" aria-label="Documentation package">
           <div className="cc-header">
             <Shield size={24} color="#111827" />
             <div>
@@ -459,16 +459,16 @@ function Compliance() {
 function BlogPreview() {
   const recent = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
   return (
-    <section className="section section-alt" id="blog" aria-labelledby="blog-title">
+    <section className="premium-section section-alt" id="blog" aria-labelledby="blog-title">
       <div className="container">
         <div className="section-head reveal-up">
           <span className="eyebrow">From the Blog</span>
-          <h2 id="blog-title" className="title-1">Tips for local business owners</h2>
+          <h2 id="blog-title" className="display-3">Tips for local business owners</h2>
           <p className="section-sub">Straightforward takes on the security, AI, and cloud news that actually matters for Sarasota and Bradenton businesses.</p>
         </div>
         <div className="blog-grid">
           {recent.map((p) => (
-            <article key={p.slug} className="blog-card card-hover reveal-up">
+            <article key={p.slug} className="blog-card premium-glass-card card-hover reveal-up">
               <Link to={`/blog/${p.slug}`} className="blog-card-img" aria-label={p.title}>
                 <BlogCover post={p} variant="card" />
               </Link>

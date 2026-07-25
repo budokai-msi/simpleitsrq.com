@@ -767,3 +767,43 @@ kbd {
  * Use as: <div class="sec-head"><span class="eyebrow eyebrow-brand">Section</span><h2 class="display-2">…</h2><p>…</p></div> */
 .sec-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
 .sec-head p { color: var(--text-2); font-size: 16px; line-height: 1.55; max-width: 60ch; margin: 0; }
+
+/* ============================================================
+   PREMIUM AESTHETIC OVERHAUL UTILITIES
+   Added for high-end padding, glassmorphism framing, and layout
+   ============================================================ */
+
+/* Premium Section Spacing */
+.premium-section {
+  padding: var(--space-9) 0;
+  position: relative;
+}
+.premium-section-sm {
+  padding: var(--space-7) 0;
+  position: relative;
+}
+
+/* Glassmorphism Floating Card */
+.premium-glass-card {
+  background: var(--mica, rgba(255, 255, 255, 0.7));
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-radius: var(--r-xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow8);
+  transition: transform 240ms var(--ease-spring), box-shadow 240ms var(--ease-out);
+}
+.premium-glass-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow16);
+  border-color: color-mix(in srgb, var(--brand) 40%, transparent);
+}
+
+/* Inner content block (x-framing) */
+.premium-inner-frame {
+  background: var(--surface-2);
+  border-radius: var(--r-lg);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+}
