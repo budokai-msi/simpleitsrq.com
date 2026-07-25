@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity,
   AlertTriangle,
@@ -614,34 +615,59 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
                   <tr><th>Lead</th><th>Status</th><th>Action</th></tr>
                 </thead>
                 <tbody>
-                  {leads.map((l) => {
-                    const isSelected = activeLead?.id === l.id;
-                    return (
-                      <tr key={l.id} style={{ background: isSelected ? "var(--lg-row-hover, #f1f5f9)" : "transparent", cursor: "pointer" }} onClick={() => selectLead(l)}>
-                        <td>
-                          <strong>{l.name || l.email}</strong>
-                          {l.company ? <><br /><span style={{ fontSize: 11, opacity: 0.8 }}>{l.company}</span></> : null}
-                          <br /><span className="admin-leadgen-muted" style={{ fontSize: 10 }}>{fmtDate(l.created_at)}</span>
-                        </td>
-                        <td>
-                          <StatusChip status={l.status || "new"} />
-                        </td>
-                        <td>
-                          <button type="button" className="btn btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); selectLead(l); }}>
-                            Manage
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  <AnimatePresence>
+                    {leads.map((l, i) => {
+                      const isSelected = activeLead?.id === l.id;
+                      return (
+                        <motion.tr
+                          key={l.id}
+                          initial={{ opacity: 0, x: -15 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -15 }}
+                          transition={{ delay: i * 0.04, type: "spring", stiffness: 400, damping: 30 }}
+                          whileHover={{ scale: 1.005, backgroundColor: "var(--lg-row-hover-active, rgba(99, 102, 241, 0.08))" }}
+                          whileTap={{ scale: 0.98 }}
+                          style={{
+                            background: isSelected ? "var(--lg-row-hover, #f1f5f9)" : "transparent",
+                            cursor: "pointer",
+                            position: "relative",
+                            borderLeft: isSelected ? "3px solid var(--brand, #6366f1)" : "3px solid transparent",
+                          }}
+                          onClick={() => selectLead(l)}
+                        >
+                          <td>
+                            <strong>{l.name || l.email}</strong>
+                            {l.company ? <><br /><span style={{ fontSize: 11, opacity: 0.8 }}>{l.company}</span></> : null}
+                            <br /><span className="admin-leadgen-muted" style={{ fontSize: 10 }}>{fmtDate(l.created_at)}</span>
+                          </td>
+                          <td>
+                            <StatusChip status={l.status || "new"} />
+                          </td>
+                          <td>
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); selectLead(l); }}>
+                              Manage
+                            </button>
+                          </td>
+                        </motion.tr>
+                      );
+                    })}
+                  </AnimatePresence>
                 </tbody>
               </table>
             </div>
 
             {/* Right Column: Selected Lead Workbench */}
-            {activeLead ? (
-              <div style={{ padding: 18, border: "1px solid var(--border, #cbd5e1)", borderRadius: 12, background: "var(--surface, #fff)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 10 }}>
+            <AnimatePresence mode="wait">
+              {activeLead ? (
+                <motion.div
+                  key={activeLead.id}
+                  initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 28 }}
+                  style={{ padding: 18, border: "1px solid var(--border, #cbd5e1)", borderRadius: 12, background: "var(--surface, #fff)", boxShadow: "0 8px 30px rgba(0,0,0,0.12)" }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 10 }}>
                   <div>
                     <h3 style={{ margin: 0, fontSize: "1.1rem" }}>{activeLead.name || "Inbound Lead"}</h3>
                     <span style={{ fontSize: "0.85rem", color: "var(--text-muted, #64748b)" }}>
@@ -789,8 +815,17 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
                     ) : null}
                   </div>
                 </div>
-              </div>
-            ) : null}
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--text-muted, #94a3b8)", fontSize: 14 }}
+                >
+                  Select a lead from the list to view details
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : null}
       </section>
