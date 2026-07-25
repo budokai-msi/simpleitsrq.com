@@ -19,6 +19,7 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { readConsent, CONSENT_EVENT } from "../lib/consent.js";
 import { installBehaviorBeacon, startPageview } from "../lib/behaviorBeacon.js";
+import { captureUtmParams, getUtmParams } from "../lib/utm.js";
 
 const RAW_TRACKING_ENABLED = !import.meta.env.DEV || import.meta.env.VITE_ENABLE_LOCAL_TRACKING === "true";
 
@@ -148,6 +149,7 @@ export default function VisitorTracker() {
     // Notify the behavior-beacon of the new pageview so it can close out
     // the previous one (pageview_exit with dwell + max scroll) and start
     // a fresh dwell timer + section observer for this route.
+    captureUtmParams();
     startPageview(path);
 
     // Vite's local dev server does not mount Vercel API functions, so the
@@ -171,12 +173,14 @@ export default function VisitorTracker() {
     const scr = typeof window !== "undefined" ? window.screen : {};
 
     const sess = getOrMintSession();
+    const utm = getUtmParams();
 
     const payload = {
       anonId: analyticsOk ? anonId : null,
       sessionId: sess.id,
       isNewSession: sess.isNew,
       path,
+      utm,
       referrer: typeof document !== "undefined" ? document.referrer || null : null,
       screen: scr ? `${scr.width || 0}x${scr.height || 0}` : null,
       colorDepth: scr?.colorDepth || null,
