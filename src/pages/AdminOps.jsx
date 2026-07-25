@@ -657,24 +657,84 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
                   <p style={{ color: ticketStatus.ok ? "#10b981" : "#ef4444", fontSize: 12, margin: "4px 0 10px", fontWeight: 600 }}>{ticketStatus.text}</p>
                 ) : null}
 
-                {/* Lead Message Box */}
-                <div style={{ padding: 12, borderRadius: 8, background: "var(--lg-panel-soft, #f8fafc)", border: "1px solid var(--border-soft, #e2e8f0)", marginBottom: 16 }}>
-                  <strong style={{ fontSize: 11, textTransform: "uppercase", color: "var(--text-muted, #64748b)", letterSpacing: "0.05em" }}>Inquiry Content:</strong>
-                  <p style={{ margin: "6px 0 0", fontSize: 13, whiteSpace: "pre-wrap", lineHeight: 1.45 }}>{activeLead.message || "No message body."}</p>
+                {/* Lead Message Box — High Contrast Dark/Light Styling */}
+                <div
+                  style={{
+                    padding: 14,
+                    borderRadius: 10,
+                    background: "var(--surface-2, #1e293b)",
+                    border: "1px solid var(--border, #334155)",
+                    marginBottom: 16,
+                  }}
+                >
+                  <strong
+                    style={{
+                      fontSize: 11,
+                      textTransform: "uppercase",
+                      color: "var(--text-2, #94a3b8)",
+                      letterSpacing: "0.06em",
+                      display: "block",
+                      marginBottom: 6,
+                    }}
+                  >
+                    Inquiry Content:
+                  </strong>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 13.5,
+                      whiteSpace: "pre-wrap",
+                      lineHeight: 1.5,
+                      color: "var(--text-1, #f8fafc)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {activeLead.message || "No message body provided."}
+                  </p>
                 </div>
 
                 {/* AI Microsoft Doc Suggestions */}
-                <div style={{ padding: 14, borderRadius: 10, background: "rgba(99, 102, 241, 0.06)", border: "1px solid rgba(99, 102, 241, 0.2)", marginBottom: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, color: "#6366f1", fontWeight: 700, fontSize: 13 }}>
+                <div
+                  style={{
+                    padding: 14,
+                    borderRadius: 10,
+                    background: "color-mix(in srgb, var(--brand, #6366f1) 12%, var(--surface-2, #1e293b))",
+                    border: "1px solid color-mix(in srgb, var(--brand, #6366f1) 35%, transparent)",
+                    marginBottom: 16,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      marginBottom: 8,
+                      color: "var(--brand, #818cf8)",
+                      fontWeight: 700,
+                      fontSize: 13,
+                    }}
+                  >
                     <Sparkles size={16} /> AI Suggested Microsoft Documentation
                   </div>
                   <div style={{ display: "grid", gap: 8 }}>
                     {msDocs.map((doc) => (
                       <div key={doc.title} style={{ fontSize: 12 }}>
-                        <a href={doc.url} target="_blank" rel="noopener noreferrer" style={{ fontWeight: 650, color: "#4f46e5", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            fontWeight: 650,
+                            color: "var(--brand-hover, #a5b4fc)",
+                            textDecoration: "none",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
+                        >
                           <BookOpen size={13} /> {doc.title} <ExternalLink size={11} />
                         </a>
-                        <p style={{ margin: "2px 0 0", color: "var(--text-muted, #64748b)", fontSize: 11 }}>{doc.desc}</p>
+                        <p style={{ margin: "2px 0 0", color: "var(--text-2, #cbd5e1)", fontSize: 11 }}>{doc.desc}</p>
                       </div>
                     ))}
                   </div>
@@ -682,8 +742,8 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
 
                 {/* Email Reply Composer */}
                 <div style={{ display: "grid", gap: 10 }}>
-                  <strong style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
-                    <Mail size={15} /> Reply via Resend (`contact@simpleitsrq.com`)
+                  <strong style={{ fontSize: 13, display: "flex", alignItems: "center", gap: 6, color: "var(--text-1, #f8fafc)" }}>
+                    <Mail size={15} /> Reply to Lead
                   </strong>
                   <input
                     type="text"
@@ -691,6 +751,7 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
                     value={replySubject}
                     onChange={(e) => setReplySubject(e.target.value)}
                     placeholder="Subject..."
+                    style={{ background: "var(--surface-2, #1e293b)", color: "var(--text-1, #f8fafc)", borderColor: "var(--border, #334155)" }}
                   />
                   <textarea
                     rows={7}
@@ -698,13 +759,33 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
                     value={replyBody}
                     onChange={(e) => setReplyBody(e.target.value)}
                     placeholder="Type email reply..."
+                    style={{ background: "var(--surface-2, #1e293b)", color: "var(--text-1, #f8fafc)", borderColor: "var(--border, #334155)" }}
                   />
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <button type="button" className="btn btn-primary btn-sm" disabled={sendingEmail || !activeLead.email} onClick={sendEmail}>
-                      <Send size={14} /> {sendingEmail ? "Sending via Resend..." : "Send Reply via Resend"}
-                    </button>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        disabled={sendingEmail || !activeLead.email}
+                        onClick={sendEmail}
+                      >
+                        <Send size={14} /> {sendingEmail ? "Sending via Resend..." : "Send via Resend"}
+                      </button>
+                      {activeLead.email ? (
+                        <a
+                          href={`mailto:${encodeURIComponent(activeLead.email)}?subject=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyBody)}`}
+                          className="btn btn-secondary btn-sm"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Mail size={14} /> Open in Email Client (Mailto)
+                        </a>
+                      ) : null}
+                    </div>
                     {emailStatus ? (
-                      <span style={{ color: emailStatus.ok ? "#10b981" : "#ef4444", fontSize: 12, fontWeight: 600 }}>{emailStatus.text}</span>
+                      <span style={{ color: emailStatus.ok ? "#10b981" : "#ef4444", fontSize: 12, fontWeight: 600 }}>
+                        {emailStatus.text}
+                      </span>
                     ) : null}
                   </div>
                 </div>

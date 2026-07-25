@@ -229,21 +229,34 @@ export async function handleSendLeadEmail(session, request) {
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    return json(500, { ok: false, error: "RESEND_API_KEY not set on server" });
+    return json(500, { ok: false, error: "RESEND_API_KEY environment variable missing on Vercel server. Please add RESEND_API_KEY in Vercel settings or use Mailto reply below." });
   }
 
   try {
     const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
-    const fromDomain = process.env.RESEND_FROM_DOMAIN || "mail.simpleitsrq.com";
+    const fromDomain = process.env.RESEND_FROM_DOMAIN || "simpleitsrq.com";
     const fromAddress = `Simple IT SRQ Website <contact@${fromDomain}>`;
-    const { data, error } = await resend.emails.send({
+    let { data, error } = await resend.emails.send({
       from: fromAddress,
       to: [to],
       replyTo: "contact@simpleitsrq.com",
       subject,
       text,
     });
+
+    // If domain verification fails on subdomain, fallback to apex domain
+    if (error && fromDomain !== "simpleitsrq.com") {
+      const fallbackSend = await resend.emails.send({
+        from: "Simple IT SRQ Website <contact@simpleitsrq.com>",
+        to: [to],
+        replyTo: "contact@simpleitsrq.com",
+        subject,
+        text,
+      });
+      data = fallbackSend.data;
+      error = fallbackSend.error;
+    }
 
     if (error) {
       return json(500, { ok: false, error: error.message || "resend_error" });
