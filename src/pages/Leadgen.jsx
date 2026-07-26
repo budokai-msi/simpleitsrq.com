@@ -1,4 +1,5 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import "leaflet/dist/leaflet.css";
 // Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
 // in a lazy CSS chunk instead of the global render-blocking bundle. Vite
@@ -2454,7 +2455,12 @@ export default function Leadgen() {
       <LeadgenCheckoutSuccess />
       <section className="section hero hero-clean leadgen-hero">
         <div className="container">
-          <div className="leadgen-hero-header">
+          <motion.div 
+            className="leadgen-hero-header"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
             <span className="leadgen-badge-hero">
               <Sparkles size={14} /> AI-Powered B2B Scraping Engine
             </span>
@@ -2464,8 +2470,14 @@ export default function Leadgen() {
             <p className="leadgen-hero-sub">
               Extract decision-maker emails, direct phone numbers, and company intelligence across any U.S. zip code. Build hyper-targeted outreach campaigns in seconds.
             </p>
-          </div>
-          <LeadgenScanApp />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <LeadgenScanApp />
+          </motion.div>
         </div>
       </section>
 
@@ -2540,10 +2552,14 @@ export default function Leadgen() {
           </div>
 
           <div className="leadgen-tiers">
-            {TIERS.map((t) => (
-              <div
+            {TIERS.map((t, i) => (
+              <motion.div
                 key={t.id}
                 className={`leadgen-tier${t.highlight ? " leadgen-tier--highlight" : ""}`}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
               >
                 {t.badge && <span className="leadgen-tier__badge">{t.badge}</span>}
                 <h3 className="leadgen-tier__name">{t.name}</h3>
@@ -2581,7 +2597,7 @@ export default function Leadgen() {
                     <li key={f}><Check size={14} /> {f}</li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
             ))}
           </div>
           <p className="leadgen-tier__fineprint">
@@ -2600,10 +2616,14 @@ export default function Leadgen() {
             <h2 id="leadgen-faq-title" className="title-1">Short answers.</h2>
           </div>
           <div className="faq-list">
-            {LEADGEN_FAQS.map((item) => (
-              <details
+            {LEADGEN_FAQS.map((item, i) => (
+              <motion.details
                 key={item.q}
                 className="faq-item"
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: i * 0.05, ease: "easeOut" }}
                 onToggle={(e) => {
                   if (e.currentTarget.open) {
                     trackEvent("select_content", {
@@ -2615,7 +2635,7 @@ export default function Leadgen() {
               >
                 <summary>{item.q}</summary>
                 <p>{item.a}</p>
-              </details>
+              </motion.details>
             ))}
           </div>
         </div>
@@ -2736,18 +2756,22 @@ function LeadgenFeaturesSection() {
     <section className="leadgen-features-grid-section">
       <div className="container">
         <div className="leadgen-features-4col">
-          {features.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.title} className="leadgen-feature-card">
-                <div className="leadgen-feature-card__icon">
-                  <Icon size={24} />
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
+          {features.map((f, i) => (
+            <motion.div 
+              key={f.title} 
+              className="leadgen-feature-card"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.6, delay: i * 0.1, ease: "easeOut" }}
+            >
+              <div className="leadgen-feature-card__icon">
+                <f.icon size={24} />
               </div>
-            );
-          })}
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
