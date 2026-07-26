@@ -1138,6 +1138,51 @@ function deriveFirstName(name) {
   return "there";
 }
 
+async function runLeadgenSequenceScheduler() {
+  const summary = { processed_campaigns: 0, total_queued: 0 };
+  
+  const campaigns = await sql`
+    SELECT id, (segment->>'follow_up_campaign_id')::bigint AS parent_id,
+           COALESCE((segment->>'follow_up_delay_days')::int, 3) AS delay_days
+    FROM lead_campaigns
+    WHERE status = 'running'
+      AND segment->>'follow_up_campaign_id' IS NOT NULL
+  `;
+  
+  for (const c of campaigns) {
+    if (!c.parent_id) continue;
+    summary.processed_campaigns += 1;
+    
+    const queued = await sql`
+      WITH eligible AS (
+        SELECT s.business_id, s.email_id, s.to_email
+        FROM lead_campaign_sends s
+        JOIN lead_emails e ON e.id = s.email_id
+        WHERE s.campaign_id = ${c.parent_id}
+          AND s.sent_at < now() - interval '1 day' * ${c.delay_days}
+          AND s.replied_at IS NULL
+          AND s.bounced_at IS NULL
+          AND e.opted_out_at IS NULL
+          AND e.bounced_at IS NULL
+          AND NOT EXISTS (
+            SELECT 1 FROM lead_campaign_sends child
+            WHERE child.campaign_id = ${c.id}
+              AND child.email_id = s.email_id
+          )
+      )
+      INSERT INTO lead_campaign_sends
+        (campaign_id, business_id, email_id, to_email, status, unsubscribe_token)
+      SELECT
+        ${c.id}, business_id, email_id, to_email, 'queued',
+        replace(gen_random_uuid()::text, '-', '')
+      FROM eligible
+      RETURNING id
+    `;
+    summary.total_queued += queued.length;
+  }
+  return summary;
+}
+
 async function runLeadgenSender() {
   const summary = { sent: 0, failed: 0, throttled: 0, sends: [] };
   const started = Date.now();
@@ -1151,7 +1196,7 @@ async function runLeadgenSender() {
            s.unsubscribe_token,
            c.subject_template, c.body_template, c.from_email, c.reply_to,
            c.throttle_per_hour, c.daily_cap, c.status AS campaign_status,
-           b.name AS business_name, b.city, b.state, b.zip
+           b.name AS business_name, b.city, b.state, b.zip, b.notes AS icebreaker
     FROM lead_campaign_sends s
     JOIN lead_campaigns  c ON c.id = s.campaign_id
     JOIN lead_businesses b ON b.id = s.business_id
@@ -1210,6 +1255,7 @@ async function runLeadgenSender() {
       city:          s.city || "",
       state:         s.state || "",
       zip:           s.zip || "",
+      icebreaker:    s.icebreaker || "",
       // {{custom_intro}} is reserved for a future Claude pre-render step.
       custom_intro:  "",
     };
@@ -1312,6 +1358,7 @@ export async function GET(request) {
   }
 
   if (taskParam === "leadgen-send") {
+    result.tasks.leadgenSequenceScheduler = await runLeadgenSequenceScheduler();
     result.tasks.leadgenSender = await runLeadgenSender();
     return new Response(JSON.stringify(result, null, 2), {
       status: 200,
@@ -1330,6 +1377,9 @@ export async function GET(request) {
     error: String(e.message || e).slice(0, 200),
   }));
   result.tasks.leadgen = await runLeadgenWorker().catch((e) => ({
+    error: String(e.message || e).slice(0, 200),
+  }));
+  result.tasks.leadgenSequenceScheduler = await runLeadgenSequenceScheduler().catch((e) => ({
     error: String(e.message || e).slice(0, 200),
   }));
   result.tasks.leadgenSender = await runLeadgenSender().catch((e) => ({

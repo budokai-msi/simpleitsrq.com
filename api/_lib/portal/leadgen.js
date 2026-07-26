@@ -458,7 +458,7 @@ async function fetchLeadgenBusinessesModern(f) {
   const rows = await sql`
     SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.lat, b.lng, b.website,
            b.phone, b.industry, b.industry_group, b.sub_industry, b.tags,
-           b.status, b.source, b.source_id, b.source_url, b.created_at,
+           b.status, b.source, b.source_id, b.source_url, b.created_at, b.notes,
            (SELECT COUNT(*)::int FROM lead_emails e
               WHERE e.business_id = b.id
                 AND e.opted_out_at IS NULL
@@ -570,7 +570,7 @@ async function fetchLeadgenBusinessesLegacy(f, reason) {
     SELECT b.id, b.name, b.address, b.city, b.state, b.zip, b.lat, b.lng, b.website,
            b.phone, b.industry, COALESCE(NULLIF(b.industry, ''), 'Other') AS industry_group,
            NULL::text AS sub_industry, '{}'::text[] AS tags,
-           b.status, b.source, b.source_id, b.source_url, b.created_at,
+           b.status, b.source, b.source_id, b.source_url, b.created_at, b.notes,
            (SELECT COUNT(*)::int FROM lead_emails e
               WHERE e.business_id = b.id
                 AND e.opted_out_at IS NULL
@@ -883,6 +883,7 @@ export async function handleLeadgenBusinessUpdate(session, request) {
 
   const subIndustry = body?.sub_industry !== undefined ? String(body.sub_industry || "").slice(0, 64) : null;
   const industryGroup = body?.industry_group !== undefined ? String(body.industry_group || "").slice(0, 64) : null;
+  const notes = body?.notes !== undefined ? String(body.notes || "").slice(0, 2000) : null;
 
   await sql`
     UPDATE lead_businesses SET
@@ -890,6 +891,7 @@ export async function handleLeadgenBusinessUpdate(session, request) {
       sub_industry   = COALESCE(${subIndustry}, sub_industry),
       industry_group = COALESCE(${industryGroup}, industry_group),
       tags           = COALESCE(${tags}::text[], tags),
+      notes          = COALESCE(${notes}, notes),
       updated_at     = now()
     WHERE id = ${id}
   `;
@@ -1302,38 +1304,42 @@ export async function handleLeadgenCampaignStart(session, request) {
   const seg = c.segment || {};
   const zip = typeof seg.zip === "string" && /^\d{5}$/.test(seg.zip) ? seg.zip : null;
   const minConfidence = Number(seg.min_confidence) || 0.5;
-
-  // Pull deliverable emails for this segment that aren't already queued
-  // for this campaign. We only consider 'active' businesses.
-  const candidates = await sql`
-    SELECT e.id AS email_id, e.business_id, e.email
-    FROM lead_emails e
-    JOIN lead_businesses b ON b.id = e.business_id
-    WHERE b.status = 'active'
-      AND e.opted_out_at IS NULL
-      AND e.bounced_at IS NULL
-      AND e.confidence >= ${minConfidence}
-      AND (${!zip}::bool OR b.zip = ${zip})
-      AND NOT EXISTS (
-        SELECT 1 FROM lead_campaign_sends s
-        WHERE s.campaign_id = ${id} AND s.email_id = e.id
-      )
-    LIMIT 5000
-  `;
+  const isFollowUp = typeof seg.follow_up_campaign_id === "number";
 
   let inserted = 0;
-  for (const row of candidates) {
-    const tok = (globalThis.crypto || (await import("node:crypto")).webcrypto)
-      .randomUUID().replace(/-/g, "");
-    await sql`
-      INSERT INTO lead_campaign_sends
-        (campaign_id, business_id, email_id, to_email, status, unsubscribe_token)
-      VALUES
-        (${id}, ${row.business_id}, ${row.email_id}, ${row.email}, 'queued', ${tok})
-      ON CONFLICT DO NOTHING
+  if (!isFollowUp) {
+    // Pull deliverable emails for this segment that aren't already queued
+    // for this campaign. We only consider 'active' businesses.
+    const candidates = await sql`
+      SELECT e.id AS email_id, e.business_id, e.email
+      FROM lead_emails e
+      JOIN lead_businesses b ON b.id = e.business_id
+      WHERE b.status = 'active'
+        AND e.opted_out_at IS NULL
+        AND e.bounced_at IS NULL
+        AND e.confidence >= ${minConfidence}
+        AND (${!zip}::bool OR b.zip = ${zip})
+        AND NOT EXISTS (
+          SELECT 1 FROM lead_campaign_sends s
+          WHERE s.campaign_id = ${id} AND s.email_id = e.id
+        )
+      LIMIT 5000
     `;
-    inserted += 1;
+
+    for (const row of candidates) {
+      const tok = (globalThis.crypto || (await import("node:crypto")).webcrypto)
+        .randomUUID().replace(/-/g, "");
+      await sql`
+        INSERT INTO lead_campaign_sends
+          (campaign_id, business_id, email_id, to_email, status, unsubscribe_token)
+        VALUES
+          (${id}, ${row.business_id}, ${row.email_id}, ${row.email}, 'queued', ${tok})
+        ON CONFLICT DO NOTHING
+      `;
+      inserted += 1;
+    }
   }
+
   await sql`UPDATE lead_campaigns SET status='running', updated_at=now() WHERE id=${id}`;
   return json(200, { ok: true, queued: inserted });
 }
