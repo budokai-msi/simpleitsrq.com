@@ -1883,6 +1883,42 @@ function DiscoverTab({ onStatusChange }) {
     }
   };
 
+  const [generatingId, setGeneratingId] = React.useState(null);
+  const generateIcebreaker = async (row) => {
+    if (String(row.id).startsWith("preview-")) {
+      setErr("Cannot generate icebreakers for unsaved preview rows.");
+      return;
+    }
+    setGeneratingId(row.id);
+    setErr("");
+    try {
+      const aiRes = await fetcher("/api/portal?action=leadgen-ai", {
+        method: "POST",
+        body: JSON.stringify({
+          mode: "personalize",
+          business_name: row.name,
+          industry: row.sub_industry || row.industry_group || row.industry,
+          website: row.website
+        }),
+      });
+      if (aiRes.error) throw new Error(aiRes.error);
+      const opener = aiRes.result?.opener;
+      if (!opener) throw new Error("No opener returned");
+
+      const updateRes = await fetcher("/api/portal?action=leadgen-business-update", {
+        method: "POST",
+        body: JSON.stringify({ id: row.id, notes: opener }),
+      });
+      if (updateRes.error) throw new Error(updateRes.error);
+
+      setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, notes: opener } : r)));
+    } catch (e) {
+      setErr("Icebreaker generation failed: " + String(e.message || e));
+    } finally {
+      setGeneratingId(null);
+    }
+  };
+
   const setRowStatus = async (id, newStatus) => {
     if (String(id).startsWith("preview-")) {
       setErr("Preview rows need to be saved by the discovery pipeline before status can change.");
@@ -2180,6 +2216,7 @@ function DiscoverTab({ onStatusChange }) {
               <th>Website</th>
               <th style={{ textAlign: "right" }}>Emails</th>
               <th>Tags</th>
+              <th>Icebreaker</th>
               <th>Status</th>
               <th aria-label="actions" />
             </tr>
@@ -2211,6 +2248,14 @@ function DiscoverTab({ onStatusChange }) {
                 <td>
                   <button type="button" className="admin-leadgen-tag-btn" onClick={() => editRowTags(r)} title={r.preview ? "Preview rows need to be saved before tagging" : "Edit tags"} disabled={r.preview}>
                     {(r.tags && r.tags.length) ? r.tags.map((t) => <span key={t} className="admin-leadgen-tag">{t}</span>) : <em style={{ fontSize: 11, opacity: 0.6 }}>+ tag</em>}
+                  </button>
+                </td>
+                <td style={{ maxWidth: 200, fontSize: 11, lineHeight: 1.3 }}>
+                  {r.notes ? (
+                    <div style={{ marginBottom: 4 }}>{r.notes}</div>
+                  ) : null}
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => generateIcebreaker(r)} disabled={r.preview || generatingId === r.id} style={{ padding: "2px 6px", fontSize: 10 }}>
+                    {generatingId === r.id ? "Generating..." : "Generate AI Icebreaker"}
                   </button>
                 </td>
                 <td className="admin-leadgen-muted">{r.preview ? "public preview" : r.status}</td>
@@ -2746,6 +2791,7 @@ function CampaignsTab({ seed, onSeedApplied }) {
     return (
       <CampaignEditor
         campaign={editing}
+        allCampaigns={list}
         onChange={setEditing}
         onSave={save}
         onCancel={() => setEditing(null)}
@@ -2896,7 +2942,7 @@ function CampaignsTab({ seed, onSeedApplied }) {
   );
 }
 
-function CampaignEditor({ campaign, onChange, onSave, onCancel, err }) {
+function CampaignEditor({ campaign, allCampaigns, onChange, onSave, onCancel, err }) {
   const c = campaign;
   const set = (patch) => onChange({ ...c, ...patch });
   const setSegment = (patch) => onChange({ ...c, segment: { ...(c.segment || {}), ...patch } });
@@ -2992,11 +3038,38 @@ function CampaignEditor({ campaign, onChange, onSave, onCancel, err }) {
           <input className="admin-leadgen-input" type="number" min={1} max={5000} value={c.daily_cap ?? 200} onChange={(e) => set({ daily_cap: e.target.value })} />
         </Field>
         <Field label="Segment: zip">
-          <input className="admin-leadgen-input" value={seg.zip || ""} onChange={(e) => setSegment({ zip: e.target.value.replace(/\D/g, "").slice(0, 5) })} placeholder="34207" />
+          <input className="admin-leadgen-input" value={seg.zip || ""} onChange={(e) => setSegment({ zip: e.target.value.replace(/\D/g, "").slice(0, 5) })} placeholder="34207" disabled={!!seg.follow_up_campaign_id} />
         </Field>
         <Field label="Segment: min email confidence">
-          <input className="admin-leadgen-input" type="number" step="0.1" min={0} max={1} value={seg.min_confidence ?? 0.7} onChange={(e) => setSegment({ min_confidence: Number(e.target.value) })} />
+          <input className="admin-leadgen-input" type="number" step="0.1" min={0} max={1} value={seg.min_confidence ?? 0.7} onChange={(e) => setSegment({ min_confidence: Number(e.target.value) })} disabled={!!seg.follow_up_campaign_id} />
         </Field>
+        <Field label="Follow-up to campaign">
+          <select 
+            className="admin-leadgen-input" 
+            value={seg.follow_up_campaign_id || ""} 
+            onChange={(e) => {
+              const val = e.target.value ? Number(e.target.value) : undefined;
+              setSegment({ follow_up_campaign_id: val });
+            }}
+          >
+            <option value="">None (Standalone)</option>
+            {allCampaigns?.filter(camp => camp.id !== c.id).map(camp => (
+              <option key={camp.id} value={camp.id}>#{camp.id} - {camp.name}</option>
+            ))}
+          </select>
+        </Field>
+        {seg.follow_up_campaign_id ? (
+          <Field label="Follow-up delay (days)">
+            <input 
+              className="admin-leadgen-input" 
+              type="number" 
+              min={1} 
+              max={365} 
+              value={seg.follow_up_delay_days ?? 3} 
+              onChange={(e) => setSegment({ follow_up_delay_days: Number(e.target.value) })} 
+            />
+          </Field>
+        ) : null}
       </div>
 
       <Field label="Subject template" full>
