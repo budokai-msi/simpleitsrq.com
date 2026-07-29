@@ -12,6 +12,7 @@ function parseLeadgenCheckoutReference(value) {
   const parsed = {};
   if (parts.includes("growth")) parsed.tier = "growth";
   else if (parts.includes("pro")) parsed.tier = "pro";
+  else if (parts.includes("exclusive")) parsed.tier = "exclusive";
   else if (parts.includes("sample") || parts.includes("free")) parsed.tier = "sample";
   
   if (parts.includes("annual")) parsed.cadence = "annual";

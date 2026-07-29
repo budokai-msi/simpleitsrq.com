@@ -15,7 +15,7 @@ import { getSession } from "./_lib/session.js";
 import { clientIp, rateLimit } from "./_lib/security.js";
 import { encryptSecret, decryptSecret } from "./_lib/crypto.js";
 
-const ALLOWED_PLANS = new Set(["growth", "pro", "lifetime"]);
+const ALLOWED_PLANS = new Set(["growth", "pro", "lifetime", "exclusive"]);
 const VALID_KINDS = new Set(["webhook", "mailchimp", "hubspot", "activecampaign", "zapier", "gohighlevel"]);
 
 async function requireSession(request) {

@@ -340,31 +340,6 @@ export default function AdminOps() {
           {notice ? <div className="ops-notice">{notice}</div> : null}
         </header>
 
-        <section className="ops-graph">
-          <div className="ops-graph__main">
-            <h2>Operating graph</h2>
-            <p>Sources feed functions. Functions create outcomes. Anything weak shows up here before it turns into wasted traffic.</p>
-          </div>
-          <div className="ops-graph__rail" aria-label="Data flow">
-            {["Traffic", "HN drafts", "OSM leads", "Affiliate clicks", "Ad beacons", "Threat feeds"].map((item) => (
-              <span key={item}>{item}</span>
-            ))}
-          </div>
-        </section>
-
-        <div className="ops-status-grid">
-          {intel.checks.map((check) => (
-            <article className="ops-status-card" key={check.label}>
-              {check.state === "good" ? <CheckCircle2 size={18} /> : check.state === "bad" ? <XCircle size={18} /> : <AlertTriangle size={18} />}
-              <div>
-                <strong>{check.label}</strong>
-                <p>{check.detail}</p>
-              </div>
-              <SignalPill state={check.state}>{check.state}</SignalPill>
-            </article>
-          ))}
-        </div>
-
         <nav className="admin-leadgen-tabs ops-tabs" aria-label="Admin ops sections">
           {TABS.map(([key, label, Icon]) => (
             <button
@@ -399,7 +374,33 @@ function OpsTab({ data, errors, intel, busy, runAction }) {
   const revenue = data["revenue-summary"];
   const ops = data["ops-status"];
   return (
-    <div className="ops-grid">
+    <>
+      <section className="ops-graph">
+        <div className="ops-graph__main">
+          <h2>Operating graph</h2>
+          <p>Sources feed functions. Functions create outcomes. Anything weak shows up here before it turns into wasted traffic.</p>
+        </div>
+        <div className="ops-graph__rail" aria-label="Data flow">
+          {["Traffic", "HN drafts", "OSM leads", "Affiliate clicks", "Ad beacons", "Threat feeds"].map((item) => (
+            <span key={item}>{item}</span>
+          ))}
+        </div>
+      </section>
+
+      <div className="ops-status-grid" style={{ marginBottom: 32 }}>
+        {intel.checks.map((check) => (
+          <article className="ops-status-card" key={check.label}>
+            {check.state === "good" ? <CheckCircle2 size={18} /> : check.state === "bad" ? <XCircle size={18} /> : <AlertTriangle size={18} />}
+            <div>
+              <strong>{check.label}</strong>
+              <p>{check.detail}</p>
+            </div>
+            <SignalPill state={check.state}>{check.state}</SignalPill>
+          </article>
+        ))}
+      </div>
+
+      <div className="ops-grid">
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head">
           <h2>Next actions</h2>
@@ -462,6 +463,7 @@ function OpsTab({ data, errors, intel, busy, runAction }) {
         <pre className="ops-pre">{JSON.stringify({ migrations: ops?.migrations, osint: ops?.osint, errors }, null, 2)}</pre>
       </section>
     </div>
+    </>
   );
 }
 
