@@ -42,6 +42,7 @@ import { Link } from "react-router-dom";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics.js";
 import { useSEO } from "../lib/seo";
+import AdminNav from "../components/AdminNav";
 
 // ---------- helpers ----------
 
@@ -817,9 +818,9 @@ export default function LeadgenDashboard() {
 
   return (
     <section className="section admin-affiliates admin-leadgen">
-      <div className="container">
-        <header className="admin-aff-head leadgen-admin-hero">
-          <Link to="/portal" className="admin-aff-back">Portal</Link>
+        <div className="container">
+          <AdminNav />
+          <header className="admin-aff-head leadgen-admin-hero">
           <div className="leadgen-admin-hero__row">
             <div>
               <span className="eyebrow">Powered by Simple IT SRQ</span>

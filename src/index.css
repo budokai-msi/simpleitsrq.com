@@ -765,3 +765,102 @@ kbd {
  * Use as: <div class="sec-head"><span class="eyebrow eyebrow-brand">Section</span><h2 class="display-2">…</h2><p>…</p></div> */
 .sec-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
 .sec-head p { color: var(--text-2); font-size: 16px; line-height: 1.55; max-width: 60ch; margin: 0; }
+
+/* ============================================================
+   Global Admin Nav
+   ============================================================ */
+.admin-global-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 12px 0;
+  margin-bottom: 24px;
+}
+.admin-global-nav__inner {
+  display: flex;
+  justify-content: center;
+}
+.admin-global-nav__list {
+  display: flex;
+  gap: 12px;
+  list-style: none;
+  padding: 8px 16px;
+  margin: 0;
+  background: rgba(var(--surface-rgb, 250, 247, 242), 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+[data-theme="dark"] .admin-global-nav__list {
+  background: rgba(17, 17, 17, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.admin-global-nav__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  text-decoration: none;
+  color: var(--text-2);
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.admin-global-nav__icon {
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.admin-global-nav__label {
+  position: relative;
+  z-index: 2;
+}
+
+/* Immersive halo effect */
+.admin-global-nav__halo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(var(--brand-rgb, 17, 24, 39), 0.15) 0%, rgba(var(--brand-rgb, 17, 24, 39), 0) 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+  z-index: 1;
+}
+[data-theme="dark"] .admin-global-nav__halo {
+  background: radial-gradient(circle, rgba(230, 230, 230, 0.15) 0%, rgba(230, 230, 230, 0) 70%);
+}
+
+.admin-global-nav__link:hover .admin-global-nav__halo,
+.admin-global-nav__link.is-active .admin-global-nav__halo {
+  width: 150px;
+  height: 150px;
+}
+
+.admin-global-nav__link:hover {
+  color: var(--text-1);
+}
+.admin-global-nav__link:hover .admin-global-nav__icon {
+  transform: scale(1.1);
+}
+
+.admin-global-nav__link.is-active {
+  color: var(--text-1);
+  background: rgba(var(--brand-rgb, 17, 24, 39), 0.05);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+[data-theme="dark"] .admin-global-nav__link.is-active {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
