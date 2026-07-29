@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { useSEO } from "../lib/seo";
+import AdminNav from "../components/AdminNav";
 import NotFound from "./NotFound";
 // Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
 // in a lazy CSS chunk instead of the global render-blocking bundle. Vite
@@ -321,8 +322,8 @@ export default function AdminOps() {
   return (
     <main id="main" className="section admin-affiliates admin-ops">
       <div className="container">
+        <AdminNav />
         <header className="admin-aff-head ops-head">
-          <Link to="/portal" className="admin-aff-back">Portal</Link>
           <div className="ops-head__row">
             <div>
               <h1 className="display-2">Operations</h1>

@@ -3,6 +3,7 @@ import { Link } from "../lib/Link";
 import { useAuth } from "../lib/authContext.js";
 import { csrfFetch } from "../lib/csrf";
 import { useSEO } from "../lib/seo";
+import AdminNav from "../components/AdminNav";
 
 const STRIPE_BILLING_URL = "https://billing.stripe.com/p/login/5kQ7sE7oL9OEgIM2nPak000";
 const TICKET_STATUSES = ["open", "in_progress", "waiting", "resolved", "closed"];
@@ -707,21 +708,8 @@ function Dashboard({ user, logout }) {
 
       {user.isAdmin ? (
         <>
+          <AdminNav />
           <AdminTicketConsole />
-          <section className="portal-card">
-            <h2>Admin operations</h2>
-            <p className="portal-muted">
-              Internal dashboard for affiliate clicks, leadgen, content drafts, AdSense, and OpSec. Hidden from public navigation.
-            </p>
-            <div className="portal-actions portal-actions--row">
-              <Link className="btn btn-primary" to="/portal/ops">Open ops dashboard</Link>
-              <Link className="btn btn-secondary" to="/portal/ops?tab=affiliate">Affiliate signals</Link>
-              <Link className="btn btn-secondary" to="/portal/leadgen">Leadgen workspace</Link>
-            </div>
-            <h3 style={{ marginTop: "18px" }}>Database</h3>
-            <p className="portal-muted">Apply the reply-by-email / CC / calendar schema (migration 019). Idempotent - safe to re-run.</p>
-            <TicketMigrationButton />
-          </section>
         </>
       ) : null}
     </div>
