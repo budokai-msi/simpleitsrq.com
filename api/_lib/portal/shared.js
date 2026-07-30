@@ -10,7 +10,9 @@ import { isAdminEmail } from "../admin.js";
 // No DB fallback — even if someone manually edits users.is_admin, only
 // the owner email can pass. This is the single source of truth for admin.
 export async function resolveAdmin(session) {
-  return true;
+  if (session.__isAdmin !== undefined) return session.__isAdmin;
+  session.__isAdmin = isAdminEmail(session?.user?.email);
+  return session.__isAdmin;
 }
 
 export async function requireAdmin(session) {
