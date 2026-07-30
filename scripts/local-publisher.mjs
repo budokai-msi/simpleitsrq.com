@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { sql } from '../api/_lib/db.js';
+import { publishDraftToGitHub } from '../api/_lib/publish-draft.js';
 
 const OLLAMA_URL = 'http://127.0.0.1:11434/api/generate';
 const OLLAMA_MODEL = process.env.LOCAL_LLM_MODEL || 'llama3.1:70b';
@@ -125,6 +126,32 @@ async function generateLocalDraft() {
       RETURNING id
     `;
     console.log(`Success! Draft ID: ${inserted[0].id}`);
+    
+    console.log(`[local-publisher] Committing to GitHub to trigger Vercel build...`);
+    const publishResult = await publishDraftToGitHub({
+      title: post.title,
+      slug: finalSlug,
+      category: post.category || 'Business Tech',
+      excerpt: post.excerpt || '',
+      body: post.body,
+      meta_desc: post.metaDescription || '',
+      tags: ['hacker-news', 'local-it'],
+      sourceUrl: story.url,
+    });
+    
+    if (publishResult.ok) {
+      await sql`
+        UPDATE draft_posts
+        SET status = 'published',
+            reviewed_at = now(),
+            published_at = now()
+        WHERE id = ${inserted[0].id}
+      `;
+      console.log(`[local-publisher] Successfully published to GitHub! URL: ${publishResult.htmlUrl || 'already existed'}`);
+    } else {
+      console.error(`[local-publisher] Failed to publish to GitHub:`, publishResult.error, publishResult.detail);
+    }
+
   } catch (err) {
     console.error('DB Insert failed:', err);
   }
