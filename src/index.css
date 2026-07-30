@@ -864,3 +864,185 @@ kbd {
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+
+@media (max-width: 640px) {
+  .admin-global-nav__list {
+    flex-wrap: wrap;
+    justify-content: center;
+    border-radius: 16px;
+    padding: 8px;
+  }
+  .admin-global-nav__link {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+}
+
+
+/* ============================================================
+   Mega Menu / Glassmorphism Nav
+   ============================================================ */
+.nav-group {
+  position: relative;
+}
+.nav-group-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
+}
+.nav-group-btn:hover, .nav-group-btn.is-active, .nav-group-btn.is-open {
+  color: var(--text-1);
+  background: rgba(var(--brand-rgb, 17,24,39), 0.05);
+}
+[data-theme='dark'] .nav-group-btn:hover, [data-theme='dark'] .nav-group-btn.is-active, [data-theme='dark'] .nav-group-btn.is-open {
+  background: rgba(255,255,255, 0.05);
+}
+.nav-chevron {
+  transition: transform 0.2s;
+}
+.nav-group-btn.is-open .nav-chevron {
+  transform: rotate(180deg);
+}
+
+.nav-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(var(--surface-rgb, 255,255,255), 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  min-width: 420px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+  pointer-events: none;
+}
+[data-theme='dark'] .nav-dropdown {
+  background: rgba(20,20,20, 0.85);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+.nav-dropdown.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.nav-dropdown-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+@media (min-width: 768px) {
+  .nav-dropdown-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.nav-dropdown-item:hover {
+  background: rgba(var(--brand-rgb, 17,24,39), 0.04);
+}
+[data-theme='dark'] .nav-dropdown-item:hover {
+  background: rgba(255,255,255, 0.05);
+}
+
+.nav-dropdown-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(var(--brand-rgb, 17,24,39), 0.06);
+  color: var(--brand);
+}
+[data-theme='dark'] .nav-dropdown-item-icon {
+  background: rgba(255,255,255, 0.1);
+  color: var(--brand-hover);
+}
+
+.nav-dropdown-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-dropdown-item-title {
+  color: var(--text-1);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.nav-dropdown-item-desc {
+  color: var(--text-2);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Mobile Nav overrides */
+.mobile-nav-group {
+  margin-bottom: 24px;
+}
+.mobile-nav-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+  margin-bottom: 12px;
+  padding: 0 16px;
+}
+.mobile-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-1);
+}
+.mobile-nav-link.is-active {
+  background: rgba(var(--brand-rgb, 17,24,39), 0.05);
+}
+[data-theme='dark'] .mobile-nav-link.is-active {
+  background: rgba(255,255,255, 0.05);
+}
+.mobile-nav-link-content {
+  display: flex;
+  flex-direction: column;
+}
+.mobile-nav-link-content strong {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.mobile-nav-link-content span {
+  font-size: 0.85rem;
+  color: var(--text-2);
+}
+

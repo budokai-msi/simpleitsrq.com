@@ -287,8 +287,10 @@ export default function AdminOps() {
       await postJson(action, body);
       setNotice(success || `${action} complete.`);
       await load();
+      return true;
     } catch (e) {
       setNotice(`Failed: ${String(e.message || e)}`);
+      return false;
     } finally {
       setBusy(null);
     }
@@ -356,7 +358,7 @@ export default function AdminOps() {
 
         <section className="admin-leadgen-tab-body">
           {tab === "ops" && <OpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
-          {tab === "leads" && <LeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} busy={busy} runAction={runAction} />}
+          {tab === "leads" && <LeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
           {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
           {tab === "drafts" && <DraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
           {tab === "affiliate" && <AffiliateTab data={data} />}
@@ -529,7 +531,7 @@ function StatusChip({ status }) {
   );
 }
 
-function LeadsInboxTab({ data, error, busy, runAction }) {
+function LeadsInboxTab({ data, error, reload }) {
   const leads = data?.leads || [];
   const counts = data?.counts || {};
   const [selectedLead, setSelectedLead] = useState(null);
@@ -563,7 +565,7 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
         body: replyBody,
       });
       setEmailStatus({ ok: true, text: `Email sent via Resend (ID: ${res.id})` });
-      if (runAction) runAction("leads-inbox");
+      if (reload) reload();
     } catch (e) {
       setEmailStatus({ ok: false, text: String(e.message || e) });
     } finally {
@@ -584,7 +586,7 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
         description: activeLead.message || "Lead conversion",
       });
       setTicketStatus({ ok: true, text: `Ticket ${res.code} created!` });
-      if (runAction) runAction("leads-inbox");
+      if (reload) reload();
     } catch (e) {
       setTicketStatus({ ok: false, text: String(e.message || e) });
     } finally {
@@ -610,7 +612,7 @@ function LeadsInboxTab({ data, error, busy, runAction }) {
         {!error && leads.length === 0 ? <EmptyState>No leads yet - form submissions appear here in real time.</EmptyState> : null}
 
         {leads.length ? (
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(300px, 1fr) minmax(360px, 1.25fr)", gap: 18, marginTop: 16 }}>
+          <div className="admin-leadgen-inbox-grid" style={{ marginTop: 16 }}>
             {/* Left Column: Lead List */}
             <div style={{ overflowX: "auto" }}>
               <table className="admin-aff-table ops-table">
@@ -1428,7 +1430,7 @@ function OpsecTab({ data, busy, runAction }) {
         <div className="ops-panel__head"><h2>Add watch</h2><Eye size={16} /></div>
         <div className="ops-form-row">
           <input className="admin-leadgen-input" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="domain.com" />
-          <button className="btn btn-primary btn-sm" disabled={busy === "opsec-domain-add"} onClick={() => runAction("opsec-domain-add", { domain }, "Domain added to watch list.").then(() => setDomain(""))}>Add</button>
+          <button className="btn btn-primary btn-sm" disabled={busy === "opsec-domain-add"} onClick={() => runAction("opsec-domain-add", { domain }, "Domain added to watch list.").then((ok) => { if (ok) setDomain(""); })}>Add</button>
         </div>
       </section>
       <section className="admin-aff-card ops-panel">
@@ -1441,7 +1443,7 @@ function OpsecTab({ data, busy, runAction }) {
             {["low", "medium", "high", "critical"].map((severity) => <option key={severity}>{severity}</option>)}
           </select>
           <input className="admin-leadgen-input ops-form-grid__full" value={ioc.value} onChange={(e) => setIoc({ ...ioc, value: e.target.value })} placeholder="indicator value" />
-          <button className="btn btn-primary btn-sm ops-form-grid__full" disabled={busy === "opsec-ioc-add"} onClick={() => runAction("opsec-ioc-add", ioc, "IOC saved.").then(() => setIoc({ ...ioc, value: "" }))}>Save IOC</button>
+          <button className="btn btn-primary btn-sm ops-form-grid__full" disabled={busy === "opsec-ioc-add"} onClick={() => runAction("opsec-ioc-add", ioc, "IOC saved.").then((ok) => { if (ok) setIoc({ ...ioc, value: "" }); })}>Save IOC</button>
         </div>
       </section>
       <section className="admin-aff-card ops-panel ops-panel--wide">
@@ -1483,7 +1485,7 @@ function OpsecTab({ data, busy, runAction }) {
           <input className="admin-leadgen-input" value={note.title} onChange={(e) => setNote({ ...note, title: e.target.value })} placeholder="Title" />
           <input className="admin-leadgen-input" value={note.tags} onChange={(e) => setNote({ ...note, tags: e.target.value })} placeholder="tags, comma separated" />
           <textarea className="admin-leadgen-input admin-leadgen-textarea" rows={5} value={note.body} onChange={(e) => setNote({ ...note, body: e.target.value })} placeholder="Investigation note" />
-          <button className="btn btn-primary btn-sm" disabled={busy === "opsec-note-save"} onClick={() => runAction("opsec-note-save", { ...note, tags: note.tags.split(",").map((t) => t.trim()).filter(Boolean) }, "Note saved.").then(() => setNote({ title: "", body: "", tags: "" }))}>Save note</button>
+          <button className="btn btn-primary btn-sm" disabled={busy === "opsec-note-save"} onClick={() => runAction("opsec-note-save", { ...note, tags: note.tags.split(",").map((t) => t.trim()).filter(Boolean) }, "Note saved.").then((ok) => { if (ok) setNote({ title: "", body: "", tags: "" }); })}>Save note</button>
         </div>
         <Table
           columns={["Title", "Tags", "Updated"]}

@@ -15,6 +15,10 @@ import { validateEnv } from "../_lib/env.js";
 import { runNewsletterDrip } from "../_lib/newsletter-drip.js";
 import { discoverBusinessesByZip } from "../_lib/leadgen-osm.js";
 import { crawlEmails } from "../_lib/leadgen-emailcrawler.js";
+import { fetchImapReplies, markImapSeen } from "../_lib/leadgen-imap.js";
+import { decryptSecret } from "../_lib/crypto.js";
+import { dispatchPush } from "../leadgen-integrations.js";
+import nodemailer from "nodemailer";
 import { sendCampaignEmail, renderTemplate } from "../_lib/leadgen-smtp.js";
 import { publishDraftToGitHub } from "../_lib/publish-draft.js";
 
@@ -1317,6 +1321,129 @@ async function runLeadgenSender() {
   return { ...summary, picked: candidates.length };
 }
 
+async function runLeadgenImapSync() {
+  const summary = { new_replies: 0, errors: 0 };
+  const integrations = await sql`SELECT id, user_id, config FROM user_integrations WHERE kind = 'imap' AND enabled = true`;
+  
+  for (const integ of integrations) {
+    try {
+      const cfg = decryptSecret(integ.config);
+      const replies = await fetchImapReplies(cfg);
+      const uidsToMark = [];
+
+      for (const msg of replies) {
+        if (msg.isWarmup) {
+          uidsToMark.push(msg.uid);
+          continue;
+        }
+
+        let matchedSend = null;
+        // Try to match reply to a sent campaign email
+        const [res] = await sql`
+          SELECT s.id, s.campaign_id 
+          FROM lead_campaign_sends s
+          JOIN lead_emails e ON e.id = s.email_id
+          WHERE e.email = ${msg.from} AND s.sent_at IS NOT NULL
+          ORDER BY s.sent_at DESC LIMIT 1
+        `;
+        
+        if (res) {
+          matchedSend = res;
+          await sql`UPDATE lead_campaign_sends SET replied_at = NOW() WHERE id = ${matchedSend.id}`;
+          summary.new_replies++;
+          uidsToMark.push(msg.uid);
+
+          // Push to CRM integrations
+          try {
+            const leadData = await sql`
+              SELECT b.name, b.legal_name, b.website, b.phone, e.email
+              FROM lead_campaign_sends s
+              JOIN lead_businesses b ON b.id = s.business_id
+              JOIN lead_emails e ON e.id = s.email_id
+              WHERE s.id = ${matchedSend.id}
+            `;
+            if (leadData.length > 0) {
+              const activeCrms = await sql`SELECT id, kind, config FROM user_integrations WHERE user_id = ${integ.user_id} AND enabled = true AND kind != 'smtp'`;
+              for (const ui of activeCrms) {
+                try {
+                  const config = decryptSecret(ui.config);
+                  await dispatchPush({ ...ui, config }, leadData);
+                  await sql`UPDATE user_integrations SET last_used_at = now(), last_error = null WHERE id = ${ui.id}`;
+                } catch(err) {
+                  await sql`UPDATE user_integrations SET last_error = ${String(err?.message||err).slice(0, 255)} WHERE id = ${ui.id}`;
+                }
+              }
+            }
+          } catch (crmErr) {
+            console.warn("[imap-sync] CRM push failed", crmErr);
+          }
+        }
+      }
+      if (uidsToMark.length > 0) await markImapSeen(cfg, uidsToMark);
+    } catch (err) {
+      summary.errors++;
+      console.warn("[imap-sync] failed", err);
+    }
+  }
+  return summary;
+}
+
+async function runLeadgenWarmup() {
+  const summary = { sent: 0, errors: 0 };
+  const integrations = await sql`
+    SELECT id, user_id, config FROM user_integrations 
+    WHERE kind = 'smtp' AND enabled = true
+  `;
+  
+  const byUser = {};
+  for (const integ of integrations) {
+    const cfg = decryptSecret(integ.config);
+    if (cfg.is_warmup) {
+      if (!byUser[integ.user_id]) byUser[integ.user_id] = [];
+      byUser[integ.user_id].push({ id: integ.id, ...cfg });
+    }
+  }
+
+  for (const [userId, accounts] of Object.entries(byUser)) {
+    if (accounts.length < 2) continue;
+
+    const sender = accounts[Math.floor(Math.random() * accounts.length)];
+    const receivers = accounts.filter(a => a.id !== sender.id);
+    if (receivers.length === 0) continue;
+    const receiver = receivers[Math.floor(Math.random() * receivers.length)];
+
+    try {
+      const transporter = nodemailer.createTransport({
+        host: sender.host,
+        port: Number(sender.port) || 587,
+        secure: sender.secure === true || Number(sender.port) === 465,
+        auth: { user: sender.user, pass: sender.pass },
+        connectionTimeout: 10000,
+      });
+
+      const bodyId = Math.random().toString(36).substring(7);
+      const subjectId = Math.random().toString(36).substring(7);
+
+      const mail = {
+        from: sender.user,
+        to: receiver.user,
+        subject: `Re: Quick question about your services ${subjectId}`,
+        text: `Hey there, just following up on my last email. Looking forward to hearing back! ${bodyId}`,
+        headers: {
+          "X-SimpleITSRQ-Warmup": "true"
+        }
+      };
+
+      await transporter.sendMail(mail);
+      summary.sent++;
+    } catch (err) {
+      console.warn("[warmup] failed for user", userId, err);
+      summary.errors++;
+    }
+  }
+  return summary;
+}
+
 export async function GET(request) {
   if (!verifyCron(request)) {
     return new Response("Unauthorized", { status: 401 });
@@ -1383,6 +1510,12 @@ export async function GET(request) {
     error: String(e.message || e).slice(0, 200),
   }));
   result.tasks.leadgenSender = await runLeadgenSender().catch((e) => ({
+    error: String(e.message || e).slice(0, 200),
+  }));
+  result.tasks.leadgenImapSync = await runLeadgenImapSync().catch((e) => ({
+    error: String(e.message || e).slice(0, 200),
+  }));
+  result.tasks.leadgenWarmup = await runLeadgenWarmup().catch((e) => ({
     error: String(e.message || e).slice(0, 200),
   }));
 

@@ -155,6 +155,10 @@ export async function handleLeadgenStatus(session) {
                (SELECT COUNT(*)::int FROM lead_campaign_sends s
                  WHERE s.campaign_id = c.id AND s.opened_at IS NOT NULL) AS opened,
                (SELECT COUNT(*)::int FROM lead_campaign_sends s
+                 WHERE s.campaign_id = c.id AND s.clicked_at IS NOT NULL) AS clicked,
+               (SELECT COUNT(*)::int FROM lead_campaign_sends s
+                 WHERE s.campaign_id = c.id AND s.bounced_at IS NOT NULL) AS bounced,
+               (SELECT COUNT(*)::int FROM lead_campaign_sends s
                  WHERE s.campaign_id = c.id AND s.replied_at IS NOT NULL) AS replied
         FROM lead_campaigns c
         ORDER BY c.updated_at DESC, c.id DESC
@@ -261,10 +265,18 @@ export async function handleLeadgenInsights(session) {
         LIMIT 12`,
     sql`SELECT c.id, c.name,
                COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL)::int AS sent,
+               COUNT(*) FILTER (WHERE cs.opened_at IS NOT NULL)::int AS opened,
+               COUNT(*) FILTER (WHERE cs.clicked_at IS NOT NULL)::int AS clicked,
+               COUNT(*) FILTER (WHERE cs.replied_at IS NOT NULL)::int AS replied,
+               COUNT(*) FILTER (WHERE cs.bounced_at IS NOT NULL)::int AS bounced,
                ROUND(COUNT(*) FILTER (WHERE cs.opened_at IS NOT NULL) * 100.0
                      / NULLIF(COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL), 0), 1)::text AS open_rate,
+               ROUND(COUNT(*) FILTER (WHERE cs.clicked_at IS NOT NULL) * 100.0
+                     / NULLIF(COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL), 0), 1)::text AS click_rate,
                ROUND(COUNT(*) FILTER (WHERE cs.replied_at IS NOT NULL) * 100.0
-                     / NULLIF(COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL), 0), 1)::text AS reply_rate
+                     / NULLIF(COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL), 0), 1)::text AS reply_rate,
+               ROUND(COUNT(*) FILTER (WHERE cs.bounced_at IS NOT NULL) * 100.0
+                     / NULLIF(COUNT(*) FILTER (WHERE cs.sent_at IS NOT NULL), 0), 1)::text AS bounce_rate
         FROM lead_campaigns c
         LEFT JOIN lead_campaign_sends cs ON cs.campaign_id = c.id
         GROUP BY c.id, c.name
@@ -905,7 +917,7 @@ export async function handleLeadgenReclassify(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
   await ensureLeadgenTaxonomyColumns();
-  const { classifyIndustry } = await import("./_lib/leadgen-classify.js");
+  const { classifyIndustry } = await import("../leadgen-classify.js");
   const rows = await sql`
     SELECT id, industry FROM lead_businesses
     WHERE industry IS NOT NULL
@@ -1045,6 +1057,7 @@ export async function handleLeadgenAi(session, request) {
     "- emojis or icons of any kind\n" +
     "- 'as a [job] owner you know', 'in today's', 'in this fast-paced', 'we understand'\n" +
     "- 'just wanted to', 'hope this finds you well', 'I hope you are doing well'\n" +
+    "- 'I noticed that', 'I saw that', 'I was looking at', 'came across your profile'\n" +
     "- 'leverage', 'synergy', 'robust', 'cutting-edge', 'streamline', 'best-in-class', " +
     "'unlock', 'empower', 'tailored solutions', 'peace of mind' (cliche), 'seamless'\n" +
     "- 'consider reaching out', 'feel free to', 'don't hesitate to'\n" +
@@ -1069,7 +1082,7 @@ export async function handleLeadgenAi(session, request) {
     const bn = String(body?.business_name || "").slice(0, 200);
     const ind = String(body?.industry || "").slice(0, 100);
     const site = String(body?.website || "").slice(0, 300);
-    userPrompt = `Write 1-2 sentences (max 40 words) that opens a cold email to this business. Make it specific enough that it could not have been sent to anyone else. Do not flatter. Do not use the words "love", "amazing", or "great". Mention the industry naturally.\n\nBusiness: ${bn}\nIndustry: ${ind}\nWebsite: ${site}\n\nReturn JSON: {"opener": "..."}`;
+    userPrompt = `Write a 1-sentence casual opener for a cold email to this business. Jump straight into a conversational observation about their business or industry. Sound like a local Florida resident walking past their storefront. Make it hyper-specific to their website or industry so it couldn't have been sent to anyone else. Do not flatter. Do not use the words "love", "amazing", or "great".\n\nBusiness: ${bn}\nIndustry: ${ind}\nWebsite: ${site}\n\nReturn JSON: {"opener": "..."}`;
     systemPrompt = systemBase + " Output ONLY a JSON object with one key \"opener\". No markdown.";
   } else {
     return json(400, { ok: false, error: "invalid_mode" });
@@ -1361,7 +1374,7 @@ export async function handleLeadgenCampaignTest(session, request) {
   if (!camp.length) return json(404, { ok: false, error: "not_found" });
   const c = camp[0];
 
-  const { sendCampaignEmail, renderTemplate } = await import("./_lib/leadgen-smtp.js");
+  const { sendCampaignEmail, renderTemplate } = await import("../leadgen-smtp.js");
   const crypto = globalThis.crypto || (await import("node:crypto")).webcrypto;
   const tok = () => crypto.randomUUID().replace(/-/g, "");
   const openToken = tok();
@@ -1442,6 +1455,71 @@ export async function handleLeadgenRunJobs(session) {
   } catch (err) {
     return json(500, { ok: false, error: String(err?.message || err).slice(0, 500) });
   }
+}
+
+export async function handleLeadgenInbox(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  
+  // Fetch threads: we get all replies, plus context from their original sends
+  const rows = await sql`
+    SELECT r.id, r.send_id, r.from_email, r.subject, r.body_text, r.is_outbound, r.received_at,
+           s.to_email, s.business_id,
+           b.name AS business_name, b.website, b.industry_group,
+           c.id AS campaign_id, c.name AS campaign_name, c.from_email AS campaign_from_email, c.reply_to AS campaign_reply_to
+    FROM leadgen_replies r
+    JOIN lead_campaign_sends s ON s.id = r.send_id
+    JOIN lead_businesses b ON b.id = s.business_id
+    JOIN lead_campaigns c ON c.id = r.campaign_id
+    ORDER BY r.received_at ASC
+  `;
+  return json(200, { ok: true, rows });
+}
+
+export async function handleLeadgenInboxReply(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  
+  const sendId = body?.send_id;
+  const textContent = (body?.text_content || "").trim();
+  if (!sendId || !textContent) return json(400, { ok: false, error: "missing_fields" });
+  
+  const sends = await sql`
+    SELECT s.*, c.from_email, c.reply_to, c.name as campaign_name, b.name as business_name
+    FROM lead_campaign_sends s
+    JOIN lead_campaigns c ON c.id = s.campaign_id
+    JOIN lead_businesses b ON b.id = s.business_id
+    WHERE s.id = ${sendId}
+  `;
+  if (!sends.length) return json(404, { ok: false, error: "not_found" });
+  const send = sends[0];
+  
+  const { sendCampaignEmail } = await import("../leadgen-smtp.js");
+  
+  // Actually dispatch the SMTP reply
+  const result = await sendCampaignEmail({
+    to: send.to_email,
+    subject: "Re: " + (body?.subject || ""),
+    textBody: textContent,
+    from: send.from_email,
+    replyTo: send.reply_to || null,
+    campaignId: send.campaign_id,
+    sendId: send.id,
+  });
+
+  if (!result.ok) {
+    return json(500, { ok: false, error: result.error });
+  }
+
+  // Insert the outbound reply into leadgen_replies so it shows up in the thread
+  await sql`
+    INSERT INTO leadgen_replies (campaign_id, send_id, from_email, subject, body_text, message_id, is_outbound, received_at)
+    VALUES (${send.campaign_id}, ${send.id}, ${send.from_email}, ${"Re: " + (body?.subject || "")}, ${textContent}, ${result.messageId || null}, true, now())
+  `;
+
+  return json(200, { ok: true });
 }
 
 // ---------- public token-authenticated lead-gen endpoints ----------

@@ -55,13 +55,19 @@ export default defineConfig({
             return;
           }
 
-          if (url.pathname !== '/api/leadgen') return next();
+          if (!url.pathname.startsWith('/api/')) return next();
+          
+          const endpoint = url.pathname.replace('/api/', '');
+          if (!endpoint || endpoint.includes('/')) return next();
 
           const chunks = [];
           req.on('data', (chunk) => chunks.push(chunk));
+          const path = await import('node:path');
+          const modPath = path.join(process.cwd(), 'api', `${endpoint}.js`);
+          const modUrl = 'file://' + modPath.replace(/\\/g, '/');
           req.on('end', async () => {
             try {
-              const mod = await import('./api/leadgen.js');
+              const mod = await import(modUrl);
               const handler = mod[req.method || 'GET'];
               if (!handler) {
                 res.statusCode = 405;

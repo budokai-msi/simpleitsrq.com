@@ -255,6 +255,14 @@ export function normalizeOsmElement(el) {
   const brand = tags.brand || tags["brand:en"] || null;
   const isChain = Boolean(brand || tags["brand:wikidata"]);
 
+  // Extract email and social links
+  const email = tags.email || tags["contact:email"] || null;
+  const socialTags = [];
+  if (tags["contact:facebook"] || tags.facebook) socialTags.push(`facebook:${tags["contact:facebook"] || tags.facebook}`);
+  if (tags["contact:linkedin"] || tags.linkedin) socialTags.push(`linkedin:${tags["contact:linkedin"] || tags.linkedin}`);
+  if (tags["contact:twitter"] || tags.twitter) socialTags.push(`twitter:${tags["contact:twitter"] || tags.twitter}`);
+  if (tags["contact:instagram"] || tags.instagram) socialTags.push(`instagram:${tags["contact:instagram"] || tags.instagram}`);
+
   return {
     name,
     legal_name: tags.operator || null,
@@ -271,10 +279,12 @@ export function normalizeOsmElement(el) {
     source: "osm",
     source_id: `${el.type}/${el.id}`,
     source_url: `https://www.openstreetmap.org/${el.type}/${el.id}`,
-    industry,
+    industry: pickIndustry(tags),
     industry_group,
     sub_industry,
-    naics: null,
+    naics: tags.naics || null,
+    email,
+    socialTags,
   };
 }
 

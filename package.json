@@ -7,6 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "publish:local": "node scripts/local-publisher.mjs",
     "dev": "vite",
     "prebuild": "node scripts/generate-posts-meta.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-rss.mjs && node scripts/generate-og-images.mjs && node scripts/generate-city-og-images.mjs && node scripts/generate-industry-og-images.mjs",
     "build": "vite build && node scripts/generate-blog-stubs.mjs",
@@ -27,14 +28,18 @@
     "@vercel/analytics": "2.0.1",
     "@vercel/speed-insights": "2.0.0",
     "botid": "1.5.11",
+    "dotenv": "^17.4.2",
     "framer-motion": "^12.42.2",
+    "imapflow": "^1.6.5",
     "jose": "6.2.3",
     "leaflet": "^1.9.4",
     "lucide-react": "1.23.0",
+    "mailparser": "^3.9.14",
     "nodemailer": "^9.0.3",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "react-router-dom": "7.18.1",
+    "recharts": "^3.10.1",
     "resend": "6.17.1",
     "stripe": "22.3.0",
     "unist-util-visit": "^5.1.0"
@@ -64,3 +69,4 @@
     "svix": "1.92.2"
   }
 }
+

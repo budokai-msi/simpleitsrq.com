@@ -45,12 +45,12 @@ function Hero() {
     <section className="home-hero" aria-labelledby="hero-title">
       <div className="container home-hero__grid">
         <div className="home-hero__copy">
-          <span className="eyebrow">Simple IT SRQ</span>
-          <h1 id="hero-title" className="display">IT support, computer repair, and local lead tools.</h1>
+          <div className="eyebrow" style={{ marginBottom: "1rem" }}>Stop fighting with broken tech.</div>
+          <h1 id="hero-title" className="display">
+            Fast, local IT support for Sarasota businesses—without the expensive contracts.
+          </h1>
           <p className="lede">
-            Book one-time repair, move a small office onto Microsoft 365,
-            clean up Wi-Fi, or run a focused local lead campaign. We handle
-            the work, document what changed, and keep the next step obvious.
+            When your network goes down, email gets locked out, or a workstation crashes, you just need it fixed. We provide on-demand, expert IT support for local businesses so you can get back to work. No mandatory retainers, no long-term lock-in.
           </p>
           <div className="home-hero__actions">
             <a
@@ -201,8 +201,8 @@ function Solutions() {
       <div className="container">
         <div className="section-head reveal-up">
           <span className="eyebrow">Common Calls</span>
-          <h2 id="solutions-title" className="title-1">When tech stops work, call us.</h2>
-          <p className="section-sub">Most calls start with one broken thing: a laptop, printer, email account, Wi-Fi room, camera, or backup. We fix that first, then check the setup so the same issue is less likely to come back.</p>
+          <h2 id="solutions-title" className="title-1">We fix the problem, then make sure it doesn't happen again.</h2>
+          <p className="section-sub">Whether you're locked out of Microsoft 365, your Wi-Fi is dropping calls, or you need to onboard a new employee, we handle the technical headaches so your team can focus on their jobs.</p>
         </div>
         <div className="solution-grid">
           {SOLUTIONS.map(({ Icon, title, desc }, i) => (

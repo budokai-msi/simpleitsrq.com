@@ -4267,3 +4267,18 @@
   }
 }
 
+
+
+/* Responsive grid for Leads Inbox tab */
+.admin-leadgen-inbox-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(360px, 1.25fr);
+  gap: 18px;
+}
+
+@media (max-width: 800px) {
+  .admin-leadgen-inbox-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

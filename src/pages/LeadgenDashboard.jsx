@@ -1884,7 +1884,7 @@ function DiscoverTab({ onStatusChange }) {
     }
   };
 
-  const [generatingId, setGeneratingId] = React.useState(null);
+  const [generatingId, setGeneratingId] = useState(null);
   const generateIcebreaker = async (row) => {
     if (String(row.id).startsWith("preview-")) {
       setErr("Cannot generate icebreakers for unsaved preview rows.");
