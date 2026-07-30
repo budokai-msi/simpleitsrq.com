@@ -2462,13 +2462,13 @@ export default function Leadgen() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             <span className="leadgen-badge-hero">
-              <Sparkles size={14} /> AI-Powered B2B Scraping Engine
+              <Sparkles size={14} /> Direct Local Outreach Built for SMBs
             </span>
             <h1 className="leadgen-hero-title">
-              Instant B2B Lead Generator & Web Scraper
+              Stop Waiting for the Phone to Ring.
             </h1>
             <p className="leadgen-hero-sub">
-              Extract decision-maker emails, direct phone numbers, and company intelligence across any U.S. zip code. Build hyper-targeted outreach campaigns in seconds.
+              Take control of your growth. Instantly discover hundreds of local businesses in your zip code who need your services, and reach out to them directly. No expensive ads, no shared leads.
             </p>
           </motion.div>
           <motion.div
@@ -2490,11 +2490,11 @@ export default function Leadgen() {
       <section className="section leadgen-product-focus">
         <div className="container leadgen-product-focus__grid">
           <div>
-            <h2 className="title-1">Every local business near you is a potential customer.</h2>
+            <h2 className="title-1">Word-of-mouth is great, but it's not a predictable growth strategy.</h2>
             <p className="lede">
-              Pick an industry, drop in a zip. We find the independents,
-              pull their emails, and skip the national chains.
-              You review the short list and reach out - no guesswork, no list brokers.
+              When referrals dry up, most businesses turn to expensive ads or shared lead platforms where you race to the bottom on price. There's a better way: <strong>Direct Local Outreach.</strong>
+              <br /><br />
+              There are hundreds of local businesses within a 10-mile radius of your office who need your services right now, but they just don't know you exist. We automate the hardest part—finding them and getting their contact info—so you can focus on introducing yourself and closing deals.
             </p>
           </div>
           <div className="leadgen-product-rules">
@@ -2732,23 +2732,23 @@ function LeadgenFeaturesSection() {
   const features = [
     {
       icon: Search,
-      title: "Targeted Zip & Niche Search",
-      desc: "Instantly scan any U.S. zip code across 14+ industry verticals to discover active independent local businesses.",
+      title: "Find Your Ideal Local Customers",
+      desc: "Tell us your service area and target industry. We'll instantly map out every active, independent business that fits your profile.",
     },
     {
       icon: Mail,
-      title: "Real-Time Email Scraping",
-      desc: "Deep-crawl company websites to extract verified executive and corporate email addresses (`sales@`, `contact@`, `info@`).",
+      title: "Get Direct Contact Information",
+      desc: "We automatically find the direct emails and phone numbers for the decision-makers, saving you hours of manual Google searching.",
     },
     {
       icon: Phone,
-      title: "Verified Phone & Contact Info",
-      desc: "Scrape direct office phone numbers, street addresses, and social links to power multi-channel sales outreach.",
+      title: "Automate the Introduction",
+      desc: "Send personalized, multi-step email campaigns directly from your own inbox to introduce your business and start conversations.",
     },
     {
       icon: Database,
-      title: "Instant CSV & CRM Handoff",
-      desc: "Export clean lists to CSV or push contacts directly into Mailchimp, HubSpot, GoHighLevel, ActiveCampaign, and Zapier.",
+      title: "Never Fight Over Shared Leads",
+      desc: "Unlike Yelp or Angie's List where you compete with 5 other businesses on price, these are exclusive prospects right in your backyard.",
     },
   ];
 
@@ -2780,13 +2780,12 @@ function LeadgenFeaturesSection() {
 
 function LeadgenComparisonMatrix() {
   const comparison = [
-    { feature: "Data Freshness", us: "Real-time web crawl & MX deliverability check", legacy: "Stale static database (6-12 mos old)" },
-    { feature: "Targeting Precision", us: "Hyper-local U.S. Zip code & radius search", legacy: "Generic state/MSA broad filters" },
-    { feature: "Chain / Franchise Exclusion", us: "Automatic AI exclusion of national chains", legacy: "Manual sorting & wasted budget" },
-    { feature: "Direct Executive Emails", us: "Included & verified (mailto: + domain crawl)", legacy: "Gated behind expensive tier upgrades" },
-    { feature: "Verified Direct Phone Lines", us: "Included in standard CSV export", legacy: "Requires extra phone credits" },
-    { feature: "CRM & Webhook Push", us: "1-Click push to HubSpot, Mailchimp, GHL, Zapier", legacy: "Manual CSV re-formatting needed" },
-    { feature: "Pricing & Contracts", us: "$19/mo flat rate (no per-lead markup)", legacy: "$5,000+ annual contracts" },
+    { feature: "Lead Exclusivity", us: "100% Exclusive to you", legacy: "Shared with 5+ competitors" },
+    { feature: "Cost Structure", us: "Flat $19/mo for unlimited discovery", legacy: "Pay-per-click or $50+ per lead" },
+    { feature: "Targeting", us: "You pick the exact businesses you want", legacy: "Wait and hope the right person clicks" },
+    { feature: "Time to Results", us: "Start conversations today", legacy: "Takes months to rank on Google" },
+    { feature: "Effort", us: "We automate finding & contacting them", legacy: "Manual networking & knocking on doors" },
+    { feature: "CRM & Tooling", us: "Push directly into your pipeline", legacy: "Manual entry required" },
   ];
 
   return (
@@ -2794,9 +2793,9 @@ function LeadgenComparisonMatrix() {
       <div className="container">
         <div className="section-head" style={{ maxWidth: 760, textAlign: "center", margin: "0 auto 2.5rem" }}>
           <span className="eyebrow">Comparison</span>
-          <h2 className="title-1">Built for local teams tired of stale broker data.</h2>
+          <h2 className="title-1">Stop paying for shared leads.</h2>
           <p className="lede">
-            Compare our real-time B2B web scraper against traditional legacy list brokers.
+            Compare Direct Local Outreach using our platform against traditional local marketing channels.
           </p>
         </div>
         <div className="leadgen-matrix-table-wrap">
@@ -2804,8 +2803,8 @@ function LeadgenComparisonMatrix() {
             <thead>
               <tr>
                 <th>Feature / Capability</th>
-                <th className="is-us">Simple IT SRQ Scraper</th>
-                <th>Legacy List Brokers</th>
+                <th className="is-us">Direct Local Outreach</th>
+                <th>Traditional Ads / Yelp</th>
               </tr>
             </thead>
             <tbody>

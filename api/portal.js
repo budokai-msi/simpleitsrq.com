@@ -99,6 +99,8 @@ import {
   handleLeadgenCampaignSends,
   handleLeadgenJobs,
   handleLeadgenRunJobs,
+  handleLeadgenInbox,
+  handleLeadgenInboxReply,
   handleLeadgenOpenPixel,
   handleLeadgenClick,
   handleLeadgenUnsubscribe,
@@ -155,6 +157,8 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "leadgen-status",
   "leadgen-export",
   "leadgen-insights",
+  "leadgen-inbox",
+  "leadgen-inbox-reply",
   // self-serve maintenance
   "run-audit-migration",
   "run-ticket-migration",
@@ -343,6 +347,8 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "leadgen-crawl-emails"     && method === "POST") return handleLeadgenCrawlEmails(session, request);
   if (action === "leadgen-businesses"       && method === "GET")  return handleLeadgenBusinesses(session, url);
   if (action === "leadgen-insights"         && method === "GET")  return handleLeadgenInsights(session);
+  if (action === "leadgen-inbox"            && method === "GET")  return handleLeadgenInbox(session);
+  if (action === "leadgen-inbox-reply"      && method === "POST") return handleLeadgenInboxReply(session, request);
   if (action === "leadgen-business"         && method === "GET")  return handleLeadgenBusinessDetail(session, url);
   if (action === "leadgen-business-update"  && method === "POST") return handleLeadgenBusinessUpdate(session, request);
   if (action === "leadgen-campaigns"        && method === "GET")  return handleLeadgenCampaigns(session);

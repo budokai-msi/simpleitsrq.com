@@ -30,24 +30,47 @@
 // admin opens the dashboard before ops has plumbed SMTP.
 
 import nodemailer from "nodemailer";
+import { sql } from "./db.js";
+import { decryptSecret } from "./crypto.js";
 
 let _transporter = null;
-function transporter() {
+async function getTransporter() {
   if (_transporter) return _transporter;
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT) || 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  if (!host || !user || !pass) {
-    throw new Error("SMTP_HOST / SMTP_USER / SMTP_PASS not configured");
+  
+  let host = process.env.SMTP_HOST;
+  let port = Number(process.env.SMTP_PORT) || 587;
+  let user = process.env.SMTP_USER;
+  let pass = process.env.SMTP_PASS;
+  let secure = process.env.SMTP_SECURE === "true" || port === 465;
+
+  // Try to load custom SMTP integration from DB (assumes first enabled one)
+  try {
+    const integrations = await sql`
+      SELECT config FROM user_integrations 
+      WHERE kind = 'smtp' AND enabled = true
+      ORDER BY created_at DESC LIMIT 1
+    `;
+    if (integrations.length > 0) {
+      const cfg = decryptSecret(integrations[0].config);
+      if (cfg.host && cfg.user && cfg.pass) {
+        host = cfg.host;
+        port = Number(cfg.port) || 587;
+        user = cfg.user;
+        pass = cfg.pass;
+        secure = cfg.secure === true || port === 465;
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to load custom SMTP from DB:", e);
   }
-  // Implicit TLS only on port 465 (or when SMTP_SECURE=true). Everything
-  // else uses STARTTLS via nodemailer's auto upgrade.
-  const secure = process.env.SMTP_SECURE === "true" || port === 465;
+
+  if (!host || !user || !pass) {
+    throw new Error("SMTP host/user/pass not configured in DB or ENV");
+  }
+
   _transporter = nodemailer.createTransport({
     host, port, secure,
     auth: { user, pass },
-    // Pool keeps connections open across sends in the same cron tick.
     pool: true,
     maxConnections: 2,
     maxMessages: 50,
@@ -155,7 +178,8 @@ export async function sendCampaignEmail({
   });
 
   try {
-    const out = await transporter().sendMail({
+    const tp = await getTransporter();
+    const out = await tp.sendMail({
       from: fromAddr,
       to,
       replyTo: replyTo || undefined,

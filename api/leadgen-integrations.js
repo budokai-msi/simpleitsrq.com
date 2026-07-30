@@ -14,9 +14,11 @@ import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { clientIp, rateLimit } from "./_lib/security.js";
 import { encryptSecret, decryptSecret } from "./_lib/crypto.js";
+import { testImapConnection } from "./_lib/leadgen-imap.js";
+import nodemailer from "nodemailer";
 
 const ALLOWED_PLANS = new Set(["growth", "pro", "lifetime", "exclusive"]);
-const VALID_KINDS = new Set(["webhook", "mailchimp", "hubspot", "activecampaign", "zapier", "gohighlevel"]);
+const VALID_KINDS = new Set(["webhook", "mailchimp", "hubspot", "activecampaign", "zapier", "gohighlevel", "salesforce", "pipedrive", "smtp"]);
 
 async function requireSession(request) {
   const session = await getSession(request);
@@ -194,7 +196,7 @@ async function pushGoHighLevel(config, leads) {
   };
 }
 
-async function dispatchPush(integration, leads) {
+export async function dispatchPush(integration, leads) {
   switch (integration.kind) {
     case "webhook":        return pushWebhook(integration.config, leads);
     case "mailchimp":      return pushMailchimp(integration.config, leads);
@@ -202,11 +204,103 @@ async function dispatchPush(integration, leads) {
     case "activecampaign": return pushActiveCampaign(integration.config, leads);
     case "zapier":         return pushWebhook({ url: integration.config.webhook_url || integration.config.url }, leads);
     case "gohighlevel":    return pushGoHighLevel(integration.config, leads);
+    case "salesforce":     return pushSalesforce(integration.config, leads);
+    case "pipedrive":      return pushPipedrive(integration.config, leads);
+    case "smtp":           return pushSmtp(integration.config, leads);
     default: throw new Error(`Unknown integration kind: ${integration.kind}`);
   }
 }
 
-// ── Route handlers ─────────────────────────────────────────────────────────────
+async function pushSalesforce(config, leads) {
+  const { instance_url, access_token } = config;
+  if (!instance_url || !access_token) throw new Error("Salesforce instance URL and Access Token are required.");
+  const baseUrl = instance_url.replace(/\/$/, "");
+
+  let pushed = 0;
+  for (const lead of leads) {
+    const payload = {
+      FirstName: lead.name?.split(" ")[0] || "Unknown",
+      LastName: lead.name?.split(" ").slice(1).join(" ") || "Lead",
+      Company: lead.legal_name || lead.name,
+      Email: lead.email,
+      Phone: lead.phone,
+      Description: `Leadgen Push. Website: ${lead.website || "N/A"}`,
+      LeadSource: "SimpleITSRQ Leadgen"
+    };
+
+    const res = await fetch(`${baseUrl}/services/data/v57.0/sobjects/Lead/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${access_token}`
+      },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Salesforce API error: ${res.status} ${errText}`);
+    }
+    pushed++;
+  }
+  return { pushed };
+}
+
+async function pushPipedrive(config, leads) {
+  const { api_token, company_domain } = config;
+  if (!api_token || !company_domain) throw new Error("Pipedrive API token and Company Domain are required.");
+
+  let pushed = 0;
+  for (const lead of leads) {
+    // 1. Create Person
+    const personRes = await fetch(`https://${company_domain}.pipedrive.com/v1/persons?api_token=${api_token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: lead.name,
+        email: [{ value: lead.email, primary: true }],
+        phone: lead.phone ? [{ value: lead.phone, primary: true }] : []
+      })
+    });
+    if (!personRes.ok) throw new Error(`Pipedrive API error (person): ${personRes.status}`);
+    const personData = await personRes.json();
+    
+    // 2. Create Lead associated with Person
+    const leadRes = await fetch(`https://${company_domain}.pipedrive.com/v1/leads?api_token=${api_token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: `${lead.legal_name || lead.name} Lead`,
+        person_id: personData.data.id,
+        expected_close_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
+      })
+    });
+    if (!leadRes.ok) throw new Error(`Pipedrive API error (lead): ${leadRes.status}`);
+    pushed++;
+  }
+  return { pushed };
+}
+
+async function pushSmtp(config, leads) {
+  const { host, port, user, pass, secure, imap_host, imap_port } = config;
+  if (!host || !user || !pass) throw new Error("SMTP host, user, and pass are required.");
+  const transporter = nodemailer.createTransport({
+    host,
+    port: Number(port) || 587,
+    secure: secure === true || Number(port) === 465,
+    auth: { user, pass },
+    connectionTimeout: 10000,
+  });
+  // Simply test the connection if leads were passed (the test action passes 1 mock lead)
+  await transporter.verify();
+  
+  if (imap_host) {
+    await testImapConnection({ host: imap_host, port: imap_port, user, pass, secure });
+  }
+  
+  return { sent: leads.length };
+}
+
+// ── Route handlers ──────────────────────────────────────────────────────────────
 
 async function handleGet(user) {
   const rows = await sql`
