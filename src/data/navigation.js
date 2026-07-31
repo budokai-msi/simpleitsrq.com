@@ -49,79 +49,8 @@ export const PRIMARY_NAV = [
         icon: "ShoppingBag",
         description: "Fixed-fee scopes, posted pricing, and online checkout.",
         activePaths: ["/services"],
-      },
-      {
-        id: "industries",
-        label: "Industries & Markets",
-        to: "/industries",
-        icon: "MapPin",
-        description: "Specialized IT for healthcare, legal, and local markets.",
-        activePaths: ["/industries", "/service-area", ...cityPaths],
-        activePatterns: [industryLandingPattern],
       }
     ],
-  },
-  {
-    id: "security",
-    label: "Security Tools",
-    icon: "ShieldAlert",
-    items: [
-      {
-        id: "exposure-scan",
-        label: "Free Exposure Scan",
-        to: "/exposure-scan",
-        icon: "ShieldAlert",
-        description: "Quick outside-in check for public business risk.",
-        activePaths: ["/exposure-scan"],
-      },
-      {
-        id: "password-check",
-        label: "Password Breach Check",
-        to: "/password-check",
-        icon: "Lock",
-        description: "Check password exposure locally without sending secrets.",
-        activePaths: ["/password-check"],
-      },
-      {
-        id: "stack",
-        label: "Our Vendor Stack",
-        to: "/stack",
-        icon: "Shield",
-        description: "Tools and controls we use for managed accounts.",
-        activePaths: ["/stack", "/tools-we-use"],
-      },
-    ]
-  },
-  {
-    id: "learn",
-    label: "Learn",
-    icon: "BookOpen",
-    items: [
-      {
-        id: "blog",
-        label: "IT Insights Blog",
-        to: "/blog",
-        icon: "BookOpen",
-        description: "Plain-English security, AI, and operations notes.",
-        activePrefixes: ["/blog"],
-      },
-      {
-        id: "compare",
-        label: "Compare Providers",
-        to: "/compare",
-        icon: "Search",
-        description: "Side-by-side product and IT service model comparisons.",
-        activePrefixes: ["/compare", "/why"],
-      },
-      {
-        id: "glossary",
-        label: "IT Glossary",
-        to: "/glossary",
-        icon: "Info",
-        description: "Short explanations for IT and security terms.",
-        activePrefixes: ["/glossary"],
-      }
-    ]
   },
   {
     id: "leadgen",
@@ -129,6 +58,13 @@ export const PRIMARY_NAV = [
     to: "/leadgen",
     icon: "Target",
     activePaths: ["/leadgen"],
+  },
+  {
+    id: "blog",
+    label: "Blog",
+    to: "/blog",
+    icon: "BookOpen",
+    activePrefixes: ["/blog"],
   },
   {
     id: "support",
@@ -145,22 +81,15 @@ export const FOOTER_COLUMNS = [
     items: [
       { label: "Managed IT capabilities", to: "/#solutions" },
       { label: "Fixed-fee service catalog", to: "/services" },
-      { label: "Industries we serve", to: "/industries" },
-      { label: "Vendor stack", to: "/stack" },
-      { label: "Service area", to: "/service-area" },
+      { label: "Get local leads", to: "/leadgen" },
+      { label: "Support", to: "/support" },
     ],
   },
   {
     title: "Resources",
     items: [
       { label: "Blog", to: "/blog" },
-      { label: "Glossary", to: "/glossary" },
-      { label: "Free exposure scan", to: "/exposure-scan" },
       { label: "Recommended tools", to: "/tools" },
-      { label: "Compare vendors", to: "/compare" },
-      { label: "Get local leads", to: "/leadgen" },
-      { label: "Partner program", to: "/partners" },
-      { label: "Support", to: "/support" },
     ],
   },
 ];

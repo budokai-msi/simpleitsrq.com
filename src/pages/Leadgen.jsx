@@ -1931,6 +1931,7 @@ function LeadgenScanApp() {
           onSelect={setSelectedIndex}
         />
 
+        <div className="leadgen-results-sheet">
         {scan ? (
           <div className="leadgen-review-summary">
             <span className="leadgen-review-summary__count"><strong>{kept.length}</strong> selected of {reviewedRows.length}</span>
@@ -2254,6 +2255,7 @@ function LeadgenScanApp() {
               ))}
             </>
           )}
+        </div>
         </div>
       </div>
 
