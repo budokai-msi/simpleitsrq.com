@@ -4282,3 +4282,216 @@
   }
 }
 
+
+/* --- Immersive Mobile Map (9:16 Viewport) --- */
+.leadgen-results-sheet {
+  display: contents;
+}
+
+@media (max-width: 720px) {
+  .leadgen-app-shell.is-active-scan {
+    /* When active on mobile, break out of standard flow for a native-app feel */
+    position: static;
+  }
+  
+  .leadgen-app-shell.is-active-scan .leadgen-map-shell {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    width: 100vw;
+    z-index: 40;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+  }
+
+  .leadgen-app-shell.is-active-scan .leadgen-map-card {
+    padding: 0;
+    border: none;
+    margin: 0;
+  }
+  
+  .leadgen-app-shell.is-active-scan .leadgen-map {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+  .leadgen-app-shell.is-active-scan .leadgen-app-panel--results {
+    display: contents; /* Let children manage themselves */
+  }
+
+  .leadgen-app-shell.is-active-scan .leadgen-results-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60dvh;
+    background: var(--surface);
+    z-index: 50;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.18);
+    animation: leadgenSheetUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Safe area padding for bottom home indicator on iOS */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .leadgen-app-shell.is-active-scan .leadgen-review-summary,
+  .leadgen-app-shell.is-active-scan .leadgen-result-tools {
+    padding: 16px 20px 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .leadgen-app-shell.is-active-scan .leadgen-result-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Make room so the sheet doesn`'`t cover everything */
+  .leadgen-app-shell.is-active-scan .leadgen-app-panel--control {
+    position: relative;
+    z-index: 51;
+    background: var(--surface);
+    margin: 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+}
+
+@keyframes leadgenSheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* ============================================================
+   PRO OPTIMIZATION & DENSITY SYSTEM
+   Ultra-fast micro-animations, compact window cards, 
+   glassmorphism highlights, and productive navigation polish.
+   ============================================================ */
+
+/* 1. High-Density Compact Window Cards */
+.leadgen-app-panel,
+.leadgen-card,
+.leadgen-feature-card,
+.leadgen-tier,
+.leadgen-integration-card,
+.leadgen-proof__item,
+.leadgen-product-rule {
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.leadgen-app-panel,
+.leadgen-card,
+.leadgen-feature-card,
+.leadgen-tier {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), var(--shadow2);
+}
+
+[data-theme="dark"] .leadgen-app-panel,
+[data-theme="dark"] .leadgen-card,
+[data-theme="dark"] .leadgen-feature-card,
+[data-theme="dark"] .leadgen-tier {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.12), var(--shadow4);
+}
+
+.leadgen-feature-card:hover,
+.leadgen-tier:hover,
+.leadgen-integration-card:hover,
+.leadgen-result-row:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow8);
+}
+
+.leadgen-feature-card:active,
+.leadgen-tier:active,
+.leadgen-result-row:active {
+  transform: translateY(0) scale(0.99);
+  transition-duration: 60ms;
+}
+
+/* 2. Fast Productive Navigation & Keyboard Shortcut Pills */
+kbd,
+.leadgen-review-summary__hint kbd,
+.leadgen-palette-open kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5px 6px;
+  font-family: "Geist Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-2);
+  box-shadow: inset 0 -1px 0 0 rgba(0, 0, 0, 0.15);
+}
+
+/* 3. Smooth Micro-Scrollbars */
+.leadgen-result-list::-webkit-scrollbar,
+.leadgen-results-sheet::-webkit-scrollbar,
+.faq-list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.leadgen-result-list::-webkit-scrollbar-track,
+.leadgen-results-sheet::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.leadgen-result-list::-webkit-scrollbar-thumb,
+.leadgen-results-sheet::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  transition: background 160ms ease;
+}
+
+.leadgen-result-list::-webkit-scrollbar-thumb:hover,
+.leadgen-results-sheet::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* 4. Snappy Result Rows (High Density Triage) */
+.leadgen-result-row {
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  transition: background-color 120ms ease, border-color 120ms ease, transform 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.leadgen-result-row.is-selected {
+  background: var(--brand-subtle);
+  border-color: var(--brand);
+}
+
+/* 5. Snappy Button & Badge Micro-Interactions */
+.btn {
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 140ms ease,
+              border-color 140ms ease,
+              box-shadow 140ms ease;
+}
+
+.btn:active {
+  transform: scale(0.975);
+}
+
+.lead-tag {
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.lead-tag:hover {
+  transform: scale(1.05);
+}
+

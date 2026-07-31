@@ -22,17 +22,12 @@ function Hero() {
     {
       label: "Computer repair",
       desc: "Slow PCs, failed drives, malware cleanup, new laptop setup.",
-      href: "#contact",
+      to: "/services#computer-repair",
     },
     {
       label: "Small office IT",
       desc: "Microsoft 365, Wi-Fi, backups, phones, users, and vendors.",
-      href: "#solutions",
-    },
-    {
-      label: "Security paperwork",
-      desc: "MFA, encryption, backup proof, policies, and renewal evidence.",
-      href: "#compliance",
+      to: "/services#office-network-setup",
     },
     {
       label: "Local lead campaigns",
