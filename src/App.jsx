@@ -64,11 +64,8 @@ const Stack = lazy(() => import("./pages/Stack"));
 const Glossary = lazy(() => import("./pages/Glossary"));
 const GlossaryEntry = lazy(() => import("./pages/GlossaryEntry"));
 const ExposureScan = lazy(() => import("./pages/ExposureScan"));
-const Advertise = lazy(() => import("./pages/Advertise"));
 const CompareIndex = lazy(() => import("./pages/CompareIndex"));
 const CompareDetail = lazy(() => import("./pages/CompareDetail"));
-const WhyIndex = lazy(() => import("./pages/WhyIndex"));
-const WhyVs = lazy(() => import("./pages/WhyVs"));
 const Leadgen = lazy(() => import("./pages/Leadgen"));
 
 // Exit-intent capture modal — lazy-loaded and mounted OUTSIDE the route
