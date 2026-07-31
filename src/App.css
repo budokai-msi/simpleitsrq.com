@@ -529,6 +529,70 @@ main, #main {
 .brand-accent {
   color: inherit;
 }
+
+/* ============ Dynamic Responsive Navbar SVGs ============ */
+.navbar svg,
+.nav-link svg,
+.nav-group-btn svg,
+.nav-dropdown-item-icon svg,
+.nav-chevron,
+.menu-btn svg,
+.nav-actions svg,
+.nav-mobile-actions svg,
+.brand svg {
+  flex-shrink: 0;
+  max-width: 100%;
+  height: auto;
+  transition: transform 140ms var(--ease-out, ease-out), color 140ms ease;
+}
+
+.nav-link svg,
+.nav-group-btn svg,
+.nav-top-link svg {
+  width: 1.15em;
+  height: 1.15em;
+  min-width: 14px;
+  min-height: 14px;
+  vertical-align: middle;
+}
+
+.nav-chevron {
+  width: 0.95em;
+  height: 0.95em;
+  margin-left: 2px;
+}
+
+.nav-dropdown-item-icon svg {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.mobile-nav-link svg,
+.mobile-nav-header svg {
+  width: 1.15em;
+  height: 1.15em;
+  flex-shrink: 0;
+}
+
+.brand svg {
+  width: auto;
+  max-height: 38px;
+}
+
+@media (max-width: 768px) {
+  .navbar svg {
+    max-height: 24px;
+  }
+  .menu-btn svg {
+    width: 1.2em;
+    height: 1.2em;
+  }
+  .nav-mobile-cta svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+}
+
 .nav-links {
   display: flex;
   align-items: center;
