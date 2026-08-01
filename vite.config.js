@@ -99,6 +99,8 @@ export default defineConfig({
           res.setHeader('X-Frame-Options', 'SAMEORIGIN');
           res.setHeader('X-Content-Type-Options', 'nosniff');
           res.setHeader('X-XSS-Protection', '1; mode=block');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.setHeader('X-XSS-Protection', '1; mode=block');
           res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
           res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
           next();
@@ -106,6 +108,7 @@ export default defineConfig({
       },
     },
   ],
+
   server: {
     port: 3000,
     strictPort: true,
@@ -116,6 +119,8 @@ export default defineConfig({
     // Strip console.*, debugger, and source hint comments.
     target: 'es2022',
     minify: true,
+    cssCodeSplit: true,
+    assetsInlineLimit: 4096,
     sourcemap: false,
     rollupOptions: {
       output: {
