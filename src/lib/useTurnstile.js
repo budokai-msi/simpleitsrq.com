@@ -1,6 +1,17 @@
 import { useCallback, useEffect, useRef } from "react";
 
-export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
+const RAW_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "";
+const IS_LOCALHOST = typeof window !== "undefined" && (
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  window.location.hostname.endsWith(".local")
+);
+
+// Cloudflare Turnstile official testing key (Always Passes, no domain lock): 1x00000000000000000000AA
+export const TURNSTILE_SITE_KEY = IS_LOCALHOST
+  ? "1x00000000000000000000AA"
+  : RAW_SITE_KEY;
+
 const TURNSTILE_SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
