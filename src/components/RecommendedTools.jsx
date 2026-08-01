@@ -1,10 +1,9 @@
 import { Link } from "../lib/Link";
 import { ArrowRight, Zap, HardDrive, KeyRound } from "lucide-react";
 
-const TAG = import.meta.env.VITE_AFF_AMAZON_TAG || "";
+const TAG = import.meta.env.VITE_AFF_AMAZON_TAG || "simpleitsrq-20";
 
 function amazonSearch(query) {
-  if (!TAG) return "/tools";
   return `https://www.amazon.com/s?k=${encodeURIComponent(query)}&tag=${encodeURIComponent(TAG)}`;
 }
 

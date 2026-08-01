@@ -12,24 +12,17 @@
 
 const env = import.meta.env;
 
-const AMAZON_TAG    = env.VITE_AFF_AMAZON_TAG    || "";
-const GUSTO_REF     = env.VITE_AFF_GUSTO_REF     || "";
-const ONEPW_REF     = env.VITE_AFF_1PASSWORD_REF || "";
-const HONEY_REF     = env.VITE_AFF_HONEYBOOK_REF || "";
-const ACRONIS_REF   = env.VITE_AFF_ACRONIS_REF   || "";
+const AMAZON_TAG    = env.VITE_AFF_AMAZON_TAG    || "simpleitsrq-20";
+const GUSTO_REF     = env.VITE_AFF_GUSTO_REF     || "https://gusto.com/?ref=simpleitsrq";
+const ONEPW_REF     = env.VITE_AFF_1PASSWORD_REF || "https://1password.com/?ref=simpleitsrq";
+const HONEY_REF     = env.VITE_AFF_HONEYBOOK_REF || "https://www.honeybook.com/?ref=simpleitsrq";
+const ACRONIS_REF   = env.VITE_AFF_ACRONIS_REF   || "https://www.acronis.com/?ref=simpleitsrq";
 
-// Hardware affiliate programs targeted at the camera + repair + backup
-// content series. Each is a paste-the-full-URL env var (so the affiliate
-// tracking parameters are baked into the value rather than constructed
-// here - different programs use different param names).
-//   VITE_AFF_UBNT_REF - Ubiquiti Partner Program landing URL
-//   VITE_AFF_REOLINK_REF - Reolink affiliate (Impact) landing URL
-//   VITE_AFF_BH_REF - B&H Photo Pro Affiliate landing URL
-//   VITE_AFF_BACKBLAZE_REF - Backblaze Cloud Backup affiliate landing URL
-const UBNT_REF      = env.VITE_AFF_UBNT_REF      || "";
-const REOLINK_REF   = env.VITE_AFF_REOLINK_REF   || "";
-const BH_REF        = env.VITE_AFF_BH_REF        || "";
-const BACKBLAZE_REF = env.VITE_AFF_BACKBLAZE_REF || "";
+// Hardware affiliate programs targeted at the camera + repair + backup content series.
+const UBNT_REF      = env.VITE_AFF_UBNT_REF      || "https://store.ui.com/?ref=simpleitsrq";
+const REOLINK_REF   = env.VITE_AFF_REOLINK_REF   || "https://reolink.com/?ref=simpleitsrq";
+const BH_REF        = env.VITE_AFF_BH_REF        || "https://www.bhphotovideo.com/?BI=simpleitsrq";
+const BACKBLAZE_REF = env.VITE_AFF_BACKBLAZE_REF || "https://www.backblaze.com/cloud-backup.html?referrer=simpleitsrq";
 
 
 // Builder for an Amazon product link with the affiliate tag appended. Pass
