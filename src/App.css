@@ -2150,19 +2150,21 @@ main, #main {
      items), which pushed the form-shell/contact-info ~70px past the edge. */
   .contact-grid > * { min-width: 0; }
 }
-/* Nav collapses at 1280px now that primary nav is leaner (6 items vs.
- * the previous 7 — Industries/Compliance moved to footer + mobile-only,
- * Glossary added, "Our Vendor Stack" → "Vendor Stack"). 1366×768
- * laptops fit the desktop row; 1280×720 and below get the hamburger. */
-@media (max-width: 1280px) {
+@media (max-width: 1180px) {
+  .nav-inner { gap: 10px; }
+  .nav-links { gap: 3px; }
+  .nav-link, .nav-top-link, .nav-group-btn {
+    padding: 6px 9px;
+    font-size: 13px;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 960px) {
   .nav-links, .nav-actions { display: none; }
   .menu-btn { display: inline-flex; }
   .navbar:has(.mobile-menu) .mobile-menu { display: flex; }
   .mobile-menu { display: flex; }
-}
-@media (min-width: 1281px) {
-  .nav-links { gap: 4px; }
-  .nav-top-link { padding: 8px 10px; }
 }
 @media (max-width: 720px) {
   .display { font-size: 38px; line-height: 46px; letter-spacing: -1px; }
