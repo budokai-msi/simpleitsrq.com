@@ -105,11 +105,13 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
                   aria-expanded={openGroup === section.id}
                   onClick={() => setOpenGroup(openGroup === section.id ? null : section.id)}
                 >
+                  <NavIcon name={section.icon} size={15} />
                   <span>{section.label}</span>
                   <ChevronDown size={14} className="nav-chevron" />
                 </button>
               ) : (
                 <Link to={section.to} className={`nav-link${isNavSectionActive(section, location) ? " is-active" : ""}`}>
+                  <NavIcon name={section.icon} size={15} />
                   <span>{section.label}</span>
                 </Link>
               )}
