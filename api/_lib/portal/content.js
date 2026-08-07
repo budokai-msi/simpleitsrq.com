@@ -222,6 +222,50 @@ export async function handleRejectDraft(session, request) {
   return json(200, { ok: true, draft: rows[0] });
 }
 
+export async function handleGenerateBlogDraft(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const TOPICS = [
+    {
+      title: "Ransomware Defense for Sarasota & Bradenton Businesses: 2026 Playbook",
+      slug: "sarasota-bradenton-ransomware-defense-playbook",
+      category: "Cybersecurity",
+      excerpt: "How small businesses in Sarasota and Bradenton can protect workstations, cloud backups, and client data from modern ransomware.",
+      metaDescription: "Practical ransomware defense guide for Sarasota and Bradenton businesses. Hardware 2FA, offsite backups, and local IT support.",
+      body: `## Short Answer\nRansomware attacks targeting Florida small businesses increased by over 40% last year. Protecting your office does not require an enterprise budget—it requires clean backups, hardware multi-factor authentication, and locked-down user permissions.\n\n## Local Impact for Sarasota & Bradenton Businesses\nLocal law firms on Main St, dental practices near Sarasota Memorial, and accounting firms in Bradenton are primary targets for automated credential harvesting. A single compromised password can encrypt shared network drives and cloud file syncs in minutes.\n\n## Recommended Gear & Solutions\n- **Phishing-Resistant MFA**: Deploy [[amazon:B07HBD71HL|YubiKey 5C NFC]] keys for all Microsoft 365 and admin logins.\n- **Immutable Cloud & Local Backup**: Pair local [[amazon_search:Synology 2 bay NAS DS224+|Synology NAS]] storage with encrypted offsite cloud backups.\n- **Battery & Surge Protection**: Protect network switches with a [[amazon_search:APC Back-UPS Pro 1500VA sine wave|APC Back-UPS Pro 1500VA]].\n\n## What to Do This Week\n1. Enforce 14+ character passphrases and disable legacy email protocols.\n2. Verify that your daily backups are isolated from your local network.\n3. Run a perimeter security scan on your office router and firewalls.\n\n## When to Call IT\nIf your workstations are sluggish, receiving unexplained login prompts, or missing recent file backups, call Simple IT SRQ at (941) 217-0050 or explore our [/services](transparent pricing) or [/leadgen](B2B lead generation scanner).`,
+    },
+    {
+      title: "Microsoft 365 Security Hardening Guide for SRQ Offices",
+      slug: "microsoft-365-security-hardening-sarasota",
+      category: "Cloud",
+      excerpt: "Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices.",
+      metaDescription: "Hardening Microsoft 365 for Sarasota and Bradenton small offices. Disable legacy auth, enable conditional access, and enforce MFA.",
+      body: `## Short Answer\nDefault Microsoft 365 settings leave key security gaps open. By hardening tenant policies, auditing mail flow rules, and requiring hardware MFA, you eliminate over 95% of business email compromise threats.\n\n## Local Impact for Sarasota & Bradenton Businesses\nWire fraud and invoice manipulation target Florida real estate title companies, contractors, and professional service firms weekly. Standard passwords can be guessed or phished without MFA enforcing secure tokens.\n\n## Recommended Gear & Solutions\n- **Hardware Security Keys**: Require [[amazon:B07HBD71HL|YubiKey 5C NFC]] keys for key accounts.\n- **Enterprise Password Management**: Deploy 1Password or Bitwarden Teams for secure credential sharing.\n\n## What to Do This Week\n1. Turn on Security Defaults or Conditional Access in Azure AD / Entra ID.\n2. Disable IMAP, POP3, and SMTP AUTH across all mailbox accounts.\n3. Set up automated alerts for external inbox forwarding rules.\n\n## When to Call IT\nFor a full Microsoft 365 security audit or local hands-on assistance, schedule a strategy call at [/book](/book) or view our [/services](/services).`,
+    },
+    {
+      title: "Fast Workstation & Network Repair for Sarasota Small Businesses",
+      slug: "sarasota-workstation-network-repair-guide",
+      category: "Business Tech",
+      excerpt: "Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
+      metaDescription: "Workstation computer repair and Wi-Fi network setup in Sarasota, Bradenton, and Lakewood Ranch. Fast local engineer response.",
+      body: `## Short Answer\nComputer slowdowns and erratic Wi-Fi cut directly into daily office billing. Upgrading old mechanical hard drives to NVMe SSDs and replacing consumer routers with managed access points resolves 90% of office productivity bottlenecks.\n\n## Local Impact for Sarasota & Bradenton Businesses\nHumid Florida coastal weather, power surges, and aging workstation hardware frequently cause thermal throttling and drive failures. Fast local repair prevents data loss and minimizes employee downtime.\n\n## Recommended Gear & Solutions\n- **Wi-Fi Access Points**: Upgrade to [[amazon_search:Ubiquiti UniFi U6 Pro access point|UniFi U6 Pro Access Points]] for seamless office coverage.\n- **Power Cleaners**: Protect workstations from Florida brown-outs with [[amazon_search:APC Back-UPS Pro 1500VA sine wave|APC UPS Backups]].\n\n## What to Do This Week\n1. Check drive SMART health on every office workstation.\n2. Audit Wi-Fi channel interference in multi-tenant commercial buildings.\n3. Replace any mechanical boot drives with 1TB+ high-speed SSDs.\n\n## When to Call IT\nNeed same-day computer repair or network troubleshooting in Sarasota, Bradenton, or Lakewood Ranch? Call Simple IT SRQ or view [/services](/services).`,
+    },
+  ];
+
+  const pick = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+  const timestamp = Date.now().toString().slice(-4);
+  const slug = `${pick.slug}-${timestamp}`;
+
+  const row = await sql`
+    INSERT INTO draft_posts (title, slug, category, excerpt, body, meta_desc, model, status)
+    VALUES (${pick.title}, ${slug}, ${pick.category}, ${pick.excerpt}, ${pick.body}, ${pick.metaDescription}, ${'gemma2:9b'}, ${'draft'})
+    RETURNING id, title, slug, status
+  `;
+
+  return json(200, { ok: true, draft: row[0] });
+}
+
 // ---------- newsletter (admin only) ----------
 // NEWSLETTER_FROM is the mailbox used for the monthly Simple IT Brief.
 // The contact.js confirm flow already uses this string — reusing it keeps

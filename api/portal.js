@@ -68,6 +68,7 @@ import {
   handleDrafts,
   handlePublishDraft,
   handleRejectDraft,
+  handleGenerateBlogDraft,
   handleNewsletterCount,
   handleNewsletterSend,
   handleGithubHealth,
@@ -334,8 +335,9 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "osint-refresh"        && method === "POST") return handleOsintRefresh(session);
   if (action === "drafts"          && method === "GET")   return handleDrafts(session, url);
   if (action === "publish-draft"   && method === "POST")  return handlePublishDraft(session, request);
-  if (action === "github-health"   && method === "GET")   return handleGithubHealth(session);
   if (action === "reject-draft"    && method === "POST")  return handleRejectDraft(session, request);
+  if (action === "generate-blog-draft" && method === "POST") return handleGenerateBlogDraft(session);
+  if (action === "github-health"   && method === "GET")   return handleGithubHealth(session);
   if (action === "create-invoice"  && method === "POST")  return handleCreateInvoice(session, request);
   if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);
   if (action === "newsletter-count" && method === "GET")  return handleNewsletterCount(session);
