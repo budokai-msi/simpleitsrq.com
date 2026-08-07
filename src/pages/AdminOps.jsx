@@ -1216,9 +1216,19 @@ function DraftsTab({ drafts, errors, busy, runAction }) {
   return (
     <div className="ops-grid">
       <section className="admin-aff-card ops-panel ops-panel--wide">
-        <div className="ops-panel__head">
-          <h2>Blog drafts</h2>
-          <SignalPill state={pending.length ? "warn" : "good"}>{pending.length} pending</SignalPill>
+        <div className="ops-panel__head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h2>Blog drafts</h2>
+            <SignalPill state={pending.length ? "warn" : "good"}>{pending.length} pending</SignalPill>
+          </div>
+          <button
+            className="btn btn-primary btn-sm"
+            type="button"
+            disabled={busy === "generate-blog-draft"}
+            onClick={() => runAction("generate-blog-draft", {}, "New local blog draft generated!")}
+          >
+            <Sparkles size={14} /> Generate Local SEO Post
+          </button>
         </div>
         {errors.drafts ? <EmptyState>{errors.drafts}</EmptyState> : null}
         <Table
