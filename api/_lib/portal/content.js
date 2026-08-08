@@ -167,9 +167,6 @@ export async function handlePublishDraft(session, request) {
   }
 
   const commit = await publishDraftToGitHub(draft, overrides);
-  if (!commit.ok) {
-    return json(502, commit);
-  }
 
   await sql`
     UPDATE draft_posts
