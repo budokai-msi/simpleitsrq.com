@@ -601,7 +601,9 @@ main, #main {
   justify-content: center;
   min-width: 0;
 }
-.nav-top-link {
+.nav-top-link,
+.nav-link,
+.nav-group-btn {
   appearance: none;
   border: 1px solid transparent;
   background: transparent;
@@ -619,18 +621,29 @@ main, #main {
   cursor: pointer;
   white-space: nowrap;
   position: relative;
+  text-decoration: none;
   transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 140ms var(--ease-out);
 }
 .nav-top-link:hover,
 .nav-top-link:focus-visible,
 .nav-top-link.is-active,
+.nav-link:hover,
+.nav-link:focus-visible,
+.nav-link.is-active,
+.nav-group-btn:hover,
+.nav-group-btn:focus-visible,
+.nav-group-btn.is-active,
 .nav-group.is-active > .nav-top-link,
-.nav-group[data-open="true"] > .nav-top-link {
+.nav-group.is-active > .nav-link,
+.nav-group[data-open="true"] > .nav-top-link,
+.nav-group[data-open="true"] > .nav-link {
   background: var(--brand-subtle);
   border-color: var(--border-strong, rgba(37, 99, 235, 0.2));
   color: var(--brand);
 }
-.nav-top-link.is-active::after {
+.nav-top-link.is-active::after,
+.nav-link.is-active::after,
+.nav-group-btn.is-active::after {
   content: "";
   position: absolute;
   bottom: -4px;
