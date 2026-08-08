@@ -415,19 +415,19 @@ function MobileStickyCTA() {
   return (
     <nav className="mobile-action-bar" role="navigation" aria-label="Quick contact">
       <a
-        href="tel:+14072421456"
+        href="tel:+19412170050"
         className="mobile-action-bar__btn"
         onClick={tap("call")}
-        aria-label="Call (407) 242-1456"
+        aria-label="Call (941) 217-0050"
       >
         <Phone size={18} aria-hidden="true" />
         <span>Call</span>
       </a>
       <a
-        href="sms:+14072421456?body=Hi%20Simple%20IT%20SRQ%20-%20"
+        href="sms:+19412170050?body=Hi%20Simple%20IT%20SRQ%20-%20"
         className="mobile-action-bar__btn"
         onClick={tap("sms")}
-        aria-label="Text (407) 242-1456"
+        aria-label="Text (941) 217-0050"
       >
         <MessageSquare size={18} aria-hidden="true" />
         <span>Text</span>

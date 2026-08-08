@@ -181,7 +181,7 @@ export default function ServiceArea() {
           </p>
           <div className="service-area-meta">
             <span><MapPin size={14} /> 11 covered markets</span>
-            <span><Phone size={14} /> <a href="tel:+14072421456">(407) 242-1456</a></span>
+            <span><Phone size={14} /> <a href="tel:+19412170050">(941) 217-0050</a></span>
           </div>
         </div>
       </section>
