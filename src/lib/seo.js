@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 
 const SITE_URL = "https://simpleitsrq.com";
 const SITE_NAME = "Simple IT SRQ";
@@ -55,13 +55,13 @@ export function organizationSchema() {
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
     email: "hello@simpleitsrq.com",
-    telephone: "+1-407-242-1456",
+    telephone: "+1-941-217-0050",
     areaServed: { "@type": "State", name: "Florida" },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
       email: "hello@simpleitsrq.com",
-      telephone: "+1-407-242-1456",
+      telephone: "+1-941-217-0050",
       availableLanguage: "English",
     },
   };

@@ -170,7 +170,7 @@ export default function Support() {
             <span className="eyebrow">Support</span>
             <h1 id="support-title" className="title-1">File a support ticket</h1>
             <p className="section-sub">
-              Existing clients can file a ticket here. For critical incidents during business hours, call <a href="tel:+14072421456">(407) 242-1456</a>. We triage by priority during business hours.
+              Existing clients can file a ticket here. For critical incidents during business hours, call <a href="tel:+19412170050">(941) 217-0050</a>. We triage by priority during business hours.
             </p>
           </div>
 
@@ -219,7 +219,7 @@ export default function Support() {
                 >
               <div className="form-banner" role="status">
                 <CheckCircle2 size={18} />
-                <span>Signed in as {accountName ? `${accountName} - ` : ""}{accountEmail}. This ticket will appear in your portal.</span>
+                <span>Signed in to Client Portal. This ticket will appear in your portal account history.</span>
               </div>
               <div className="row-2">
                 <label>
@@ -352,7 +352,7 @@ export default function Support() {
               </button>
 
               <p className="form-note">
-                For critical incidents during business hours, please also call (407) 242-1456.
+                For critical incidents during business hours, please also call (941) 217-0050.
               </p>
 
               {status === "error" && (
@@ -376,7 +376,7 @@ export default function Support() {
                         </p>
                       )}
                       <p>
-                        A Simple IT SRQ engineer will reach out during business hours. For critical incidents, call <a href="tel:+14072421456">(407) 242-1456</a>.
+                        A Simple IT SRQ engineer will reach out during business hours. For critical incidents, call <a href="tel:+19412170050">(941) 217-0050</a>.
                       </p>
                       <button type="button" className="btn btn-secondary" onClick={reset}>
                         File another ticket
