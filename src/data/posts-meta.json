@@ -15,6 +15,58 @@
     "heroAlt": "A local business technology note about Ransomware Defense for Sarasota & Bradenton Businesses: 2026 Playbook."
   },
   {
+    "slug": "microsoft-365-security-hardening-sarasota",
+    "title": "Microsoft 365 Security Hardening Guide for SRQ Offices",
+    "date": "2026-08-07",
+    "category": "Cloud",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "microsoft-365",
+      "cloud-security",
+      "sarasota",
+      "bradenton",
+      "smb"
+    ],
+    "excerpt": "Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices.",
+    "metaDescription": "Hardening Microsoft 365 for Sarasota and Bradenton small offices. Disable legacy auth, enable conditional access, and enforce MFA.",
+    "heroAlt": "A cloud security dashboard displaying active authentication shields for a Sarasota office."
+  },
+  {
+    "slug": "sarasota-bradenton-ransomware-defense-playbook",
+    "title": "Ransomware Defense for Sarasota & Bradenton Businesses: 2026 Playbook",
+    "date": "2026-08-07",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ransomware",
+      "cybersecurity",
+      "sarasota",
+      "bradenton",
+      "manatee-county",
+      "smb"
+    ],
+    "excerpt": "How small businesses in Sarasota and Bradenton can protect workstations, cloud backups, and client data from modern ransomware.",
+    "metaDescription": "Practical ransomware defense guide for Sarasota and Bradenton businesses. Hardware 2FA, offsite backups, and local IT support.",
+    "heroAlt": "A secure server rack in a Sarasota IT closet with blue indicator lights and hardware security keys."
+  },
+  {
+    "slug": "sarasota-workstation-network-repair-guide",
+    "title": "Fast Workstation & Network Repair for Sarasota Small Businesses",
+    "date": "2026-08-07",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "computer-repair",
+      "network-repair",
+      "sarasota",
+      "bradenton",
+      "lakewood-ranch"
+    ],
+    "excerpt": "Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
+    "metaDescription": "Workstation computer repair and Wi-Fi network setup in Sarasota, Bradenton, and Lakewood Ranch. Fast local engineer response.",
+    "heroAlt": "A technician repairing a desktop computer workstation in a Sarasota office."
+  },
+  {
     "slug": "the-dark-side-of-automation-sarasota-bradenton-venice-florida-small-business",
     "title": "The Dark Side of Automation: What Small Business Owners in Sarasota Need to Know",
     "date": "2026-08-05",

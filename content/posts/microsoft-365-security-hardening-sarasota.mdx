@@ -1,0 +1,41 @@
+---
+slug: "microsoft-365-security-hardening-sarasota"
+title: "Microsoft 365 Security Hardening Guide for SRQ Offices"
+metaDescription: "Hardening Microsoft 365 for Sarasota and Bradenton small offices. Disable legacy auth, enable conditional access, and enforce MFA."
+date: "2026-08-07"
+author: "Simple IT SRQ Team"
+category: "Cloud"
+tags:
+  - microsoft-365
+  - cloud-security
+  - sarasota
+  - bradenton
+  - smb
+excerpt: "Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices."
+heroAlt: "A cloud security dashboard displaying active authentication shields for a Sarasota office."
+---
+
+## Short answer
+
+Default Microsoft 365 settings leave key security gaps open. By hardening tenant policies, auditing mail flow rules, and requiring hardware MFA, you eliminate over 95% of business email compromise threats.
+
+## Local impact for Sarasota & Bradenton businesses
+
+Wire fraud and invoice manipulation target Florida real estate title companies, contractors, and professional service firms weekly. Standard passwords can be guessed or phished without MFA enforcing secure tokens.
+
+When an attacker gains access to an unhardened 365 mailbox, they immediately set up hidden inbox forwarding rules to intercept invoices, banking instructions, and sensitive client correspondence.
+
+## Recommended gear & solutions
+
+- **Hardware Security Keys**: Require [[amazon:B07HBD71HL|YubiKey 5C NFC]] keys for all administrative and executive logins.
+- **Enterprise Password Management**: Deploy 1Password or Bitwarden Teams for secure team credential sharing and vault auditing.
+
+## What to do this week
+
+1. Turn on Security Defaults or Conditional Access policies in Azure AD / Entra ID.
+2. Disable IMAP, POP3, and legacy SMTP AUTH across all mailbox accounts.
+3. Set up automated email alerts for external inbox forwarding rules and new admin assignments.
+
+## When to call Simple IT SRQ
+
+For a full Microsoft 365 tenant security audit or local hands-on assistance in Sarasota and Bradenton, schedule a free strategy call at [/book](/book) or view our [/services](/services).
