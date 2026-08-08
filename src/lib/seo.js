@@ -55,13 +55,13 @@ export function organizationSchema() {
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
     email: "hello@simpleitsrq.com",
-    telephone: "+1-941-217-0050",
+    telephone: "+1-813-434-3230",
     areaServed: { "@type": "State", name: "Florida" },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
       email: "hello@simpleitsrq.com",
-      telephone: "+1-941-217-0050",
+      telephone: "+1-813-434-3230",
       availableLanguage: "English",
     },
   };

@@ -170,7 +170,7 @@ export default function Support() {
             <span className="eyebrow">Support</span>
             <h1 id="support-title" className="title-1">File a support ticket</h1>
             <p className="section-sub">
-              Existing clients can file a ticket here. For critical incidents during business hours, call <a href="tel:+19412170050">(941) 217-0050</a>. We triage by priority during business hours.
+              Existing clients can file a ticket here. For critical incidents during business hours, call <a href="tel:+18134343230">(813) 434-3230</a>. We triage by priority during business hours.
             </p>
           </div>
 
@@ -352,7 +352,7 @@ export default function Support() {
               </button>
 
               <p className="form-note">
-                For critical incidents during business hours, please also call (941) 217-0050.
+                For critical incidents during business hours, please also call (813) 434-3230.
               </p>
 
               {status === "error" && (
@@ -376,7 +376,7 @@ export default function Support() {
                         </p>
                       )}
                       <p>
-                        A Simple IT SRQ engineer will reach out during business hours. For critical incidents, call <a href="tel:+19412170050">(941) 217-0050</a>.
+                        A Simple IT SRQ engineer will reach out during business hours. For critical incidents, call <a href="tel:+18134343230">(813) 434-3230</a>.
                       </p>
                       <button type="button" className="btn btn-secondary" onClick={reset}>
                         File another ticket
