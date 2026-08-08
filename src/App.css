@@ -603,22 +603,23 @@ main, #main {
 }
 .nav-top-link {
   appearance: none;
-  border: 0;
+  border: 1px solid transparent;
   background: transparent;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   min-height: 38px;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   font-family: inherit;
   color: var(--text-1);
-  padding: 8px 12px;
+  padding: 6px 14px;
   border-radius: var(--r-sm);
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 140ms var(--ease-out), color 140ms var(--ease-out);
+  position: relative;
+  transition: background-color 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), transform 140ms var(--ease-out);
 }
 .nav-top-link:hover,
 .nav-top-link:focus-visible,
@@ -626,7 +627,19 @@ main, #main {
 .nav-group.is-active > .nav-top-link,
 .nav-group[data-open="true"] > .nav-top-link {
   background: var(--brand-subtle);
+  border-color: var(--border-strong, rgba(37, 99, 235, 0.2));
   color: var(--brand);
+}
+.nav-top-link.is-active::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: var(--brand);
+  border-radius: 999px;
+  box-shadow: 0 0 8px var(--brand);
 }
 .nav-top-link:focus-visible {
   outline: 2px solid var(--brand);
