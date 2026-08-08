@@ -641,7 +641,7 @@ export function AccessibilityPage() {
       </p>
       <ul>
         <li>Email: <a href="mailto:hello@simpleitsrq.com">hello@simpleitsrq.com</a> (subject line: <em>Accessibility</em>)</li>
-        <li>Phone: <a href="tel:+19412170050">(941) 217-0050</a></li>
+        <li>Phone: <a href="tel:+18134343230">(813) 434-3230</a></li>
         <li>Mailing address: Simple IT SRQ, Bradenton, Florida</li>
       </ul>
       <p>
