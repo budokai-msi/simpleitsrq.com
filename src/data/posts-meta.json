@@ -25,11 +25,12 @@
       "cloud-security",
       "sarasota",
       "bradenton",
-      "smb"
+      "smb",
+      "phishing"
     ],
-    "excerpt": "Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices.",
-    "metaDescription": "Hardening Microsoft 365 for Sarasota and Bradenton small offices. Disable legacy auth, enable conditional access, and enforce MFA.",
-    "heroAlt": "A cloud security dashboard displaying active authentication shields for a Sarasota office."
+    "excerpt": "Step-by-step Microsoft 365 checklist to stop unauthorized logins, automated spam forwarding, and wire-fraud phishing in Sarasota professional offices.",
+    "metaDescription": "Step-by-step Microsoft 365 tenant hardening guide for Sarasota and Bradenton offices: Conditional Access, hardware MFA, DKIM/DMARC, and wire-fraud prevention.",
+    "heroAlt": "A cloud security administrator auditing Microsoft Entra ID Conditional Access policies on a dual-monitor workstation in Sarasota."
   },
   {
     "slug": "sarasota-bradenton-ransomware-defense-playbook",
@@ -43,11 +44,12 @@
       "sarasota",
       "bradenton",
       "manatee-county",
-      "smb"
+      "smb",
+      "backup"
     ],
-    "excerpt": "How small businesses in Sarasota and Bradenton can protect workstations, cloud backups, and client data from modern ransomware.",
-    "metaDescription": "Practical ransomware defense guide for Sarasota and Bradenton businesses. Hardware 2FA, offsite backups, and local IT support.",
-    "heroAlt": "A secure server rack in a Sarasota IT closet with blue indicator lights and hardware security keys."
+    "excerpt": "How small businesses in Sarasota and Bradenton can protect workstations, cloud file syncs, and client data from modern ransomware without enterprise budgets.",
+    "metaDescription": "A field-tested ransomware defense guide for Sarasota and Bradenton businesses: immutable NAS backups, YubiKeys, EDR, and local incident runbooks.",
+    "heroAlt": "A secure server rack in a Sarasota IT closet with blue indicator lights, a Synology NAS backup unit, and YubiKey hardware security keys."
   },
   {
     "slug": "sarasota-workstation-network-repair-guide",
@@ -60,11 +62,12 @@
       "network-repair",
       "sarasota",
       "bradenton",
-      "lakewood-ranch"
+      "lakewood-ranch",
+      "hardware"
     ],
-    "excerpt": "Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
-    "metaDescription": "Workstation computer repair and Wi-Fi network setup in Sarasota, Bradenton, and Lakewood Ranch. Fast local engineer response.",
-    "heroAlt": "A technician repairing a desktop computer workstation in a Sarasota office."
+    "excerpt": "Diagnosing slow reception PCs, Wi-Fi dead spots, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
+    "metaDescription": "Practical Sarasota and Bradenton computer repair guide: PC upgrades, Wi-Fi 6 AP setups, battery backups, and honest repair-vs-replace pricing.",
+    "heroAlt": "A technician upgrading an NVMe SSD and thermal paste on an open workstation PC in a Sarasota business office."
   },
   {
     "slug": "the-dark-side-of-automation-sarasota-bradenton-venice-florida-small-business",
