@@ -463,7 +463,8 @@ async function generateHNDraft({ force = false } = {}) {
     url: "https://simpleitsrq.com/blog",
   };
 
-  const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
+  try {
+    const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
   const gadget = pickGadgetForStory(story);
 
   const systemPrompt = `You are Dancho Ivanov, founder of Simple IT SRQ, a managed IT services company in Sarasota, Bradenton, and Venice, Florida. You write practical, opinionated blog posts for small business owners (5-80 employees) in healthcare, legal, finance, construction, and real estate.
