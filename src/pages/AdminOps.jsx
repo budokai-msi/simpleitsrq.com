@@ -240,8 +240,9 @@ export default function AdminOps() {
     robots: "noindex, nofollow",
   });
 
-  const initialTab = new URLSearchParams(window.location.search).get("tab") || "ops";
-  const [tab, setTab] = useState(TABS.some(([key]) => key === initialTab) ? initialTab : "ops");
+  const pathTab = window.location.pathname.includes("/opsec") ? "opsec" : window.location.pathname.includes("/leadgen") ? "leadgen" : "ops";
+  const initialTab = new URLSearchParams(window.location.search).get("tab") || pathTab;
+  const [tab, setTab] = useState(TABS.some(([key]) => key === initialTab) ? initialTab : pathTab);
   const [data, setData] = useState({});
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
@@ -298,13 +299,25 @@ export default function AdminOps() {
 
   const authConfirmed = Object.keys(data).length > 0;
 
-  // Opsec: never confirm this route exists to a non-admin. A probe that isn't
-  // authorized - or any visitor before the admin check resolves - sees the
-  // ordinary site 404, not a "restricted, sign in" page that reveals an admin
-  // surface lives here. The real gate is server-side (requireAdmin on every
-  // action); this just removes the client-side disclosure.
   if (forbidden || (!authConfirmed && !loading)) {
-    return <NotFound />;
+    return (
+      <main id="main" className="container" style={{ padding: "80px 20px", maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 36, boxShadow: "var(--shadow-md)" }}>
+          <Shield size={40} color="var(--brand)" style={{ margin: "0 auto 16px" }} />
+          <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 12px" }}>Admin Cockpit & OpSec Console</h1>
+          <p style={{ color: "var(--text-2)", fontSize: 15, lineHeight: 1.6, margin: "0 0 24px" }}>
+            Sign in with your verified owner Google account (<strong>***REMOVED***</strong>) to access the operations dashboard and OpSec controls.
+          </p>
+          <a
+            href="/api/auth/login?provider=google&returnTo=/portal/ops"
+            className="btn btn-primary"
+            style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 24px", fontSize: 15 }}
+          >
+            Sign in to Admin Dashboard
+          </a>
+        </div>
+      </main>
+    );
   }
 
   // Hold the dashboard shell (tabs, panel structure) until at least one admin

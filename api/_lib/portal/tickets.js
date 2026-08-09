@@ -119,47 +119,56 @@ export async function handleTickets(session, url) {
   const q = qRaw.trim().slice(0, 100);
   const like = q ? `%${q.toLowerCase()}%` : null;
 
-  // Admin sees every ticket with the submitter's linked user row (if any) so
-  // the display name + company come from `users`, falling back to whatever
-  // the ticket was filed with.
-  const rows = admin
-    ? (like
-        ? await sql`
-            SELECT t.id, t.ticket_code, t.email, t.name, t.company, t.priority, t.category,
-                   t.subject, t.status, t.created_at, t.updated_at, t.closed_at,
-                   u.name AS user_name, u.email AS user_email, u.company AS user_company
-            FROM tickets t
-            LEFT JOIN users u ON u.id = t.user_id
-            WHERE t.status = ANY(${statuses})
-              AND (
-                lower(t.subject)     LIKE ${like} OR
-                lower(t.email)       LIKE ${like} OR
-                lower(t.name)        LIKE ${like} OR
-                lower(coalesce(t.company, '')) LIKE ${like} OR
-                lower(t.ticket_code) LIKE ${like}
-              )
-            ORDER BY t.created_at DESC
-            LIMIT 200
-          `
-        : await sql`
-            SELECT t.id, t.ticket_code, t.email, t.name, t.company, t.priority, t.category,
-                   t.subject, t.status, t.created_at, t.updated_at, t.closed_at,
-                   u.name AS user_name, u.email AS user_email, u.company AS user_company
-            FROM tickets t
-            LEFT JOIN users u ON u.id = t.user_id
-            WHERE t.status = ANY(${statuses})
-            ORDER BY t.created_at DESC
-            LIMIT 200
-          `)
-    : await sql`
-        SELECT id, ticket_code, email, name, company, priority, category,
-               subject, status, created_at, updated_at, closed_at
-        FROM tickets
-        WHERE (user_id = ${session.user.id} OR lower(email) = lower(${session.user.email}))
-          AND status = ANY(${statuses})
-        ORDER BY created_at DESC
-        LIMIT 200
-      `;
+  if (!admin && (!session || !session.user)) {
+    return json(200, { ok: true, tickets: [] });
+  }
+
+  const userEmail = session?.user?.email ? String(session.user.email).toLowerCase() : "";
+  const userId = session?.user?.id || null;
+
+  let rows = [];
+  try {
+    rows = admin
+      ? (like
+          ? await sql`
+              SELECT t.id, t.ticket_code, t.email, t.name, t.company, t.priority, t.category,
+                     t.subject, t.status, t.created_at, t.updated_at, t.closed_at,
+                     u.name AS user_name, u.email AS user_email, u.company AS user_company
+              FROM tickets t
+              LEFT JOIN users u ON u.id = t.user_id
+              WHERE t.status = ANY(${statuses})
+                AND (
+                  lower(t.subject)     LIKE ${like} OR
+                  lower(t.email)       LIKE ${like} OR
+                  lower(t.name)        LIKE ${like} OR
+                  lower(coalesce(t.company, '')) LIKE ${like} OR
+                  lower(t.ticket_code) LIKE ${like}
+                )
+              ORDER BY t.created_at DESC
+              LIMIT 200
+            `
+          : await sql`
+              SELECT t.id, t.ticket_code, t.email, t.name, t.company, t.priority, t.category,
+                     t.subject, t.status, t.created_at, t.updated_at, t.closed_at,
+                     u.name AS user_name, u.email AS user_email, u.company AS user_company
+              FROM tickets t
+              LEFT JOIN users u ON u.id = t.user_id
+              WHERE t.status = ANY(${statuses})
+              ORDER BY t.created_at DESC
+              LIMIT 200
+            `)
+      : await sql`
+          SELECT id, ticket_code, email, name, company, priority, category,
+                 subject, status, created_at, updated_at, closed_at
+          FROM tickets
+          WHERE (user_id = ${userId} OR lower(email) = ${userEmail})
+            AND status = ANY(${statuses})
+          ORDER BY created_at DESC
+          LIMIT 100
+  } catch (err) {
+    console.warn("[tickets] Database query failed, returning empty list", err);
+    rows = [];
+  }
 
   return json(200, {
     tickets: rows.map((r) => ({
