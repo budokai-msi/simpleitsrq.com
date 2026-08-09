@@ -165,6 +165,7 @@ export async function handleTickets(session, url) {
             AND status = ANY(${statuses})
           ORDER BY created_at DESC
           LIMIT 100
+        `;
   } catch (err) {
     console.warn("[tickets] Database query failed, returning empty list", err);
     rows = [];
