@@ -6,7 +6,16 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 08 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 09 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>Microsoft 365 Security Hardening Guide for SRQ Offices</title>
+      <link>https://simpleitsrq.com/blog/microsoft-365-security-hardening-sarasota-0793</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/microsoft-365-security-hardening-sarasota-0793</guid>
+      <pubDate>Sun, 09 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cloud</category>
+      <description>Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices.</description>
+    </item>
     <item>
       <title>Ransomware Defense for Sarasota &amp; Bradenton Businesses: 2026 Playbook</title>
       <link>https://simpleitsrq.com/blog/sarasota-bradenton-ransomware-defense-playbook-1656</link>
