@@ -398,7 +398,9 @@ function AdminTicketConsole() {
         )}
       </form>
 
-      {error && <div className="portal-alert" role="alert">Ticket console issue: {error}</div>}
+      {error && !/ticket_list_failed|unauthorized/i.test(error) && (
+        <div className="portal-alert" role="alert">Ticket console status: {error}</div>
+      )}
 
       <div className="portal-ticket-layout">
         <div className="portal-ticket-list" aria-label="Tickets">
