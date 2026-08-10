@@ -20,7 +20,6 @@ import {
   Search,
   Send,
   Shield,
-  Sparkles,
   Target,
   Ticket,
   XCircle,
@@ -794,7 +793,7 @@ function LeadsInboxTab({ data, error, reload }) {
                       fontSize: 13,
                     }}
                   >
-                    <Sparkles size={16} /> AI Suggested Microsoft Documentation
+                    <BookOpen size={16} /> Official Microsoft Documentation
                   </div>
                   <div style={{ display: "grid", gap: 8 }}>
                     {msDocs.map((doc) => (
@@ -1240,7 +1239,7 @@ function DraftsTab({ drafts, errors, busy, runAction }) {
             disabled={busy === "generate-blog-draft"}
             onClick={() => runAction("generate-blog-draft", {}, "New local blog draft generated!")}
           >
-            <Sparkles size={14} /> Generate Local SEO Post
+            <FileText size={14} /> Generate Local SEO Post
           </button>
         </div>
         {errors.drafts ? <EmptyState>{errors.drafts}</EmptyState> : null}
