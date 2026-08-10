@@ -6,7 +6,16 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Sun, 09 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 10 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>How Small Businesses in Sarasota Can Leverage AI for Learning</title>
+      <link>https://simpleitsrq.com/blog/sarasota-small-business-ai-learning</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-small-business-ai-learning</guid>
+      <pubDate>Mon, 10 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>AI &amp; Productivity</category>
+      <description>Discover how small businesses in Sarasota can use Large Language Models (LLMs) to learn complex topics and improve productivity. Learn how to apply this technology to your business.</description>
+    </item>
     <item>
       <title>Microsoft 365 Security Hardening Guide for SRQ Offices</title>
       <link>https://simpleitsrq.com/blog/microsoft-365-security-hardening-sarasota-0793</link>
