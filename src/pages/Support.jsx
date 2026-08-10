@@ -205,9 +205,16 @@ export default function Support() {
                     </button>
                   )}
                 </div>
-                <p className="form-note">
-                  Critical incident? Sign in to file a priority emergency ticket.
-                </p>
+
+                <hr style={{ margin: '2.5rem 0 1.5rem', borderColor: 'var(--c-border-subtle)' }} />
+                <div style={{ backgroundColor: 'var(--c-surface-sunken)', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--c-danger)', textAlign: 'center' }}>
+                  <AlertTriangle size={32} color="var(--c-danger)" style={{ margin: '0 auto 1rem' }} />
+                  <h3 className="title-3" style={{ color: 'var(--c-danger)', marginTop: 0 }}>Not a client? Business Down?</h3>
+                  <p style={{ margin: '1rem 0' }}>If your servers or internet are down and you need immediate remote support, you can bypass the queue and onboarding process.</p>
+                  <a href={import.meta.env.VITE_STRIPE_EMERGENCY_SUPPORT_URL || "#"} className="btn btn-primary" style={{ width: '100%', backgroundColor: 'var(--c-danger)', borderColor: 'var(--c-danger)', color: '#fff' }}>
+                    Get 1-Hour Emergency Support - $149
+                  </a>
+                </div>
               </section>
             ) : (
               <>

@@ -3,12 +3,13 @@ import {
   Shield,
   Phone, Mail, MapPin, Clock, Check, ArrowRight, Wifi,
   Loader2, CheckCircle2, AlertCircle, Send, Wrench,
-  Camera
+  Camera, ExternalLink
 } from "lucide-react";
 import { Link } from "../lib/Link";
 import { useEffect, useRef, useState } from "react";
 import { useSEO } from "../lib/seo";
 import posts from "../data/posts-meta.json";
+import { AFFILIATES } from "../data/affiliates";
 import BlogCover from "../components/BlogCover";
 import GoogleReviews from "../components/GoogleReviews";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
@@ -451,6 +452,50 @@ function Compliance() {
   );
 }
 
+function RecommendedGear() {
+  const recommendations = [
+    AFFILIATES.gusto,
+    AFFILIATES.onepassword,
+    AFFILIATES.acronis,
+    AFFILIATES.backblaze,
+  ].filter(Boolean);
+
+  if (recommendations.length === 0) return null;
+
+  return (
+    <section className="section" id="recommended" aria-labelledby="recommended-title">
+      <div className="container">
+        <div className="section-head reveal-up">
+          <span className="eyebrow">Recommended Tools</span>
+          <h2 id="recommended-title" className="title-1">The tech stack we trust</h2>
+          <p className="section-sub">
+            We get asked constantly what software and hardware we recommend. These are the tools we use ourselves and deploy for our clients. 
+            <em> (These are affiliate links, meaning we earn a small commission if you sign up through them, at no extra cost to you. This helps support our free content.)</em>
+          </p>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginTop: '3rem' }} className="reveal-up">
+          {recommendations.map((rec) => (
+            <a 
+              key={rec.vendor} 
+              href={rec.href} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ display: 'block', backgroundColor: 'var(--c-surface)', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--c-border)', textDecoration: 'none', color: 'inherit' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <strong style={{ fontSize: '1.125rem' }}>{rec.vendor}</strong>
+                <ExternalLink size={16} color="var(--c-text-muted)" />
+              </div>
+              <div style={{ color: 'var(--c-text-muted)', fontSize: '0.9375rem', marginBottom: '1rem' }}>{rec.label}</div>
+              <div style={{ color: 'var(--c-primary)', fontWeight: '600', fontSize: '0.875rem' }}>View Offer →</div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BlogPreview() {
   const recent = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6);
   return (
@@ -794,6 +839,7 @@ export default function Home() {
       <Industries />
       <Compliance />
       <GoogleReviews />
+      <RecommendedGear />
       <BlogPreview />
       <Contact />
     </>
