@@ -8,7 +8,7 @@ import "../styles/leadgen.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, Database, Mail, Building2,
-  Search, Phone, FileText, Filter,
+  Search, Phone, FileText, Filter, Lock
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
@@ -869,6 +869,48 @@ function LeadgenScanApp() {
   // Default to independents-only - the prospect list an IT provider wants.
   // Off only when a shared link explicitly opts back into chains (?independents=0).
   const [independentsOnly, setIndependentsOnly] = useState(() => initialQuery.get("independents") !== "0");
+  const [showPaywall, setShowPaywall] = useState(false);
+  
+  const getExportUsage = () => {
+    try {
+      const stored = localStorage.getItem("leadgen_export_usage");
+      if (stored) {
+        const usage = JSON.parse(stored);
+        if (Date.now() - usage.period_start > 30 * 24 * 60 * 60 * 1000) return 0;
+        return usage.count;
+      }
+    } catch {}
+    return 0;
+  };
+
+  const trackExportUsage = (count) => {
+    try {
+      const stored = localStorage.getItem("leadgen_export_usage");
+      let usage = { count: 0, period_start: Date.now() };
+      if (stored) {
+        usage = JSON.parse(stored);
+        if (Date.now() - usage.period_start > 30 * 24 * 60 * 60 * 1000) {
+          usage = { count: 0, period_start: Date.now() };
+        }
+      }
+      usage.count += count;
+      localStorage.setItem("leadgen_export_usage", JSON.stringify(usage));
+      return usage.count;
+    } catch {
+      return 0;
+    }
+  };
+
+  const enforcePaywall = (count) => {
+    const currentUsage = getExportUsage();
+    if (currentUsage + count > 50) {
+      setShowPaywall(true);
+      return true;
+    }
+    trackExportUsage(count);
+    return false;
+  };
+
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const validZip = /^\d{5}$/.test(zip);
   // Only surface keyboard-shortcut hints on devices that actually have a
@@ -1218,6 +1260,7 @@ function LeadgenScanApp() {
   const exportKeptRows = () => {
     const keptRows = visibleOnlyRows.filter((row) => row.status === "keep");
     if (!keptRows.length) return;
+    if (enforcePaywall(keptRows.length)) return;
     trackEvent("select_content", {
       content_type: "leadgen_export_kept",
       source: "leadgen_scanner",
@@ -1231,6 +1274,7 @@ function LeadgenScanApp() {
   const copyAllEmails = async () => {
     const emails = kept.map((r) => bestEmail(r)).filter(Boolean);
     if (!emails.length) return;
+    if (enforcePaywall(emails.length)) return;
     try {
       await navigator.clipboard.writeText(emails.join(", "));
       setCopiedEmails(true);
@@ -1256,6 +1300,7 @@ function LeadgenScanApp() {
       emails.push(e.trim());
     }
     if (!emails.length) return;
+    if (enforcePaywall(emails.length)) return;
     try {
       await navigator.clipboard.writeText(emails.join(", "));
       setCopiedCorporate(true);
@@ -1265,6 +1310,7 @@ function LeadgenScanApp() {
       setCopiedCorporate(false);
     }
   };
+
 
   // Crawl the selected businesses' domains for emails (role-based sales@/info@
   // score highest). Premium-gated server-side; anonymous/free users get a 401/
@@ -1331,6 +1377,7 @@ function LeadgenScanApp() {
 
   const pushSelected = async () => {
     if (!pushTarget || !kept.length || pushBusy) return;
+    if (enforcePaywall(kept.length)) return;
     setPushBusy(true);
     setPushMsg(null);
     try {
@@ -2344,7 +2391,37 @@ function LeadgenScanApp() {
           </div>
         </div>
       ) : null}
+      <LeadgenPaywallModal show={showPaywall} onClose={() => setShowPaywall(false)} />
     </section>
+  );
+}
+
+function LeadgenPaywallModal({ show, onClose }) {
+  if (!show) return null;
+  return (
+    <div className="leadgen-modal-overlay" onClick={onClose} style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+    }}>
+      <div className="leadgen-modal-content" onClick={(e) => e.stopPropagation()} style={{
+        backgroundColor: 'var(--c-bg)', padding: '2rem', borderRadius: '12px', maxWidth: '400px', width: '90%', textAlign: 'center', boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ marginBottom: '1rem', color: 'var(--c-primary)' }}>
+          <Lock size={48} strokeWidth={1.5} style={{ margin: '0 auto' }} />
+        </div>
+        <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 600 }}>Free Limit Reached</h3>
+        <p style={{ marginBottom: '1.5rem', color: 'var(--c-text-subtle)', lineHeight: 1.5 }}>
+          You've reached your free limit of 50 local leads. 
+          Upgrade to Growth ($19.99/mo) to unlock unlimited local searches, full CSV exports with verified emails, and direct CRM integrations.
+        </p>
+        <a href={LEADGEN_STRIPE_LINKS.growth.monthly} className="btn btn-primary" style={{ width: '100%', marginBottom: '1rem' }}>
+          Upgrade Now - $19.99/mo
+        </a>
+        <button className="btn btn-secondary" onClick={onClose} style={{ width: '100%' }}>
+          Maybe Later
+        </button>
+      </div>
+    </div>
   );
 }
 
