@@ -8,7 +8,7 @@ import "../styles/leadgen.css";
 import { Link } from "../lib/Link";
 import {
   ArrowRight, Check, Database, Mail, Building2,
-  Search, Phone, FileText, Sparkles,
+  Search, Phone, FileText, Filter,
 } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
@@ -1973,7 +1973,7 @@ function LeadgenScanApp() {
                     onClick={selectBest}
                     title="Keep only reachable leads - a website plus a phone or email"
                   >
-                    <Sparkles size={14} aria-hidden="true" /> Select best ({bestVisible.length})
+                    <Filter size={14} aria-hidden="true" /> Select best ({bestVisible.length})
                   </button>
                 ) : null}
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyVisibleReview("reject")}>Clear</button>
@@ -2464,7 +2464,7 @@ export default function Leadgen() {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             <span className="leadgen-badge-hero">
-              <Sparkles size={14} /> Direct Local Outreach Built for SMBs
+              <Building2 size={14} /> Direct Local Outreach Built for SMBs
             </span>
             <h1 className="leadgen-hero-title">
               Stop Waiting for the Phone to Ring.
