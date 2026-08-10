@@ -583,7 +583,7 @@ function LeadgenGamifiedGuide({ status, onSelectTab }) {
     return (
       <div className="leadgen-guide-minimized">
         <button type="button" className="btn btn-secondary btn-sm" onClick={() => setGuideDismissed(false)}>
-          <Sparkles size={14} /> Open Campaign Strategy Guide ({progressPct}% Ready)
+          <FileText size={14} /> Open Campaign Strategy Guide ({progressPct}% Ready)
         </button>
       </div>
     );
