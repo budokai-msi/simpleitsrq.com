@@ -14,6 +14,17 @@
 - **CSS SELECTORS**:
   - Top header navbar links use `.nav-link` and `.nav-group-btn` in `src/components/Navbar.jsx`.
   - Never style `.nav-top-link` exclusively without including `.nav-link` and `.nav-group-btn`.
+- **AESTHETICS & DESIGN**: No AI-slop, "sparkle" buttons, or gamified UI. The design must remain clean, professional, and utilitarian.
+- **REVENUE FOCUS**: All new content generation features (e.g., blog posts) must aggressively prioritize high-utility, revenue-generating actions such as Amazon affiliate link insertion (`[[yubikey]]`, etc.) and lead generation paywalls. Maintain strict project sustainability.
+
+---
+
+## 2. Google Voice Configuration & Permissions
+
+> [!NOTE]
+> The primary business number `(813) 434-3230` is a Google Voice number.
+> - **Permissions**: Configuration (forwarding, voicemail, blocked numbers) must be managed by the Workspace Admin (`ivanovspccenter@gmail.com`) via the [Google Voice Admin Console](https://admin.google.com).
+> - **API Access**: There is no direct programmatic API for this number in the web application codebase. Any SMS or Voice routing needs must be configured manually in the Google Workspace portal or by setting up a third-party webhook (e.g., Twilio) if an automated voice/SMS response system is required in the future.
 
 ---
 

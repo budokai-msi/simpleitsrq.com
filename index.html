@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <!-- Static head defaults. Route-specific SEO is handled by src/lib/seo.js and generated blog stubs. -->
@@ -131,6 +131,8 @@
     <script src="/ga-init.js"></script>
   </head>
   <body>
+    <!-- Honeypot link to bait vulnerability scanners and scrapers into the IP ban blocklist -->
+    <a href="/wp-login.php" style="display:none; position:absolute; left:-9999px;" rel="nofollow" aria-hidden="true">Admin Login</a>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

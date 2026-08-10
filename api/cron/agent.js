@@ -467,31 +467,30 @@ async function generateHNDraft({ force = false } = {}) {
     const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
   const gadget = pickGadgetForStory(story);
 
-  const systemPrompt = `You are Dancho Ivanov, founder of Simple IT SRQ, a managed IT services company in Sarasota, Bradenton, and Venice, Florida. You write practical, opinionated blog posts for small business owners (5-80 employees) in healthcare, legal, finance, construction, and real estate.
+  const systemPrompt = `You are Dancho Ivanov, founder of Simple IT SRQ, a managed IT services company in Sarasota, Bradenton, and Venice, Florida. You write highly engaging, opinionated, and conversion-optimized blog posts for small business owners (5-80 employees). Your primary goal is to educate the client while aggressively positioning our recommended IT solutions (affiliate products) as the "secret sauce" to solving their problems.
 
 VOICE AND STYLE:
-- Write like you're talking to a smart business owner over coffee: direct, honest, no fluff
-- One-sentence paragraphs are fine. Break up walls of text
-- Always explain WHY something matters to a small business in Sarasota, Bradenton, or Venice
-- Do not sell cyber insurance. Do not refer readers to brokers, policies, quotes, audit partners, or /compliance-audit-referral
-- It is OK to say we help gather IT documentation for renewal questionnaires when relevant, but do not make the post about insurance
-- Include these exact Markdown H2 sections: "## Short answer", "## Field note", "## What to do this week", "## When to call IT"
-- End with a local CTA linking to /services, /leadgen, /tools, /book, or /#contact
-- Use Markdown formatting: headers, bold, lists, blockquotes
-- 650-950 words
-- Include a meta description between 120 and 160 characters
+- Write like an authority speaking directly to a smart business owner over coffee: direct, highly persuasive, and zero fluff.
+- Emphasize hyper-local SEO: Naturally include cities (Sarasota, Bradenton, Venice, Lakewood Ranch, Nokomis) multiple times throughout the content.
+- Always translate technical jargon into business impact (time lost, money wasted, reputation damaged) for Florida businesses.
+- Do not sell cyber insurance.
+- Include these exact Markdown H2 sections: "## Short answer", "## The Sarasota Field Note", "## The Recommended Solution", "## What to do this week", "## When to call IT"
+- End with a strong local CTA linking to /services, /leadgen, /tools, /book, or /#contact
+- 700-1000 words. Break up walls of text. Use bullet points and bold text for skimmability.
+- Include a high-converting meta description between 120 and 160 characters.
 - Category must be one of: Cybersecurity, AI & Productivity, Cloud, Compliance, Privacy, Business Tech, Industry News
-- Include a short excerpt (1-2 sentences)
-- Slug must be lowercase-kebab-case and include sarasota, bradenton, venice, florida, or small-business
+- Slug must be lowercase-kebab-case and heavily optimized for SEO (e.g. include 'sarasota-computer-repair', 'bradenton-it-support', etc.)
 
 INTERNAL LINKS:
-- Include at least one internal link using Markdown, for example [managed IT services](/services), [recommended tools](/tools), [Leadgen](/leadgen), [book a consult](/book), or a city page.
-- Never link to /store, /cyber-insurance-quote, or /compliance-audit-referral.
+- Include at least two internal links, for example [Sarasota managed IT services](/services), [recommended tech tools](/tools), [B2B lead generation](/leadgen).
+- Never link to /store or /cyber-insurance-quote.
 
-GADGET PICK:
-- If the gadget fits the story, include one short paragraph titled "Tool worth considering" and include this exact shortcode: [[${gadget.token}]]
-- Explain why it fits in one plain sentence: ${gadget.why}
-- If you include the shortcode, add this sentence near the end: "Product links may be affiliate links; we may earn a small commission on qualifying purchases."
+AFFILIATE / GADGET INTEGRATION (CRITICAL):
+- You MUST weave the provided gadget into the core narrative of the article under the "## The Recommended Solution" header.
+- Position the gadget as a critical, enterprise-grade investment that solves the problem. Be enthusiastic and persuasive about its value.
+- Inject the exact shortcode [[${gadget.token}]] into the text where you mention the product.
+- Explain why it fits the business context: ${gadget.why}
+- At the very end of the post, add: "Product links may be affiliate links; we may earn a small commission on qualifying purchases."
 
 Respond with ONLY a JSON object (no markdown fencing):
 {
@@ -503,17 +502,17 @@ Respond with ONLY a JSON object (no markdown fencing):
   "body": "..."
 }`;
 
-  const userPrompt = `Rewrite this Hacker News story for the Simple IT SRQ blog.
+  const userPrompt = `Rewrite this Hacker News story for the Simple IT SRQ blog, optimizing for local Sarasota/Bradenton SEO and affiliate conversions.
 
 Original title: ${story.title}
 Original URL: ${story.url}
 HN discussion: ${hnUrl}
-Score: ${story.score} points | Comments: ${story.descendants || 0}
-Suggested gadget: ${gadget.key} (${gadget.why})
+Score: ${story.score} points
+Suggested gadget (MUST INCLUDE): ${gadget.key} (${gadget.why})
 
-Take the core insight from the story and explain what it means for a small business owner in Sarasota, Bradenton, Venice, Lakewood Ranch, or Nokomis. If the original is highly technical, translate it. If it's about a security issue, explain the real-world risk. If it's about a new tool, evaluate whether a 20-person company should care.
+Take the core insight from the story and explain the severe real-world risk or massive productivity gain for a small business owner in Sarasota or Bradenton. Translate technical concepts into pure business value. Make the suggested gadget the hero of the story—the exact tool they need to buy right now to implement your advice.
 
-Mention the HN source casually (for example, "This hit Hacker News this week...") but make the post stand on its own.`;
+Mention the HN source casually (e.g. "This hit Hacker News this week...") but make the post stand completely on its own as a premium piece of local content.`;
   let post = null;
   let usedModel = GROQ_MODEL;
 
@@ -557,7 +556,7 @@ Mention the HN source casually (for example, "This hit Hacker News this week..."
         category: "Cybersecurity",
         excerpt: "How small business offices in Sarasota and Bradenton can lock down workstations, backups, and email credentials against modern ransomware.",
         metaDescription: "Sarasota & Bradenton workstation ransomware defense guide. Phishing-resistant YubiKey MFA, immutable backups, and local IT support.",
-        body: `## Short answer\nRansomware targeting Florida coastal law firms, medical practices, and real estate offices increased significantly last year. Securing your business requires hardware MFA, immutable backups, and locked-down workstation permissions.\n\n## Field note\nOffice networks along Main St in Sarasota and downtown Bradenton are prime targets for automated credential harvesting. A single compromised password can encrypt shared network drives and cloud file syncs within minutes.\n\n## What to do this week\n1. Enforce 14+ character passphrases and disable legacy email protocols.\n2. Verify daily backups are completely isolated from your main network.\n3. Run a perimeter security audit on your office router and firewalls.\n\n## When to call IT\nIf your workstations are sluggish or missing recent backups, call Simple IT SRQ at (813) 434-3230 or explore our [transparent pricing](/services) or [B2B lead generation scanner](/leadgen).`,
+        body: `## Short answer\nRansomware targeting Florida coastal law firms, medical practices, and real estate offices increased significantly last year. Securing your business requires hardware MFA, immutable backups, and locked-down workstation permissions.\n\n## The Sarasota Field Note\nOffice networks along Main St in Sarasota and downtown Bradenton are prime targets for automated credential harvesting. A single compromised password can encrypt shared network drives and cloud file syncs within minutes.\n\n## The Recommended Solution\nThe most critical upgrade any local business can make is moving away from SMS codes to hardware MFA. The [[yubikey]] is our gold standard—it completely neutralizes phishing attacks by requiring physical presence. It's an enterprise-grade solution that costs less than a tank of gas.\n\n## What to do this week\n1. Deploy hardware keys like the YubiKey to all staff.\n2. Enforce 14+ character passphrases and disable legacy email protocols.\n3. Verify daily backups are completely isolated from your main network.\n\n## When to call IT\nIf your workstations are sluggish or missing recent backups, call Simple IT SRQ at (813) 434-3230 or explore our [Sarasota IT services](/services) and [B2B lead generation](/leadgen).\n\nProduct links may be affiliate links; we may earn a small commission on qualifying purchases.`,
       },
       {
         title: "Microsoft 365 Security Hardening Guide for SRQ Offices",
@@ -565,7 +564,7 @@ Mention the HN source casually (for example, "This hit Hacker News this week..."
         category: "Cloud",
         excerpt: "Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices.",
         metaDescription: "Hardening Microsoft 365 for Sarasota and Bradenton small offices. Disable legacy auth, enable conditional access, and enforce MFA.",
-        body: `## Short answer\nDefault Microsoft 365 settings leave key security gaps open. By hardening tenant policies, auditing mail flow rules, and requiring hardware MFA, you eliminate over 95% of business email compromise threats.\n\n## Field note\nWire fraud and invoice manipulation target Florida real estate title companies and professional service firms weekly. Standard passwords can be phished without hardware MFA enforcing secure tokens.\n\n## What to do this week\n1. Turn on Security Defaults or Conditional Access in Entra ID / Azure AD.\n2. Disable IMAP, POP3, and SMTP AUTH across all mailbox accounts.\n3. Set up automated alerts for external inbox forwarding rules.\n\n## When to call IT\nFor a full Microsoft 365 security audit or local hands-on assistance, call Simple IT SRQ at (813) 434-3230, [schedule a strategy call](/book), or view [our IT services](/services).`,
+        body: `## Short answer\nDefault Microsoft 365 settings leave key security gaps open. By hardening tenant policies, auditing mail flow rules, and requiring hardware MFA, you eliminate over 95% of business email compromise threats.\n\n## The Sarasota Field Note\nWire fraud and invoice manipulation target Florida real estate title companies and professional service firms weekly. Standard passwords can be phished without hardware MFA enforcing secure tokens.\n\n## The Recommended Solution\nBeyond Microsoft 365, your physical office network needs to be impenetrable. We heavily deploy the [[ubnt-dream-machine]] for Bradenton and Sarasota clinics. It provides enterprise-class intrusion detection without the crazy enterprise licensing fees.\n\n## What to do this week\n1. Turn on Security Defaults or Conditional Access in Entra ID.\n2. Disable IMAP, POP3, and SMTP AUTH.\n3. Set up automated alerts for external inbox forwarding rules.\n\n## When to call IT\nFor a full Microsoft 365 security audit or local hands-on assistance, call Simple IT SRQ at (813) 434-3230, [schedule a strategy call](/book), or view [our IT services](/services).\n\nProduct links may be affiliate links; we may earn a small commission on qualifying purchases.`,
       },
       {
         title: "Fast Workstation & Network Repair for Sarasota Small Businesses",
@@ -573,7 +572,7 @@ Mention the HN source casually (for example, "This hit Hacker News this week..."
         category: "Business Tech",
         excerpt: "Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
         metaDescription: "Workstation computer repair and Wi-Fi network setup in Sarasota, Bradenton, and Lakewood Ranch. Fast local engineer response.",
-        body: `## Short answer\nComputer slowdowns and erratic Wi-Fi cut directly into daily office billing. Upgrading old mechanical hard drives to NVMe SSDs and replacing consumer routers with managed access points resolves 90% of office productivity bottlenecks.\n\n## Field note\nHumid Florida coastal weather, power surges, and aging workstation hardware frequently cause thermal throttling and drive failures. Fast local repair prevents data loss and minimizes employee downtime.\n\n## What to do this week\n1. Check drive SMART health on every office workstation.\n2. Audit Wi-Fi channel interference in multi-tenant commercial buildings.\n3. Replace mechanical boot drives with 1TB+ high-speed SSDs.\n\n## When to call IT\nNeed same-day computer repair or network troubleshooting in Sarasota, Bradenton, or Lakewood Ranch? Call Simple IT SRQ at (813) 434-3230 or view [our IT services](/services).`,
+        body: `## Short answer\nComputer slowdowns and erratic Wi-Fi cut directly into daily office billing. Upgrading old mechanical hard drives to NVMe SSDs and replacing consumer routers with managed access points resolves 90% of office productivity bottlenecks.\n\n## The Sarasota Field Note\nHumid Florida coastal weather, power surges, and aging workstation hardware frequently cause thermal throttling and drive failures. Fast local repair prevents data loss and minimizes employee downtime.\n\n## The Recommended Solution\nWhile we upgrade your networking, physical site security is just as important. The [[reolink-cx810]] is phenomenal for local offices—it features ColorX night vision that turns pitch-black parking lots into daylight, with no recurring cloud fees.\n\n## What to do this week\n1. Check drive SMART health on every office workstation.\n2. Audit Wi-Fi channel interference in multi-tenant commercial buildings.\n3. Upgrade network hardware and security cameras.\n\n## When to call IT\nNeed same-day computer repair or network troubleshooting in Sarasota, Bradenton, or Lakewood Ranch? Call Simple IT SRQ at (813) 434-3230 or view [our IT services](/services).\n\nProduct links may be affiliate links; we may earn a small commission on qualifying purchases.`,
       },
     ];
     post = localTemplates[topicIndex];
