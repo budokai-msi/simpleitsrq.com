@@ -296,15 +296,6 @@
       <description>Ollama is a free open-source runtime that lets you run a real AI model on one laptop - no cloud, no subscription, no data leaving your office. Here is what it is, when it makes sense, and the ten-minute install.</description>
     </item>
     <item>
-      <title>OpenClaw: The Local AI Agent Runtime We Use</title>
-      <link>https://simpleitsrq.com/blog/openclaw-local-ai-agent-runtime-2026</link>
-      <guid isPermaLink="true">https://simpleitsrq.com/blog/openclaw-local-ai-agent-runtime-2026</guid>
-      <pubDate>Tue, 28 Apr 2026 00:00:00 GMT</pubDate>
-      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
-      <category>AI &amp; Productivity</category>
-      <description>We run a managed IT business, but we also run our own AI-agent layer to handle ticket triage, threat-feed ingestion, daily blog drafts, and security audits. OpenClaw is the runtime under all of it. Here is what it is, why we built it instead of paying a SaaS, and what a small business can take from the design.</description>
-    </item>
-    <item>
       <title>Stop Using OpenAI&apos;s ChatGPT Now</title>
       <link>https://simpleitsrq.com/blog/stop-using-chatgpt-better-ai-options-2026</link>
       <guid isPermaLink="true">https://simpleitsrq.com/blog/stop-using-chatgpt-better-ai-options-2026</guid>

@@ -25,7 +25,7 @@ A few things to be precise about because this is a phrase that gets thrown aroun
 
 - **"Open weights" is not the same as "open source."** Hermes ships the model parameters publicly so anyone can run it locally, fine-tune it, or rehost it. The training data and the full training code are not always public. For business use this still gives you the things that actually matter, you can run it on your hardware, you don't owe anyone a per-query fee, and your prompts don't leave your laptop.
 - **"Uncensored" doesn't mean "unsafe."** It means the model has been trained to give a direct answer when a question has one, instead of routing every reply through a set of corporate-policy guardrails. It will still refuse genuinely harmful requests. It just won't refuse "summarize this contract" because the contract mentions firearms or alcohol.
-- **It is not a single product you log into.** Hermes is a model, not a service. To use it you either run it locally (via Ollama, LM Studio, or our [OpenClaw](/blog/openclaw-local-ai-agent-runtime-2026) runtime) or you call it through an inference provider like OpenRouter, Together, or Hugging Face.
+- **It is not a single product you log into.** Hermes is a model, not a service. To use it you either run it locally (via Ollama or LM Studio) or you call it through an inference provider like OpenRouter, Together, or Hugging Face.
 
 ## Why anyone built this in the first place
 
@@ -62,7 +62,7 @@ When we set up Hermes for a client, the typical stack looks like:
 
 - A modern laptop or a small workstation with an NVIDIA GPU (Apple Silicon also works, but slower for the larger Hermes variants).
 - [Ollama](/blog/ollama-local-llm-private-ai-2026) as the model runtime. We pull `hermes4`y from Ollama's library, about 5 minutes to install, 5 to download.
-- Either a chat UI (LM Studio, Open WebUI) or an integration into the staff member's existing workflow (a VS Code extension, a Word add-in, our own [OpenClaw](/blog/openclaw-local-ai-agent-runtime-2026) agent layer).
+- Either a chat UI (LM Studio, Open WebUI) or an integration into the staff member's existing workflow (a VS Code extension or a Word add-in).
 - A one-page acceptable-use policy that names which tasks are appropriate for the local model versus the corporate one. This is the part nobody else will write for you, and it's the difference between a Hermes deployment that helps and one that creates new audit problems.
 
 Total cost is typically a one-time hardware spend (the laptop you would have replaced anyway) plus a few hours of our setup time. Recurring cost is zero, no per-token billing, no subscription, no API key to rotate.
