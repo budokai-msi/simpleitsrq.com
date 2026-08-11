@@ -2070,84 +2070,13 @@ function LeadgenScanApp() {
                   <option value="all">All</option>
                   <option value="keep">Selected</option>
                   <option value="reject">Removed</option>
-                </select>
-              </label>
-            </div>
-            <details className="leadgen-result-more-filters">
-              <summary>More filters</summary>
-              <div className="leadgen-result-more-filters__grid">
-                <label>
-                  <span>Contact</span>
-                  <select
-                    value={contactFilter}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setContactFilter(next);
-                      trackEvent("select_content", {
-                        content_type: "leadgen_result_filter",
-                        source: "leadgen_scanner",
-                        filter_key: "contact",
-                        filter_value: next,
-                      });
-                    }}
-                    disabled={!reviewedRows.length}
-                  >
-                    <option value="all">All</option>
-                    <option value="website">Has website</option>
-                    <option value="phone">Has phone</option>
-                    <option value="missing-website">No website</option>
-                    <option value="missing-phone">No phone</option>
-                    <option value="mapped">Mapped</option>
-                  </select>
-                </label>
-                <label>
-                  <span>Sub-industry</span>
-                  <select
-                    value={subIndustryFilter}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setSubIndustryFilter(next);
-                      trackEvent("select_content", {
-                        content_type: "leadgen_result_filter",
-                        source: "leadgen_scanner",
-                        filter_key: "sub_industry",
-                        filter_value: next,
-                      });
-                    }}
-                    disabled={!subIndustryOptions.length}
-                  >
-                    <option value="all">All</option>
-                    {subIndustryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-                  </select>
-                </label>
-                <label>
-                  <span>Sort</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => {
-                      const next = e.target.value;
-                      setSortBy(next);
-                      trackEvent("select_content", {
-                        content_type: "leadgen_result_sort",
-                        source: "leadgen_scanner",
-                        sort_key: next,
-                      });
-                    }}
-                    disabled={!reviewedRows.length}
-                  >
-                    <option value="contact">Best contact</option>
-                    <option value="name">Name</option>
-                    <option value="city">City</option>
-                    <option value="status">Review status</option>
-                    <option value="mapped">Mapped first</option>
                   </select>
                 </label>
               </div>
-            </details>
-          </div>
-        ) : null}
+            </div>
+          ) : null}
 
-        <div className="leadgen-result-list">
+          <div className="leadgen-result-list">
           {!scan ? (
             <div className="leadgen-empty-review">
               <strong>Build a usable lead list</strong>
