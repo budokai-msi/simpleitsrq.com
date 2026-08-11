@@ -1939,6 +1939,8 @@
   .leadgen-app-controls--primary { grid-template-columns: 1fr 1fr; }
   .leadgen-app-controls--primary .btn { grid-column: 1 / -1; }
   .leadgen-result-more-filters__grid { grid-template-columns: 1fr 1fr; }
+  .leadgen-result-header { grid-template-columns: 28px 1fr; }
+  .leadgen-result-header__col:last-child { display: none; }
   .leadgen-result-row { grid-template-columns: 28px 1fr; }
   .leadgen-result-row__check { grid-row: 1 / span 2; align-self: start; padding-top: 2px; }
   .leadgen-empty-review__flow { grid-template-columns: 1fr; }
@@ -1949,6 +1951,7 @@
   .leadgen-review-summary,
   .leadgen-result-tools,
   .leadgen-empty-review,
+  .leadgen-result-header,
   .leadgen-result-row { padding-left: 14px; padding-right: 14px; }
   .leadgen-app-controls,
   .leadgen-app-controls--primary,
