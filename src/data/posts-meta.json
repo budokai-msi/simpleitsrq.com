@@ -45,51 +45,6 @@
     "heroAlt": "A local business technology note about Fast Workstation & Network Repair for Sarasota Small Businesses."
   },
   {
-    "slug": "microsoft-365-security-hardening-sarasota-0793",
-    "title": "Microsoft 365 Security Hardening Guide for SRQ Offices",
-    "date": "2026-08-09",
-    "category": "Cloud",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hacker-news",
-      "local-it",
-      "smb"
-    ],
-    "excerpt": "Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices.",
-    "metaDescription": "Hardening Microsoft 365 for Sarasota and Bradenton small offices. Disable legacy auth, enable conditional access, and enforce MFA.",
-    "heroAlt": "A local business technology note about Microsoft 365 Security Hardening Guide for SRQ Offices."
-  },
-  {
-    "slug": "sarasota-bradenton-ransomware-defense-playbook-1656",
-    "title": "Ransomware Defense for Sarasota & Bradenton Businesses: 2026 Playbook",
-    "date": "2026-08-08",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hacker-news",
-      "local-it",
-      "smb"
-    ],
-    "excerpt": "How small businesses in Sarasota and Bradenton can protect workstations, cloud backups, and client data from modern ransomware.",
-    "metaDescription": "Practical ransomware defense guide for Sarasota and Bradenton businesses. Hardware 2FA, offsite backups, and local IT support.",
-    "heroAlt": "A local business technology note about Ransomware Defense for Sarasota & Bradenton Businesses: 2026 Playbook."
-  },
-  {
-    "slug": "sarasota-bradenton-ransomware-defense-playbook-8662",
-    "title": "Ransomware Defense for Sarasota & Bradenton Businesses: 2026 Playbook",
-    "date": "2026-08-08",
-    "category": "Cybersecurity",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hacker-news",
-      "local-it",
-      "smb"
-    ],
-    "excerpt": "How small businesses in Sarasota and Bradenton can protect workstations, cloud backups, and client data from modern ransomware.",
-    "metaDescription": "Practical ransomware defense guide for Sarasota and Bradenton businesses. Hardware 2FA, offsite backups, and local IT support.",
-    "heroAlt": "A local business technology note about Ransomware Defense for Sarasota & Bradenton Businesses: 2026 Playbook."
-  },
-  {
     "slug": "microsoft-365-security-hardening-sarasota",
     "title": "Microsoft 365 Security Hardening Guide for SRQ Offices",
     "date": "2026-08-07",
