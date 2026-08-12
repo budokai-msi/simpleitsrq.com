@@ -26,6 +26,22 @@
 .leadgen-product-check { align-self:center; }
 .leadgen-selbar { position:sticky; top:72px; z-index:25; backdrop-filter:blur(16px); max-width:100%; }
 
+.leadgen-category-stack { display:grid; gap:10px; margin-top:12px; }
+.leadgen-category { border:1px solid var(--lg-border-soft); border-radius:16px; background:var(--lg-panel); overflow:hidden; }
+.leadgen-category__toggle { width:100%; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 16px; border:0; background:transparent; color:var(--lg-text); text-align:left; cursor:pointer; }
+.leadgen-category__toggle>div { min-width:0; display:grid; gap:3px; }
+.leadgen-category__toggle strong { font-size:.95rem; }
+.leadgen-category__toggle span { font-size:.76rem; color:var(--lg-faint); overflow-wrap:anywhere; }
+.leadgen-category__toggle svg { flex:0 0 auto; transition:transform .18s ease; }
+.leadgen-category.is-open .leadgen-category__toggle svg { transform:rotate(180deg); }
+.leadgen-category__body { border-top:1px solid var(--lg-border-faint); background:var(--lg-page); }
+.leadgen-subcategory { padding:12px 14px 4px; }
+.leadgen-subcategory+.leadgen-subcategory { border-top:1px solid var(--lg-border-faint); }
+.leadgen-subcategory__head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; color:var(--lg-muted); }
+.leadgen-subcategory__head strong { font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; }
+.leadgen-subcategory__head span { min-width:26px; height:24px; display:grid; place-items:center; border-radius:999px; background:var(--lg-panel-soft); border:1px solid var(--lg-border-soft); font-size:.72rem; font-weight:800; }
+.leadgen-category-empty { margin:18px 0; text-align:center; color:var(--lg-faint); }
+
 .lgx { border:1px solid var(--lg-border-soft); border-radius:20px; background:var(--lg-panel); padding:20px; box-shadow:0 16px 44px rgba(15,23,42,.08); }
 .lgx-error { display:grid; gap:6px; color:var(--c-danger); }
 .lgx-head,.lgx-panel-head,.lgx-market,.lgx-health,.lgx-row { display:flex; align-items:center; justify-content:space-between; gap:14px; min-width:0; }
@@ -82,6 +98,9 @@
   .leadgen-selbar__actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
   .leadgen-selbar__actions .btn,.leadgen-selbar__actions select{width:100%;min-width:0;max-width:100%;white-space:normal}
   .leadgen-selbar__count{width:100%}
+  .leadgen-category__toggle{padding:13px 12px;align-items:flex-start}
+  .leadgen-category__toggle strong{font-size:.9rem}.leadgen-category__toggle span{font-size:.72rem}
+  .leadgen-subcategory{padding:10px 10px 2px}
   .leadgen-results-toolbar,.leadgen-results-list,.leadgen-selected-emails{width:100%;max-width:100%;min-width:0;overflow:hidden}
   .leadgen-result-row{grid-template-columns:auto minmax(0,1fr)!important;gap:10px!important;padding:14px 12px!important;width:100%;max-width:100%;min-width:0;overflow:hidden}
   .leadgen-result-row__main,.leadgen-result-row__meta{min-width:0;max-width:100%}
