@@ -6,7 +6,16 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 10 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 12 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>Fast Workstation &amp; Network Repair for Sarasota Small Businesses</title>
+      <link>https://simpleitsrq.com/blog/sarasota-workstation-network-repair-guide-2</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/sarasota-workstation-network-repair-guide-2</guid>
+      <pubDate>Wed, 12 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.</description>
+    </item>
     <item>
       <title>Microsoft 365 Security Hardening Guide for SRQ Offices</title>
       <link>https://simpleitsrq.com/blog/microsoft-365-security-hardening-sarasota-6754</link>

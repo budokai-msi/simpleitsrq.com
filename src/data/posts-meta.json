@@ -1,5 +1,20 @@
 [
   {
+    "slug": "sarasota-workstation-network-repair-guide-2",
+    "title": "Fast Workstation & Network Repair for Sarasota Small Businesses",
+    "date": "2026-08-12",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "dock"
+    ],
+    "excerpt": "Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
+    "metaDescription": "Workstation computer repair and Wi-Fi network setup in Sarasota, Bradenton, and Lakewood Ranch. Fast local engineer response.",
+    "heroAlt": "A local business technology note about Fast Workstation & Network Repair for Sarasota Small Businesses."
+  },
+  {
     "slug": "microsoft-365-security-hardening-sarasota-6754",
     "title": "Microsoft 365 Security Hardening Guide for SRQ Offices",
     "date": "2026-08-10",
