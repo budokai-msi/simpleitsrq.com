@@ -81,50 +81,71 @@ async function topLeads(workspace) {
 }
 
 export default async function handler(request) {
-  const auth = await requireUser(request);
-  if (auth.error) return auth.error;
-  const ip = clientIp(request);
-  if (!rateLimit(`leadgen-workspace:${auth.user.id}:${ip}`, 120, 60_000)) return json(429,{ok:false,error:'rate_limited'});
-  const workspace = await ensureWorkspace(auth.user);
-  const url = new URL(request.url);
-  const action = url.searchParams.get('action') || 'overview';
+  try {
+    const auth = await requireUser(request);
+    if (auth.error) return auth.error;
 
-  if (request.method === 'GET') {
-    if (action === 'overview') return json(200,{ok:true,...await overview(workspace)});
-    if (action === 'scores') return json(200,{ok:true,leads:await topLeads(workspace)});
-    if (action === 'changes') {
-      const rows = await sql`SELECT c.*, m.name AS market_name FROM lead_market_changes c JOIN lead_saved_markets m ON m.id=c.saved_market_id WHERE m.workspace_id=${workspace.id} ORDER BY c.detected_at DESC LIMIT 100`;
-      return json(200,{ok:true,changes:rows});
+    const ip = clientIp(request);
+    const rl = await rateLimit({
+      ip,
+      bucket: `leadgen_workspace:${auth.user.id}`,
+      windowSeconds: 60,
+      max: 120,
+    });
+    if (!rl.ok) return json(429, { ok: false, error: 'rate_limited' });
+
+    const workspace = await ensureWorkspace(auth.user);
+    const url = new URL(request.url);
+    const action = url.searchParams.get('action') || 'overview';
+
+    if (request.method === 'GET') {
+      if (action === 'overview') return json(200,{ok:true,...await overview(workspace)});
+      if (action === 'scores') return json(200,{ok:true,leads:await topLeads(workspace)});
+      if (action === 'changes') {
+        const rows = await sql`SELECT c.*, m.name AS market_name FROM lead_market_changes c JOIN lead_saved_markets m ON m.id=c.saved_market_id WHERE m.workspace_id=${workspace.id} ORDER BY c.detected_at DESC LIMIT 100`;
+        return json(200,{ok:true,changes:rows});
+      }
+      if (action === 'territories') return json(200,{ok:true,territories:await sql`SELECT * FROM lead_territories WHERE workspace_id=${workspace.id} ORDER BY name`});
+      if (action === 'exclusions') return json(200,{ok:true,exclusions:await sql`SELECT * FROM lead_exclusions WHERE workspace_id=${workspace.id} ORDER BY created_at DESC`});
+      return json(400,{ok:false,error:'invalid_action'});
     }
-    if (action === 'territories') return json(200,{ok:true,territories:await sql`SELECT * FROM lead_territories WHERE workspace_id=${workspace.id} ORDER BY name`});
-    if (action === 'exclusions') return json(200,{ok:true,exclusions:await sql`SELECT * FROM lead_exclusions WHERE workspace_id=${workspace.id} ORDER BY created_at DESC`});
+
+    if (request.method !== 'POST') return json(405,{ok:false,error:'method_not_allowed'});
+    let body; try { body=await request.json(); } catch { return json(400,{ok:false,error:'invalid_json'}); }
+
+    if (action === 'save-market') {
+      const zip=String(body.zip||'').replace(/\D/g,'').slice(0,5); if(!/^\d{5}$/.test(zip)) return json(400,{ok:false,error:'invalid_zip'});
+      const schedule=['daily','weekly','monthly'].includes(body.schedule)?body.schedule:null;
+      const [row]=await sql`INSERT INTO lead_saved_markets(workspace_id,name,zip,industry_group,sub_industry,filters,schedule,next_run_at,created_by)
+        VALUES(${workspace.id},${String(body.name||`${zip} market`).slice(0,80)},${zip},${body.industry_group||null},${body.sub_industry||null},${JSON.stringify(body.filters||{})}::jsonb,${schedule},${schedule?new Date().toISOString():null},${auth.user.id}) RETURNING *`;
+      return json(200,{ok:true,market:row});
+    }
+    if (action === 'exclude') {
+      const kind=['domain','email','phone','business','keyword'].includes(body.kind)?body.kind:null;
+      const value=String(body.value||'').trim().slice(0,240); if(!kind||!value) return json(400,{ok:false,error:'invalid_exclusion'});
+      const [row]=await sql`INSERT INTO lead_exclusions(workspace_id,kind,value,reason,created_by) VALUES(${workspace.id},${kind},${value},${String(body.reason||'').slice(0,240)||null},${auth.user.id}) ON CONFLICT(workspace_id,kind,value) DO UPDATE SET reason=EXCLUDED.reason RETURNING *`;
+      return json(200,{ok:true,exclusion:row});
+    }
+    if (action === 'territory') {
+      const [row]=await sql`INSERT INTO lead_territories(workspace_id,name,owner_user_id,zip_prefixes,industries) VALUES(${workspace.id},${String(body.name||'Territory').slice(0,80)},${body.owner_user_id||auth.user.id},${Array.isArray(body.zip_prefixes)?body.zip_prefixes:[]},${Array.isArray(body.industries)?body.industries:[]}) ON CONFLICT(workspace_id,name) DO UPDATE SET owner_user_id=EXCLUDED.owner_user_id,zip_prefixes=EXCLUDED.zip_prefixes,industries=EXCLUDED.industries,updated_at=now() RETURNING *`;
+      return json(200,{ok:true,territory:row});
+    }
+    if (action === 'attribute') {
+      const stage=['lead','qualified','meeting','opportunity','won','lost'].includes(body.stage)?body.stage:null; if(!stage) return json(400,{ok:false,error:'invalid_stage'});
+      const [row]=await sql`INSERT INTO lead_pipeline_attribution(workspace_id,business_id,campaign_id,stage,value_cents,currency,external_ref,metadata) VALUES(${workspace.id},${body.business_id||null},${body.campaign_id||null},${stage},${Math.max(0,Number(body.value_cents)||0)},${String(body.currency||'USD').slice(0,8)},${String(body.external_ref||'').slice(0,120)||null},${JSON.stringify(body.metadata||{})}::jsonb) RETURNING *`;
+      return json(200,{ok:true,attribution:row});
+    }
     return json(400,{ok:false,error:'invalid_action'});
+  } catch (err) {
+    const message = String(err?.message || err || 'Workspace unavailable').slice(0, 240);
+    const migrationMissing = /relation .* does not exist|lead_workspaces|lead_saved_markets|lead_scores/i.test(message);
+    console.error('[leadgen-workspace] failed', err);
+    return json(503, {
+      ok: false,
+      error: migrationMissing ? 'workspace_migration_required' : 'workspace_unavailable',
+      message: migrationMissing
+        ? 'Leadgen workspace setup is not complete on this deployment.'
+        : 'Leadgen workspace is temporarily unavailable.',
+    });
   }
-
-  if (request.method !== 'POST') return json(405,{ok:false,error:'method_not_allowed'});
-  let body; try { body=await request.json(); } catch { return json(400,{ok:false,error:'invalid_json'}); }
-
-  if (action === 'save-market') {
-    const zip=String(body.zip||'').replace(/\D/g,'').slice(0,5); if(!/^\d{5}$/.test(zip)) return json(400,{ok:false,error:'invalid_zip'});
-    const schedule=['daily','weekly','monthly'].includes(body.schedule)?body.schedule:null;
-    const [row]=await sql`INSERT INTO lead_saved_markets(workspace_id,name,zip,industry_group,sub_industry,filters,schedule,next_run_at,created_by)
-      VALUES(${workspace.id},${String(body.name||`${zip} market`).slice(0,80)},${zip},${body.industry_group||null},${body.sub_industry||null},${JSON.stringify(body.filters||{})}::jsonb,${schedule},${schedule?new Date().toISOString():null},${auth.user.id}) RETURNING *`;
-    return json(200,{ok:true,market:row});
-  }
-  if (action === 'exclude') {
-    const kind=['domain','email','phone','business','keyword'].includes(body.kind)?body.kind:null;
-    const value=String(body.value||'').trim().slice(0,240); if(!kind||!value) return json(400,{ok:false,error:'invalid_exclusion'});
-    const [row]=await sql`INSERT INTO lead_exclusions(workspace_id,kind,value,reason,created_by) VALUES(${workspace.id},${kind},${value},${String(body.reason||'').slice(0,240)||null},${auth.user.id}) ON CONFLICT(workspace_id,kind,value) DO UPDATE SET reason=EXCLUDED.reason RETURNING *`;
-    return json(200,{ok:true,exclusion:row});
-  }
-  if (action === 'territory') {
-    const [row]=await sql`INSERT INTO lead_territories(workspace_id,name,owner_user_id,zip_prefixes,industries) VALUES(${workspace.id},${String(body.name||'Territory').slice(0,80)},${body.owner_user_id||auth.user.id},${Array.isArray(body.zip_prefixes)?body.zip_prefixes:[]},${Array.isArray(body.industries)?body.industries:[]}) ON CONFLICT(workspace_id,name) DO UPDATE SET owner_user_id=EXCLUDED.owner_user_id,zip_prefixes=EXCLUDED.zip_prefixes,industries=EXCLUDED.industries,updated_at=now() RETURNING *`;
-    return json(200,{ok:true,territory:row});
-  }
-  if (action === 'attribute') {
-    const stage=['lead','qualified','meeting','opportunity','won','lost'].includes(body.stage)?body.stage:null; if(!stage) return json(400,{ok:false,error:'invalid_stage'});
-    const [row]=await sql`INSERT INTO lead_pipeline_attribution(workspace_id,business_id,campaign_id,stage,value_cents,currency,external_ref,metadata) VALUES(${workspace.id},${body.business_id||null},${body.campaign_id||null},${stage},${Math.max(0,Number(body.value_cents)||0)},${String(body.currency||'USD').slice(0,8)},${String(body.external_ref||'').slice(0,120)||null},${JSON.stringify(body.metadata||{})}::jsonb) RETURNING *`;
-    return json(200,{ok:true,attribution:row});
-  }
-  return json(400,{ok:false,error:'invalid_action'});
 }
