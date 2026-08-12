@@ -1,7 +1,8 @@
 import { useEffect } from "react";
+import { BUSINESS } from "../config/business";
 
-const SITE_URL = "https://simpleitsrq.com";
-const SITE_NAME = "Simple IT SRQ";
+const SITE_URL = BUSINESS.siteUrl;
+const SITE_NAME = BUSINESS.name;
 
 function setMetaTag(name, content, attr = "name") {
   if (typeof document === "undefined") return;
@@ -43,9 +44,6 @@ function removeJsonLd(id) {
   if (s) s.remove();
 }
 
-// Organization schema — identifies the business as a named entity Google
-// can link to logo, social profiles, and sameAs references. Lives on the
-// site root (Home) so knowledge-panel candidates can pick it up once.
 export function organizationSchema() {
   return {
     "@context": "https://schema.org",
@@ -54,34 +52,18 @@ export function organizationSchema() {
     name: SITE_NAME,
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
-    email: "hello@simpleitsrq.com",
-    telephone: "+1-813-434-3230",
+    email: BUSINESS.email,
     areaServed: { "@type": "State", name: "Florida" },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
-      email: "hello@simpleitsrq.com",
-      telephone: "+1-813-434-3230",
+      email: BUSINESS.email,
       availableLanguage: "English",
     },
   };
 }
 
-// LocalBusiness schema for a specific city. Telephone omitted intentionally
-// on per-city pages — Google treats a shared number spread across
-// multiple LocalBusiness entries as a weak signal; the Organization schema
-// on Home carries the canonical contact info instead.
-//
-// Optional geo + postalCode + geoRadius power the hyper-local landing
-// pages (e.g. /bradenton-34207-it-support) — Google uses GeoCircle +
-// serviceArea to understand "we cover businesses within N miles of
-// this ZIP," which matches the way the content frames it.
-export function localBusinessSchema({
-  slug, city, description,
-  postalCode,         // optional — "34207" etc.
-  latitude, longitude, // optional — decimal degrees
-  radiusMiles,         // optional — N in the "within N miles" framing
-}) {
+export function localBusinessSchema({ slug, city, description, postalCode, latitude, longitude, radiusMiles }) {
   const schema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -89,7 +71,7 @@ export function localBusinessSchema({
     name: `${SITE_NAME} — ${city}`,
     image: `${SITE_URL}/logo.png`,
     url: `${SITE_URL}/${slug}`,
-    email: "hello@simpleitsrq.com",
+    email: BUSINESS.email,
     address: {
       "@type": "PostalAddress",
       addressLocality: city,
@@ -102,180 +84,61 @@ export function localBusinessSchema({
     description,
     openingHours: "Mo-Fr 08:00-18:00",
   };
-
   if (typeof latitude === "number" && typeof longitude === "number") {
     schema.geo = { "@type": "GeoCoordinates", latitude, longitude };
     if (typeof radiusMiles === "number") {
       schema.serviceArea = {
         "@type": "GeoCircle",
         geoMidpoint: { "@type": "GeoCoordinates", latitude, longitude },
-        geoRadius: Math.round(radiusMiles * 1609.34), // meters
+        geoRadius: Math.round(radiusMiles * 1609.34),
       };
     }
   }
-
   return schema;
 }
 
 export function faqSchema(faqs) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
-  };
+  return { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) };
 }
 
 export function blogPostingSchema(post) {
   return {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.metaDescription,
-    datePublished: post.date,
-    dateModified: post.date,
+    "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title,
+    description: post.metaDescription, datePublished: post.date, dateModified: post.date,
     author: { "@type": "Person", name: post.author },
-    publisher: {
-      "@type": "Organization",
-      name: SITE_NAME,
-      logo: { "@type": "ImageObject", url: `${SITE_URL}/logo.png` },
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `${SITE_URL}/blog/${post.slug}`,
-    },
-    url: `${SITE_URL}/blog/${post.slug}`,
-    keywords: (post.tags || []).join(", "),
-    articleSection: post.category,
+    publisher: { "@type": "Organization", name: SITE_NAME, logo: { "@type": "ImageObject", url: `${SITE_URL}/logo.png` } },
+    mainEntityOfPage: { "@type": "WebPage", "@id": `${SITE_URL}/blog/${post.slug}` },
+    url: `${SITE_URL}/blog/${post.slug}`, keywords: (post.tags || []).join(", "), articleSection: post.category,
     image: `${SITE_URL}/og-blog-${post.slug}.png`,
   };
 }
 
 export function breadcrumbSchema(items) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: items.map((it, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      name: it.name,
-      item: it.url,
-    })),
-  };
+  return { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: items.map((it, i) => ({ "@type": "ListItem", position: i + 1, name: it.name, item: it.url })) };
 }
 
-export function useSEO({
-  title, description, canonical, image,
-  post, breadcrumbs, products,
-  productBasePath,
-  organization, localBusiness, faqs,
-  // Per-page robots override. Defaults to "index, follow" (set in
-  // index.html). Pass "noindex, nofollow" for admin-only pages so
-  // search engines don't catalog the URL even though it's public-route.
-  robots,
-}) {
+export function useSEO({ title, description, canonical, image, post, breadcrumbs, products, productBasePath, organization, localBusiness, faqs, robots }) {
   useEffect(() => {
     if (title) document.title = title;
-    if (description) {
-      setMetaTag("description", description);
-      setMetaTag("og:description", description, "property");
-      setMetaTag("twitter:description", description);
-    }
-    if (title) {
-      setMetaTag("og:title", title, "property");
-      setMetaTag("twitter:title", title);
-    }
-    if (canonical) {
-      setCanonical(canonical);
-      setMetaTag("og:url", canonical, "property");
-    }
-    if (robots) {
-      setMetaTag("robots", robots);
-    } else {
-      // Restore the page-default — prevents an admin page's "noindex"
-      // from sticking on a subsequent SPA navigation to a public page.
-      setMetaTag("robots", "index, follow");
-    }
-    if (image) {
-      setMetaTag("og:image", image, "property");
-      setMetaTag("twitter:image", image);
-    }
-    if (post) {
-      injectJsonLd("jsonld-post", blogPostingSchema(post));
-    } else {
-      removeJsonLd("jsonld-post");
-    }
-    if (breadcrumbs && breadcrumbs.length) {
-      injectJsonLd("jsonld-breadcrumb", breadcrumbSchema(breadcrumbs));
-    } else {
-      removeJsonLd("jsonld-breadcrumb");
-    }
-    if (products && products.length) {
-      injectJsonLd("jsonld-products", productListSchema(products, { basePath: productBasePath }));
-    } else {
-      removeJsonLd("jsonld-products");
-    }
-    if (organization) {
-      injectJsonLd("jsonld-organization", organizationSchema());
-    } else {
-      removeJsonLd("jsonld-organization");
-    }
-    if (localBusiness) {
-      injectJsonLd("jsonld-localbusiness", localBusinessSchema(localBusiness));
-    } else {
-      removeJsonLd("jsonld-localbusiness");
-    }
-    if (faqs && faqs.length) {
-      injectJsonLd("jsonld-faq", faqSchema(faqs));
-    } else {
-      removeJsonLd("jsonld-faq");
-    }
+    if (description) { setMetaTag("description", description); setMetaTag("og:description", description, "property"); setMetaTag("twitter:description", description); }
+    if (title) { setMetaTag("og:title", title, "property"); setMetaTag("twitter:title", title); }
+    if (canonical) { setCanonical(canonical); setMetaTag("og:url", canonical, "property"); }
+    setMetaTag("robots", robots || "index, follow");
+    if (image) { setMetaTag("og:image", image, "property"); setMetaTag("twitter:image", image); }
+    if (post) injectJsonLd("jsonld-post", blogPostingSchema(post)); else removeJsonLd("jsonld-post");
+    if (breadcrumbs?.length) injectJsonLd("jsonld-breadcrumb", breadcrumbSchema(breadcrumbs)); else removeJsonLd("jsonld-breadcrumb");
+    if (products?.length) injectJsonLd("jsonld-products", productListSchema(products, { basePath: productBasePath })); else removeJsonLd("jsonld-products");
+    if (organization) injectJsonLd("jsonld-organization", organizationSchema()); else removeJsonLd("jsonld-organization");
+    if (localBusiness) injectJsonLd("jsonld-localbusiness", localBusinessSchema(localBusiness)); else removeJsonLd("jsonld-localbusiness");
+    if (faqs?.length) injectJsonLd("jsonld-faq", faqSchema(faqs)); else removeJsonLd("jsonld-faq");
   }, [title, description, canonical, image, robots, post, breadcrumbs, products, productBasePath, organization, localBusiness, faqs]);
 }
 
-// Build an ItemList of Product+Offer entries for offer-style pages. Google
-// uses this for "Merchant listings" rich results and for product knowledge
-// panel enrichment. Only include products that have a real buyLink or that
-// we explicitly mark as coming soon — hiding draft products keeps us out of
-// Merchant Center disapproval.
 export function productListSchema(products, { basePath = "/tools" } = {}) {
   const pagePath = basePath.startsWith("/") ? basePath : `/${basePath}`;
   const productUrl = (p) => `${SITE_URL}${pagePath}#${p.slug}`;
-  const offerUrl = (p) => {
-    if (!p.buyLink) return productUrl(p);
-    if (/^https?:\/\//i.test(p.buyLink)) return p.buyLink;
-    return `${SITE_URL}${p.buyLink.startsWith("/") ? p.buyLink : `/${p.buyLink}`}`;
-  };
-
-  return {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    itemListElement: products.map((p, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      item: {
-        "@type": "Product",
-        name: p.title,
-        description: p.description || p.tagline,
-        brand: { "@type": "Brand", name: SITE_NAME },
-        image: `${SITE_URL}/og-image.png`,
-        url: productUrl(p),
-        offers: {
-          "@type": "Offer",
-          price: String(p.price),
-          priceCurrency: "USD",
-          availability: p.buyLink
-            ? "https://schema.org/InStock"
-            : "https://schema.org/PreOrder",
-          url: offerUrl(p),
-          seller: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
-        },
-      },
-    })),
-  };
+  const offerUrl = (p) => !p.buyLink ? productUrl(p) : /^https?:\/\//i.test(p.buyLink) ? p.buyLink : `${SITE_URL}${p.buyLink.startsWith("/") ? p.buyLink : `/${p.buyLink}`}`;
+  return { "@context": "https://schema.org", "@type": "ItemList", itemListElement: products.map((p, i) => ({ "@type": "ListItem", position: i + 1, item: { "@type": "Product", name: p.title, description: p.description || p.tagline, brand: { "@type": "Brand", name: SITE_NAME }, image: `${SITE_URL}/og-image.png`, url: productUrl(p), offers: { "@type": "Offer", price: String(p.price), priceCurrency: "USD", availability: p.buyLink ? "https://schema.org/InStock" : "https://schema.org/PreOrder", url: offerUrl(p), seller: { "@type": "Organization", name: SITE_NAME, url: SITE_URL } } } })) };
 }
 
 export { SITE_URL, SITE_NAME };
