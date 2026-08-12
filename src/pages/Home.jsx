@@ -457,7 +457,7 @@ function RecommendedGear() {
     AFFILIATES.gusto,
     AFFILIATES.onepassword,
     AFFILIATES.acronis,
-    AFFILIATES.backblaze,
+    AFFILIATES.ubiquiti,
   ].filter(Boolean);
 
   if (recommendations.length === 0) return null;
@@ -469,8 +469,8 @@ function RecommendedGear() {
           <span className="eyebrow">Recommended Tools</span>
           <h2 id="recommended-title" className="title-1">The tech stack we trust</h2>
           <p className="section-sub">
-            We get asked constantly what software and hardware we recommend. These are the tools we use ourselves and deploy for our clients. 
-            <em> (These are affiliate links, meaning we earn a small commission if you sign up through them, at no extra cost to you. This helps support our free content.)</em>
+            We get asked constantly what software and hardware we recommend. These are the tools we use ourselves to run our business and secure our clients' operations. 
+            <em> (These are affiliate links; we earn a small commission if you sign up through them, at no extra cost to you. This helps support our free content.)</em>
           </p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginTop: '3rem' }} className="reveal-up">
