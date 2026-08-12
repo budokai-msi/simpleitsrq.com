@@ -1,11 +1,6 @@
-// /api/leadgen-emails — on-demand email extraction for a single domain.
+// /api/leadgen-emails — on-demand website enrichment.
 // Premium feature (plan: growth|pro|lifetime or admin).
-//
-// POST { domain: "example.com" }
-//   → { ok, host, emails: [{email, source, confidence, context_snippet}], pagesFetched }
-//
-// Bulk mode (pro/lifetime only):
-// POST { domains: ["a.com","b.com"] }   (max 10)
+// Returns verified website emails plus observable website intelligence.
 
 import { json } from "./_lib/http.js";
 import { getSession } from "./_lib/session.js";
@@ -20,11 +15,7 @@ function normalizeDomain(input) {
   let s = String(input || "").trim().toLowerCase();
   if (!s) return null;
   if (!s.startsWith("http://") && !s.startsWith("https://")) s = "https://" + s;
-  try {
-    return new URL(s).origin;
-  } catch {
-    return null;
-  }
+  try { return new URL(s).origin; } catch { return null; }
 }
 
 async function requirePremiumSession(request) {
@@ -32,14 +23,7 @@ async function requirePremiumSession(request) {
   if (!session) return { error: json(401, { ok: false, error: "unauthorized" }) };
   const { plan, isAdmin } = session.user;
   if (!isAdmin && !ALLOWED_PLANS.has(plan)) {
-    return {
-      error: json(403, {
-        ok: false,
-        error: "plan_required",
-        message: "Email extraction is available on Growth, Pro, and Lifetime plans.",
-        upgrade_url: "/leadgen#pricing",
-      }),
-    };
+    return { error: json(403, { ok: false, error: "plan_required", message: "Website enrichment is available on Growth, Pro, and Lifetime plans.", upgrade_url: "/leadgen#pricing" }) };
   }
   return { session, user: session.user };
 }
@@ -47,40 +31,30 @@ async function requirePremiumSession(request) {
 export async function POST(request) {
   const { user, error } = await requirePremiumSession(request);
   if (error) return error;
-
   const ip = clientIp(request);
   const rl = await rateLimit({ ip, bucket: "leadgen_email_crawl", windowSeconds: 60, max: 20 });
-  if (!rl.ok) {
-    return json(429, { ok: false, error: "rate_limited", message: "Too many extraction requests. Wait a minute." });
-  }
+  if (!rl.ok) return json(429, { ok: false, error: "rate_limited", message: "Too many enrichment requests. Wait a minute." });
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
 
-  // Bulk mode
   if (Array.isArray(body.domains)) {
     if (!user.isAdmin && !BULK_PLANS.has(user.plan)) {
-      return json(403, { ok: false, error: "plan_required", message: "Bulk extraction requires Pro or Lifetime plan." });
+      return json(403, { ok: false, error: "plan_required", message: "Bulk enrichment requires Pro or Lifetime plan." });
     }
     const domains = body.domains.slice(0, BULK_MAX).map(normalizeDomain).filter(Boolean);
     if (!domains.length) return json(400, { ok: false, error: "invalid_domains" });
     const results = await Promise.allSettled(domains.map((d) => crawlEmails(d)));
     return json(200, {
       ok: true,
-      results: results.map((r, i) =>
-        r.status === "fulfilled"
-          ? { domain: domains[i], ...r.value }
-          : { domain: domains[i], ok: false, error: "crawl_failed", emails: [] }
-      ),
+      results: results.map((r, i) => r.status === "fulfilled"
+        ? { domain: domains[i], ...r.value }
+        : { domain: domains[i], ok: false, error: "crawl_failed", emails: [], websiteSignals: null }),
     });
   }
 
-  // Single domain mode
   const origin = normalizeDomain(body.domain || body.url || "");
-  if (!origin) {
-    return json(400, { ok: false, error: "invalid_domain", message: "Provide a valid domain or URL." });
-  }
-
+  if (!origin) return json(400, { ok: false, error: "invalid_domain", message: "Provide a valid domain or URL." });
   try {
     const result = await crawlEmails(origin);
     return json(200, { ok: true, ...result });
@@ -92,7 +66,8 @@ export async function POST(request) {
 export async function GET() {
   return json(200, {
     ok: true,
-    description: "POST { domain } or { domains: [] } to extract emails from a website.",
+    description: "POST { domain } or { domains: [] } to extract emails and website intelligence.",
+    signals: ["emails", "technologies", "social presence", "contact form", "booking", "careers", "schema", "mobile viewport", "HTTPS"],
     plans: ["growth", "pro", "lifetime"],
   });
 }
