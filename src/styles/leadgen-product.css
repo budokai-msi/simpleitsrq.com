@@ -1,0 +1,129 @@
+/* Leadgen product polish: mobile-first scanner ergonomics and premium workflow framing. */
+.leadgen-public {
+  --lg-product-radius: 22px;
+  --lg-product-shadow: 0 24px 70px rgba(15, 23, 42, .12);
+}
+
+.leadgen-product-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+.leadgen-product-step {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 14px;
+  background: var(--lg-panel-soft);
+}
+.leadgen-product-step strong { display: block; font-size: .88rem; color: var(--lg-text); }
+.leadgen-product-step span { display: block; margin-top: 3px; font-size: .76rem; color: var(--lg-faint); line-height: 1.35; }
+.leadgen-product-step.is-active { border-color: var(--lg-text); background: var(--lg-panel); box-shadow: 0 8px 24px rgba(15, 23, 42, .08); }
+
+.leadgen-app-panel--control { border-radius: var(--lg-product-radius); box-shadow: var(--lg-product-shadow); }
+.leadgen-scan-card { border-radius: 18px; overflow: visible; }
+.leadgen-app-controls--primary { align-items: end; }
+.leadgen-app-controls--primary label { min-width: 0; }
+.leadgen-app-controls--primary input,
+.leadgen-app-controls--primary select,
+.leadgen-app-controls--primary button { min-height: 48px; }
+
+.leadgen-selbar {
+  position: sticky;
+  top: 72px;
+  z-index: 25;
+  backdrop-filter: blur(16px);
+}
+
+.leadgen-premium-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 0;
+}
+.leadgen-premium-strip > div {
+  padding: 14px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 14px;
+  background: var(--lg-panel-soft);
+}
+.leadgen-premium-strip strong { display: block; font-size: .86rem; color: var(--lg-text); }
+.leadgen-premium-strip span { display: block; margin-top: 4px; font-size: .76rem; color: var(--lg-faint); line-height: 1.4; }
+
+.leadgen-results-toolbar,
+.leadgen-result-row,
+.leadgen-selected-emails,
+.leadgen-map-card { scroll-margin-top: 110px; }
+
+@media (max-width: 900px) {
+  .leadgen-product-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .leadgen-premium-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .leadgen-selbar { top: 60px; }
+}
+
+@media (max-width: 640px) {
+  .leadgen-public { padding: 12px 0 96px !important; }
+  .leadgen-public > .container { width: min(100% - 16px, 100%); padding-inline: 0; }
+  .leadgen-app-panel--control { padding: 14px; border-radius: 16px; box-shadow: none; }
+  .leadgen-app-topline { gap: 10px; align-items: flex-start; }
+  .leadgen-app-traffic-dots { display: none; }
+  .leadgen-app-live { font-size: .72rem; }
+  .leadgen-app-portal-link { font-size: .76rem; white-space: nowrap; }
+  .leadgen-app-title { margin-bottom: 14px; }
+  .leadgen-app-title h2 { font-size: clamp(1.35rem, 7vw, 1.75rem); line-height: 1.1; }
+  .leadgen-app-title p { font-size: .9rem; line-height: 1.5; }
+
+  .leadgen-product-steps {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .leadgen-product-step { flex: 0 0 76%; scroll-snap-align: start; }
+
+  .leadgen-app-controls--primary,
+  .leadgen-app-controls,
+  .leadgen-filter-grid,
+  .leadgen-app-brief,
+  .leadgen-app-kpis,
+  .leadgen-premium-strip { grid-template-columns: 1fr !important; }
+  .leadgen-app-controls--primary > *,
+  .leadgen-app-controls > * { width: 100%; }
+  .leadgen-app-controls--primary button,
+  .leadgen-app-controls button { width: 100%; justify-content: center; }
+
+  .leadgen-selbar {
+    top: auto;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    margin: 0 8px;
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 16px 48px rgba(15, 23, 42, .2);
+  }
+  .leadgen-selbar__actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .leadgen-selbar__actions .btn,
+  .leadgen-selbar__actions select { width: 100%; min-width: 0; }
+  .leadgen-selbar__count { width: 100%; }
+
+  .leadgen-results-toolbar { position: sticky; top: 58px; z-index: 15; background: var(--lg-panel); border-radius: 12px; }
+  .leadgen-result-row { grid-template-columns: auto minmax(0, 1fr) !important; gap: 10px !important; padding: 14px 12px !important; }
+  .leadgen-result-row__meta { grid-column: 2; align-items: flex-start !important; text-align: left !important; overflow-wrap: anywhere; }
+  .leadgen-result-row__meta a,
+  .leadgen-result-row__meta span { max-width: 100%; }
+
+  .leadgen-map-shell { min-height: 280px; }
+  .leadgen-selected-emails__head { align-items: stretch; }
+  .leadgen-selected-emails__head .btn { width: 100%; justify-content: center; }
+  .leadgen-selected-emails__list li { grid-template-columns: 1fr !important; gap: 5px; }
+
+  .leadgen-modal-content { max-height: calc(100dvh - 24px); overflow: auto; border-radius: 18px !important; padding: 20px !important; }
+}
+
+@media (max-width: 390px) {
+  .leadgen-app-panel--control { padding: 10px; }
+  .leadgen-product-step { flex-basis: 86%; }
+  .leadgen-selbar__actions { grid-template-columns: 1fr; }
+}
