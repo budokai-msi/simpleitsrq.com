@@ -134,8 +134,71 @@ async function cachedBusinessesByZip(zip) {
   }
 }
 
+async function upsertBusinesses(businesses) {
+  if (!businesses || !businesses.length) return;
+  try {
+    const payload = JSON.stringify(businesses.map(b => ({
+      name: b.name,
+      legal_name: b.legal_name || null,
+      address: b.address || null,
+      city: b.city || null,
+      state: b.state || null,
+      zip: b.zip || null,
+      lat: Number.isFinite(Number(b.lat)) ? Number(b.lat) : null,
+      lng: Number.isFinite(Number(b.lng)) ? Number(b.lng) : null,
+      website: b.website || null,
+      phone: b.phone || null,
+      source: b.source || "osm",
+      source_id: b.source_id,
+      source_url: b.source_url || null,
+      industry: b.industry || null,
+      industry_group: b.industry_group || null,
+      sub_industry: b.sub_industry || null,
+      is_chain: Boolean(b.is_chain)
+    })));
+
+    await sql`
+      INSERT INTO lead_businesses (
+        name, legal_name, address, city, state, zip, lat, lng, website, phone,
+        source, source_id, source_url, industry, industry_group, sub_industry, is_chain
+      )
+      SELECT * FROM jsonb_to_recordset(${payload}::jsonb) AS x(
+        name text, legal_name text, address text, city text, state text, zip text,
+        lat double precision, lng double precision, website text, phone text,
+        source text, source_id text, source_url text, industry text,
+        industry_group text, sub_industry text, is_chain boolean
+      )
+      ON CONFLICT (source, source_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        legal_name = EXCLUDED.legal_name,
+        address = EXCLUDED.address,
+        city = EXCLUDED.city,
+        state = EXCLUDED.state,
+        zip = EXCLUDED.zip,
+        lat = EXCLUDED.lat,
+        lng = EXCLUDED.lng,
+        website = EXCLUDED.website,
+        phone = EXCLUDED.phone,
+        source_url = EXCLUDED.source_url,
+        industry = EXCLUDED.industry,
+        industry_group = EXCLUDED.industry_group,
+        sub_industry = EXCLUDED.sub_industry,
+        is_chain = EXCLUDED.is_chain,
+        updated_at = now()
+    `;
+  } catch (err) {
+    console.error("[leadgen] upsert failed", err?.message || err);
+  }
+}
+
 async function discoverLiveBusinesses(zip, source = "live_osm") {
   const discovered = await discoverBusinessesByZip(zip);
+  
+  if (discovered.ok && discovered.businesses && discovered.businesses.length > 0) {
+    // Fire and forget upsert so we don't block the UI response
+    upsertBusinesses(discovered.businesses).catch(() => {});
+  }
+  
   return {
     ...discovered,
     source,
