@@ -1,7 +1,5 @@
 /* Leadgen layout guard.
  * Keep legacy scanner/selection-bar rules from re-entering the product layout.
- * This file is intentionally small and high-specificity while legacy leadgen.css
- * is being consolidated.
  */
 
 .leadgen-public .leadgen-app-shell {
@@ -20,8 +18,11 @@
   min-width: 0 !important;
 }
 
-/* Selection actions are viewport chrome, not scanner content. Keep them out of
- * normal document flow even if older/newer Leadgen styles disagree. */
+.leadgen-public .leadgen-app-portal-link,
+.leadgen-public .leadgen-product-page > .lgx {
+  display: none !important;
+}
+
 .leadgen-public .leadgen-app-shell > .leadgen-selbar {
   position: fixed !important;
   inset: auto auto max(16px, env(safe-area-inset-bottom)) 50% !important;
