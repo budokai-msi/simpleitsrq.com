@@ -29,15 +29,30 @@ async function requirePremiumSession(request) {
   return { session, user: session.user };
 }
 
+function evidenceLabels(domainIntel) {
+  if (!domainIntel) return [];
+  const labels = [];
+  if (domainIntel.dns?.has_mx) labels.push("MX ready");
+  if (Number.isFinite(domainIntel.registration?.domain_age_years)) labels.push(`Domain age ${domainIntel.registration.domain_age_years}y`);
+  if (Number.isFinite(domainIntel.pagespeed?.performance)) labels.push(`Mobile perf ${domainIntel.pagespeed.performance}`);
+  if (Number.isFinite(domainIntel.pagespeed?.seo)) labels.push(`SEO ${domainIntel.pagespeed.seo}`);
+  if (Number.isFinite(domainIntel.technical_quality_score)) labels.push(`Tech quality ${domainIntel.technical_quality_score}`);
+  return labels.slice(0, 4);
+}
+
 async function enrichOne(origin, { includePageSpeed = false } = {}) {
   const [crawl, domainIntel] = await Promise.all([
     crawlEmails(origin),
     enrichDomainIntel(origin, { includePageSpeed }).catch(() => null),
   ]);
+  const technicalLabels = evidenceLabels(domainIntel);
+  const existingTech = crawl.websiteSignals?.technologies || [];
   return {
     ...crawl,
     websiteSignals: {
       ...(crawl.websiteSignals || {}),
+      technologies: Array.from(new Set([...technicalLabels, ...existingTech])).slice(0, 10),
+      intelligence_labels: technicalLabels,
       domain_intel: domainIntel,
       dns: domainIntel?.dns || null,
       registration: domainIntel?.registration || null,
