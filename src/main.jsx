@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { initBotId } from 'botid/client/core'
 import './index.css'
+import './styles/leadgen-layout-guard.css'
 import App from './App.jsx'
 
 // Vercel BotID — invisible bot detection on the contact form.
