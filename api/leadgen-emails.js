@@ -12,11 +12,24 @@ const ALLOWED_PLANS = new Set(["growth", "pro", "lifetime"]);
 const BULK_PLANS = new Set(["pro", "lifetime"]);
 const BULK_MAX = 10;
 
+function isPrivateLiteral(host) {
+  const h = String(host || "").toLowerCase().replace(/^\[|\]$/g, "");
+  if (!h || h === "localhost" || h.endsWith(".localhost") || h.endsWith(".local") || h === "::1") return true;
+  if (/^(fc|fd|fe8|fe9|fea|feb)[0-9a-f]*:/i.test(h)) return true;
+  if (!/^\d+\.\d+\.\d+\.\d+$/.test(h)) return false;
+  const p = h.split(".").map(Number);
+  return p[0] === 0 || p[0] === 10 || p[0] === 127 || (p[0] === 169 && p[1] === 254) || (p[0] === 172 && p[1] >= 16 && p[1] <= 31) || (p[0] === 192 && p[1] === 168);
+}
+
 function normalizeDomain(input) {
   let s = String(input || "").trim().toLowerCase();
   if (!s) return null;
   if (!s.startsWith("http://") && !s.startsWith("https://")) s = "https://" + s;
-  try { return new URL(s).origin; } catch { return null; }
+  try {
+    const parsed = new URL(s);
+    if (!/^https?:$/.test(parsed.protocol) || !parsed.hostname.includes(".") || isPrivateLiteral(parsed.hostname)) return null;
+    return parsed.origin;
+  } catch { return null; }
 }
 
 async function requirePremiumSession(request) {
@@ -89,7 +102,7 @@ export async function POST(request) {
   }
 
   const origin = normalizeDomain(body.domain || body.url || "");
-  if (!origin) return json(400, { ok: false, error: "invalid_domain", message: "Provide a valid domain or URL." });
+  if (!origin) return json(400, { ok: false, error: "invalid_domain", message: "Provide a valid public website domain." });
   try {
     const result = await enrichOne(origin, { includePageSpeed: true });
     return json(200, { ok: true, ...result });
