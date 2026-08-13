@@ -5,6 +5,7 @@
 import { json } from "./_lib/http.js";
 import { getSession } from "./_lib/session.js";
 import { crawlEmails } from "./_lib/leadgen-emailcrawler.js";
+import { enrichDomainIntel } from "./_lib/leadgen-domain-intel.js";
 import { clientIp, rateLimit } from "./_lib/security.js";
 
 const ALLOWED_PLANS = new Set(["growth", "pro", "lifetime"]);
@@ -28,6 +29,25 @@ async function requirePremiumSession(request) {
   return { session, user: session.user };
 }
 
+async function enrichOne(origin, { includePageSpeed = false } = {}) {
+  const [crawl, domainIntel] = await Promise.all([
+    crawlEmails(origin),
+    enrichDomainIntel(origin, { includePageSpeed }).catch(() => null),
+  ]);
+  return {
+    ...crawl,
+    websiteSignals: {
+      ...(crawl.websiteSignals || {}),
+      domain_intel: domainIntel,
+      dns: domainIntel?.dns || null,
+      registration: domainIntel?.registration || null,
+      pagespeed: domainIntel?.pagespeed || null,
+      technical_quality_score: domainIntel?.technical_quality_score ?? null,
+      evidence_sources: domainIntel?.evidence_sources || [],
+    },
+  };
+}
+
 export async function POST(request) {
   const { user, error } = await requirePremiumSession(request);
   if (error) return error;
@@ -44,30 +64,30 @@ export async function POST(request) {
     }
     const domains = body.domains.slice(0, BULK_MAX).map(normalizeDomain).filter(Boolean);
     if (!domains.length) return json(400, { ok: false, error: "invalid_domains" });
-    const results = await Promise.allSettled(domains.map((d) => crawlEmails(d)));
+    const results = await Promise.allSettled(domains.map((domain) => enrichOne(domain, { includePageSpeed: false })));
     return json(200, {
       ok: true,
       results: results.map((r, i) => r.status === "fulfilled"
         ? { domain: domains[i], ...r.value }
-        : { domain: domains[i], ok: false, error: "crawl_failed", emails: [], websiteSignals: null }),
+        : { domain: domains[i], ok: false, error: "enrichment_failed", emails: [], websiteSignals: null }),
     });
   }
 
   const origin = normalizeDomain(body.domain || body.url || "");
   if (!origin) return json(400, { ok: false, error: "invalid_domain", message: "Provide a valid domain or URL." });
   try {
-    const result = await crawlEmails(origin);
+    const result = await enrichOne(origin, { includePageSpeed: true });
     return json(200, { ok: true, ...result });
   } catch (err) {
-    return json(502, { ok: false, error: "crawl_failed", message: String(err?.message || "Crawl failed.") });
+    return json(502, { ok: false, error: "enrichment_failed", message: String(err?.message || "Enrichment failed.") });
   }
 }
 
 export async function GET() {
   return json(200, {
     ok: true,
-    description: "POST { domain } or { domains: [] } to extract emails and website intelligence.",
-    signals: ["emails", "technologies", "social presence", "contact form", "booking", "careers", "schema", "mobile viewport", "HTTPS"],
+    description: "POST { domain } or { domains: [] } to extract contact and technical intelligence.",
+    signals: ["emails", "technologies", "social presence", "contact form", "booking", "careers", "schema", "mobile viewport", "HTTPS", "DNS/MX", "RDAP domain age", "PageSpeed/Lighthouse when configured"],
     plans: ["growth", "pro", "lifetime"],
   });
 }
