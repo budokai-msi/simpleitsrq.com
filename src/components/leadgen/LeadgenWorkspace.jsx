@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, BarChart3, CalendarClock, RefreshCw, ShieldBan, Sparkles, Target, Users } from "lucide-react";
-import { csrfFetch } from "../../lib/csrf";
 
 async function getJson(url) {
   const r = await fetch(url, { credentials: "same-origin", cache: "no-store", headers: { Accept: "application/json" } });
@@ -10,6 +9,11 @@ async function getJson(url) {
 }
 
 export default function LeadgenWorkspace() {
+  // This component is the authenticated/private revenue workspace. The public
+  // /leadgen route is the customer product surface and must not mount workspace
+  // API calls or expose private operator UI there.
+  const isPublicLeadgen = typeof window !== "undefined" && window.location.pathname === "/leadgen";
+
   const [overview, setOverview] = useState(null);
   const [scores, setScores] = useState([]);
   const [changes, setChanges] = useState([]);
@@ -17,6 +21,7 @@ export default function LeadgenWorkspace() {
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
+    if (isPublicLeadgen) return;
     setBusy(true); setError("");
     try {
       const [o, s, c] = await Promise.all([
@@ -29,12 +34,15 @@ export default function LeadgenWorkspace() {
     finally { setBusy(false); }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (!isPublicLeadgen) load();
+  }, [isPublicLeadgen]);
 
   const pipelineValue = useMemo(() => (overview?.attribution || []).reduce((sum, row) => sum + Number(row.value_cents || 0), 0), [overview]);
   const healthy = (overview?.health || []).filter((h) => h.status === "healthy").length;
   const unhealthy = (overview?.health || []).filter((h) => h.status === "degraded" || h.status === "down").length;
 
+  if (isPublicLeadgen) return null;
   if (!overview && !error) return <section className="lgx"><p>Loading workspace…</p></section>;
   if (error) return <section className="lgx lgx-error"><strong>Workspace unavailable</strong><span>{error}</span></section>;
 
