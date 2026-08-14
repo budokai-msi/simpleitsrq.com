@@ -4,13 +4,13 @@ export const services = [
   {
     slug: "computer-repair",
     title: "Computer Repair & Diagnostics",
-    tagline: "Hardware diagnostics, workstation repair, upgrades, cleanup, and practical repair-or-replace guidance.",
+    tagline: "We diagnose the failure first, then repair, upgrade, or recommend replacement based on the condition of the machine and what makes sense to spend.",
     audience: "Both",
     audiences: ["Residential", "Business"],
     price: 149,
     priceFrom: true,
     priceSuffix: "",
-    priceNote: "Diagnostic/repair labor starts here. Parts and advanced board-level work are quoted separately.",
+    priceNote: "Diagnostic and repair labor starts here. Parts and any work outside the standard repair scope are quoted before we proceed.",
     duration: "By appointment",
     contents: [
       "Hardware and storage diagnostics",
@@ -20,7 +20,7 @@ export const services = [
       "Upgrade and replacement recommendations",
     ],
     notInScope: [
-      "Microsoldering / board-level component repair",
+      "Microsoldering or board-level component repair",
       "Guaranteed recovery from physically failed storage",
     ],
     bookingNote: "Available by appointment in the Sarasota and Bradenton area.",
@@ -31,12 +31,12 @@ export const services = [
   {
     slug: "managed-it",
     title: "Managed IT & Network Support",
-    tagline: "Business IT support, networking, Microsoft 365, endpoint management, and ongoing operational support for Sarasota-Bradenton organizations.",
+    tagline: "Ongoing support for the computers, users, network, Microsoft 365, documentation, and vendors your business relies on every day.",
     audience: "Business",
     audiences: ["Business"],
     price: 0,
     priceSuffix: "",
-    priceNote: "Scoped after a short assessment because every environment is different.",
+    priceNote: "We start with a short assessment so the scope reflects your actual environment instead of a generic package.",
     duration: "Ongoing or project-based",
     contents: [
       "Workstation and user support",
@@ -46,7 +46,7 @@ export const services = [
       "Vendor coordination and practical IT planning",
     ],
     notInScope: [
-      "Services we cannot verify or deliver reliably are not sold as packaged add-ons",
+      "Products or add-ons we cannot verify, support, or deliver reliably",
     ],
     bookingNote: "For businesses in Sarasota, Bradenton, Lakewood Ranch, and nearby service areas.",
     buyLink: "/book?topic=managed-it",
