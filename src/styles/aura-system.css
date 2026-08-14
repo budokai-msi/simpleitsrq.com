@@ -1,0 +1,326 @@
+/* Aura-inspired component layer.
+   Design reference: daisyUI Aura / Card / Carousel / Pagination patterns.
+   This stays native to the existing CSS stack; no Tailwind/daisyUI runtime is added. */
+
+:root,
+html[data-theme="light"] {
+  --aura-accent: #f7c948;
+  --aura-accent-strong: #e6ad00;
+  --aura-accent-soft: rgba(247, 201, 72, 0.18);
+  --aura-accent-glow: rgba(247, 201, 72, 0.32);
+  --aura-on-accent: #211a00;
+  --aura-surface: rgba(255, 255, 255, 0.94);
+  --aura-surface-strong: #ffffff;
+  --aura-border: rgba(135, 98, 0, 0.20);
+  --aura-border-strong: rgba(135, 98, 0, 0.34);
+  --aura-muted: #6f6549;
+  --aura-shadow: 0 18px 48px rgba(63, 48, 0, 0.10);
+}
+
+html[data-theme="dark"] {
+  --aura-accent: #d8dde6;
+  --aura-accent-strong: #f2f4f7;
+  --aura-accent-soft: rgba(216, 221, 230, 0.12);
+  --aura-accent-glow: rgba(216, 221, 230, 0.22);
+  --aura-on-accent: #111318;
+  --aura-surface: rgba(20, 24, 31, 0.94);
+  --aura-surface-strong: #171b22;
+  --aura-border: rgba(216, 221, 230, 0.20);
+  --aura-border-strong: rgba(242, 244, 247, 0.38);
+  --aura-muted: #aeb5c0;
+  --aura-shadow: 0 20px 54px rgba(0, 0, 0, 0.34);
+}
+
+/* Buttons: yellow in light, silver in dark. */
+.btn {
+  position: relative;
+  isolation: isolate;
+  transition: transform 160ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.btn-primary {
+  color: var(--aura-on-accent) !important;
+  background: linear-gradient(135deg, var(--aura-accent-strong), var(--aura-accent)) !important;
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 0 0 1px var(--aura-accent-soft), 0 9px 24px var(--aura-accent-glow) !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px var(--aura-border-strong), 0 12px 30px var(--aura-accent-glow) !important;
+}
+
+.btn-secondary {
+  background: var(--aura-surface) !important;
+  border-color: var(--aura-border) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 4px 15px rgba(0,0,0,.06);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 0 0 3px var(--aura-accent-soft), 0 9px 22px rgba(0,0,0,.08);
+}
+
+.btn:focus-visible,
+.blog-page-btn:focus-visible,
+.leadgen-category__toggle:focus-visible,
+.leadgen-prospect-card__toggle:focus-visible,
+.leadgen-subcategory-tabs button:focus-visible {
+  outline: 3px solid var(--aura-accent-glow);
+  outline-offset: 3px;
+}
+
+/* Card vocabulary: crisp surface + subtle aura ring. */
+.blog-card,
+.leadgen-scan-card,
+.leadgen-intel-strip article,
+.leadgen-category,
+.leadgen-prospect-card,
+.leadgen-product-upgrade,
+.blog-convert-cta {
+  border-color: var(--aura-border) !important;
+  box-shadow: var(--aura-shadow);
+}
+
+.blog-card,
+.leadgen-category,
+.leadgen-prospect-card,
+.leadgen-product-upgrade,
+.blog-convert-cta {
+  background: var(--aura-surface);
+}
+
+.blog-card,
+.leadgen-category,
+.leadgen-prospect-card {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.blog-card:hover,
+.leadgen-category.is-open,
+.leadgen-prospect-card.is-expanded {
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 0 0 1px var(--aura-accent-soft), var(--aura-shadow);
+}
+
+.blog-card:hover,
+.leadgen-prospect-card:hover {
+  transform: translateY(-2px);
+}
+
+/* The highest-value surfaces get the animated light sweep associated with Aura. */
+.leadgen-scan-card,
+.leadgen-product-upgrade,
+.blog-convert-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.leadgen-scan-card::before,
+.leadgen-product-upgrade::before,
+.blog-convert-cta::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(115deg, transparent 18%, var(--aura-accent) 48%, transparent 78%);
+  background-size: 300% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: .72;
+  animation: simpleAuraSweep 7s linear infinite;
+}
+
+@keyframes simpleAuraSweep {
+  from { background-position: 220% 0; }
+  to { background-position: -120% 0; }
+}
+
+/* Leadgen: accordion/collapse treatment and data-display hierarchy. */
+.leadgen-category__toggle,
+.leadgen-prospect-card__toggle {
+  border-radius: inherit;
+}
+
+.leadgen-category__toggle:hover,
+.leadgen-prospect-card__toggle:hover {
+  background: var(--aura-accent-soft);
+}
+
+.leadgen-category__quickstats span,
+.leadgen-prospect-card__signals span,
+.leadgen-signal-chips span,
+.leadgen-subcategory-tabs button {
+  border-color: var(--aura-border) !important;
+}
+
+.leadgen-subcategory-tabs button.is-active,
+.leadgen-prospect-card__signals .is-intel,
+.leadgen-signal-chips.is-intel span {
+  background: var(--aura-accent-soft) !important;
+  border-color: var(--aura-border-strong) !important;
+}
+
+.leadgen-subcategory-tabs button.is-active {
+  box-shadow: inset 0 0 0 1px var(--aura-border-strong);
+}
+
+.leadgen-intel-strip article strong,
+.leadgen-category__dashboard article strong,
+.leadgen-category__quickstats b {
+  color: var(--aura-accent-strong);
+}
+
+html[data-theme="light"] .leadgen-intel-strip article strong,
+html[data-theme="light"] .leadgen-category__dashboard article strong,
+html[data-theme="light"] .leadgen-category__quickstats b {
+  color: #8a6500;
+}
+
+.leadgen-grade {
+  border: 1px solid var(--aura-border) !important;
+  box-shadow: inset 0 0 0 1px var(--aura-accent-soft);
+}
+
+.leadgen-app-live > span {
+  background: var(--aura-accent) !important;
+  box-shadow: 0 0 0 4px var(--aura-accent-soft), 0 0 16px var(--aura-accent-glow);
+}
+
+/* Make horizontal component groups behave like Daisy-style carousels where useful. */
+.leadgen-subcategory-tabs,
+.blog-filters {
+  scrollbar-width: thin;
+  scrollbar-color: var(--aura-accent) transparent;
+}
+
+.leadgen-subcategory-tabs::-webkit-scrollbar,
+.blog-filters::-webkit-scrollbar,
+.leadgen-intel-strip::-webkit-scrollbar,
+.leadgen-category__quickstats::-webkit-scrollbar {
+  height: 6px;
+}
+
+.leadgen-subcategory-tabs::-webkit-scrollbar-thumb,
+.blog-filters::-webkit-scrollbar-thumb,
+.leadgen-intel-strip::-webkit-scrollbar-thumb,
+.leadgen-category__quickstats::-webkit-scrollbar-thumb {
+  background: var(--aura-accent);
+  border-radius: 999px;
+}
+
+/* Blog pagination modeled as a joined button group. */
+.blog-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 34px auto 6px;
+  flex-wrap: wrap;
+}
+
+.blog-pagination__pages {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--aura-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--aura-surface);
+  box-shadow: 0 10px 28px rgba(0,0,0,.08);
+}
+
+.blog-page-btn {
+  appearance: none;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 0;
+  border-right: 1px solid var(--aura-border);
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.blog-page-btn:last-child { border-right: 0; }
+.blog-page-btn:hover:not(:disabled) { background: var(--aura-accent-soft); }
+.blog-page-btn.is-active {
+  color: var(--aura-on-accent);
+  background: var(--aura-accent);
+}
+.blog-page-btn:disabled { opacity: .42; cursor: not-allowed; }
+.blog-pagination__status { color: var(--aura-muted); font-size: .9rem; }
+
+@media (max-width: 760px) {
+  .blog-filters,
+  .leadgen-subcategory-tabs,
+  .leadgen-category__quickstats {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .blog-filters > *,
+  .leadgen-subcategory-tabs > *,
+  .leadgen-category__quickstats > * {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .leadgen-intel-strip {
+    display: flex !important;
+    grid-template-columns: none !important;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 3px 2px 10px;
+  }
+
+  .leadgen-intel-strip article,
+  .leadgen-intel-strip article.is-wide {
+    flex: 0 0 min(78vw, 310px);
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  .leadgen-category__quickstats {
+    max-width: 58vw;
+  }
+
+  .blog-pagination {
+    gap: 8px;
+  }
+
+  .blog-pagination__pages {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leadgen-scan-card::before,
+  .leadgen-product-upgrade::before,
+  .blog-convert-cta::before {
+    animation: none;
+  }
+
+  .btn,
+  .blog-card,
+  .leadgen-category,
+  .leadgen-prospect-card {
+    transition: none;
+  }
+}
