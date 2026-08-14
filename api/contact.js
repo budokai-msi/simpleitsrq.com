@@ -680,7 +680,7 @@ async function handleChat(request, body, ip) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: process.env.GROQ_MODEL && !process.env.GROQ_MODEL.startsWith("llama-3.3-") ? process.env.GROQ_MODEL : "qwen/qwen3.6-27b",
         messages: [{ role: "system", content: CHAT_SYSTEM_PROMPT }, ...cleaned],
         temperature: 0.4,
         max_tokens: 400,

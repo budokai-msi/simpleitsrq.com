@@ -298,7 +298,7 @@ async function generateBlogDraft(options = {}) {
 // ========== HACKERNEWS DAILY DRAFT (free — Groq) ==========
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const GROQ_MODEL = process.env.GROQ_MODEL && !process.env.GROQ_MODEL.startsWith("llama-3.3-") ? process.env.GROQ_MODEL : "qwen/qwen3.6-27b";
 
 // HN story relevance keywords for IT / security / business audience.
 // Keep this tight: the goal is local operator insight, not generic tech news.

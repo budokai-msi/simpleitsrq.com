@@ -1097,7 +1097,7 @@ export async function handleLeadgenAi(session, request) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: process.env.GROQ_MODEL && !process.env.GROQ_MODEL.startsWith("llama-3.3-") ? process.env.GROQ_MODEL : "qwen/qwen3.6-27b",
         temperature: 0.7,
         max_tokens: 1200,
         response_format: { type: "json_object" },
