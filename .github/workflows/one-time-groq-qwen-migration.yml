@@ -1,0 +1,63 @@
+name: One-time Groq Qwen migration
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: github.event.head_commit.message == 'Run one-time Groq Qwen migration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Replace retiring Groq model
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          old = "llama-3.3-70b-versatile"
+          new = "qwen/qwen3.6-27b"
+          paths = [
+              Path("api/contact.js"),
+              Path("api/cron/agent.js"),
+              Path("api/_lib/portal/leadgen.js"),
+              Path(".env.example"),
+          ]
+
+          for path in paths:
+              text = path.read_text()
+              before = text
+              text = text.replace(
+                  f'const GROQ_MODEL = process.env.GROQ_MODEL || "{old}";',
+                  'const GROQ_MODEL = process.env.GROQ_MODEL && !process.env.GROQ_MODEL.startsWith("llama-3.3-") ? process.env.GROQ_MODEL : "qwen/qwen3.6-27b";'
+              )
+              text = text.replace(
+                  f'model: "{old}"',
+                  'model: process.env.GROQ_MODEL && !process.env.GROQ_MODEL.startsWith("llama-3.3-") ? process.env.GROQ_MODEL : "qwen/qwen3.6-27b"'
+              )
+              text = text.replace(f'GROQ_MODEL={old}', f'GROQ_MODEL={new}')
+              text = text.replace(old, new)
+              if text != before:
+                  path.write_text(text)
+
+          remaining = [str(p) for p in paths if old in p.read_text()]
+          if remaining:
+              raise SystemExit(f"Retiring Groq model still present in: {remaining}")
+          PY
+      - name: Commit migration
+        run: |
+          if git diff --quiet; then
+            echo "No migration changes were required."
+            exit 0
+          fi
+          git config user.name "Simple IT SRQ release bot"
+          git config user.email "114784512+budokai-msi@users.noreply.github.com"
+          git add api/contact.js api/cron/agent.js api/_lib/portal/leadgen.js .env.example
+          git commit -m "Migrate Groq workloads to Qwen 3.6 27B"
+          git push origin HEAD:main
