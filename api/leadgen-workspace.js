@@ -60,15 +60,29 @@ async function overview(workspace) {
 }
 
 async function topLeads(workspace) {
-  const rows = await sql`
-    SELECT b.id, b.name, b.city, b.state, b.zip, b.website, b.phone, b.source_url,
-           b.industry_group, b.sub_industry, COALESCE(b.is_chain,false) AS is_chain,
-           (SELECT COUNT(*)::int FROM lead_emails e WHERE e.business_id=b.id AND e.opted_out_at IS NULL AND e.bounced_at IS NULL) AS email_count
-    FROM lead_businesses b
-    WHERE b.status='active'
-    ORDER BY b.updated_at DESC
-    LIMIT 100
-  `;
+  let rows;
+  try {
+    rows = await sql`
+      SELECT b.id, b.name, b.city, b.state, b.zip, b.website, b.phone, b.source_url,
+             b.industry_group, b.sub_industry, COALESCE(b.is_chain,false) AS is_chain,
+             (SELECT COUNT(*)::int FROM lead_emails e WHERE e.business_id=b.id AND e.opted_out_at IS NULL AND e.bounced_at IS NULL) AS email_count
+      FROM lead_businesses b
+      WHERE b.status='active'
+      ORDER BY b.updated_at DESC
+      LIMIT 100
+    `;
+  } catch (err) {
+    if (!/column .*?(industry_group|sub_industry|is_chain).*?does not exist/i.test(String(err?.message || err || ''))) throw err;
+    rows = await sql`
+      SELECT b.id, b.name, b.city, b.state, b.zip, b.website, b.phone, b.source_url,
+             NULL::text AS industry_group, NULL::text AS sub_industry, false AS is_chain,
+             (SELECT COUNT(*)::int FROM lead_emails e WHERE e.business_id=b.id AND e.opted_out_at IS NULL AND e.bounced_at IS NULL) AS email_count
+      FROM lead_businesses b
+      WHERE b.status='active'
+      ORDER BY b.updated_at DESC
+      LIMIT 100
+    `;
+  }
   const scored = rows.map((row) => ({ ...row, ...scoreBusiness(row) })).sort((a,b) => b.score-a.score).slice(0,30);
   for (const lead of scored) {
     await sql`
@@ -80,7 +94,7 @@ async function topLeads(workspace) {
   return scored;
 }
 
-export default async function handler(request) {
+async function handleRequest(request) {
   try {
     const auth = await requireUser(request);
     if (auth.error) return auth.error;
@@ -148,4 +162,35 @@ export default async function handler(request) {
         : 'Leadgen workspace is temporarily unavailable.',
     });
   }
+}
+
+export async function GET(request) {
+  return handleRequest(request);
+}
+
+export async function POST(request) {
+  return handleRequest(request);
+}
+
+export default async function handler(req, res) {
+  const method = (req.method || 'GET').toUpperCase();
+  const qs = new URLSearchParams(req.query || {}).toString();
+  const request = new Request(`https://simpleitsrq.com/api/leadgen-workspace${qs ? `?${qs}` : ''}`, {
+    method,
+    headers: {
+      'content-type': req.headers?.['content-type'] || 'application/json',
+      'cookie': req.headers?.cookie || '',
+      'x-real-ip': req.headers?.['x-real-ip'] || '',
+      'x-forwarded-for': req.headers?.['x-forwarded-for'] || '',
+      'user-agent': req.headers?.['user-agent'] || '',
+    },
+    body: method === 'POST'
+      ? (typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {}))
+      : undefined,
+  });
+  const response = method === 'GET' ? await GET(request) : method === 'POST' ? await POST(request) : json(405, { ok:false, error:'method_not_allowed' });
+  const payload = await response.text();
+  res.status(response.status);
+  for (const [key, value] of response.headers.entries()) res.setHeader(key, value);
+  res.send(payload);
 }
