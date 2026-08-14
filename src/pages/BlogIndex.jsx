@@ -82,8 +82,8 @@ export default function BlogIndex() {
   };
 
   useSEO({
-    title: "IT News & Local Tech Advice | Simple IT SRQ",
-    description: "Original commentary on current IT, hardware, networking and security news for Sarasota and Bradenton businesses, with source attribution and practical next steps.",
+    title: "Practical IT Notes for Local Businesses | Simple IT SRQ",
+    description: "Source-backed notes on security, hardware, networking, cloud services and business technology, with practical context for Sarasota and Bradenton organizations.",
     canonical: "https://simpleitsrq.com/blog",
     image: "https://simpleitsrq.com/og-image.png",
     breadcrumbs: [
@@ -97,9 +97,9 @@ export default function BlogIndex() {
       <section className="section blog-hero">
         <div className="container blog-hero__inner">
           <div className="blog-hero__copy">
-            <span className="eyebrow">Simple IT SRQ Blog</span>
-            <h1 className="display">IT news with a local point of view.</h1>
-            <p className="lede">We track important technology stories, link to the original sources, and explain what they mean for computers, networks, Microsoft 365 and small-business IT in Sarasota and Bradenton.</p>
+            <span className="eyebrow">Field notes & analysis</span>
+            <h1 className="display">Technology news is only useful when it changes what you do.</h1>
+            <p className="lede">We read the original source, link back to it, and add the practical IT context that is easy to miss in a headline. The goal is a useful answer: what happened, what it means, and whether you need to do anything about it.</p>
           </div>
         </div>
       </section>
@@ -135,7 +135,7 @@ export default function BlogIndex() {
                     <p className="blog-card-excerpt">{post.excerpt}</p>
                     <div className="blog-card-meta">
                       <time dateTime={post.date}>{new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</time>
-                      <Link to={`/blog/${post.slug}`} className="blog-card-readmore">Read <ArrowRight size={14} /></Link>
+                      <Link to={`/blog/${post.slug}`} className="blog-card-readmore">Read analysis <ArrowRight size={14} /></Link>
                     </div>
                   </div>
                 </article>
@@ -194,13 +194,13 @@ export default function BlogIndex() {
 
           <section className="blog-convert-cta">
             <div>
-              <span className="eyebrow">Need hands-on help?</span>
-              <h2 className="title-2">Computer, network, or managed IT problem?</h2>
-              <p>We handle repair, diagnostics, business networks and managed IT in Sarasota and Bradenton.</p>
+              <span className="eyebrow">Need help with something you read?</span>
+              <h2 className="title-2">We can help turn the advice into a plan.</h2>
+              <p>For computer repair, network problems, Microsoft 365 issues, or ongoing business IT support in Sarasota and Bradenton, tell us what is happening.</p>
             </div>
             <div className="blog-convert-cta__actions">
               <Link to="/services" className="btn btn-primary btn-lg">See IT services <ArrowRight size={16} /></Link>
-              <Link to="/leadgen" className="btn btn-secondary btn-lg">Leadgen product <ArrowRight size={16} /></Link>
+              <Link to="/leadgen" className="btn btn-secondary btn-lg">Explore Leadgen <ArrowRight size={16} /></Link>
             </div>
           </section>
         </div>
