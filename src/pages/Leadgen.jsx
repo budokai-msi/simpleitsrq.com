@@ -6,7 +6,6 @@ import { ArrowRight, ChevronDown, Mail, Search, Sparkles } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
 import { csrfFetch } from "../lib/csrf";
-import LeadgenWorkspace from "../components/leadgen/LeadgenWorkspace";
 
 const LEADGEN_PROMO_CODE = "LAUNCH20";
 const LEADGEN_STRIPE_LINKS = {
@@ -390,7 +389,7 @@ function LeadgenScanApp() {
             {destinations.length ? (
               <button type="button" className="btn btn-primary btn-sm" onClick={pushSelected} disabled={pushBusy}>{pushBusy ? "Pushing…" : "Push to CRM"}</button>
             ) : (
-              <Link to="/portal/leadgen" className="btn btn-primary btn-sm">Connect CRM</Link>
+              <span className="leadgen-app-private-note">CRM sync unlocks after account setup.</span>
             )}
           </div>
         </div>
@@ -399,7 +398,7 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
           <span className="leadgen-app-live"><span /> Live local-market data engine</span>
-          <Link to="/portal/leadgen" className="leadgen-app-portal-link">Campaign workspace</Link>
+          <span className="leadgen-app-portal-link">Live market intelligence</span>
         </div>
         <div className="leadgen-app-title">
           <h2 className="title-2">Build a qualified local pipeline, not another spreadsheet.</h2>
@@ -629,7 +628,6 @@ export default function Leadgen() {
     <main id="main" className="leadgen-public">
       <div className="container leadgen-product-page">
         <LeadgenScanApp />
-        <LeadgenWorkspace />
         <section className="leadgen-product-upgrade">
           <div>
             <span className="eyebrow">Built for revenue teams</span>
