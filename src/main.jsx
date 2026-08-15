@@ -5,6 +5,7 @@ import './index.css'
 import './styles/leadgen-layout-guard.css'
 import App from './App.jsx'
 import './styles/aura-system.css'
+import './styles/leadgen-refine.css'
 
 // Vercel BotID — invisible bot detection on the contact form.
 // Free Basic mode; protected paths must match the server route exactly.
