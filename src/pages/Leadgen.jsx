@@ -130,7 +130,7 @@ function LeadgenScanApp() {
   const reviewedRows = useMemo(
     () => rows.map((row, index) => ({
       ...row,
-      status: review[index] || "keep",
+      status: review[index] || "unreviewed",
       __scanIndex: index,
       website_intel: websiteIntel[row.website] || null,
     })),
@@ -380,14 +380,14 @@ function LeadgenScanApp() {
         <div className="leadgen-selbar">
           <span className="leadgen-selbar__count"><strong>{kept.length}</strong> selected</span>
           <div className="leadgen-selbar__actions">
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadCsv(`leadgen-${zip}.csv`, kept)}>Export CSV</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadCsv(`leadgen-${zip}.csv`, kept)}>Download CSV</button>
             {destinations.length ? (
               <select value={pushTarget} onChange={(event) => setPushTarget(event.target.value)}>
                 {destinations.map((destination) => <option key={destination.id} value={destination.id}>{destination.label || destination.kind}</option>)}
               </select>
             ) : null}
             {destinations.length ? (
-              <button type="button" className="btn btn-primary btn-sm" onClick={pushSelected} disabled={pushBusy}>{pushBusy ? "Pushing…" : "Push to CRM"}</button>
+              <button type="button" className="btn btn-primary btn-sm" onClick={pushSelected} disabled={pushBusy}>{pushBusy ? "Sending…" : "Send to CRM"}</button>
             ) : (
               <span className="leadgen-app-private-note">CRM sync unlocks after account setup.</span>
             )}
@@ -427,12 +427,12 @@ function LeadgenScanApp() {
               </select>
             </label>
             <button type="button" className="btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
-              <Search size={16} /> {busy ? "Scanning…" : "Run market scan"}
+              <Search size={16} /> {busy ? "Searching…" : "Find businesses"}
             </button>
           </div>
           {validZip ? (
             <div className="leadgen-product-save">
-              <button type="button" className="btn btn-secondary btn-sm" onClick={saveMarket}>Save + monitor weekly</button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={saveMarket}>Watch this market</button>
               {saveMsg ? <span className={saveMsg.ok ? "" : "is-error"}>{saveMsg.text}</span> : null}
             </div>
           ) : null}
@@ -462,9 +462,9 @@ function LeadgenScanApp() {
                 <span>Search results</span>
                 <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Company, city, industry, signal…" />
               </label>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={selectBest}>Select B+ prospects</button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={selectBest}>Select strong matches</button>
               <button type="button" className="btn btn-secondary btn-sm" onClick={enrichSelected} disabled={extracting}>
-                <Sparkles size={14} /> {extracting ? "Enriching…" : "Enrich intelligence"}
+                <Sparkles size={14} /> {extracting ? "Checking sites…" : "Add website signals"}
               </button>
             </div>
             {extractMsg ? <p className={extractMsg.ok ? "leadgen-product-message" : "form-error"}>{extractMsg.text}</p> : null}
@@ -477,8 +477,8 @@ function LeadgenScanApp() {
                 <p>Open a category to compare the businesses inside it. Narrow by subcategory, then expand a record to see the evidence behind its score.</p>
               </div>
               <div className="leadgen-explorer-actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={expandAllGroups}>Expand all</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={collapseAllGroups}>Collapse all</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={expandAllGroups}>Open all</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={collapseAllGroups}>Close all</button>
               </div>
             </div>
 
@@ -526,8 +526,8 @@ function LeadgenScanApp() {
                             ))}
                           </div>
                           <div className="leadgen-category__qualify">
-                            <button type="button" className="btn btn-secondary btn-sm" onClick={() => qualifyGroup(group)}>Keep B+ here</button>
-                            <button type="button" className="btn btn-secondary btn-sm" onClick={() => clearGroup(group)}>Clear category</button>
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={() => qualifyGroup(group)}>Select strong matches</button>
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={() => clearGroup(group)}>Clear selections</button>
                           </div>
                         </div>
 
@@ -627,6 +627,12 @@ export default function Leadgen() {
   return (
     <main id="main" className="leadgen-public">
       <div className="container leadgen-product-page">
+        <nav className="leadgen-breadcrumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><Link to="/">Home</Link></li>
+            <li aria-current="page">Leadgen</li>
+          </ol>
+        </nav>
         <LeadgenScanApp />
         <section className="leadgen-product-upgrade">
           <div>
@@ -635,7 +641,7 @@ export default function Leadgen() {
             <p>Pro adds saved markets, recurring monitoring, enrichment history, CRM sync, suppression, and attribution so you can work from a repeatable prospecting process instead of rebuilding lists.</p>
           </div>
           <a className="btn btn-primary" href={withLeadgenCheckoutParams(LEADGEN_STRIPE_LINKS.pro.monthly, { tierId: "pro", source: "leadgen_workspace" })}>
-            See Pro features <ArrowRight size={16} />
+            Compare plans <ArrowRight size={16} />
           </a>
         </section>
       </div>
