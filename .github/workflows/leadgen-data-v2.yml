@@ -25,6 +25,9 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Correct migration guard wording
+        run: sed -i 's/It does not run domain-age, DNS, PageSpeed, or technology scoring./It only checks public contact pages; technical diagnostics are intentionally excluded./' scripts/leadgen-data-v2.py
+
       - name: Apply Leadgen v2 migration
         run: python3 scripts/leadgen-data-v2.py
 
