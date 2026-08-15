@@ -3,16 +3,15 @@
 // Pulls public OSINT threat feeds into threat_feeds and matches visitor IPs
 // against the cache. Runs from /api/cron/report once a day and on-demand
 // from the admin panel (/api/portal?action=osint-refresh). No API key
-// required — all feeds below are freely published in plain text.
+// required — all feeds below are freely published.
 //
 // Feeds:
-//   - Spamhaus DROP: CIDRs hijacked or sold to cybercriminals (~300 rows).
-//   - Spamhaus EDROP: extended DROP list, sublets within legit ASNs (~100).
-//   - Emerging Threats compromised IPs: individual /32s flagged this week.
+//   - Spamhaus DROP v4/v6: high-confidence malicious netblocks.
+//   - Emerging Threats compromised IPs: individual hosts flagged this week.
 //
-// The admin UI LEFT JOINs against this table to add an `osintMatches` array
-// to every threat actor / blocked IP / visited IP — real-time in the sense
-// that every admin query surfaces the latest cached match instantly.
+// Spamhaus merged the historical EDROP data into DROP in April 2024. Their
+// current free datasets are newline-delimited JSON, so we consume those
+// directly instead of depending on the legacy EDROP text endpoint.
 
 import { sql } from "./db.js";
 
@@ -27,31 +26,34 @@ import { sql } from "./db.js";
  * @property {string} name
  * @property {string} url
  * @property {string} category
+ * @property {'text'|'spamhaus-json'} [format]
  */
 
 /** @type {OsintFeed[]} */
 const FEEDS = [
   {
     name: "spamhaus_drop",
-    url: "https://www.spamhaus.org/drop/drop.txt",
+    url: "https://www.spamhaus.org/drop/drop_v4.json",
     category: "hijacked_netblock",
+    format: "spamhaus-json",
   },
   {
-    name: "spamhaus_edrop",
-    url: "https://www.spamhaus.org/drop/edrop.txt",
+    name: "spamhaus_drop_v6",
+    url: "https://www.spamhaus.org/drop/drop_v6.json",
     category: "hijacked_netblock",
+    format: "spamhaus-json",
   },
   {
     name: "et_compromised",
     url: "https://rules.emergingthreats.net/blockrules/compromised-ips.txt",
     category: "compromised_host",
+    format: "text",
   },
 ];
 
 /**
- * Parse one line of a feed file into a normalized CIDR, or null if unparseable.
- * Spamhaus DROP format: "203.0.113.0/24 ; SBL123456" (one CIDR per line).
- * ET format: "203.0.113.5" (one IP per line).
+ * Parse one line of a text feed into a normalized CIDR, or null if
+ * unparseable. ET format is normally one IP per line; comments are ignored.
  *
  * @param {string} line
  * @returns {string|null}
@@ -67,7 +69,33 @@ function parseLine(line) {
 }
 
 /**
+ * Parse Spamhaus' current newline-delimited DROP JSON. Metadata/copyright
+ * records do not contain a cidr field and are intentionally skipped.
+ *
+ * @param {string} text
+ * @returns {string[]}
+ */
+function parseSpamhausJson(text) {
+  const cidrs = new Set();
+  for (const raw of String(text || "").split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    try {
+      const row = JSON.parse(line);
+      if (typeof row?.cidr === "string" && /^[0-9a-f:.]+\/[0-9]+$/i.test(row.cidr)) {
+        cidrs.add(row.cidr);
+      }
+    } catch {
+      // Ignore malformed individual records while retaining the valid dataset.
+    }
+  }
+  return Array.from(cidrs);
+}
+
+/**
  * Fetch and parse one feed over HTTP. Throws on a non-2xx response.
+ * Every parser returns unique CIDRs so one duplicated upstream record cannot
+ * make PostgreSQL's ON CONFLICT statement touch the same row twice.
  *
  * @param {OsintFeed} feed
  * @returns {Promise<string[]>}
@@ -75,22 +103,27 @@ function parseLine(line) {
 async function fetchFeed(feed) {
   const res = await fetch(feed.url, {
     signal: AbortSignal.timeout(8000),
-    headers: { "User-Agent": "simpleitsrq-osint/1.0" },
+    headers: { "User-Agent": "simpleitsrq-osint/1.1 (+https://simpleitsrq.com)" },
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const text = await res.text();
-  const cidrs = text
-    .split(/\r?\n/)
-    .map(parseLine)
-    .filter(Boolean);
-  return cidrs;
+
+  if (feed.format === "spamhaus-json") return parseSpamhausJson(text);
+
+  const cidrs = new Set();
+  for (const raw of text.split(/\r?\n/)) {
+    const parsed = parseLine(raw);
+    if (parsed) cidrs.add(parsed);
+  }
+  return Array.from(cidrs);
 }
 
 /**
  * Pulls every configured feed in parallel and upserts each CIDR under its
  * (feed_name, cidr) unique constraint. Returns a per-feed summary so the
  * caller can log / surface it to the admin. A single-feed failure does not
- * abort the others — an outage on Spamhaus shouldn't block ET.
+ * abort the others — an upstream outage should not erase the last known-good
+ * cache or block other feeds from refreshing.
  *
  * @returns {Promise<OsintRefreshResult>}
  */
@@ -104,6 +137,7 @@ export async function refreshThreatFeeds() {
       try {
         const cidrs = await fetchFeed(feed);
         if (cidrs.length === 0) {
+          // Preserve the existing cache on an empty/malformed upstream response.
           summary.push({ feed: feed.name, ok: false, error: "empty_response" });
           return;
         }
@@ -116,8 +150,9 @@ export async function refreshThreatFeeds() {
           FROM unnest(${cidrs}::text[]) AS c
           ON CONFLICT (feed_name, cidr) DO UPDATE SET fetched_at = EXCLUDED.fetched_at
         `;
-        // Purge entries that disappeared from the upstream list (keep the
-        // cache honest — a CIDR removed by Spamhaus should stop matching).
+        // Purge entries that disappeared from a successfully parsed upstream
+        // list. Failed/empty feeds never reach this branch, preserving the
+        // last known-good cache until the source recovers.
         const cutoff = new Date(start - 5 * 60 * 1000).toISOString();
         const removed = await sql`
           DELETE FROM threat_feeds
