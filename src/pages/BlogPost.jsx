@@ -9,7 +9,7 @@ import BlogCover from "../components/BlogCover";
 import LeadCaptureCTA from "../components/LeadCaptureCTA";
 import Newsletter from "../components/Newsletter";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
-import AdUnit from "../components/AdSense";
+import BlogMonetizationSlot from "../components/BlogMonetizationSlot";
 import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
 import ToolsUsedFooter from "../components/ToolsUsedFooter";
 import Affiliate from "../components/Affiliate";
@@ -343,9 +343,9 @@ export default function BlogPost() {
               // MDX path - one lazy chunk per post, sandwiched between the
               // same ad units the legacy renderer uses.
               <>
-                <AdUnit key="ad-top" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
+                <BlogMonetizationSlot key="ad-top" post={post} context={rawBody} slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" placement="top" />
                 <MdxBody slug={slug} />
-                <AdUnit key="ad-bottom" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
+                <BlogMonetizationSlot key="ad-bottom" post={post} context={rawBody} slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" placement="bottom" />
               </>
             ) : (
               (() => {
@@ -353,9 +353,9 @@ export default function BlogPost() {
                 const mid = Math.min(4, Math.floor(blocks.length / 2));
                 return [
                   ...blocks.slice(0, mid),
-                  <AdUnit key="ad-mid" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />,
+                  <BlogMonetizationSlot key="ad-mid" post={post} context={rawBody || legacyEntry?.content || ""} slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" placement="mid" />,
                   ...blocks.slice(mid),
-                  <AdUnit key="ad-bottom" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />,
+                  <BlogMonetizationSlot key="ad-bottom" post={post} context={rawBody || legacyEntry?.content || ""} slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" placement="bottom" />,
                 ];
               })()
             )}
