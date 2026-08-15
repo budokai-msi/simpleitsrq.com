@@ -671,10 +671,10 @@ function LeadgenScanApp() {
   const collapseAllGroups = () => setOpenGroups(Object.fromEntries(groupedRows.map((group) => [group.name, false])));
   const stage = !scan ? 0 : selectedRows.length === 0 ? 1 : selectedRows.some((row) => row.website && !row.website_intel) ? 2 : 3;
   const workflow = [
-    ["1. Discover", "Choose the ZIP code and industry you want to study."],
-    ["2. Qualify", "Compare opportunity and data coverage before selecting prospects."],
-    ["3. Enrich", "Add email, domain, DNS and website evidence where available."],
-    ["4. Use", "Download the list or send selected records to a connected CRM."],
+    { id: "leadgen-discover", number: "1", label: "Discover", body: "Choose the ZIP code and industry you want to study." },
+    { id: "leadgen-qualify", number: "2", label: "Qualify", body: "Compare the businesses and select the ones worth working." },
+    { id: "leadgen-enrich", number: "3", label: "Enrich", body: "Add useful contact details from the business website." },
+    { id: "leadgen-use", number: "4", label: "Use", body: "Download selected prospects or send them to your CRM." },
   ];
 
   return (
@@ -709,16 +709,28 @@ function LeadgenScanApp() {
           <p>Scan by ZIP code and industry, compare opportunity with data quality, inspect the evidence behind each record, then enrich and export only the prospects you choose.</p>
         </div>
 
-        <div className="leadgen-product-steps">
-          {workflow.map(([title, body], index) => (
-            <div key={title} className={`leadgen-product-step${index === stage ? " is-active" : ""}`}>
-              <strong>{title}</strong>
-              <span>{body}</span>
-            </div>
+        <nav className="leadgen-product-steps" aria-label="Leadgen workflow">
+          {workflow.map((step, index) => (
+            <a
+              key={step.id}
+              href={`#${step.id}`}
+              className={`leadgen-product-step${index === stage ? " is-active" : ""}`}
+              aria-current={index === stage ? "step" : undefined}
+            >
+              <span className="leadgen-product-step__index">{step.number}</span>
+              <span className="leadgen-product-step__copy">
+                <strong>{step.label}</strong>
+                <span>{step.body}</span>
+              </span>
+              <span className="leadgen-product-step__arrow" aria-hidden="true">›</span>
+            </a>
           ))}
-        </div>
+        </nav>
 
-        <div className="leadgen-scan-card">
+        <section id="leadgen-discover" className="leadgen-scan-card leadgen-workflow-target" aria-labelledby="leadgen-discover-title">
+          <nav className="leadgen-section-breadcrumbs" aria-label="Discover section">
+            <a href="#leadgen-discover">Leadgen</a><span aria-hidden="true">›</span><strong id="leadgen-discover-title">Discover</strong>
+          </nav>
           <div className="leadgen-app-controls leadgen-app-controls--primary">
             <label>
               <span>ZIP code</span>
@@ -741,10 +753,14 @@ function LeadgenScanApp() {
             </div>
           ) : null}
           {err ? <p className="form-error" role="alert">{err}</p> : null}
-        </div>
+        </section>
 
         {scan ? (
           <>
+            <section id="leadgen-qualify" className="leadgen-workflow-target leadgen-workflow-section" aria-labelledby="leadgen-qualify-title">
+              <nav className="leadgen-section-breadcrumbs" aria-label="Qualify section">
+                <a href="#leadgen-discover">Discover</a><span aria-hidden="true">›</span><strong id="leadgen-qualify-title">Qualify</strong>
+              </nav>
             <div className="leadgen-results-scorecard" aria-label="Current result set">
               <article><strong>{reviewedRows.length}</strong><span>businesses in this result set</span></article>
               <article><strong>{selectedRows.length}</strong><span>prospects currently selected</span></article>
@@ -769,7 +785,12 @@ function LeadgenScanApp() {
             ) : null}
 
             <LeadgenMap rows={visibleRows} scan={scan} />
+            </section>
 
+            <section id="leadgen-enrich" className="leadgen-workflow-target leadgen-workflow-section" aria-labelledby="leadgen-enrich-title">
+              <nav className="leadgen-section-breadcrumbs" aria-label="Enrich section">
+                <a href="#leadgen-discover">Discover</a><span aria-hidden="true">›</span><a href="#leadgen-qualify">Qualify</a><span aria-hidden="true">›</span><strong id="leadgen-enrich-title">Enrich</strong>
+              </nav>
             <div className="leadgen-product-toolbar leadgen-product-toolbar--realized">
               <label>
                 <span>Search results</span>
@@ -790,7 +811,25 @@ function LeadgenScanApp() {
               </button>
             </div>
             {extractMsg ? <p className={extractMsg.ok ? "leadgen-product-message" : "form-error"} aria-live="polite">{extractMsg.text}</p> : null}
-            {pushMsg ? <p className={pushMsg.ok ? "leadgen-product-message" : "form-error"} aria-live="polite">{pushMsg.text}</p> : null}
+            </section>
+
+            <section id="leadgen-use" className="leadgen-workflow-target leadgen-use-card" aria-labelledby="leadgen-use-title">
+              <nav className="leadgen-section-breadcrumbs" aria-label="Use section">
+                <a href="#leadgen-discover">Discover</a><span aria-hidden="true">›</span><a href="#leadgen-qualify">Qualify</a><span aria-hidden="true">›</span><a href="#leadgen-enrich">Enrich</a><span aria-hidden="true">›</span><strong id="leadgen-use-title">Use</strong>
+              </nav>
+              <div className="leadgen-use-card__body">
+                <div>
+                  <strong>{selectedRows.length ? `${selectedRows.length} prospect${selectedRows.length === 1 ? "" : "s"} ready` : "Select prospects to continue"}</strong>
+                  <span>Download a clean CSV or send the selected records to a connected CRM.</span>
+                </div>
+                <div className="leadgen-use-card__actions">
+                  <button type="button" className="btn btn-secondary btn-sm" disabled={!selectedRows.length} onClick={() => downloadCsv(`leadgen-${zip}.csv`, selectedRows.map((row) => ({ ...row, email: bestEmail(row) })))}>Download CSV</button>
+                  {destinations.length ? <select value={pushTarget} onChange={(event) => setPushTarget(event.target.value)} aria-label="CRM destination">{destinations.map((destination) => <option key={destination.id} value={destination.id}>{destination.label || destination.kind}</option>)}</select> : null}
+                  {destinations.length ? <button type="button" className="btn btn-primary btn-sm" onClick={pushSelected} disabled={!selectedRows.length || pushBusy}>{pushBusy ? "Sending…" : "Send to CRM"}</button> : <span className="leadgen-app-private-note">CRM sync unlocks after account setup.</span>}
+                </div>
+              </div>
+              {pushMsg ? <p className={pushMsg.ok ? "leadgen-product-message" : "form-error"} aria-live="polite">{pushMsg.text}</p> : null}
+            </section>
 
             <div className="leadgen-explorer-head">
               <div>
