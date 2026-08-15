@@ -1,0 +1,221 @@
+name: One-time blog growth engine integration
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.event.head_commit.message == 'Run blog growth engine integration'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Wire trend scoring, dedupe, SEO and house ads
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          # ---- BlogPost monetization slots ----
+          blog_path = Path('src/pages/BlogPost.jsx')
+          blog = blog_path.read_text()
+          old_import = 'import AdUnit from "../components/AdSense";'
+          new_import = 'import BlogMonetizationSlot from "../components/BlogMonetizationSlot";'
+          if old_import not in blog:
+              raise SystemExit('BlogPost AdUnit import anchor missing')
+          blog = blog.replace(old_import, new_import, 1)
+          blog = blog.replace(
+              '<AdUnit key="ad-top" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />',
+              '<BlogMonetizationSlot key="ad-top" post={post} context={rawBody} slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" placement="top" />'
+          )
+          blog = blog.replace(
+              '<AdUnit key="ad-bottom" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />',
+              '<BlogMonetizationSlot key="ad-bottom" post={post} context={rawBody} slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" placement="bottom" />'
+          )
+          blog = blog.replace(
+              '<AdUnit key="ad-mid" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />',
+              '<BlogMonetizationSlot key="ad-mid" post={post} context={rawBody || legacyEntry?.content || ""} slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" placement="mid" />'
+          )
+          # Legacy path has a second bottom occurrence after the MDX replacement above.
+          blog = blog.replace(
+              '<AdUnit key="ad-bottom" slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />',
+              '<BlogMonetizationSlot key="ad-bottom" post={post} context={rawBody || legacyEntry?.content || ""} slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" placement="bottom" />'
+          )
+          if 'AdUnit key=' in blog or 'BlogMonetizationSlot' not in blog:
+              raise SystemExit('BlogPost monetization replacement incomplete')
+          blog_path.write_text(blog)
+
+          # ---- Cron trend / novelty / SEO integration ----
+          cron_path = Path('api/cron/agent.js')
+          cron = cron_path.read_text()
+          import_anchor = 'import { fetchHnSourceContext } from "../_lib/hn-source-context.js";'
+          editorial_import = 'import { affiliateOpportunities, rankFreshStories, seoBriefForStory } from "../_lib/blog-editorial.js";'
+          if editorial_import not in cron:
+              if import_anchor not in cron:
+                  raise SystemExit('Cron editorial import anchor missing')
+              cron = cron.replace(import_anchor, import_anchor + '\n' + editorial_import, 1)
+
+          fetch_pattern = re.compile(r'async function fetchHNTopStory\(\) \{.*?\n\}\n\nasync function generateHNDraft', re.S)
+          new_fetch = '''async function fetchHNTopStory() {
+            try {
+              const topRes = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json", { signal: AbortSignal.timeout(8000) });
+              if (!topRes.ok) return null;
+              const topIds = await topRes.json();
+              if (!Array.isArray(topIds)) return null;
+
+              // Look deeper than the first screen of HN. A fast-rising story at rank 45
+              // can be a better traffic opportunity than yesterday's giant story at rank 5.
+              const candidates = await Promise.all(
+                topIds.slice(0, 80).map(async (id, rank) => {
+                  try {
+                    const r = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { signal: AbortSignal.timeout(5000) });
+                    if (!r.ok) return null;
+                    const story = await r.json();
+                    return story ? { ...story, hnRank: rank } : null;
+                  } catch { return null; }
+                })
+              );
+
+              // Generated drafts are our strongest duplicate corpus because they contain
+              // both the chosen source URL and the model's normalized article title.
+              const recentDrafts = await sql`
+                SELECT title, body
+                FROM draft_posts
+                WHERE ts > now() - interval '120 days'
+                ORDER BY ts DESC
+                LIMIT 250
+              `.catch(() => []);
+              const recentOutcomes = await sql`
+                SELECT detail->>'hnTitle' AS title, detail->>'hnUrl' AS source_url
+                FROM auto_actions
+                WHERE action = 'blog_draft'
+                  AND ts > now() - interval '120 days'
+                ORDER BY ts DESC
+                LIMIT 250
+              `.catch(() => []);
+              const recent = [...recentDrafts, ...recentOutcomes];
+
+              const eligible = candidates
+                .filter((s) => s && s.type === "story" && s.score >= 35 && s.title && s.url)
+                .filter((s) => !HN_BANNED_TITLE.test(s.title))
+                .filter((s) => HN_RELEVANT.test(`${s.title} ${s.url || ""}`));
+
+              return rankFreshStories(eligible, recent)[0] || null;
+            } catch (err) {
+              console.error("[hn] fetch error", err);
+              return null;
+            }
+          }
+
+          async function generateHNDraft'''
+          cron, count = fetch_pattern.subn(new_fetch, cron, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected one fetchHNTopStory block, replaced {count}')
+
+          old_setup = '''  const hnUrl = context.hnDiscussionUrl;
+          const gadget = pickGadgetForStory(story);'''
+          new_setup = '''  const hnUrl = context.hnDiscussionUrl;
+          const affiliateCandidates = affiliateOpportunities(story, context.article.text);
+          const seoBrief = seoBriefForStory(story);'''
+          if old_setup not in cron:
+              raise SystemExit('Cron gadget setup anchor missing')
+          cron = cron.replace(old_setup, new_setup, 1)
+
+          cron = cron.replace(
+              '- Title must be clear, specific, natural, and no more than 70 characters.',
+              '- Title must be clear, specific, natural, and no more than 70 characters. Use the supplied primary search query only when it reads naturally and accurately describes the article.'
+          )
+          cron = cron.replace(
+              '- Meta description must accurately summarize this specific article in one useful sentence.',
+              '- Meta description must accurately summarize this specific article in one useful sentence and make the practical value clear without clickbait.'
+          )
+          cron = cron.replace(
+              '- Slug must be lowercase kebab case and describe the actual topic. Do not stuff locations or service keywords into it.',
+              '- Slug must be lowercase kebab case and describe the actual topic. Do not stuff locations or service keywords into it.\n- Answer the primary search intent in the first 120 words. Use related terms naturally in headings/body; never repeat a phrase just for SEO.\n- Prefer evergreen explanatory angles around a trending event: what changed, who is affected, what to check, and what to do next.'
+          )
+
+          product_block = re.compile(r'PRODUCT LINKS:\n- A product candidate may be supplied\. It is OPTIONAL\..*?- If any affiliate shortcode is used, end with: "Product links may be affiliate links; we may earn a small commission on qualifying purchases\."', re.S)
+          new_product_block = '''PRODUCT LINKS:
+- Zero to three affiliate candidates may be supplied. Every candidate is OPTIONAL.
+- Use at most one affiliate link unless two products solve clearly different problems in the article.
+- Include a candidate only when the source-backed advice creates a real buying decision for the reader.
+- Never force a product into general news, policy, AI-model, or industry commentary.
+- If you use a product, include its exact shortcode once and explain the practical use case without unsupported superlatives.
+- If any affiliate shortcode is used, end with: "Product links may be affiliate links; we may earn a small commission on qualifying purchases."'''
+          cron, count = product_block.subn(new_product_block, cron, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected one PRODUCT LINKS block, replaced {count}')
+
+          old_user = '''Hacker News points when selected: ${story.score}
+
+ORIGINAL ARTICLE EXTRACT'''
+          new_user = '''Hacker News points when selected: ${story.score}
+Hacker News comments when selected: ${story.descendants || 0}
+Trend score: ${story.editorial?.trendScore || "n/a"}
+Story age in hours: ${story.editorial?.ageHours || "n/a"}
+Points per hour: ${story.editorial?.pointsPerHour || "n/a"}
+
+SEO / SEARCH INTENT BRIEF
+Primary query: ${seoBrief.primaryQuery}
+Search intent: ${seoBrief.searchIntent}
+Related queries: ${seoBrief.secondaryQueries.join(" | ")}
+Preferred internal CTA: ${seoBrief.preferredInternalCta}
+
+ORIGINAL ARTICLE EXTRACT'''
+          if old_user not in cron:
+              raise SystemExit('Cron user prompt popularity anchor missing')
+          cron = cron.replace(old_user, new_user, 1)
+
+          old_candidate = '''OPTIONAL PRODUCT CANDIDATE
+          ${gadget.key}: ${gadget.why}
+          Exact shortcode if, and only if, genuinely relevant: [[${gadget.token}]]'''
+          new_candidate = '''OPTIONAL AFFILIATE CANDIDATES
+${affiliateCandidates.length ? affiliateCandidates.map((candidate) => `- ${candidate.label}: ${candidate.why} — exact shortcode [[${candidate.token}]]`).join("\\n") : "No relevant affiliate candidate was found. Do not add a product link."}'''
+          if old_candidate not in cron:
+              raise SystemExit('Cron affiliate candidate anchor missing')
+          cron = cron.replace(old_candidate, new_candidate, 1)
+
+          cron = cron.replace(
+              'tags: ["hacker-news", "source-backed", "local-it", /\\[\\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null].filter(Boolean),',
+              'tags: ["hacker-news", "source-backed", "local-it", /\\[\\[(?:amazon|amazon_search|onepassword|backblaze|acronis|ubiquiti):/.test(post.body) || /\\[\\[(?:onepassword|backblaze|acronis|ubiquiti)\\]\\]/.test(post.body) ? "affiliate" : null].filter(Boolean),'
+          )
+          cron = cron.replace(
+              'gadget: /\\[\\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null,',
+              'affiliateOpportunities: affiliateCandidates.map((candidate) => candidate.label),\n      trend: story.editorial || null,\n      seoBrief,'
+          )
+
+          if 'const gadget = pickGadgetForStory(story);' in cron:
+              raise SystemExit('Old random gadget selection still active')
+          if 'rankFreshStories(eligible, recent)' not in cron or 'seoBriefForStory(story)' not in cron:
+              raise SystemExit('Editorial engine was not fully wired')
+          cron_path.write_text(cron)
+
+          # ---- Explicit AdSense switch documentation ----
+          env_path = Path('.env.example')
+          env = env_path.read_text() if env_path.exists() else ''
+          if 'VITE_ADSENSE_ENABLED=' not in env:
+              env += '\n# Set true only after AdSense is approved and you want Google ad slots instead of first-party blog banners.\nVITE_ADSENSE_ENABLED=false\n'
+              env_path.write_text(env)
+          PY
+
+      - name: Verify and commit
+        run: |
+          grep -q 'rankFreshStories(eligible, recent)' api/cron/agent.js
+          grep -q 'affiliateOpportunities(story, context.article.text)' api/cron/agent.js
+          grep -q 'SEO / SEARCH INTENT BRIEF' api/cron/agent.js
+          grep -q 'BlogMonetizationSlot' src/pages/BlogPost.jsx
+          ! grep -q 'AdUnit key=' src/pages/BlogPost.jsx
+          grep -q 'VITE_ADSENSE_ENABLED=false' .env.example
+          rm .github/workflows/one-time-blog-growth-engine.yml
+          git config user.name "Simple IT SRQ release bot"
+          git config user.email "114784512+budokai-msi@users.noreply.github.com"
+          git add api/cron/agent.js src/pages/BlogPost.jsx .env.example .github/workflows/one-time-blog-growth-engine.yml
+          git commit -m "Improve blog trend selection SEO and monetization"
+          git push origin HEAD:main
