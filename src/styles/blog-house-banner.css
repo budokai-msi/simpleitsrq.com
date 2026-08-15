@@ -1,0 +1,84 @@
+.blog-house-banner {
+  width: min(100%, 860px);
+  margin: 28px auto;
+  padding: 18px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid var(--aura-border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--aura-surface) 96%, transparent);
+  box-shadow: 0 0 0 1px var(--aura-accent-soft), var(--aura-shadow);
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+}
+
+.blog-house-banner::before {
+  content: "";
+  position: absolute;
+  inset: -40% auto -40% -14%;
+  width: 38%;
+  z-index: -1;
+  background: radial-gradient(circle, var(--aura-accent-glow), transparent 68%);
+  opacity: .7;
+}
+
+.blog-house-banner__icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  border: 1px solid var(--aura-border-strong);
+  background: var(--aura-accent-soft);
+  color: var(--aura-accent-strong);
+}
+
+.blog-house-banner__copy { min-width: 0; }
+.blog-house-banner__copy > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--aura-muted);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+.blog-house-banner__copy > strong {
+  display: block;
+  color: var(--text-1, var(--lg-text));
+  font-size: 1rem;
+  line-height: 1.28;
+}
+.blog-house-banner__copy p {
+  margin: 5px 0 0;
+  max-width: 650px;
+  color: var(--text-2, var(--aura-muted));
+  font-size: .82rem;
+  line-height: 1.5;
+}
+.blog-house-banner .btn { white-space: nowrap; }
+
+@media (max-width: 720px) {
+  .blog-house-banner {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 15px;
+    gap: 12px;
+  }
+  .blog-house-banner .btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .blog-house-banner {
+    width: 100%;
+    grid-template-columns: 1fr;
+    border-radius: 15px;
+  }
+  .blog-house-banner__icon { width: 40px; height: 40px; }
+  .blog-house-banner__copy > strong { font-size: .94rem; }
+}
