@@ -1,0 +1,368 @@
+/* Leadgen responsive refinement.
+   Uses the existing Aura theme tokens: yellow in light mode, silver in dark mode.
+   Inspired by daisyUI breadcrumb/card/button/stat/collapse composition without adding Tailwind. */
+
+.leadgen-public {
+  padding-block: clamp(22px, 3vw, 42px) 72px;
+}
+
+.leadgen-public .leadgen-product-page {
+  width: min(calc(100% - clamp(28px, 5vw, 72px)), 1180px);
+  max-width: 1180px !important;
+  margin-inline: auto;
+  padding-inline: 0;
+  gap: 18px;
+  transition: max-width 220ms ease, width 220ms ease;
+}
+
+/* Results need more comparison space, but never the full ultrawide viewport. */
+.leadgen-public .leadgen-product-page:has(.leadgen-intel-strip),
+.leadgen-public .leadgen-product-page:has(.leadgen-category-stack .leadgen-category) {
+  max-width: 1440px !important;
+}
+
+.leadgen-breadcrumbs {
+  max-width: 760px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  color: var(--aura-muted);
+  font-size: .78rem;
+  line-height: 1;
+}
+
+.leadgen-breadcrumbs::-webkit-scrollbar { display: none; }
+
+.leadgen-breadcrumbs ol {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 2px 0;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.leadgen-breadcrumbs li {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.leadgen-breadcrumbs li + li::before {
+  content: "/";
+  margin: 0 9px;
+  color: color-mix(in srgb, var(--aura-muted) 52%, transparent);
+}
+
+.leadgen-breadcrumbs a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.leadgen-breadcrumbs a:hover { color: var(--aura-accent-strong); }
+.leadgen-breadcrumbs [aria-current="page"] { color: var(--lg-text); font-weight: 700; }
+
+.leadgen-app-shell {
+  width: 100%;
+}
+
+.leadgen-app-panel--control {
+  padding: clamp(18px, 2.4vw, 30px) !important;
+  border: 1px solid var(--aura-border) !important;
+  border-radius: 22px !important;
+  background: color-mix(in srgb, var(--aura-surface) 95%, transparent) !important;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+html[data-theme="dark"] .leadgen-app-panel--control {
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .30), inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+
+.leadgen-app-topline {
+  max-width: 760px;
+  margin-bottom: 16px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--lg-border-faint);
+}
+
+.leadgen-app-title {
+  max-width: 760px;
+  margin-bottom: 20px;
+}
+
+.leadgen-app-title h2 {
+  max-width: 720px;
+  font-size: clamp(1.55rem, 2.35vw, 2.15rem) !important;
+  line-height: 1.08;
+  letter-spacing: -.035em;
+}
+
+.leadgen-app-title p {
+  max-width: 680px;
+  margin-top: 9px;
+  color: var(--lg-muted);
+  font-size: .9rem;
+  line-height: 1.58;
+}
+
+/* Daisy-like steps: compact, readable and not stretched into empty space. */
+.leadgen-product-steps {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 980px;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.leadgen-product-step {
+  padding: 11px 12px;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.leadgen-product-step strong { font-size: .8rem; }
+.leadgen-product-step span { font-size: .69rem; line-height: 1.4; }
+
+.leadgen-product-step.is-active {
+  border-color: var(--aura-border-strong);
+  box-shadow: 0 0 0 3px var(--aura-accent-soft);
+}
+
+/* Scan card behaves like a fieldset: one obvious task and one obvious action. */
+.leadgen-scan-card {
+  max-width: 1040px;
+  margin-top: 2px;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  background: var(--aura-surface-strong) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .06) !important;
+}
+
+.leadgen-app-controls--primary {
+  display: grid !important;
+  grid-template-columns: minmax(160px, .55fr) minmax(230px, 1.15fr) minmax(170px, auto) !important;
+  gap: 10px !important;
+  align-items: end;
+}
+
+.leadgen-app-controls--primary label > span,
+.leadgen-product-toolbar label > span {
+  color: var(--aura-muted) !important;
+  font-size: .68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+.leadgen-app-controls--primary input,
+.leadgen-app-controls--primary select,
+.leadgen-product-toolbar input {
+  border-color: var(--aura-border) !important;
+  background: color-mix(in srgb, var(--aura-surface-strong) 90%, var(--lg-page)) !important;
+}
+
+.leadgen-app-controls--primary input:focus,
+.leadgen-app-controls--primary select:focus,
+.leadgen-product-toolbar input:focus {
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 0 0 3px var(--aura-accent-soft) !important;
+}
+
+.leadgen-app-controls--primary .btn-primary {
+  min-width: 170px;
+  white-space: nowrap;
+}
+
+.leadgen-product-save {
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px solid var(--lg-border-faint);
+}
+
+.leadgen-product-save .btn {
+  min-height: 34px;
+}
+
+/* Results intentionally widen, while text and controls still keep readable measures. */
+.leadgen-intel-strip {
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.leadgen-intel-strip article {
+  min-height: 78px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 12px 13px;
+  border-radius: 13px;
+  box-shadow: none !important;
+}
+
+.leadgen-intel-strip strong { font-size: 1.12rem; }
+.leadgen-intel-strip span { font-size: .68rem; }
+
+.leadgen-product-toolbar {
+  grid-template-columns: minmax(260px, 1fr) auto auto;
+  max-width: 1120px;
+  align-items: end;
+}
+
+.leadgen-explorer-head {
+  align-items: center;
+}
+
+.leadgen-explorer-head > div:first-child { max-width: 760px; }
+
+.leadgen-category {
+  border-radius: 16px;
+  box-shadow: none !important;
+}
+
+.leadgen-category.is-open {
+  box-shadow: 0 0 0 1px var(--aura-accent-soft), 0 14px 38px rgba(0,0,0,.07) !important;
+}
+
+html[data-theme="dark"] .leadgen-category.is-open {
+  box-shadow: 0 0 0 1px var(--aura-accent-soft), 0 16px 42px rgba(0,0,0,.24) !important;
+}
+
+/* Selected-action utility is detached visually from the content flow. */
+.leadgen-selbar {
+  width: min(100%, 1040px);
+  margin-inline: auto;
+  margin-bottom: 10px;
+  border: 1px solid var(--aura-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,.10) !important;
+}
+
+/* Upgrade should read like a quiet secondary card, not a second hero. */
+.leadgen-product-upgrade {
+  width: min(100%, 980px);
+  margin-inline: auto;
+  padding: clamp(18px, 2.2vw, 26px) !important;
+  border-radius: 18px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.06) !important;
+}
+
+.leadgen-product-upgrade > div { max-width: 650px; }
+.leadgen-product-upgrade h2 { margin: 4px 0 7px; font-size: clamp(1.15rem, 1.8vw, 1.42rem); }
+.leadgen-product-upgrade p { margin: 0; font-size: .82rem; line-height: 1.55; color: var(--lg-muted); }
+.leadgen-product-upgrade .btn { white-space: nowrap; }
+
+/* Light mode keeps the requested yellow highlight. */
+html[data-theme="light"] .leadgen-app-panel--control,
+html[data-theme="light"] .leadgen-scan-card,
+html[data-theme="light"] .leadgen-product-upgrade {
+  border-color: color-mix(in srgb, var(--aura-accent) 30%, var(--aura-border)) !important;
+}
+
+/* Dark mode remains neutral/silver; no yellow fallbacks. */
+html[data-theme="dark"] .leadgen-app-live,
+html[data-theme="dark"] .leadgen-app-portal-link,
+html[data-theme="dark"] .leadgen-breadcrumbs a:hover {
+  color: var(--aura-accent-strong) !important;
+}
+
+@media (max-width: 900px) {
+  .leadgen-public .leadgen-product-page,
+  .leadgen-public .leadgen-product-page:has(.leadgen-intel-strip),
+  .leadgen-public .leadgen-product-page:has(.leadgen-category-stack .leadgen-category) {
+    width: min(calc(100% - 28px), 760px);
+    max-width: 760px !important;
+  }
+
+  .leadgen-product-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .leadgen-app-controls--primary {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .leadgen-app-controls--primary .btn-primary {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .leadgen-product-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .leadgen-product-toolbar label { grid-column: 1 / -1; }
+
+  .leadgen-product-upgrade {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .leadgen-product-upgrade .btn { width: fit-content; }
+}
+
+@media (max-width: 620px) {
+  .leadgen-public { padding-top: 16px; }
+
+  .leadgen-public .leadgen-product-page,
+  .leadgen-public .leadgen-product-page:has(.leadgen-intel-strip),
+  .leadgen-public .leadgen-product-page:has(.leadgen-category-stack .leadgen-category) {
+    width: calc(100% - 20px);
+  }
+
+  .leadgen-app-panel--control { padding: 15px !important; border-radius: 17px !important; }
+  .leadgen-app-title h2 { font-size: 1.52rem !important; }
+
+  .leadgen-product-steps {
+    display: flex !important;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 5px;
+    scrollbar-width: thin;
+  }
+
+  .leadgen-product-step {
+    flex: 0 0 min(78vw, 260px);
+    scroll-snap-align: start;
+  }
+
+  .leadgen-app-controls--primary,
+  .leadgen-product-toolbar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .leadgen-app-controls--primary .btn-primary,
+  .leadgen-product-toolbar label {
+    grid-column: auto;
+  }
+
+  .leadgen-intel-strip {
+    display: flex !important;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    padding-bottom: 6px;
+  }
+
+  .leadgen-intel-strip article {
+    flex: 0 0 150px;
+    scroll-snap-align: start;
+  }
+
+  .leadgen-intel-strip article.is-wide { flex-basis: min(82vw, 300px); }
+
+  .leadgen-explorer-head {
+    align-items: flex-start;
+  }
+
+  .leadgen-product-upgrade .btn { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leadgen-public .leadgen-product-page,
+  .leadgen-category,
+  .leadgen-product-step { transition: none !important; }
+}
