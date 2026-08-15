@@ -1,0 +1,225 @@
+name: One-time source-backed editorial rewrite
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  rewrite:
+    if: github.event.head_commit.message == 'Run source-backed editorial and marketing rewrite'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Rewrite marketing copy and Qwen editorial pipeline
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          cron_path = Path('api/cron/agent.js')
+          cron = cron_path.read_text()
+
+          import_anchor = 'import { publishDraftToGitHub } from "../_lib/publish-draft.js";'
+          context_import = 'import { fetchHnSourceContext } from "../_lib/hn-source-context.js";'
+          if context_import not in cron:
+              if import_anchor not in cron:
+                  raise SystemExit('Could not find publish-draft import anchor')
+              cron = cron.replace(import_anchor, import_anchor + '\n' + context_import, 1)
+
+          old_story = '''  const story = (await fetchHNTopStory()) || {
+            id: 999901,
+            title: "Sarasota & Bradenton Small Business IT Field Notes: Workstation Hardening & Network Security",
+            score: 120,
+            url: "https://simpleitsrq.com/blog",
+          };
+
+          try {
+            const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
+          const gadget = pickGadgetForStory(story);'''
+          new_story = '''  const story = await fetchHNTopStory();
+          if (!story) {
+            const out = { skipped: true, reason: "no eligible Hacker News story today" };
+            await logBlogOutcome(out);
+            return out;
+          }
+
+          const context = await fetchHnSourceContext(story);
+          if (!context.ok) {
+            const out = { skipped: true, reason: "source article could not be extracted", source: story.url, detail: context.error };
+            await logBlogOutcome(out);
+            return out;
+          }
+
+          try {
+            const hnUrl = context.hnDiscussionUrl;
+            const gadget = pickGadgetForStory(story);'''
+          if old_story not in cron:
+              raise SystemExit('Could not find old HN story fallback block')
+          cron = cron.replace(old_story, new_story, 1)
+
+          system_prompt = r'''  const systemPrompt = `You are the editorial engine for Simple IT SRQ, a computer repair and business IT company serving Sarasota and Bradenton, Florida. Your job is to turn a source article discovered through Hacker News into an original, useful field note for small-business readers.
+
+          EDITORIAL STANDARD:
+          - Write for the reader first. Help someone understand what happened, whether it matters to them, and what they can reasonably do next.
+          - Treat the supplied source article as the factual basis. The Hacker News discussion is secondary context and opinion, not evidence.
+          - Add original technical analysis and practical context. Do not merely summarize or closely paraphrase the source.
+          - Do not copy sentences from the source. Avoid verbatim quotations unless a very short phrase is essential.
+          - Never invent statistics, incidents, customer stories, breach counts, cost figures, product performance claims, or local events.
+          - If the source does not support a factual claim, do not state it as fact. Mark reasonable interpretation as analysis.
+          - Mention Sarasota or Bradenton only when the local context genuinely helps the reader. Do not repeat city names for SEO.
+          - Use plain language. Avoid hype such as "secret sauce", "game-changing", "massive", "critical enterprise-grade investment", "impenetrable", or fear-based urgency.
+          - Be concise and well organized. There is no target word count; stop when the reader has enough information to act.
+          - Title must be clear, specific, natural, and no more than 70 characters.
+          - Meta description must accurately summarize this specific article in one useful sentence.
+          - Category must be one of: Cybersecurity, AI & Productivity, Cloud, Compliance, Privacy, Business Tech, Industry News.
+          - Slug must be lowercase kebab case and describe the actual topic. Do not stuff locations or service keywords into it.
+
+          REQUIRED STRUCTURE:
+          - Begin with a one-sentence source note linking to the original article: [Original source](${story.url}).
+          - Include these Markdown H2 sections: "## Short answer", "## What the source actually says", "## Why it matters", "## What to do this week", "## When to call IT".
+          - If the HN discussion adds a useful disagreement or implementation detail, include a short "## What practitioners are debating" section and clearly attribute it to Hacker News discussion.
+          - End with one relevant internal link to /services, /leadgen, /tools, /book, or /#contact. Do not force multiple CTAs.
+
+          PRODUCT LINKS:
+          - A product candidate may be supplied. It is OPTIONAL.
+          - Include it only when it directly helps implement advice supported by the source article.
+          - Never make a product the hero of an unrelated article.
+          - If you use the product, include its exact shortcode once and explain the practical reason without unsupported superlatives.
+          - If any affiliate shortcode is used, end with: "Product links may be affiliate links; we may earn a small commission on qualifying purchases."
+
+          Respond with ONLY a JSON object (no Markdown fence):
+          {
+            "title": "...",
+            "slug": "...",
+            "category": "...",
+            "excerpt": "...",
+            "metaDescription": "...",
+            "body": "..."
+          }`;'''
+
+          prompt_pattern = re.compile(r'  const systemPrompt = `.*?`;\n\n  const userPrompt = `.*?`;', re.S)
+          user_prompt = r'''  const userPrompt = `Create an original Simple IT SRQ field note from the source material below.
+
+          DISCOVERY CONTEXT
+          Hacker News title: ${story.title}
+          Original URL: ${story.url}
+          Hacker News discussion: ${hnUrl}
+          Hacker News points when selected: ${story.score}
+
+          ORIGINAL ARTICLE EXTRACT
+          ${context.article.text}
+
+          HACKER NEWS DISCUSSION EXCERPTS
+          ${context.discussion?.text || "No useful discussion excerpts were available."}
+
+          OPTIONAL PRODUCT CANDIDATE
+          ${gadget.key}: ${gadget.why}
+          Exact shortcode if, and only if, genuinely relevant: [[${gadget.token}]]
+
+          Write a standalone analysis that adds value beyond the original article. Explain what is confirmed by the source, what is interpretation, and what a small business reader can do with the information. Do not imitate the source's wording and do not manufacture a Sarasota/Bradenton angle when one is not useful.`;'''
+
+          replacement = system_prompt + '\n\n' + user_prompt
+          cron, count = prompt_pattern.subn(lambda m: replacement, cron, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected to replace one editorial prompt block, replaced {count}')
+
+          fallback_pattern = re.compile(
+              r'  if \(!post \|\| !post\.title \|\| !post\.body\) \{.*?\n  \}\n\n    if \(!post\.title \|\| !post\.slug \|\| !post\.body\) \{',
+              re.S,
+          )
+          fallback_replacement = '''  if (!post || !post.title || !post.body) {
+            const out = { error: "qwen_generation_failed", source: story.url, model: usedModel };
+            await logBlogOutcome(out);
+            return out;
+          }
+
+            if (!post.title || !post.slug || !post.body) {'''
+          cron, count = fallback_pattern.subn(fallback_replacement, cron, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected to replace one fabricated fallback block, replaced {count}')
+
+          cron = cron.replace(
+              'const out = { error: "Incomplete HN post", raw: text.slice(0, 500) };',
+              'const out = { error: "incomplete_qwen_post", source: story.url };',
+          )
+          cron = cron.replace(
+              'tags: ["hacker-news", "local-it", gadget.key],',
+              'tags: ["hacker-news", "source-backed", "local-it", /\\[\\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null].filter(Boolean),',
+          )
+          cron = cron.replace(
+              '`New HackerNews draft generated by Groq agent.\\n\\n` +',
+              '`New source-backed Hacker News analysis generated by the Qwen editorial pipeline.\\n\\n` +',
+          )
+          cron = cron.replace(
+              'gadget: gadget.key,',
+              'gadget: /\\[\\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null,',
+          )
+
+          banned = [
+              'aggressively positioning our recommended IT solutions',
+              'critical, enterprise-grade investment',
+              'Make the suggested gadget the hero of the story',
+              'Rewrite this Hacker News story',
+              'Sarasota & Bradenton Workstation Hardening & Ransomware Defense Playbook',
+          ]
+          leftovers = [term for term in banned if term in cron]
+          if leftovers:
+              raise SystemExit(f'Old editorial language still present: {leftovers}')
+          if 'fetchHnSourceContext(story)' not in cron or 'context.article.text' not in cron:
+              raise SystemExit('Source-backed context was not wired into cron')
+          cron_path.write_text(cron)
+
+          leadgen_path = Path('src/pages/Leadgen.jsx')
+          leadgen = leadgen_path.read_text()
+          replacements = {
+              'Live local-market data engine': 'Local business research',
+              'Live market intelligence': 'Evidence-backed market view',
+              'Build a qualified local pipeline, not another spreadsheet.': 'Start with a market. Find the businesses worth a closer look.',
+              'Discover businesses, qualify them, enrich website and contact signals, then send the final list into your CRM or automation stack.': 'Scan by ZIP code and industry, compare useful business signals, expand the records that stand out, enrich what is missing, and export only the prospects you choose.',
+              'Choose a market and industry.': 'Choose the ZIP code and industry you want to study.',
+              'Keep the businesses worth pursuing.': 'Review the evidence and keep the prospects that fit.',
+              'Add reachable emails and website intelligence.': 'Fill in contact and website signals where data is available.',
+              'Export or push into your revenue stack.': 'Export the list or send selected records to a connected CRM.',
+              'Open an industry, narrow to a subcategory, then expand any business into a full prospect profile.': 'Open a category to compare the businesses inside it. Narrow by subcategory, then expand a record to see the evidence behind its score.',
+              'Built for revenue teams': 'For repeat prospecting',
+              'Turn recurring local-market intelligence into pipeline.': 'Keep the markets you care about under watch.',
+              'Saved markets, scoring, website intelligence, CRM sync, campaign history, suppression, attribution and health monitoring become more valuable as your team keeps using them.': 'Pro adds saved markets, recurring monitoring, enrichment history, CRM sync, suppression, and attribution so you can work from a repeatable prospecting process instead of rebuilding lists.',
+              'Upgrade to Pro': 'See Pro features',
+              'Local Lead Generation & CRM Sync | Simple IT SRQ': 'Local Business Lead Research & Enrichment | Leadgen',
+              'Discover local businesses, score and qualify prospects, enrich website and contact signals, monitor saved markets, and sync attributable pipeline into your CRM.': 'Research local businesses by ZIP code and industry, compare prospect signals, enrich available contact data, save markets, and export the businesses you choose.',
+          }
+          for old, new in replacements.items():
+              if old not in leadgen:
+                  raise SystemExit(f'Leadgen copy anchor missing: {old}')
+              leadgen = leadgen.replace(old, new, 1)
+          leadgen_path.write_text(leadgen)
+
+          app_path = Path('src/App.jsx')
+          app = app_path.read_text()
+          old_footer = 'Local IT support, helpdesk, computer repair, security cameras, and enterprise IT - for businesses and homes across Sarasota, Bradenton, and Venice. A real team that picks up the phone.'
+          new_footer = 'Computer repair and practical business IT support for Sarasota and Bradenton, plus Leadgen for local prospect research. Clear scope, useful answers, and no oversized promises.'
+          if old_footer in app:
+              app = app.replace(old_footer, new_footer, 1)
+          app_path.write_text(app)
+          PY
+
+      - name: Verify and commit rewrite
+        run: |
+          grep -q 'fetchHnSourceContext(story)' api/cron/agent.js
+          grep -q 'context.article.text' api/cron/agent.js
+          grep -q 'Start with a market. Find the businesses worth a closer look.' src/pages/Leadgen.jsx
+          ! grep -q 'Make the suggested gadget the hero' api/cron/agent.js
+          ! grep -q 'aggressively positioning' api/cron/agent.js
+          rm .github/workflows/one-time-source-backed-editorial.yml
+          git config user.name "Simple IT SRQ release bot"
+          git config user.email "114784512+budokai-msi@users.noreply.github.com"
+          git add api/cron/agent.js src/pages/Leadgen.jsx src/App.jsx .github/workflows/one-time-source-backed-editorial.yml
+          git commit -m "Make Qwen blogging source-backed and rewrite marketing copy"
+          git push origin HEAD:main
