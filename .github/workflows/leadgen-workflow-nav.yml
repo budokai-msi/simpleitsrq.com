@@ -1,0 +1,39 @@
+name: Leadgen workflow navigation upgrade
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/leadgen-workflow-nav.yml
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Patch navigation
+        run: python3 scripts/leadgen-workflow-nav.py
+      - name: Install
+        run: npm ci
+      - name: Test
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Commit verified navigation
+        run: |
+          git config user.name 'Simple IT SRQ release bot'
+          git config user.email '114784512+budokai-msi@users.noreply.github.com'
+          git rm .github/workflows/leadgen-workflow-nav.yml scripts/leadgen-workflow-nav.py
+          git add src/pages/Leadgen.jsx src/styles/leadgen-product.css
+          git commit -m 'Make Leadgen workflow cards navigable'
+          git push origin HEAD:main
