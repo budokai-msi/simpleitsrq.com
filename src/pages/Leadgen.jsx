@@ -1,8 +1,9 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import "../styles/leadgen.css";
 import "../styles/leadgen-product.css";
+import "../styles/leadgen-cards.css";
 import { Link } from "../lib/Link";
-import { ArrowRight, ChevronDown, Mail, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, ExternalLink, Globe2, Mail, Phone, Search, Sparkles } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
 import { csrfFetch } from "../lib/csrf";
@@ -40,8 +41,7 @@ function withLeadgenCheckoutParams(url, options = {}) {
   try {
     const next = new URL(url);
     if (!next.searchParams.has("prefilled_promo_code")) next.searchParams.set("prefilled_promo_code", LEADGEN_PROMO_CODE);
-    const ref = leadgenCheckoutReference(options);
-    next.searchParams.set("client_reference_id", ref);
+    next.searchParams.set("client_reference_id", leadgenCheckoutReference(options));
     next.searchParams.set("utm_source", "simpleitsrq_com");
     next.searchParams.set("utm_medium", "leadgen");
     next.searchParams.set("utm_campaign", "leadgen_checkout");
@@ -55,27 +55,32 @@ function csvCell(value) {
   return `"${String(value ?? "").replace(/"/g, '""')}"`;
 }
 
-function downloadCsv(filename, rows) {
-  const headers = ["status", "name", "industry", "sub_industry", "address", "city", "state", "zip", "website", "phone", "email", "opportunity_score", "opportunity_grade", "source_url"];
-  const lines = [
-    headers.map(csvCell).join(","),
-    ...rows.map((row) => headers.map((key) => csvCell(key === "email" ? (row.email || row.emails?.[0]?.email || "") : row[key])).join(",")),
-  ];
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
+function isFiniteNumber(value) {
+  return Number.isFinite(Number(value));
+}
+
+function technicalSnapshot(signal) {
+  const domainIntel = signal?.domain_intel || {};
+  const dns = signal?.dns || domainIntel.dns || {};
+  const registration = signal?.registration || domainIntel.registration || {};
+  const pagespeed = signal?.pagespeed || domainIntel.pagespeed || {};
+  const quality = signal?.technical_quality_score ?? domainIntel.technical_quality_score;
+  const evidence = signal?.evidence_sources || domainIntel.evidence_sources || [];
+  return {
+    quality: isFiniteNumber(quality) ? Number(quality) : null,
+    domainAge: isFiniteNumber(registration.domain_age_years) ? Number(registration.domain_age_years) : null,
+    mx: dns.has_mx === true ? "Ready" : dns.has_mx === false ? "Not found" : "Unknown",
+    performance: isFiniteNumber(pagespeed.performance) ? Number(pagespeed.performance) : null,
+    seo: isFiniteNumber(pagespeed.seo) ? Number(pagespeed.seo) : null,
+    evidenceCount: Array.isArray(evidence) ? evidence.length : 0,
+  };
 }
 
 function websiteInsightLabels(signal) {
   if (!signal) return [];
   const labels = [];
-  if (signal.technologies?.length) labels.push(...signal.technologies.slice(0, 4));
+  if (signal.intelligence_labels?.length) labels.push(...signal.intelligence_labels);
+  if (signal.technologies?.length) labels.push(...signal.technologies.slice(0, 6));
   if (signal.has_contact_form) labels.push("Contact form");
   if (signal.has_booking_signal) labels.push("Online booking");
   if (signal.has_careers_signal) labels.push("Hiring signal");
@@ -85,7 +90,30 @@ function websiteInsightLabels(signal) {
   if (signal.social?.instagram) labels.push("Instagram");
   if (signal.secure === false) labels.push("No HTTPS");
   if (signal.has_viewport === false) labels.push("No mobile viewport");
-  return Array.from(new Set(labels)).slice(0, 10);
+  return Array.from(new Set(labels.filter(Boolean))).slice(0, 12);
+}
+
+function dataCoverage(row, email = "") {
+  const fields = [
+    ["business name", row.name],
+    ["category", row.sub_industry || row.industry_group || row.industry],
+    ["address", row.address || (row.city && row.state)],
+    ["website", row.website],
+    ["phone", row.phone],
+    ["email", email],
+    ["source", row.source_url || row.source_id],
+  ];
+  const filled = fields.filter(([, value]) => Boolean(value)).length;
+  const missing = fields.filter(([, value]) => !value).map(([label]) => label);
+  return { filled, total: fields.length, percent: Math.round((filled / fields.length) * 100), missing };
+}
+
+function opportunityLabel(score) {
+  const n = Number(score || 0);
+  if (n >= 80) return "High-priority opportunity";
+  if (n >= 65) return "Strong match";
+  if (n >= 45) return "Worth reviewing";
+  return "Low evidence / fit";
 }
 
 function hostnameOf(value) {
@@ -97,8 +125,45 @@ function hostnameOf(value) {
   }
 }
 
+function websiteHref(value) {
+  if (!value) return "";
+  const raw = String(value).trim();
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+}
+
+function telHref(value) {
+  return `tel:${String(value || "").replace(/[^+\d]/g, "")}`;
+}
+
 function prospectKey(row) {
   return row.source_id || `${row.name || "prospect"}-${row.__scanIndex}`;
+}
+
+function downloadCsv(filename, rows) {
+  const headers = ["status", "name", "industry", "sub_industry", "address", "city", "state", "zip", "website", "phone", "email", "opportunity_score", "opportunity_grade", "data_coverage", "technical_quality_score", "domain_age_years", "pagespeed_performance", "pagespeed_seo", "source_url"];
+  const lines = [headers.map(csvCell).join(",")];
+  rows.forEach((row) => {
+    const tech = technicalSnapshot(row.website_intel);
+    const coverage = dataCoverage(row, row.email || row.emails?.[0]?.email || "");
+    const record = {
+      ...row,
+      data_coverage: coverage.percent,
+      technical_quality_score: tech.quality ?? "",
+      domain_age_years: tech.domainAge ?? "",
+      pagespeed_performance: tech.performance ?? "",
+      pagespeed_seo: tech.seo ?? "",
+    };
+    lines.push(headers.map((key) => csvCell(record[key])).join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }
 
 function LeadgenScanApp() {
@@ -109,6 +174,7 @@ function LeadgenScanApp() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortMode, setSortMode] = useState("opportunity");
   const [destinations, setDestinations] = useState([]);
   const [pushTarget, setPushTarget] = useState("");
   const [pushBusy, setPushBusy] = useState(false);
@@ -117,6 +183,8 @@ function LeadgenScanApp() {
   const [websiteIntel, setWebsiteIntel] = useState({});
   const [extracting, setExtracting] = useState(false);
   const [extractMsg, setExtractMsg] = useState(null);
+  const [siteBusy, setSiteBusy] = useState({});
+  const [siteMessages, setSiteMessages] = useState({});
   const [saveMsg, setSaveMsg] = useState(null);
   const [openGroups, setOpenGroups] = useState({});
   const [activeSubs, setActiveSubs] = useState({});
@@ -139,8 +207,7 @@ function LeadgenScanApp() {
 
   const visibleRows = useMemo(() => {
     const query = deferredSearchTerm.trim().toLowerCase();
-    if (!query) return reviewedRows;
-    return reviewedRows.filter((row) => [
+    const filtered = query ? reviewedRows.filter((row) => [
       row.name,
       row.city,
       row.industry_group,
@@ -149,8 +216,19 @@ function LeadgenScanApp() {
       row.phone,
       ...(row.opportunity_reasons || []),
       ...websiteInsightLabels(row.website_intel),
-    ].filter(Boolean).join(" ").toLowerCase().includes(query));
-  }, [reviewedRows, deferredSearchTerm]);
+    ].filter(Boolean).join(" ").toLowerCase().includes(query)) : [...reviewedRows];
+
+    return filtered.sort((a, b) => {
+      if (sortMode === "coverage") return dataCoverage(b, bestEmail(b)).percent - dataCoverage(a, bestEmail(a)).percent || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0);
+      if (sortMode === "name") return String(a.name || "").localeCompare(String(b.name || ""));
+      if (sortMode === "gaps") {
+        const aGaps = Number(!a.website) + Number(!a.phone) + Number(!bestEmail(a));
+        const bGaps = Number(!b.website) + Number(!b.phone) + Number(!bestEmail(b));
+        return bGaps - aGaps || Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0);
+      }
+      return Number(b.opportunity_score || 0) - Number(a.opportunity_score || 0) || String(a.name || "").localeCompare(String(b.name || ""));
+    });
+  }, [reviewedRows, deferredSearchTerm, sortMode, extractedEmails]);
 
   const groupedRows = useMemo(() => {
     const groups = new Map();
@@ -158,17 +236,7 @@ function LeadgenScanApp() {
       const industry = row.industry_group || row.industry || "Other";
       const sub = row.sub_industry || "Other";
       if (!groups.has(industry)) {
-        groups.set(industry, {
-          name: industry,
-          rows: [],
-          subs: new Map(),
-          withWebsite: 0,
-          withPhone: 0,
-          withEmail: 0,
-          enriched: 0,
-          digitalGaps: 0,
-          scoreTotal: 0,
-        });
+        groups.set(industry, { name: industry, rows: [], subs: new Map(), withWebsite: 0, withPhone: 0, withEmail: 0, enriched: 0, digitalGaps: 0, scoreTotal: 0, coverageTotal: 0, strong: 0 });
       }
       const group = groups.get(industry);
       group.rows.push(row);
@@ -176,22 +244,25 @@ function LeadgenScanApp() {
       if (row.phone) group.withPhone += 1;
       if (bestEmail(row)) group.withEmail += 1;
       if (row.website_intel) group.enriched += 1;
-      if (!row.website || !row.phone) group.digitalGaps += 1;
+      if (!row.website || !row.phone || !bestEmail(row)) group.digitalGaps += 1;
+      if (Number(row.opportunity_score || 0) >= 65) group.strong += 1;
       group.scoreTotal += Number(row.opportunity_score || 0);
+      group.coverageTotal += dataCoverage(row, bestEmail(row)).percent;
       if (!group.subs.has(sub)) group.subs.set(sub, []);
       group.subs.get(sub).push(row);
     }
-    return Array.from(groups.values())
-      .map((group) => ({
-        ...group,
-        avgScore: group.rows.length ? Math.round(group.scoreTotal / group.rows.length) : 0,
-        contactable: group.rows.length ? Math.round((group.rows.filter((row) => row.phone || bestEmail(row)).length / group.rows.length) * 100) : 0,
-      }))
-      .sort((a, b) => b.rows.length - a.rows.length || a.name.localeCompare(b.name));
+    return Array.from(groups.values()).map((group) => ({
+      ...group,
+      avgScore: group.rows.length ? Math.round(group.scoreTotal / group.rows.length) : 0,
+      avgCoverage: group.rows.length ? Math.round(group.coverageTotal / group.rows.length) : 0,
+      contactable: group.rows.length ? Math.round((group.rows.filter((row) => row.phone || bestEmail(row)).length / group.rows.length) * 100) : 0,
+    })).sort((a, b) => b.rows.length - a.rows.length || a.name.localeCompare(b.name));
   }, [visibleRows, extractedEmails]);
 
-  const kept = reviewedRows.filter((row) => row.status === "keep");
-  const keptWithEmail = kept.filter((row) => bestEmail(row));
+  const selectedRows = reviewedRows.filter((row) => row.status === "keep");
+  const selectedWithEmail = selectedRows.filter((row) => bestEmail(row));
+  const enrichedCount = reviewedRows.filter((row) => row.website_intel).length;
+  const averageCoverage = reviewedRows.length ? Math.round(reviewedRows.reduce((sum, row) => sum + dataCoverage(row, bestEmail(row)).percent, 0) / reviewedRows.length) : 0;
   const insights = scan?.market_insights || null;
 
   useEffect(() => {
@@ -210,9 +281,7 @@ function LeadgenScanApp() {
     if (!scan || !groupedRows.length) return;
     setOpenGroups((current) => {
       if (Object.keys(current).length) return current;
-      const next = {};
-      groupedRows.slice(0, 2).forEach((group) => { next[group.name] = true; });
-      return next;
+      return Object.fromEntries(groupedRows.slice(0, 2).map((group) => [group.name, true]));
     });
   }, [scan, groupedRows]);
 
@@ -227,6 +296,7 @@ function LeadgenScanApp() {
     setOpenProspects({});
     setWebsiteIntel({});
     setExtractedEmails({});
+    setSiteMessages({});
     try {
       const response = await csrfFetch("/api/leadgen", {
         method: "POST",
@@ -236,11 +306,7 @@ function LeadgenScanApp() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.ok === false) throw new Error(data.message || data.error || `HTTP ${response.status}`);
       setScan(data);
-      trackEvent("search", {
-        search_term: `${zip}:${niche}`,
-        source: "leadgen_scanner",
-        result_count: Number(data.matched || data.rows?.length || 0),
-      });
+      trackEvent("search", { search_term: `${zip}:${niche}`, source: "leadgen_scanner", result_count: Number(data.matched || data.rows?.length || 0) });
     } catch (error) {
       setErr(error.message || "Scan failed.");
     } finally {
@@ -248,16 +314,30 @@ function LeadgenScanApp() {
     }
   };
 
+  const setSelected = (row, checked) => {
+    setReview((current) => {
+      const next = { ...current };
+      if (checked) next[row.__scanIndex] = "keep";
+      else delete next[row.__scanIndex];
+      return next;
+    });
+  };
+
   const selectBest = () => {
     const next = {};
-    rows.forEach((row, index) => { next[index] = Number(row.opportunity_score || 0) >= 65 ? "keep" : "reject"; });
+    rows.forEach((row, index) => {
+      if (Number(row.opportunity_score || 0) >= 65) next[index] = "keep";
+    });
     setReview(next);
   };
 
   const qualifyGroup = (group) => {
     setReview((current) => {
       const next = { ...current };
-      group.rows.forEach((row) => { next[row.__scanIndex] = Number(row.opportunity_score || 0) >= 65 ? "keep" : "reject"; });
+      group.rows.forEach((row) => {
+        if (Number(row.opportunity_score || 0) >= 65) next[row.__scanIndex] = "keep";
+        else delete next[row.__scanIndex];
+      });
       return next;
     });
   };
@@ -265,14 +345,14 @@ function LeadgenScanApp() {
   const clearGroup = (group) => {
     setReview((current) => {
       const next = { ...current };
-      group.rows.forEach((row) => { next[row.__scanIndex] = "reject"; });
+      group.rows.forEach((row) => { delete next[row.__scanIndex]; });
       return next;
     });
   };
 
   const enrichSelected = async () => {
-    const targets = kept.filter((row) => row.website).slice(0, 30);
-    if (!targets.length) return setExtractMsg({ ok: true, text: "Select prospects with websites to enrich." });
+    const targets = selectedRows.filter((row) => row.website).slice(0, 30);
+    if (!targets.length) return setExtractMsg({ ok: true, text: "Select prospects with websites first." });
     setExtracting(true);
     setExtractMsg(null);
     const foundEmails = { ...extractedEmails };
@@ -290,7 +370,8 @@ function LeadgenScanApp() {
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.message || data.error || `HTTP ${response.status}`);
         (data.results || []).forEach((result, resultIndex) => {
-          const key = batch[resultIndex].website;
+          const key = batch[resultIndex]?.website;
+          if (!key) return;
           const email = result.emails?.[0]?.email;
           if (email && !foundEmails[key]) {
             foundEmails[key] = email;
@@ -304,10 +385,7 @@ function LeadgenScanApp() {
       }
       setExtractedEmails(foundEmails);
       setWebsiteIntel(foundIntel);
-      setExtractMsg({
-        ok: true,
-        text: `Enriched ${intelCount} website${intelCount === 1 ? "" : "s"}${emailCount ? ` · found ${emailCount} email${emailCount === 1 ? "" : "s"}` : ""}.`,
-      });
+      setExtractMsg({ ok: true, text: `Checked ${intelCount} website${intelCount === 1 ? "" : "s"}${emailCount ? ` · found ${emailCount} email${emailCount === 1 ? "" : "s"}` : ""}.` });
     } catch (error) {
       setExtractMsg({ ok: false, text: error.message || "Website enrichment failed." });
     } finally {
@@ -315,16 +393,38 @@ function LeadgenScanApp() {
     }
   };
 
+  const analyzeProspect = async (row) => {
+    if (!row.website) return;
+    const key = row.website;
+    setSiteBusy((current) => ({ ...current, [key]: true }));
+    setSiteMessages((current) => ({ ...current, [key]: null }));
+    try {
+      const response = await csrfFetch("/api/leadgen-emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ domain: row.website }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) throw new Error(data.message || data.error || `HTTP ${response.status}`);
+      const email = data.emails?.[0]?.email;
+      if (email) setExtractedEmails((current) => ({ ...current, [key]: email }));
+      if (data.websiteSignals) setWebsiteIntel((current) => ({ ...current, [key]: data.websiteSignals }));
+      setOpenProspects((current) => ({ ...current, [prospectKey(row)]: true }));
+      setSiteMessages((current) => ({ ...current, [key]: { ok: true, text: "Deep website analysis updated." } }));
+      trackEvent("generate_lead", { source: "leadgen_site_analysis", company: row.name || "prospect" });
+    } catch (error) {
+      setSiteMessages((current) => ({ ...current, [key]: { ok: false, text: error.message || "Could not analyze this website." } }));
+    } finally {
+      setSiteBusy((current) => ({ ...current, [key]: false }));
+    }
+  };
+
   const pushSelected = async () => {
-    if (!pushTarget || !kept.length) return;
+    if (!pushTarget || !selectedRows.length) return;
     setPushBusy(true);
     setPushMsg(null);
     try {
-      const leads = kept.map((row) => ({
-        ...row,
-        email: bestEmail(row) || undefined,
-        website_intel: row.website_intel || undefined,
-      }));
+      const leads = selectedRows.map((row) => ({ ...row, email: bestEmail(row) || undefined, website_intel: row.website_intel || undefined }));
       const response = await csrfFetch("/api/leadgen-integrations?action=push", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -332,7 +432,7 @@ function LeadgenScanApp() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.ok === false) throw new Error(data.message || data.error || `HTTP ${response.status}`);
-      setPushMsg({ ok: true, text: `Pushed ${data.sent ?? leads.length} lead${(data.sent ?? leads.length) === 1 ? "" : "s"}.` });
+      setPushMsg({ ok: true, text: `Sent ${data.sent ?? leads.length} lead${(data.sent ?? leads.length) === 1 ? "" : "s"}.` });
     } catch (error) {
       setPushMsg({ ok: false, text: error.message || "CRM push failed." });
     } finally {
@@ -347,18 +447,13 @@ function LeadgenScanApp() {
       const response = await csrfFetch("/api/leadgen-workspace?action=save-market", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `${niche} ${zip}`,
-          zip,
-          industry_group: niche === "All" ? null : niche,
-          schedule: "weekly",
-        }),
+        body: JSON.stringify({ name: `${niche} ${zip}`, zip, industry_group: niche === "All" ? null : niche, schedule: "weekly" }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.ok === false) throw new Error(data.message || data.error || `HTTP ${response.status}`);
-      setSaveMsg({ ok: true, text: "Saved as a weekly monitored market." });
+      setSaveMsg({ ok: true, text: "This market will be checked weekly." });
     } catch (error) {
-      setSaveMsg({ ok: false, text: error.message || "Could not save market." });
+      setSaveMsg({ ok: false, text: error.message || "Could not save this market." });
     }
   };
 
@@ -366,23 +461,23 @@ function LeadgenScanApp() {
   const toggleProspect = (key) => setOpenProspects((current) => ({ ...current, [key]: !current[key] }));
   const expandAllGroups = () => setOpenGroups(Object.fromEntries(groupedRows.map((group) => [group.name, true])));
   const collapseAllGroups = () => setOpenGroups(Object.fromEntries(groupedRows.map((group) => [group.name, false])));
-  const stage = !scan ? 0 : kept.length === 0 ? 1 : keptWithEmail.length < kept.length ? 2 : 3;
+  const stage = !scan ? 0 : selectedRows.length === 0 ? 1 : selectedRows.some((row) => row.website && !row.website_intel) ? 2 : 3;
   const workflow = [
     ["1. Discover", "Choose the ZIP code and industry you want to study."],
-    ["2. Qualify", "Review the evidence and keep the prospects that fit."],
-    ["3. Enrich", "Fill in contact and website signals where data is available."],
-    ["4. Sync", "Export the list or send selected records to a connected CRM."],
+    ["2. Qualify", "Compare opportunity and data coverage before selecting prospects."],
+    ["3. Enrich", "Add email, domain, DNS and website evidence where available."],
+    ["4. Use", "Download the list or send selected records to a connected CRM."],
   ];
 
   return (
     <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
-      {scan && kept.length ? (
+      {scan && selectedRows.length ? (
         <div className="leadgen-selbar">
-          <span className="leadgen-selbar__count"><strong>{kept.length}</strong> selected</span>
+          <span className="leadgen-selbar__count"><strong>{selectedRows.length}</strong> selected <button type="button" className="leadgen-selected-clear" onClick={() => setReview({})}>Clear</button></span>
           <div className="leadgen-selbar__actions">
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadCsv(`leadgen-${zip}.csv`, kept)}>Download CSV</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => downloadCsv(`leadgen-${zip}.csv`, selectedRows.map((row) => ({ ...row, email: bestEmail(row) })))}>Download CSV</button>
             {destinations.length ? (
-              <select value={pushTarget} onChange={(event) => setPushTarget(event.target.value)}>
+              <select value={pushTarget} onChange={(event) => setPushTarget(event.target.value)} aria-label="CRM destination">
                 {destinations.map((destination) => <option key={destination.id} value={destination.id}>{destination.label || destination.kind}</option>)}
               </select>
             ) : null}
@@ -400,9 +495,10 @@ function LeadgenScanApp() {
           <span className="leadgen-app-live"><span /> Local business research</span>
           <span className="leadgen-app-portal-link">Evidence-backed market view</span>
         </div>
+
         <div className="leadgen-app-title">
           <h2 className="title-2">Start with a market. Find the businesses worth a closer look.</h2>
-          <p>Scan by ZIP code and industry, compare useful business signals, expand the records that stand out, enrich what is missing, and export only the prospects you choose.</p>
+          <p>Scan by ZIP code and industry, compare opportunity with data quality, inspect the evidence behind each record, then enrich and export only the prospects you choose.</p>
         </div>
 
         <div className="leadgen-product-steps">
@@ -441,40 +537,56 @@ function LeadgenScanApp() {
 
         {scan ? (
           <>
+            <div className="leadgen-results-scorecard" aria-label="Current result set">
+              <article><strong>{reviewedRows.length}</strong><span>businesses in this result set</span></article>
+              <article><strong>{selectedRows.length}</strong><span>prospects currently selected</span></article>
+              <article><strong>{averageCoverage}%</strong><span>average public-data coverage</span></article>
+              <article><strong>{enrichedCount}</strong><span>websites with added intelligence</span></article>
+            </div>
+
             {insights ? (
               <div className="leadgen-intel-strip" aria-label="Market intelligence">
                 <article><strong>{insights.total}</strong><span>businesses mapped</span></article>
                 <article><strong>{insights.contactable_rate}%</strong><span>contactable</span></article>
                 <article><strong>{insights.independent_rate}%</strong><span>likely independent</span></article>
                 <article><strong>{insights.digital_gap_count}</strong><span>digital gaps</span></article>
-                <article><strong>{insights.high_opportunity_count}</strong><span>B-grade or better</span></article>
+                <article><strong>{insights.high_opportunity_count}</strong><span>strong-score prospects</span></article>
                 {insights.top_industry ? (
                   <article className="is-wide">
                     <strong>{insights.top_industry.name}</strong>
-                    <span>largest category · {insights.top_industry.share}% of market · avg score {insights.top_industry.avg_score}</span>
+                    <span>largest category · {insights.top_industry.share}% of market · average opportunity {insights.top_industry.avg_score}</span>
                   </article>
                 ) : null}
               </div>
             ) : null}
 
-            <div className="leadgen-product-toolbar">
+            <div className="leadgen-product-toolbar leadgen-product-toolbar--realized">
               <label>
                 <span>Search results</span>
                 <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Company, city, industry, signal…" />
               </label>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={selectBest}>Select strong matches</button>
+              <label className="leadgen-toolbar-field">
+                <span>Sort by</span>
+                <select value={sortMode} onChange={(event) => setSortMode(event.target.value)}>
+                  <option value="opportunity">Opportunity</option>
+                  <option value="coverage">Data coverage</option>
+                  <option value="gaps">Digital gaps</option>
+                  <option value="name">Company name</option>
+                </select>
+              </label>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={selectBest}><Check size={14} /> Select strong matches</button>
               <button type="button" className="btn btn-secondary btn-sm" onClick={enrichSelected} disabled={extracting}>
-                <Sparkles size={14} /> {extracting ? "Checking sites…" : "Add website signals"}
+                <Sparkles size={14} /> {extracting ? "Checking sites…" : "Enrich selected"}
               </button>
             </div>
-            {extractMsg ? <p className={extractMsg.ok ? "leadgen-product-message" : "form-error"}>{extractMsg.text}</p> : null}
-            {pushMsg ? <p className={pushMsg.ok ? "leadgen-product-message" : "form-error"}>{pushMsg.text}</p> : null}
+            {extractMsg ? <p className={extractMsg.ok ? "leadgen-product-message" : "form-error"} aria-live="polite">{extractMsg.text}</p> : null}
+            {pushMsg ? <p className={pushMsg.ok ? "leadgen-product-message" : "form-error"} aria-live="polite">{pushMsg.text}</p> : null}
 
             <div className="leadgen-explorer-head">
               <div>
                 <span className="eyebrow">Market explorer</span>
                 <h3>{groupedRows.length} industries in ZIP {zip}</h3>
-                <p>Open a category to compare the businesses inside it. Narrow by subcategory, then expand a record to see the evidence behind its score.</p>
+                <p>Open a category, compare its businesses, then expand a prospect for contact coverage, website intelligence and source evidence.</p>
               </div>
               <div className="leadgen-explorer-actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={expandAllGroups}>Open all</button>
@@ -496,9 +608,9 @@ function LeadgenScanApp() {
                         <span>{group.rows.length} businesses · {group.subs.size} subcategories</span>
                       </div>
                       <div className="leadgen-category__quickstats" aria-hidden="true">
-                        <span><b>{group.avgScore}</b> avg score</span>
-                        <span><b>{group.contactable}%</b> contactable</span>
-                        <span><b>{group.digitalGaps}</b> digital gaps</span>
+                        <span><b>{group.strong}</b> strong</span>
+                        <span><b>{group.avgScore}</b> avg opportunity</span>
+                        <span><b>{group.avgCoverage}%</b> data coverage</span>
                         <span><b>{group.enriched}</b> enriched</span>
                       </div>
                       <ChevronDown size={20} aria-hidden="true" />
@@ -511,7 +623,7 @@ function LeadgenScanApp() {
                           <article><strong>{group.withWebsite}</strong><span>websites</span></article>
                           <article><strong>{group.withPhone}</strong><span>phones</span></article>
                           <article><strong>{group.withEmail}</strong><span>emails found</span></article>
-                          <article><strong>{group.avgScore}</strong><span>avg opportunity</span></article>
+                          <article><strong>{group.contactable}%</strong><span>contactable</span></article>
                         </div>
 
                         <div className="leadgen-category__tools">
@@ -535,13 +647,18 @@ function LeadgenScanApp() {
                           {activeRows.map((row) => {
                             const key = prospectKey(row);
                             const expanded = openProspects[key] === true;
-                            const intel = websiteInsightLabels(row.website_intel);
+                            const selected = row.status === "keep";
                             const email = bestEmail(row);
+                            const coverage = dataCoverage(row, email);
+                            const tech = technicalSnapshot(row.website_intel);
+                            const intel = websiteInsightLabels(row.website_intel);
+                            const analyzing = Boolean(siteBusy[row.website]);
+                            const siteMessage = siteMessages[row.website];
                             return (
-                              <article className={`leadgen-prospect-card is-${row.status}${expanded ? " is-expanded" : ""}`} key={key}>
+                              <article className={`leadgen-prospect-card${selected ? " is-selected" : ""}${expanded ? " is-expanded" : ""}`} key={key}>
                                 <div className="leadgen-prospect-card__top">
                                   <label className="leadgen-product-check" aria-label={`Select ${row.name}`}>
-                                    <input type="checkbox" checked={row.status === "keep"} onChange={(event) => setReview((current) => ({ ...current, [row.__scanIndex]: event.target.checked ? "keep" : "reject" }))} />
+                                    <input type="checkbox" checked={selected} onChange={(event) => setSelected(row, event.target.checked)} />
                                   </label>
                                   <button type="button" className="leadgen-prospect-card__toggle" onClick={() => toggleProspect(key)} aria-expanded={expanded}>
                                     <div className="leadgen-prospect-card__name">
@@ -555,45 +672,80 @@ function LeadgenScanApp() {
                                   </button>
                                 </div>
 
+                                <div className="leadgen-prospect-card__health">
+                                  <div className="leadgen-card-meter" aria-label={`Data coverage ${coverage.percent}%`}>
+                                    <div className="leadgen-card-meter__label"><span>Data coverage</span><strong>{coverage.percent}%</strong></div>
+                                    <div className="leadgen-card-meter__track"><span className="leadgen-card-meter__fill" style={{ width: `${coverage.percent}%` }} /></div>
+                                  </div>
+                                  <div className="leadgen-card-opportunity"><strong>{opportunityLabel(row.opportunity_score)}</strong><br />{coverage.missing.length ? `Missing ${coverage.missing.slice(0, 2).join(" + ")}` : "Core public fields are present"}</div>
+                                </div>
+
                                 <div className="leadgen-prospect-card__signals">
                                   <span className={row.website ? "is-positive" : "is-gap"}>{row.website ? hostnameOf(row.website) : "No website"}</span>
                                   <span className={row.phone ? "is-positive" : "is-gap"}>{row.phone ? "Phone" : "Phone missing"}</span>
-                                  <span className={email ? "is-positive" : "is-gap"}>{email ? "Email" : "Email not enriched"}</span>
-                                  {row.website_intel ? <span className="is-intel">Website enriched</span> : null}
+                                  <span className={email ? "is-positive" : "is-gap"}>{email ? "Email" : "Email not found"}</span>
+                                  {tech.quality !== null ? <span className="is-intel">Tech quality {tech.quality}</span> : row.website_intel ? <span className="is-intel">Website checked</span> : null}
+                                </div>
+
+                                <div className="leadgen-prospect-card__actions">
+                                  {row.phone ? <a className="leadgen-card-action" href={telHref(row.phone)}><Phone size={13} /> Call</a> : null}
+                                  {email ? <a className="leadgen-card-action" href={`mailto:${email}`}><Mail size={13} /> Email</a> : null}
+                                  {row.website ? <a className="leadgen-card-action" href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer"><Globe2 size={13} /> Website</a> : null}
+                                  {row.website ? (
+                                    <button type="button" className="leadgen-card-action is-primary" onClick={() => analyzeProspect(row)} disabled={analyzing}>
+                                      <Sparkles size={13} /> {analyzing ? "Analyzing…" : row.website_intel ? "Refresh analysis" : "Analyze site"}
+                                    </button>
+                                  ) : null}
+                                  {siteMessage ? <p className={`leadgen-card-action-message${siteMessage.ok ? "" : " is-error"}`} aria-live="polite">{siteMessage.text}</p> : null}
                                 </div>
 
                                 <div className="leadgen-prospect-card__drawer" aria-hidden={!expanded}>
                                   <div className="leadgen-prospect-card__drawer-inner">
-                                    <div className="leadgen-prospect-detail-grid">
+                                    <div className="leadgen-prospect-detail-grid leadgen-prospect-detail-grid--realized">
                                       <section>
-                                        <strong>Why this prospect ranks</strong>
+                                        <strong>Opportunity evidence</strong>
                                         <div className="leadgen-signal-chips">
                                           {(row.opportunity_reasons?.length ? row.opportunity_reasons : ["Basic public business record"]).map((reason) => <span key={reason}>{reason}</span>)}
                                         </div>
+                                        <p className="leadgen-evidence-note">The opportunity score is a prioritization aid. It is based on observable record signals, not revenue or purchase intent.</p>
                                       </section>
+
                                       <section>
+                                        <strong>Contact profile</strong>
+                                        <div className="leadgen-card-contact-grid">
+                                          <div className="leadgen-card-contact-row"><span>Coverage</span><span>{coverage.filled} of {coverage.total} core fields · {coverage.percent}%</span></div>
+                                          <div className="leadgen-card-contact-row"><span>Address</span><span>{row.address ? `${row.address}${row.city ? `, ${row.city}` : ""}${row.state ? `, ${row.state}` : ""} ${row.zip || ""}` : "Not available"}</span></div>
+                                          <div className="leadgen-card-contact-row"><span>Phone</span>{row.phone ? <a href={telHref(row.phone)}>{row.phone}</a> : <span>Not available</span>}</div>
+                                          <div className="leadgen-card-contact-row"><span>Email</span>{email ? <a href={`mailto:${email}`}>{email}</a> : <span>Not available</span>}</div>
+                                        </div>
+                                      </section>
+
+                                      <section className="is-wide">
                                         <strong>Website intelligence</strong>
-                                        {intel.length ? (
-                                          <div className="leadgen-signal-chips is-intel">{intel.map((label) => <span key={label}>{label}</span>)}</div>
+                                        {row.website_intel ? (
+                                          <>
+                                            <div className="leadgen-card-metrics">
+                                              <div className="leadgen-card-metric"><strong>{tech.quality ?? "—"}</strong><span>technical quality</span></div>
+                                              <div className="leadgen-card-metric"><strong>{tech.domainAge !== null ? `${tech.domainAge}y` : "—"}</strong><span>domain age</span></div>
+                                              <div className="leadgen-card-metric"><strong>{tech.mx}</strong><span>mail / MX status</span></div>
+                                              <div className="leadgen-card-metric"><strong>{tech.performance ?? "—"}</strong><span>mobile performance</span></div>
+                                              <div className="leadgen-card-metric"><strong>{tech.seo ?? "—"}</strong><span>PageSpeed SEO</span></div>
+                                              <div className="leadgen-card-metric"><strong>{tech.evidenceCount || "—"}</strong><span>evidence sources</span></div>
+                                            </div>
+                                            {intel.length ? <div className="leadgen-signal-chips is-intel" style={{ marginTop: 10 }}>{intel.map((label) => <span key={label}>{label}</span>)}</div> : null}
+                                          </>
                                         ) : (
-                                          <p>{row.website ? "Select this prospect and run Enrich intelligence for website signals." : "No website available to enrich."}</p>
+                                          <p className="leadgen-card-empty">Run Analyze site for this prospect to check public website signals, DNS/MX, domain registration data and PageSpeed/Lighthouse when available.</p>
                                         )}
                                       </section>
-                                      <section>
-                                        <strong>Contact & location</strong>
-                                        <div className="leadgen-prospect-contact">
-                                          {row.address ? <span>{row.address}{row.city ? `, ${row.city}` : ""}{row.state ? `, ${row.state}` : ""} {row.zip || ""}</span> : <span>Address not available</span>}
-                                          {row.phone ? <a href={`tel:${String(row.phone).replace(/[^+\d]/g, "")}`}>{row.phone}</a> : <span>Phone not available</span>}
-                                          {email ? <a href={`mailto:${email}`}><Mail size={13} /> {email}</a> : <span>Email not enriched</span>}
-                                        </div>
-                                      </section>
-                                      <section>
-                                        <strong>Evidence & actions</strong>
+
+                                      <section className="is-wide">
+                                        <strong>Evidence & provenance</strong>
                                         <div className="leadgen-prospect-links">
-                                          {row.website ? <a href={row.website} target="_blank" rel="noopener noreferrer">Open website ↗</a> : null}
-                                          {row.source_url ? <a href={row.source_url} target="_blank" rel="noopener noreferrer">View source record ↗</a> : null}
+                                          {row.website ? <a href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer">Website <ExternalLink size={12} /></a> : null}
+                                          {row.source_url ? <a href={row.source_url} target="_blank" rel="noopener noreferrer">Source record <ExternalLink size={12} /></a> : null}
                                         </div>
-                                        <p>Signals shown here come from the public business record and any website enrichment you run.</p>
+                                        <p className="leadgen-evidence-note">Discovery source: {scan.scan_source || "public business data"}{row.source_id ? ` · record ${row.source_id}` : ""}. Website intelligence is added only when you run enrichment; unavailable metrics remain unknown rather than being inferred.</p>
                                       </section>
                                     </div>
                                   </div>
@@ -619,7 +771,7 @@ function LeadgenScanApp() {
 export default function Leadgen() {
   useSEO({
     title: "Local Business Lead Research & Enrichment | Leadgen",
-    description: "Research local businesses by ZIP code and industry, compare prospect signals, enrich available contact data, save markets, and export the businesses you choose.",
+    description: "Research local businesses by ZIP code and industry, compare opportunity and data coverage, analyze website signals, enrich contact data, and export the prospects you choose.",
     canonical: `${SITE_URL}/leadgen`,
     image: `${SITE_URL}/og-image.png`,
   });
@@ -638,7 +790,7 @@ export default function Leadgen() {
           <div>
             <span className="eyebrow">For repeat prospecting</span>
             <h2>Keep the markets you care about under watch.</h2>
-            <p>Pro adds saved markets, recurring monitoring, enrichment history, CRM sync, suppression, and attribution so you can work from a repeatable prospecting process instead of rebuilding lists.</p>
+            <p>Pro adds saved markets, recurring monitoring, deeper enrichment, CRM sync, suppression, and attribution so you can work from a repeatable prospecting process instead of rebuilding lists.</p>
           </div>
           <a className="btn btn-primary" href={withLeadgenCheckoutParams(LEADGEN_STRIPE_LINKS.pro.monthly, { tierId: "pro", source: "leadgen_workspace" })}>
             Compare plans <ArrowRight size={16} />
