@@ -33,16 +33,10 @@ jobs:
                   raise SystemExit('Could not find publish-draft import anchor')
               cron = cron.replace(import_anchor, import_anchor + '\n' + context_import, 1)
 
-          old_story = '''  const story = (await fetchHNTopStory()) || {
-            id: 999901,
-            title: "Sarasota & Bradenton Small Business IT Field Notes: Workstation Hardening & Network Security",
-            score: 120,
-            url: "https://simpleitsrq.com/blog",
-          };
-
-          try {
-            const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
-          const gadget = pickGadgetForStory(story);'''
+          story_pattern = re.compile(
+              r'  const story = \(await fetchHNTopStory\(\)\) \|\| \{.*?\n  \};\n\n  try \{\n    const hnUrl = `https://news\.ycombinator\.com/item\?id=\$\{story\.id\}`;\n\s*const gadget = pickGadgetForStory\(story\);',
+              re.S,
+          )
           new_story = '''  const story = await fetchHNTopStory();
           if (!story) {
             const out = { skipped: true, reason: "no eligible Hacker News story today" };
@@ -60,9 +54,22 @@ jobs:
           try {
             const hnUrl = context.hnDiscussionUrl;
             const gadget = pickGadgetForStory(story);'''
-          if old_story not in cron:
-              raise SystemExit('Could not find old HN story fallback block')
-          cron = cron.replace(old_story, new_story, 1)
+          cron, count = story_pattern.subn(new_story, cron, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected to replace one HN story fallback block, replaced {count}')
+
+          slug_pattern = re.compile(
+              r'  if \(!post\?\.slug \|\| !/sarasota\|bradenton\|venice\|florida\|small-business/i\.test\(post\.slug\)\) \{\n    issues\.push\("slug_not_local"\);\n  \}',
+          )
+          slug_replacement = '''  if (!post?.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(post.slug)) {
+            issues.push("slug_invalid");
+          }
+          if (!/\[Original source\]\(https?:\/\/[^)]+\)/i.test(body)) {
+            issues.push("missing_original_source_link");
+          }'''
+          cron, count = slug_pattern.subn(lambda m: slug_replacement, cron, count=1)
+          if count != 1:
+              raise SystemExit(f'Expected to replace one local-slug quality gate, replaced {count}')
 
           system_prompt = r'''  const systemPrompt = `You are the editorial engine for Simple IT SRQ, a computer repair and business IT company serving Sarasota and Bradenton, Florida. Your job is to turn a source article discovered through Hacker News into an original, useful field note for small-business readers.
 
@@ -78,7 +85,7 @@ jobs:
           - Be concise and well organized. There is no target word count; stop when the reader has enough information to act.
           - Title must be clear, specific, natural, and no more than 70 characters.
           - Meta description must accurately summarize this specific article in one useful sentence.
-          - Category must be one of: Cybersecurity, AI & Productivity, Cloud, Compliance, Privacy, Business Tech, Industry News.
+          - Category must be one of: Cybersecurity, AI & Productivity, Cloud, Privacy, Business Tech, Industry News.
           - Slug must be lowercase kebab case and describe the actual topic. Do not stuff locations or service keywords into it.
 
           REQUIRED STRUCTURE:
@@ -161,6 +168,10 @@ jobs:
               'gadget: gadget.key,',
               'gadget: /\\[\\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null,',
           )
+          cron = cron.replace(
+              'console.warn("[blog-cron] Groq fetch failed, using local field note generator", e);',
+              'console.warn("[blog-cron] Qwen generation failed", e);',
+          )
 
           banned = [
               'aggressively positioning our recommended IT solutions',
@@ -168,6 +179,7 @@ jobs:
               'Make the suggested gadget the hero of the story',
               'Rewrite this Hacker News story',
               'Sarasota & Bradenton Workstation Hardening & Ransomware Defense Playbook',
+              'slug_not_local',
           ]
           leftovers = [term for term in banned if term in cron]
           if leftovers:
@@ -214,6 +226,7 @@ jobs:
         run: |
           grep -q 'fetchHnSourceContext(story)' api/cron/agent.js
           grep -q 'context.article.text' api/cron/agent.js
+          grep -q 'missing_original_source_link' api/cron/agent.js
           grep -q 'Start with a market. Find the businesses worth a closer look.' src/pages/Leadgen.jsx
           ! grep -q 'Make the suggested gadget the hero' api/cron/agent.js
           ! grep -q 'aggressively positioning' api/cron/agent.js
