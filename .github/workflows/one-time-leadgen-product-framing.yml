@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   refine:
-    if: github.event.head_commit.message == 'Apply Leadgen product framing'
+    if: github.event.head_commit.message == 'Retry Leadgen product framing'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -45,16 +45,8 @@ jobs:
                   raise SystemExit(f'Missing Leadgen anchor: {old}')
               text = text.replace(old, new, 1)
 
-          old_shell = '''      <div className="container leadgen-product-page">
-        <LeadgenScanApp />'''
-          new_shell = '''      <div className="container leadgen-product-page">
-        <nav className="leadgen-breadcrumbs" aria-label="Breadcrumb">
-          <ol>
-            <li><Link to="/">Home</Link></li>
-            <li aria-current="page">Leadgen</li>
-          </ol>
-        </nav>
-        <LeadgenScanApp />'''
+          old_shell = '      <div className="container leadgen-product-page">\n        <LeadgenScanApp />'
+          new_shell = '      <div className="container leadgen-product-page">\n        <nav className="leadgen-breadcrumbs" aria-label="Breadcrumb">\n          <ol>\n            <li><Link to="/">Home</Link></li>\n            <li aria-current="page">Leadgen</li>\n          </ol>\n        </nav>\n        <LeadgenScanApp />'
           if old_shell not in text:
               raise SystemExit('Missing Leadgen page shell anchor')
           text = text.replace(old_shell, new_shell, 1)
