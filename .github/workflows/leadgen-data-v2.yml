@@ -66,7 +66,7 @@ jobs:
           git config user.name 'Simple IT SRQ release bot'
           git config user.email '114784512+budokai-msi@users.noreply.github.com'
           rm -f scripts/smoke-overture.mjs
-          git rm .github/workflows/leadgen-data-v2.yml scripts/leadgen-data-v2.py scripts/leadgen-data-v2-tests.py
+          git rm -f .github/workflows/leadgen-data-v2.yml scripts/leadgen-data-v2.py scripts/leadgen-data-v2-tests.py
           git add api/leadgen.js api/leadgen-emails.js api/_lib/leadgen-emailcrawler.js api/_lib/leadgen-overture.js api/_lib/__tests__/leadgen-api.test.js src/pages/Leadgen.jsx src/styles/leadgen-cards.css package.json package-lock.json .env.example db/migrations/013_leadgen.sql
           git commit -m 'Replace Leadgen discovery with Overture Places'
           git push origin HEAD:main
