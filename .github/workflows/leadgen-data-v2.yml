@@ -33,8 +33,8 @@ jobs:
 
       - name: Remove obsolete domain intelligence module
         run: |
-          if git grep -n "leadgen-domain-intel" -- ':!api/_lib/leadgen-domain-intel.js'; then
-            echo "A live reference to leadgen-domain-intel remains" >&2
+          if git grep -n "leadgen-domain-intel" -- api src ':!api/_lib/leadgen-domain-intel.js'; then
+            echo "A live runtime reference to leadgen-domain-intel remains" >&2
             exit 1
           fi
           git rm api/_lib/leadgen-domain-intel.js
