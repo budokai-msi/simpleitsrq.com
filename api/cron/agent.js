@@ -21,6 +21,7 @@ import { dispatchPush } from "../leadgen-integrations.js";
 import nodemailer from "nodemailer";
 import { sendCampaignEmail, renderTemplate } from "../_lib/leadgen-smtp.js";
 import { publishDraftToGitHub } from "../_lib/publish-draft.js";
+import { fetchHnSourceContext } from "../_lib/hn-source-context.js";
 
 // Cold-start validation. Both keys are validated as 'optional' rather than
 // 'required': the per-task code below already returns { skipped } when a
@@ -382,9 +383,12 @@ function validateAutoPost(post) {
 
   if (!title || title.length > 70) issues.push("title_missing_or_too_long");
   if (meta.length < 50 || meta.length > 200) issues.push("meta_description_length");
-  if (!post?.slug || !/sarasota|bradenton|venice|florida|small-business/i.test(post.slug)) {
-    issues.push("slug_not_local");
-  }
+  if (!post?.slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(post.slug)) {
+  issues.push("slug_invalid");
+}
+if (!/\[Original source\]\(https?:\/\/[^)]+\)/i.test(body)) {
+  issues.push("missing_original_source_link");
+}
   if (!/\]\(\/(?:(?:services|tools|leadgen|book|sarasota|bradenton|venice|lakewood-ranch|nokomis|blog)(?:[^)]*)|#contact)\)/i.test(body)) {
     issues.push("missing_internal_link");
   }
@@ -456,43 +460,55 @@ async function generateHNDraft({ force = false } = {}) {
     }
   }
 
-  const story = (await fetchHNTopStory()) || {
-    id: 999901,
-    title: "Sarasota & Bradenton Small Business IT Field Notes: Workstation Hardening & Network Security",
-    score: 120,
-    url: "https://simpleitsrq.com/blog",
-  };
+  const story = await fetchHNTopStory();
+if (!story) {
+  const out = { skipped: true, reason: "no eligible Hacker News story today" };
+  await logBlogOutcome(out);
+  return out;
+}
 
-  try {
-    const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
+const context = await fetchHnSourceContext(story);
+if (!context.ok) {
+  const out = { skipped: true, reason: "source article could not be extracted", source: story.url, detail: context.error };
+  await logBlogOutcome(out);
+  return out;
+}
+
+try {
+  const hnUrl = context.hnDiscussionUrl;
   const gadget = pickGadgetForStory(story);
 
-  const systemPrompt = `You are Dancho Ivanov, founder of Simple IT SRQ, a managed IT services company in Sarasota, Bradenton, and Venice, Florida. You write highly engaging, opinionated, and conversion-optimized blog posts for small business owners (5-80 employees). Your primary goal is to educate the client while aggressively positioning our recommended IT solutions (affiliate products) as the "secret sauce" to solving their problems.
+  const systemPrompt = `You are the editorial engine for Simple IT SRQ, a computer repair and business IT company serving Sarasota and Bradenton, Florida. Your job is to turn a source article discovered through Hacker News into an original, useful field note for small-business readers.
 
-VOICE AND STYLE:
-- Write like an authority speaking directly to a smart business owner over coffee: direct, highly persuasive, and zero fluff.
-- Emphasize hyper-local SEO: Naturally include cities (Sarasota, Bradenton, Venice, Lakewood Ranch, Nokomis) multiple times throughout the content.
-- Always translate technical jargon into business impact (time lost, money wasted, reputation damaged) for Florida businesses.
-- Do not sell cyber insurance.
-- Include these exact Markdown H2 sections: "## Short answer", "## The Sarasota Field Note", "## The Recommended Solution", "## What to do this week", "## When to call IT"
-- End with a strong local CTA linking to /services, /leadgen, /tools, /book, or /#contact
-- 700-1000 words. Break up walls of text. Use bullet points and bold text for skimmability.
-- Include a high-converting meta description between 120 and 160 characters.
-- Category must be one of: Cybersecurity, AI & Productivity, Cloud, Compliance, Privacy, Business Tech, Industry News
-- Slug must be lowercase-kebab-case and heavily optimized for SEO (e.g. include 'sarasota-computer-repair', 'bradenton-it-support', etc.)
+EDITORIAL STANDARD:
+- Write for the reader first. Help someone understand what happened, whether it matters to them, and what they can reasonably do next.
+- Treat the supplied source article as the factual basis. The Hacker News discussion is secondary context and opinion, not evidence.
+- Add original technical analysis and practical context. Do not merely summarize or closely paraphrase the source.
+- Do not copy sentences from the source. Avoid verbatim quotations unless a very short phrase is essential.
+- Never invent statistics, incidents, customer stories, breach counts, cost figures, product performance claims, or local events.
+- If the source does not support a factual claim, do not state it as fact. Mark reasonable interpretation as analysis.
+- Mention Sarasota or Bradenton only when the local context genuinely helps the reader. Do not repeat city names for SEO.
+- Use plain language. Avoid hype such as "secret sauce", "game-changing", "massive", "critical enterprise-grade investment", "impenetrable", or fear-based urgency.
+- Be concise and well organized. There is no target word count; stop when the reader has enough information to act.
+- Title must be clear, specific, natural, and no more than 70 characters.
+- Meta description must accurately summarize this specific article in one useful sentence.
+- Category must be one of: Cybersecurity, AI & Productivity, Cloud, Privacy, Business Tech, Industry News.
+- Slug must be lowercase kebab case and describe the actual topic. Do not stuff locations or service keywords into it.
 
-INTERNAL LINKS:
-- Include at least two internal links, for example [Sarasota managed IT services](/services), [recommended tech tools](/tools), [B2B lead generation](/leadgen).
-- Never link to /store or /cyber-insurance-quote.
+REQUIRED STRUCTURE:
+- Begin with a one-sentence source note linking to the original article: [Original source](${story.url}).
+- Include these Markdown H2 sections: "## Short answer", "## What the source actually says", "## Why it matters", "## What to do this week", "## When to call IT".
+- If the HN discussion adds a useful disagreement or implementation detail, include a short "## What practitioners are debating" section and clearly attribute it to Hacker News discussion.
+- End with one relevant internal link to /services, /leadgen, /tools, /book, or /#contact. Do not force multiple CTAs.
 
-AFFILIATE / GADGET INTEGRATION (CRITICAL):
-- You MUST weave the provided gadget into the core narrative of the article under the "## The Recommended Solution" header.
-- Position the gadget as a critical, enterprise-grade investment that solves the problem. Be enthusiastic and persuasive about its value.
-- Inject the exact shortcode [[${gadget.token}]] into the text where you mention the product.
-- Explain why it fits the business context: ${gadget.why}
-- At the very end of the post, add: "Product links may be affiliate links; we may earn a small commission on qualifying purchases."
+PRODUCT LINKS:
+- A product candidate may be supplied. It is OPTIONAL.
+- Include it only when it directly helps implement advice supported by the source article.
+- Never make a product the hero of an unrelated article.
+- If you use the product, include its exact shortcode once and explain the practical reason without unsupported superlatives.
+- If any affiliate shortcode is used, end with: "Product links may be affiliate links; we may earn a small commission on qualifying purchases."
 
-Respond with ONLY a JSON object (no markdown fencing):
+Respond with ONLY a JSON object (no Markdown fence):
 {
   "title": "...",
   "slug": "...",
@@ -502,17 +518,25 @@ Respond with ONLY a JSON object (no markdown fencing):
   "body": "..."
 }`;
 
-  const userPrompt = `Rewrite this Hacker News story for the Simple IT SRQ blog, optimizing for local Sarasota/Bradenton SEO and affiliate conversions.
+  const userPrompt = `Create an original Simple IT SRQ field note from the source material below.
 
-Original title: ${story.title}
+DISCOVERY CONTEXT
+Hacker News title: ${story.title}
 Original URL: ${story.url}
-HN discussion: ${hnUrl}
-Score: ${story.score} points
-Suggested gadget (MUST INCLUDE): ${gadget.key} (${gadget.why})
+Hacker News discussion: ${hnUrl}
+Hacker News points when selected: ${story.score}
 
-Take the core insight from the story and explain the severe real-world risk or massive productivity gain for a small business owner in Sarasota or Bradenton. Translate technical concepts into pure business value. Make the suggested gadget the hero of the story—the exact tool they need to buy right now to implement your advice.
+ORIGINAL ARTICLE EXTRACT
+${context.article.text}
 
-Mention the HN source casually (e.g. "This hit Hacker News this week...") but make the post stand completely on its own as a premium piece of local content.`;
+HACKER NEWS DISCUSSION EXCERPTS
+${context.discussion?.text || "No useful discussion excerpts were available."}
+
+OPTIONAL PRODUCT CANDIDATE
+${gadget.key}: ${gadget.why}
+Exact shortcode if, and only if, genuinely relevant: [[${gadget.token}]]
+
+Write a standalone analysis that adds value beyond the original article. Explain what is confirmed by the source, what is interpretation, and what a small business reader can do with the information. Do not imitate the source's wording and do not manufacture a Sarasota/Bradenton angle when one is not useful.`;
   let post = null;
   let usedModel = GROQ_MODEL;
 
@@ -542,44 +566,18 @@ Mention the HN source casually (e.g. "This hit Hacker News this week...") but ma
         post = JSON.parse(cleaned);
       }
     } catch (e) {
-      console.warn("[blog-cron] Groq fetch failed, using local field note generator", e);
+      console.warn("[blog-cron] Qwen generation failed", e);
     }
   }
 
   if (!post || !post.title || !post.body) {
-    usedModel = "sarasota-field-notes-v1";
-    const topicIndex = Date.now() % 3;
-    const localTemplates = [
-      {
-        title: "Sarasota & Bradenton Workstation Hardening & Ransomware Defense Playbook",
-        slug: "sarasota-bradenton-ransomware-defense-playbook",
-        category: "Cybersecurity",
-        excerpt: "How small business offices in Sarasota and Bradenton can lock down workstations, backups, and email credentials against modern ransomware.",
-        metaDescription: "Sarasota & Bradenton workstation ransomware defense guide. Phishing-resistant YubiKey MFA, immutable backups, and local IT support.",
-        body: `## Short answer\nRansomware targeting Florida coastal law firms, medical practices, and real estate offices increased significantly last year. Securing your business requires hardware MFA, immutable backups, and locked-down workstation permissions.\n\n## The Sarasota Field Note\nOffice networks along Main St in Sarasota and downtown Bradenton are prime targets for automated credential harvesting. A single compromised password can encrypt shared network drives and cloud file syncs within minutes.\n\n## The Recommended Solution\nThe most critical upgrade any local business can make is moving away from SMS codes to hardware MFA. The [[yubikey]] is our gold standard—it completely neutralizes phishing attacks by requiring physical presence. It's an enterprise-grade solution that costs less than a tank of gas.\n\n## What to do this week\n1. Deploy hardware keys like the YubiKey to all staff.\n2. Enforce 14+ character passphrases and disable legacy email protocols.\n3. Verify daily backups are completely isolated from your main network.\n\n## When to call IT\nIf your workstations are sluggish or missing recent backups, call Simple IT SRQ at (813) 434-3230 or explore our [Sarasota IT services](/services) and [B2B lead generation](/leadgen).\n\nProduct links may be affiliate links; we may earn a small commission on qualifying purchases.`,
-      },
-      {
-        title: "Microsoft 365 Security Hardening Guide for SRQ Offices",
-        slug: "microsoft-365-security-hardening-sarasota",
-        category: "Cloud",
-        excerpt: "Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices.",
-        metaDescription: "Hardening Microsoft 365 for Sarasota and Bradenton small offices. Disable legacy auth, enable conditional access, and enforce MFA.",
-        body: `## Short answer\nDefault Microsoft 365 settings leave key security gaps open. By hardening tenant policies, auditing mail flow rules, and requiring hardware MFA, you eliminate over 95% of business email compromise threats.\n\n## The Sarasota Field Note\nWire fraud and invoice manipulation target Florida real estate title companies and professional service firms weekly. Standard passwords can be phished without hardware MFA enforcing secure tokens.\n\n## The Recommended Solution\nBeyond Microsoft 365, your physical office network needs to be impenetrable. We heavily deploy the [[ubnt-dream-machine]] for Bradenton and Sarasota clinics. It provides enterprise-class intrusion detection without the crazy enterprise licensing fees.\n\n## What to do this week\n1. Turn on Security Defaults or Conditional Access in Entra ID.\n2. Disable IMAP, POP3, and SMTP AUTH.\n3. Set up automated alerts for external inbox forwarding rules.\n\n## When to call IT\nFor a full Microsoft 365 security audit or local hands-on assistance, call Simple IT SRQ at (813) 434-3230, [schedule a strategy call](/book), or view [our IT services](/services).\n\nProduct links may be affiliate links; we may earn a small commission on qualifying purchases.`,
-      },
-      {
-        title: "Fast Workstation & Network Repair for Sarasota Small Businesses",
-        slug: "sarasota-workstation-network-repair-guide",
-        category: "Business Tech",
-        excerpt: "Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
-        metaDescription: "Workstation computer repair and Wi-Fi network setup in Sarasota, Bradenton, and Lakewood Ranch. Fast local engineer response.",
-        body: `## Short answer\nComputer slowdowns and erratic Wi-Fi cut directly into daily office billing. Upgrading old mechanical hard drives to NVMe SSDs and replacing consumer routers with managed access points resolves 90% of office productivity bottlenecks.\n\n## The Sarasota Field Note\nHumid Florida coastal weather, power surges, and aging workstation hardware frequently cause thermal throttling and drive failures. Fast local repair prevents data loss and minimizes employee downtime.\n\n## The Recommended Solution\nWhile we upgrade your networking, physical site security is just as important. The [[reolink-cx810]] is phenomenal for local offices—it features ColorX night vision that turns pitch-black parking lots into daylight, with no recurring cloud fees.\n\n## What to do this week\n1. Check drive SMART health on every office workstation.\n2. Audit Wi-Fi channel interference in multi-tenant commercial buildings.\n3. Upgrade network hardware and security cameras.\n\n## When to call IT\nNeed same-day computer repair or network troubleshooting in Sarasota, Bradenton, or Lakewood Ranch? Call Simple IT SRQ at (813) 434-3230 or view [our IT services](/services).\n\nProduct links may be affiliate links; we may earn a small commission on qualifying purchases.`,
-      },
-    ];
-    post = localTemplates[topicIndex];
-  }
+  const out = { error: "qwen_generation_failed", source: story.url, model: usedModel };
+  await logBlogOutcome(out);
+  return out;
+}
 
-    if (!post.title || !post.slug || !post.body) {
-      const out = { error: "Incomplete HN post", raw: text.slice(0, 500) };
+  if (!post.title || !post.slug || !post.body) {
+      const out = { error: "incomplete_qwen_post", source: story.url };
       await logBlogOutcome(out);
       return out;
     }
@@ -625,7 +623,7 @@ Mention the HN source casually (e.g. "This hit Hacker News this week...") but ma
           excerpt: post.excerpt || "",
           body: post.body,
           meta_desc: post.metaDescription || "",
-          tags: ["hacker-news", "local-it", gadget.key],
+          tags: ["hacker-news", "source-backed", "local-it", /\[\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null].filter(Boolean),
           sourceUrl: story.url,
         });
         if (publishResult.ok) {
@@ -650,7 +648,7 @@ Mention the HN source casually (e.g. "This hit Hacker News this week...") but ma
           to: [REPORT_TO],
           subject: `[HN Draft] ${post.title}`,
           text:
-            `New HackerNews draft generated by Groq agent.\n\n` +
+            `New source-backed Hacker News analysis generated by the Qwen editorial pipeline.\n\n` +
             `Title: ${post.title}\n` +
             `Slug: ${finalSlug}\n` +
             `Category: ${post.category}\n` +
@@ -674,7 +672,7 @@ Mention the HN source casually (e.g. "This hit Hacker News this week...") but ma
       source: "hn",
       hnTitle: story.title,
       hnUrl: story.url,
-      gadget: gadget.key,
+      gadget: /\[\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null,
       quality,
       published: publishResult?.ok === true,
       alreadyInFile: publishResult?.alreadyInFile === true,
