@@ -1,0 +1,439 @@
+/* Fully realized Leadgen prospect cards.
+   Extends the existing Aura + Leadgen design system without introducing a new framework. */
+
+.leadgen-results-scorecard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0 6px;
+}
+
+.leadgen-results-scorecard article {
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--aura-border);
+  border-radius: 14px;
+  background: var(--aura-surface);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.leadgen-results-scorecard strong {
+  display: block;
+  color: var(--lg-text);
+  font-size: 1.05rem;
+  line-height: 1.15;
+}
+
+.leadgen-results-scorecard span {
+  display: block;
+  margin-top: 4px;
+  color: var(--lg-faint);
+  font-size: .7rem;
+  line-height: 1.35;
+}
+
+.leadgen-product-toolbar--realized {
+  grid-template-columns: minmax(240px, 1fr) minmax(150px, .45fr) auto auto;
+}
+
+.leadgen-product-toolbar--realized select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--aura-border);
+  border-radius: 10px;
+  background: var(--aura-surface-strong);
+  color: var(--lg-text);
+  padding: 0 10px;
+}
+
+.leadgen-toolbar-field {
+  min-width: 0;
+}
+
+.leadgen-toolbar-field > span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--aura-muted);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+.leadgen-prospect-card {
+  position: relative;
+}
+
+.leadgen-prospect-card.is-selected {
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 0 0 2px var(--aura-accent-soft), 0 12px 28px rgba(0,0,0,.06);
+}
+
+.leadgen-prospect-card.is-selected::after {
+  content: "Selected";
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  right: 10px;
+  padding: 3px 7px;
+  border: 1px solid var(--aura-border-strong);
+  border-radius: 999px;
+  background: var(--aura-accent-soft);
+  color: var(--lg-text);
+  font-size: .58rem;
+  font-weight: 850;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.leadgen-prospect-card.is-selected .leadgen-prospect-card__toggle {
+  padding-right: 76px;
+}
+
+.leadgen-prospect-card__health {
+  display: grid;
+  grid-template-columns: minmax(110px, .45fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px 10px 38px;
+}
+
+.leadgen-card-meter {
+  min-width: 0;
+}
+
+.leadgen-card-meter__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: var(--lg-faint);
+  font-size: .62rem;
+}
+
+.leadgen-card-meter__label strong {
+  color: var(--lg-text);
+  font-size: .68rem;
+}
+
+.leadgen-card-meter__track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lg-faint) 14%, transparent);
+}
+
+.leadgen-card-meter__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--aura-accent-strong), var(--aura-accent));
+  box-shadow: 0 0 10px var(--aura-accent-glow);
+}
+
+.leadgen-card-opportunity {
+  min-width: 0;
+  color: var(--lg-muted);
+  font-size: .68rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.leadgen-card-opportunity strong {
+  color: var(--lg-text);
+}
+
+.leadgen-prospect-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  padding: 0 13px 13px 38px;
+}
+
+.leadgen-card-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 32px;
+  max-width: 100%;
+  padding: 5px 9px;
+  border: 1px solid var(--aura-border);
+  border-radius: 9px;
+  background: var(--aura-surface-strong);
+  color: var(--lg-muted);
+  font: inherit;
+  font-size: .68rem;
+  font-weight: 750;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.leadgen-card-action:hover:not(:disabled) {
+  border-color: var(--aura-border-strong);
+  background: var(--aura-accent-soft);
+  color: var(--lg-text);
+  transform: translateY(-1px);
+}
+
+.leadgen-card-action:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.leadgen-card-action.is-primary {
+  background: var(--aura-accent-soft);
+  border-color: var(--aura-border-strong);
+  color: var(--lg-text);
+}
+
+.leadgen-card-action-message {
+  flex: 1 1 100%;
+  margin: 2px 0 0;
+  color: var(--lg-faint);
+  font-size: .66rem;
+  line-height: 1.4;
+}
+
+.leadgen-card-action-message.is-error {
+  color: var(--c-danger);
+}
+
+.leadgen-prospect-detail-grid--realized {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.leadgen-prospect-detail-grid--realized > section.is-wide {
+  grid-column: 1 / -1;
+}
+
+.leadgen-card-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.leadgen-card-metric {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid var(--lg-border-faint);
+  border-radius: 10px;
+  background: var(--lg-panel-soft);
+}
+
+.leadgen-card-metric strong {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--lg-text);
+  font-size: .82rem;
+}
+
+.leadgen-card-metric span {
+  display: block;
+  margin-top: 3px;
+  color: var(--lg-faint);
+  font-size: .61rem;
+  line-height: 1.3;
+}
+
+.leadgen-card-empty {
+  margin: 0;
+  color: var(--lg-faint);
+  font-size: .72rem;
+  line-height: 1.5;
+}
+
+.leadgen-card-contact-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.leadgen-card-contact-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+  font-size: .71rem;
+  line-height: 1.45;
+}
+
+.leadgen-card-contact-row > span:first-child {
+  color: var(--lg-faint);
+  font-size: .63rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.leadgen-card-contact-row a,
+.leadgen-card-contact-row span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--lg-text);
+  text-decoration: none;
+}
+
+.leadgen-card-contact-row a:hover {
+  text-decoration: underline;
+}
+
+.leadgen-evidence-note {
+  margin-top: 9px !important;
+  padding-top: 9px;
+  border-top: 1px solid var(--lg-border-faint);
+}
+
+.leadgen-selected-clear {
+  border: 0;
+  background: transparent;
+  color: var(--lg-muted);
+  font: inherit;
+  font-size: .68rem;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.leadgen-selected-clear:hover {
+  color: var(--lg-text);
+}
+
+html[data-theme="light"] .leadgen-prospect-card.is-selected {
+  background: color-mix(in srgb, #fff 96%, var(--aura-accent));
+}
+
+html[data-theme="dark"] .leadgen-card-meter__fill {
+  background: linear-gradient(90deg, #9aa3b2, #eef1f5);
+}
+
+html[data-theme="dark"] .leadgen-prospect-card.is-selected::after {
+  background: rgba(216, 221, 230, .14);
+}
+
+@media (max-width: 980px) {
+  .leadgen-results-scorecard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .leadgen-product-toolbar--realized {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .leadgen-product-toolbar--realized > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .leadgen-prospect-detail-grid--realized {
+    grid-template-columns: 1fr;
+  }
+
+  .leadgen-prospect-detail-grid--realized > section.is-wide {
+    grid-column: auto;
+  }
+
+  .leadgen-card-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .leadgen-public,
+  .leadgen-product-page,
+  .leadgen-app-shell,
+  .leadgen-app-panel,
+  .leadgen-category,
+  .leadgen-category__drawer-inner,
+  .leadgen-prospect-grid,
+  .leadgen-prospect-card,
+  .leadgen-prospect-card__drawer-inner,
+  .leadgen-prospect-detail-grid--realized {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .leadgen-results-scorecard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .leadgen-product-toolbar--realized {
+    grid-template-columns: 1fr;
+  }
+
+  .leadgen-product-toolbar--realized > :first-child {
+    grid-column: auto;
+  }
+
+  .leadgen-prospect-card.is-selected .leadgen-prospect-card__toggle {
+    padding-right: 72px;
+  }
+
+  .leadgen-prospect-card__health {
+    grid-template-columns: 1fr;
+    padding-left: 37px;
+  }
+
+  .leadgen-card-opportunity {
+    text-align: left;
+  }
+
+  .leadgen-prospect-card__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-left: 37px;
+  }
+
+  .leadgen-card-action {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .leadgen-card-action-message {
+    grid-column: 1 / -1;
+  }
+
+  .leadgen-card-contact-row {
+    grid-template-columns: 62px minmax(0, 1fr);
+  }
+
+  .leadgen-card-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 390px) {
+  .leadgen-results-scorecard,
+  .leadgen-card-metrics,
+  .leadgen-prospect-card__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .leadgen-card-action-message {
+    grid-column: auto;
+  }
+
+  .leadgen-prospect-card.is-selected::after {
+    top: 7px;
+    right: 7px;
+  }
+
+  .leadgen-prospect-card.is-selected .leadgen-prospect-card__toggle {
+    padding-right: 68px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leadgen-card-action,
+  .leadgen-card-meter__fill {
+    transition: none !important;
+  }
+}
