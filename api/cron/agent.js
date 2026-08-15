@@ -558,8 +558,7 @@ HACKER NEWS DISCUSSION EXCERPTS
 ${context.discussion?.text || "No useful discussion excerpts were available."}
 
 OPTIONAL AFFILIATE CANDIDATES
-${affiliateCandidates.length ? affiliateCandidates.map((candidate) => `- ${candidate.label}: ${candidate.why} — exact shortcode [[${candidate.token}]]`).join("
-") : "No relevant affiliate candidate was found. Do not add a product link."}
+${affiliateCandidates.length ? affiliateCandidates.map((candidate) => `- ${candidate.label}: ${candidate.why} — exact shortcode [[${candidate.token}]]`).join("\n") : "No relevant affiliate candidate was found. Do not add a product link."}
 
 Write a standalone analysis that adds value beyond the original article. Explain what is confirmed by the source, what is interpretation, and what a small business reader can do with the information. Do not imitate the source's wording and do not manufacture a Sarasota/Bradenton angle when one is not useful.`;
   let post = null;

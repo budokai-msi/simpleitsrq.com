@@ -284,6 +284,10 @@ export async function getSession(request) {
                   sessionId: row.id,
                   originalIp: row.session_ip,
                   originalUa: row.session_ua,
+                  newIp: meta.ip,
+                  newUa: meta.ua,
+                  ipChanged,
+                  uaChanged,
                 })}::jsonb)
       `.catch(() => {});
     }
