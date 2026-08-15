@@ -121,14 +121,18 @@ function classifyCategory(rawCategory) {
   return "Other";
 }
 
-function primaryCategory(props) {
+function categoryDetails(props) {
   const basic = firstText(props.basic_category);
-  if (basic) return basic;
   const taxonomy = parseJsonish(props.taxonomy, null);
   const taxonomyPrimary = firstText(taxonomy?.primary || taxonomy?.category || taxonomy);
-  if (taxonomyPrimary) return taxonomyPrimary;
+  const hierarchy = Array.isArray(taxonomy?.hierarchy) ? taxonomy.hierarchy.map(firstText).filter(Boolean) : [];
   const categories = parseJsonish(props.categories, null);
-  return firstText(categories?.primary || categories) || null;
+  const legacyPrimary = firstText(categories?.primary || categories);
+  return {
+    label: basic || taxonomyPrimary || legacyPrimary || null,
+    specific: taxonomyPrimary || legacyPrimary || basic || null,
+    classifier: [basic, taxonomyPrimary, legacyPrimary, ...hierarchy].filter(Boolean).join(" "),
+  };
 }
 
 function primaryName(props) {
@@ -170,8 +174,8 @@ function normalizeFeature(feature, x, y, zoom, requestedZip, bbox) {
   if (address.country && address.country.toUpperCase() !== "US") return null;
   if (address.zip && requestedZip && address.zip !== requestedZip) return null;
 
-  const category = primaryCategory(props);
-  const industryGroup = classifyCategory(category);
+  const category = categoryDetails(props);
+  const industryGroup = classifyCategory(category.classifier);
   const websites = listOfStrings(props.websites, 4);
   const phones = listOfStrings(props.phones, 4);
   const emails = listOfStrings(props.emails, 6);
@@ -201,9 +205,9 @@ function normalizeFeature(feature, x, y, zoom, requestedZip, bbox) {
     source_url: null,
     source_confidence: confidence,
     source_datasets: sourceDatasets,
-    industry: category ? `overture:${category}` : null,
+    industry: category.specific ? `overture:${category.specific}` : null,
     industry_group: industryGroup,
-    sub_industry: prettifyCategory(category),
+    sub_industry: prettifyCategory(category.label),
   };
 }
 
