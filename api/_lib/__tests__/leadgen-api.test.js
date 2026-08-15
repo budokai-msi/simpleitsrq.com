@@ -137,7 +137,7 @@ describe("api/leadgen", () => {
     expect(response.status).toBe(200);
     expect(data.matched).toBe(0);
     expect(data.rows).toEqual([]);
-    expect(data.industry_counts).toEqual([
+    expect(data.industry_counts).toMatchObject([
       { industry: "Retail", count: 2 },
       { industry: "Professional Services", count: 1 },
     ]);

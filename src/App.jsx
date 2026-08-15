@@ -554,6 +554,13 @@ function ReadingProgress() {
   return <div className="reading-progress" style={{ width: `${progress}%` }} />;
 }
 
+function OwnerOnlyRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <RouteFallback />;
+  if (!user?.isAdmin) return <NotFound />;
+  return children;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   const [displayLocation, setDisplayLocation] = useState(location);
@@ -615,9 +622,9 @@ function AnimatedRoutes() {
         <Route path="/exposure-scan" element={<ExposureScan />} />
         <Route path="/password-check" element={<PasswordCheck />} />
         <Route path="/portal" element={<ClientPortal />} />
-        <Route path="/portal/leadgen" element={<LeadgenDashboard />} />
-        <Route path="/portal/ops" element={<AdminOps />} />
-        <Route path="/portal/opsec" element={<AdminOps />} />
+        <Route path="/portal/leadgen" element={<OwnerOnlyRoute><LeadgenDashboard /></OwnerOnlyRoute>} />
+        <Route path="/portal/ops" element={<OwnerOnlyRoute><AdminOps /></OwnerOnlyRoute>} />
+        <Route path="/portal/opsec" element={<OwnerOnlyRoute><AdminOps /></OwnerOnlyRoute>} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/accessibility" element={<AccessibilityPage />} />

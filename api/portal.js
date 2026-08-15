@@ -289,18 +289,21 @@ async function dispatch(request, method) {
 // table. Anything reachable without auth must remain in dispatch()
 // above the auth gates.
 async function dispatchAuthed(request, method, url, action, session) {
+  const ownerSession = session?.__viaToken === true || session?.user?.isAdmin === true;
   if (action === "me"              && method === "GET")   return handleMeGet(session);
   if (action === "me"              && method === "PATCH") return handleMePatch(session, request);
   if (action === "export-data"     && method === "GET")   return handleExportData(session);
   if (action === "delete-account"  && method === "POST")  return handleDeleteAccount(session);
   if (action === "tickets"         && method === "GET")   return handleTickets(session, url);
   if (action === "ticket"          && method === "GET")   return handleTicket(session, url);
-  if (action === "ticket"          && method === "PATCH") return handleTicketPatch(session, request);
+  if (action === "ticket"          && method === "PATCH") return ownerSession ? handleTicketPatch(session, request) : json(403, { ok: false, error: "forbidden" });
   if (action === "ticket-message"  && method === "POST")  return handleTicketMessage(session, request);
-  if (action === "ticket-cc"       && method === "POST")  return handleTicketCc(session, request);
-  if (action === "ticket-appointment"        && method === "POST") return handleTicketAppointment(session, request);
-  if (action === "ticket-appointment-cancel" && method === "POST") return handleTicketAppointmentCancel(session, request);
+  if (action === "ticket-cc"       && method === "POST")  return ownerSession ? handleTicketCc(session, request) : json(403, { ok: false, error: "forbidden" });
+  if (action === "ticket-appointment"        && method === "POST") return ownerSession ? handleTicketAppointment(session, request) : json(403, { ok: false, error: "forbidden" });
+  if (action === "ticket-appointment-cancel" && method === "POST") return ownerSession ? handleTicketAppointmentCancel(session, request) : json(403, { ok: false, error: "forbidden" });
   if (action === "invoices"        && method === "GET")   return handleInvoices(session);
+  // Everything below this boundary is internal/admin. Fail closed before any handler runs.
+  if (!ownerSession) return json(403, { ok: false, error: "forbidden" });
   if (action === "visitors"        && method === "GET")   return handleVisitors(session);
   if (action === "investigate-ip"   && method === "GET")   return handleInvestigateIp(session, url);
   if (action === "investigate"      && method === "GET")   return handleInvestigateIp(session, url);
