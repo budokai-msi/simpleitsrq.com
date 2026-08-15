@@ -5,7 +5,7 @@
 -- a target geography (initially the operator's own zip code).
 --
 -- Pipeline:
---   1. Discovery   (lead_businesses)  — OSM Overpass (Sunbiz/manual later)
+--   1. Discovery   (lead_businesses)  — Overture Places primary, OSM fallback
 --   2. Enrichment  (lead_emails)      — per-website crawler
 --   3. Campaigns   (lead_campaigns + lead_campaign_sends + lead_campaign_links)
 --   4. Job queue   (lead_crawl_jobs)  — drained by api/cron/agent.js
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS lead_businesses (
   lng             double precision,
   website         text,
   phone           text,
-  source          text NOT NULL,        -- 'osm' | 'sunbiz' | 'manual' | 'csv'
+  source          text NOT NULL,        -- 'overture' | 'osm' | 'sunbiz' | 'manual' | 'csv'
   source_id       text,                 -- e.g. 'node/12345' for OSM
   source_url      text,
   industry        text,

@@ -477,3 +477,11 @@ html[data-theme="dark"] .leadgen-prospect-card.is-selected::after {
     transition: none !important;
   }
 }
+
+
+.leadgen-data-attribution {
+  margin: 6px 2px 0;
+  color: var(--lg-faint);
+  font-size: .62rem;
+  line-height: 1.4;
+}

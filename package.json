@@ -23,6 +23,7 @@
     "db:push": "node --env-file=.env.local scripts/db/push.mjs"
   },
   "dependencies": {
+    "@mapbox/vector-tile": "2.0.4",
     "@neondatabase/serverless": "1.1.0",
     "@sentry/react": "10.63.0",
     "@vercel/analytics": "2.0.1",
@@ -36,6 +37,8 @@
     "lucide-react": "1.23.0",
     "mailparser": "^3.9.14",
     "nodemailer": "^9.0.3",
+    "pbf": "4.0.1",
+    "pmtiles": "4.4.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "react-router-dom": "7.18.2",
@@ -70,4 +73,3 @@
     "svix": "1.92.2"
   }
 }
-
