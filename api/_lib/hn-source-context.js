@@ -3,6 +3,7 @@ const HN_TIMEOUT_MS = 6_000;
 const MAX_ARTICLE_BYTES = 600_000;
 const MAX_ARTICLE_CHARS = 18_000;
 const MAX_DISCUSSION_CHARS = 6_000;
+const MAX_REDIRECTS = 4;
 
 function decodeEntities(value = "") {
   const named = {
@@ -49,10 +50,12 @@ function looksPrivateHostname(hostname = "") {
   return false;
 }
 
-function normalizePublicUrl(value) {
+function normalizePublicUrl(value, base) {
   try {
-    const url = new URL(String(value || ""));
+    const url = base ? new URL(String(value || ""), base) : new URL(String(value || ""));
     if (!/^https?:$/.test(url.protocol) || looksPrivateHostname(url.hostname)) return null;
+    url.username = "";
+    url.password = "";
     url.hash = "";
     return url;
   } catch {
@@ -60,19 +63,40 @@ function normalizePublicUrl(value) {
   }
 }
 
-export async function fetchSourceArticle(sourceUrl) {
-  const url = normalizePublicUrl(sourceUrl);
-  if (!url) return { ok: false, error: "source_url_not_public" };
+async function fetchPublicArticleResponse(sourceUrl) {
+  let current = normalizePublicUrl(sourceUrl);
+  if (!current) return { ok: false, error: "source_url_not_public" };
 
-  try {
-    const response = await fetch(url, {
-      redirect: "follow",
+  for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount += 1) {
+    const response = await fetch(current, {
+      redirect: "manual",
       signal: AbortSignal.timeout(ARTICLE_TIMEOUT_MS),
       headers: {
         Accept: "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.4",
         "User-Agent": "SimpleITSRQ-Research/1.0 (+https://simpleitsrq.com/blog)",
       },
     });
+
+    if (response.status >= 300 && response.status < 400) {
+      if (redirectCount === MAX_REDIRECTS) return { ok: false, error: "source_too_many_redirects" };
+      const location = response.headers.get("location");
+      const next = location ? normalizePublicUrl(location, current) : null;
+      if (!next) return { ok: false, error: "source_redirect_not_public" };
+      current = next;
+      continue;
+    }
+
+    return { ok: true, response, url: current };
+  }
+
+  return { ok: false, error: "source_redirect_failed" };
+}
+
+export async function fetchSourceArticle(sourceUrl) {
+  try {
+    const fetched = await fetchPublicArticleResponse(sourceUrl);
+    if (!fetched.ok) return fetched;
+    const { response, url } = fetched;
     if (!response.ok) return { ok: false, error: `source_http_${response.status}` };
 
     const type = response.headers.get("content-type") || "";
@@ -86,7 +110,7 @@ export async function fetchSourceArticle(sourceUrl) {
 
     return {
       ok: true,
-      url: response.url || url.toString(),
+      url: url.toString(),
       title: /html|xhtml/i.test(type) ? extractTitle(raw) : "",
       text,
       chars: text.length,
