@@ -368,10 +368,10 @@ function LeadgenScanApp() {
   const collapseAllGroups = () => setOpenGroups(Object.fromEntries(groupedRows.map((group) => [group.name, false])));
   const stage = !scan ? 0 : kept.length === 0 ? 1 : keptWithEmail.length < kept.length ? 2 : 3;
   const workflow = [
-    ["1. Discover", "Choose a market and industry."],
-    ["2. Qualify", "Keep the businesses worth pursuing."],
-    ["3. Enrich", "Add reachable emails and website intelligence."],
-    ["4. Sync", "Export or push into your revenue stack."],
+    ["1. Discover", "Choose the ZIP code and industry you want to study."],
+    ["2. Qualify", "Review the evidence and keep the prospects that fit."],
+    ["3. Enrich", "Fill in contact and website signals where data is available."],
+    ["4. Sync", "Export the list or send selected records to a connected CRM."],
   ];
 
   return (
@@ -397,12 +397,12 @@ function LeadgenScanApp() {
 
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
-          <span className="leadgen-app-live"><span /> Live local-market data engine</span>
-          <span className="leadgen-app-portal-link">Live market intelligence</span>
+          <span className="leadgen-app-live"><span /> Local business research</span>
+          <span className="leadgen-app-portal-link">Evidence-backed market view</span>
         </div>
         <div className="leadgen-app-title">
-          <h2 className="title-2">Build a qualified local pipeline, not another spreadsheet.</h2>
-          <p>Discover businesses, qualify them, enrich website and contact signals, then send the final list into your CRM or automation stack.</p>
+          <h2 className="title-2">Start with a market. Find the businesses worth a closer look.</h2>
+          <p>Scan by ZIP code and industry, compare useful business signals, expand the records that stand out, enrich what is missing, and export only the prospects you choose.</p>
         </div>
 
         <div className="leadgen-product-steps">
@@ -474,7 +474,7 @@ function LeadgenScanApp() {
               <div>
                 <span className="eyebrow">Market explorer</span>
                 <h3>{groupedRows.length} industries in ZIP {zip}</h3>
-                <p>Open an industry, narrow to a subcategory, then expand any business into a full prospect profile.</p>
+                <p>Open a category to compare the businesses inside it. Narrow by subcategory, then expand a record to see the evidence behind its score.</p>
               </div>
               <div className="leadgen-explorer-actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={expandAllGroups}>Expand all</button>
@@ -618,8 +618,8 @@ function LeadgenScanApp() {
 
 export default function Leadgen() {
   useSEO({
-    title: "Local Lead Generation & CRM Sync | Simple IT SRQ",
-    description: "Discover local businesses, score and qualify prospects, enrich website and contact signals, monitor saved markets, and sync attributable pipeline into your CRM.",
+    title: "Local Business Lead Research & Enrichment | Leadgen",
+    description: "Research local businesses by ZIP code and industry, compare prospect signals, enrich available contact data, save markets, and export the businesses you choose.",
     canonical: `${SITE_URL}/leadgen`,
     image: `${SITE_URL}/og-image.png`,
   });
@@ -630,12 +630,12 @@ export default function Leadgen() {
         <LeadgenScanApp />
         <section className="leadgen-product-upgrade">
           <div>
-            <span className="eyebrow">Built for revenue teams</span>
-            <h2>Turn recurring local-market intelligence into pipeline.</h2>
-            <p>Saved markets, scoring, website intelligence, CRM sync, campaign history, suppression, attribution and health monitoring become more valuable as your team keeps using them.</p>
+            <span className="eyebrow">For repeat prospecting</span>
+            <h2>Keep the markets you care about under watch.</h2>
+            <p>Pro adds saved markets, recurring monitoring, enrichment history, CRM sync, suppression, and attribution so you can work from a repeatable prospecting process instead of rebuilding lists.</p>
           </div>
           <a className="btn btn-primary" href={withLeadgenCheckoutParams(LEADGEN_STRIPE_LINKS.pro.monthly, { tierId: "pro", source: "leadgen_workspace" })}>
-            Upgrade to Pro <ArrowRight size={16} />
+            See Pro features <ArrowRight size={16} />
           </a>
         </section>
       </div>

@@ -289,7 +289,7 @@ function Footer() {
       <div className="container footer-grid">
         <div>
           <Logo />
-          <p className="footer-desc">Local IT support, helpdesk, computer repair, security cameras, and enterprise IT - for businesses and homes across Sarasota, Bradenton, and Venice. A real team that picks up the phone.</p>
+          <p className="footer-desc">Computer repair and practical business IT support for Sarasota and Bradenton, plus Leadgen for local prospect research. Clear scope, useful answers, and no oversized promises.</p>
           <div style={{ marginTop: 20 }}>
             <a className="footer-email" href="mailto:hello@simpleitsrq.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}>
               <AtSign size={16} color="var(--brand)" /> hello@simpleitsrq.com
