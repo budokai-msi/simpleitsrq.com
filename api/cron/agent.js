@@ -22,6 +22,7 @@ import nodemailer from "nodemailer";
 import { sendCampaignEmail, renderTemplate } from "../_lib/leadgen-smtp.js";
 import { publishDraftToGitHub } from "../_lib/publish-draft.js";
 import { fetchHnSourceContext } from "../_lib/hn-source-context.js";
+import { affiliateOpportunities, rankFreshStories, seoBriefForStory } from "../_lib/blog-editorial.js";
 
 // Cold-start validation. Both keys are validated as 'optional' rather than
 // 'required': the per-task code below already returns { skipped } when a
@@ -416,29 +417,41 @@ async function fetchHNTopStory() {
     const topIds = await topRes.json();
     if (!Array.isArray(topIds)) return null;
 
-    // Fetch details for the top 30 stories in parallel.
+    // Look beyond the first screen of Hacker News. Velocity matters more than
+    // yesterday's raw score when the goal is timely organic-search coverage.
     const candidates = await Promise.all(
-      topIds.slice(0, 30).map(async (id) => {
+      topIds.slice(0, 80).map(async (id, rank) => {
         try {
           const r = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`, { signal: AbortSignal.timeout(5000) });
           if (!r.ok) return null;
-          return await r.json();
+          const story = await r.json();
+          return story ? { ...story, hnRank: rank } : null;
         } catch { return null; }
       })
     );
 
-    // Filter: must be a story (not job/poll), score > 80, and relevant to our audience.
-    const scored = candidates
-      .filter((s) => s && s.type === "story" && s.score > 80 && s.title && s.url)
-      .filter((s) => !HN_BANNED_TITLE.test(s.title))
-      .filter((s) => HN_RELEVANT.test(`${s.title} ${s.url || ""}`))
-      .map((s) => {
-        const relevance = HN_RELEVANT.test(s.title) ? 2 : 1;
-        return { ...s, weight: s.score * relevance };
-      })
-      .sort((a, b) => b.weight - a.weight);
+    const recentDrafts = await sql`
+      SELECT title, body
+      FROM draft_posts
+      WHERE ts > now() - interval '120 days'
+      ORDER BY ts DESC
+      LIMIT 250
+    `.catch(() => []);
+    const recentOutcomes = await sql`
+      SELECT detail->>'hnTitle' AS title, detail->>'hnUrl' AS source_url
+      FROM auto_actions
+      WHERE action = 'blog_draft'
+        AND ts > now() - interval '120 days'
+      ORDER BY ts DESC
+      LIMIT 250
+    `.catch(() => []);
 
-    return scored[0] || null;
+    const eligible = candidates
+      .filter((s) => s && s.type === "story" && s.score >= 35 && s.title && s.url)
+      .filter((s) => !HN_BANNED_TITLE.test(s.title))
+      .filter((s) => HN_RELEVANT.test(`${s.title} ${s.url || ""}`));
+
+    return rankFreshStories(eligible, [...recentDrafts, ...recentOutcomes])[0] || null;
   } catch (err) {
     console.error("[hn] fetch error", err);
     return null;
@@ -476,7 +489,8 @@ if (!context.ok) {
 
 try {
   const hnUrl = context.hnDiscussionUrl;
-  const gadget = pickGadgetForStory(story);
+  const affiliateCandidates = affiliateOpportunities(story, context.article.text);
+  const seoBrief = seoBriefForStory(story);
 
   const systemPrompt = `You are the editorial engine for Simple IT SRQ, a computer repair and business IT company serving Sarasota and Bradenton, Florida. Your job is to turn a source article discovered through Hacker News into an original, useful field note for small-business readers.
 
@@ -490,10 +504,10 @@ EDITORIAL STANDARD:
 - Mention Sarasota or Bradenton only when the local context genuinely helps the reader. Do not repeat city names for SEO.
 - Use plain language. Avoid hype such as "secret sauce", "game-changing", "massive", "critical enterprise-grade investment", "impenetrable", or fear-based urgency.
 - Be concise and well organized. There is no target word count; stop when the reader has enough information to act.
-- Title must be clear, specific, natural, and no more than 70 characters.
-- Meta description must accurately summarize this specific article in one useful sentence.
+- Title must be clear, specific, natural, and no more than 70 characters. Use the supplied primary search query only when it reads naturally and accurately describes the article.
+- Meta description must accurately summarize this specific article in one useful sentence and make the practical value clear without clickbait.
 - Category must be one of: Cybersecurity, AI & Productivity, Cloud, Privacy, Business Tech, Industry News.
-- Slug must be lowercase kebab case and describe the actual topic. Do not stuff locations or service keywords into it.
+- Slug must be lowercase kebab case and describe the actual topic. Do not stuff locations or service keywords into it.\n- Answer the primary search intent in the first 120 words. Use related terms naturally in headings/body; never repeat a phrase just for SEO.\n- Prefer evergreen explanatory angles around a trending event: what changed, who is affected, what to check, and what to do next.
 
 REQUIRED STRUCTURE:
 - Begin with a one-sentence source note linking to the original article: [Original source](${story.url}).
@@ -502,10 +516,11 @@ REQUIRED STRUCTURE:
 - End with one relevant internal link to /services, /leadgen, /tools, /book, or /#contact. Do not force multiple CTAs.
 
 PRODUCT LINKS:
-- A product candidate may be supplied. It is OPTIONAL.
-- Include it only when it directly helps implement advice supported by the source article.
-- Never make a product the hero of an unrelated article.
-- If you use the product, include its exact shortcode once and explain the practical reason without unsupported superlatives.
+- Zero to three affiliate candidates may be supplied. Every candidate is OPTIONAL.
+- Use at most one affiliate link unless two products solve clearly different problems in the article.
+- Include a candidate only when the source-backed advice creates a real buying decision for the reader.
+- Never force a product into general news, policy, AI-model, or industry commentary.
+- If you use a product, include its exact shortcode once and explain the practical use case without unsupported superlatives.
 - If any affiliate shortcode is used, end with: "Product links may be affiliate links; we may earn a small commission on qualifying purchases."
 
 Respond with ONLY a JSON object (no Markdown fence):
@@ -525,6 +540,16 @@ Hacker News title: ${story.title}
 Original URL: ${story.url}
 Hacker News discussion: ${hnUrl}
 Hacker News points when selected: ${story.score}
+Hacker News comments when selected: ${story.descendants || 0}
+Trend score: ${story.editorial?.trendScore || "n/a"}
+Story age in hours: ${story.editorial?.ageHours || "n/a"}
+Points per hour: ${story.editorial?.pointsPerHour || "n/a"}
+
+SEO / SEARCH INTENT BRIEF
+Primary query: ${seoBrief.primaryQuery}
+Search intent: ${seoBrief.searchIntent}
+Related queries: ${seoBrief.secondaryQueries.join(" | ")}
+Preferred internal CTA: ${seoBrief.preferredInternalCta}
 
 ORIGINAL ARTICLE EXTRACT
 ${context.article.text}
@@ -532,9 +557,9 @@ ${context.article.text}
 HACKER NEWS DISCUSSION EXCERPTS
 ${context.discussion?.text || "No useful discussion excerpts were available."}
 
-OPTIONAL PRODUCT CANDIDATE
-${gadget.key}: ${gadget.why}
-Exact shortcode if, and only if, genuinely relevant: [[${gadget.token}]]
+OPTIONAL AFFILIATE CANDIDATES
+${affiliateCandidates.length ? affiliateCandidates.map((candidate) => `- ${candidate.label}: ${candidate.why} — exact shortcode [[${candidate.token}]]`).join("
+") : "No relevant affiliate candidate was found. Do not add a product link."}
 
 Write a standalone analysis that adds value beyond the original article. Explain what is confirmed by the source, what is interpretation, and what a small business reader can do with the information. Do not imitate the source's wording and do not manufacture a Sarasota/Bradenton angle when one is not useful.`;
   let post = null;
@@ -623,7 +648,7 @@ Write a standalone analysis that adds value beyond the original article. Explain
           excerpt: post.excerpt || "",
           body: post.body,
           meta_desc: post.metaDescription || "",
-          tags: ["hacker-news", "source-backed", "local-it", /\[\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null].filter(Boolean),
+          tags: ["hacker-news", "source-backed", "local-it", /\[\[(?:amazon|amazon_search|onepassword|backblaze|acronis|ubiquiti)(?::|\]\])/.test(post.body) ? "affiliate" : null].filter(Boolean),
           sourceUrl: story.url,
         });
         if (publishResult.ok) {
@@ -672,7 +697,9 @@ Write a standalone analysis that adds value beyond the original article. Explain
       source: "hn",
       hnTitle: story.title,
       hnUrl: story.url,
-      gadget: /\[\[(?:amazon|amazon_search):/.test(post.body) ? gadget.key : null,
+      affiliateOpportunities: affiliateCandidates.map((candidate) => candidate.label),
+      trend: story.editorial || null,
+      seoBrief,
       quality,
       published: publishResult?.ok === true,
       alreadyInFile: publishResult?.alreadyInFile === true,
