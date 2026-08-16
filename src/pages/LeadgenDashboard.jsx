@@ -88,26 +88,12 @@ function hostFor(url) {
 // encrypted server-side before storage (api/_lib/crypto.js).
 
 const INTEGRATION_KINDS = [
-  { kind: "webhook", label: "Webhook / Zapier", fields: [
-    { key: "url", label: "POST URL", placeholder: "https://hooks.zapier.com/..." },
-    { key: "secret", label: "Shared secret", optional: true },
-  ] },
-  { kind: "mailchimp", label: "Mailchimp", fields: [
-    { key: "api_key", label: "API key", placeholder: "xxxxxxxx-us21" },
-    { key: "list_id", label: "Audience (list) ID" },
-  ] },
   { kind: "hubspot", label: "HubSpot", fields: [
     { key: "access_token", label: "Private app token", placeholder: "pat-na1-..." },
   ] },
-  { kind: "activecampaign", label: "ActiveCampaign", fields: [
-    { key: "api_url", label: "API URL", placeholder: "https://you.api-us1.com" },
-    { key: "api_key", label: "API key" },
-    { key: "company_field_id", label: "Company field ID", placeholder: "e.g. 1", optional: true, datalist: "ac" },
-    { key: "industry_field_id", label: "Industry field ID", placeholder: "e.g. 2", optional: true, datalist: "ac" },
-  ] },
-  { kind: "gohighlevel", label: "GoHighLevel", fields: [
-    { key: "api_key", label: "Private integration token" },
-    { key: "location_id", label: "Location ID" },
+  { kind: "webhook", label: "Webhook", fields: [
+    { key: "url", label: "POST URL", placeholder: "https://hooks.example.com/leadgen" },
+    { key: "secret", label: "Shared secret", optional: true },
   ] },
 ];
 
@@ -118,36 +104,13 @@ function kindLabel(kind) {
 function LeadgenIntegrationsManager() {
   const [list, setList] = useState(null); // null = loading
   const [gated, setGated] = useState(false);
-  const [kind, setKind] = useState("webhook");
+  const [kind, setKind] = useState("hubspot");
   const [config, setConfig] = useState({});
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null); // { ok, text }
-  const [acFields, setAcFields] = useState([]); // ActiveCampaign custom fields, once fetched
-  const [acBusy, setAcBusy] = useState(false);
 
   const def = INTEGRATION_KINDS.find((k) => k.kind === kind) || INTEGRATION_KINDS[0];
 
-  // Pull the account's custom fields so Company/Industry can be picked by name
-  // instead of hand-entering a numeric field id.
-  const loadAcFields = async () => {
-    setAcBusy(true); setMsg(null);
-    try {
-      const j = await postJson("/api/leadgen-integrations?action=ac-fields", {
-        config: { api_url: config.api_url, api_key: config.api_key },
-      });
-      setAcFields(j.fields || []);
-      setMsg({
-        ok: true,
-        text: j.fields?.length
-          ? `Loaded ${j.fields.length} field${j.fields.length === 1 ? "" : "s"} - pick from the field boxes below.`
-          : "No custom fields found on this ActiveCampaign account.",
-      });
-    } catch (err) {
-      setMsg({ ok: false, text: `Could not load fields: ${err.message}` });
-    } finally {
-      setAcBusy(false);
-    }
-  };
 
   const load = useCallback(async () => {
     try {
@@ -218,7 +181,7 @@ function LeadgenIntegrationsManager() {
   return (
     <div className="leadgen-integrations-mgr">
       {gated ? (
-        <p className="leadgen-integrations-mgr__note">Push-to-CRM is available on Growth and Pro plans.</p>
+        <p className="leadgen-integrations-mgr__note">HubSpot and webhook delivery are available on Growth and Pro plans.</p>
       ) : null}
 
       {Array.isArray(list) && list.length ? (
@@ -241,7 +204,7 @@ function LeadgenIntegrationsManager() {
           ))}
         </ul>
       ) : Array.isArray(list) ? (
-        <p className="leadgen-integrations-mgr__note">No destinations connected yet.</p>
+        <p className="leadgen-integrations-mgr__note">No HubSpot or webhook destination connected yet.</p>
       ) : (
         <p className="leadgen-integrations-mgr__note">Loading…</p>
       )}
@@ -251,7 +214,7 @@ function LeadgenIntegrationsManager() {
         <form onSubmit={save} className="leadgen-integrations-mgr__form">
           <label>
             <span>Destination</span>
-            <select value={kind} onChange={(e) => { setKind(e.target.value); setConfig({}); setMsg(null); setAcFields([]); }}>
+            <select value={kind} onChange={(e) => { setKind(e.target.value); setConfig({}); setMsg(null); }}>
               {INTEGRATION_KINDS.map((k) => <option key={k.kind} value={k.kind}>{k.label}</option>)}
             </select>
           </label>
@@ -268,24 +231,6 @@ function LeadgenIntegrationsManager() {
               />
             </label>
           ))}
-          {kind === "activecampaign" ? (
-            <div className="leadgen-integrations-mgr__ac-fields">
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={loadAcFields}
-                disabled={acBusy || !config.api_url || !config.api_key}
-                title={!config.api_url || !config.api_key ? "Enter the API URL and key first" : "Fetch your ActiveCampaign custom fields so you can pick them by name"}
-              >
-                {acBusy ? "Loading fields…" : "Load fields"}
-              </button>
-              {acFields.length ? (
-                <datalist id="leadgen-ac-fields">
-                  {acFields.map((fld) => <option key={fld.id} value={fld.id}>{fld.title}</option>)}
-                </datalist>
-              ) : null}
-            </div>
-          ) : null}
           <button type="submit" className="btn btn-primary btn-sm" disabled={busy}>{busy ? "Saving…" : "Connect"}</button>
         </form>
         <p className="leadgen-integrations-mgr__hint">Keys are encrypted before they're stored, and never shown again.</p>
