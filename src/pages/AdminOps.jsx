@@ -305,7 +305,7 @@ export default function AdminOps() {
           <Shield size={40} color="var(--brand)" style={{ margin: "0 auto 16px" }} />
           <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 12px" }}>Admin Cockpit & OpSec Console</h1>
           <p style={{ color: "var(--text-2)", fontSize: 15, lineHeight: 1.6, margin: "0 0 24px" }}>
-            Sign in with your verified owner Google account (<strong>***REMOVED***</strong>) to access the operations dashboard and OpSec controls.
+            Sign in with your verified owner Google account to access the operations dashboard and OpSec controls.
           </p>
           <a
             href="/api/auth/login?provider=google&returnTo=/portal/ops"

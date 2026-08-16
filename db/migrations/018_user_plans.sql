@@ -8,12 +8,8 @@ ALTER TABLE users
   ADD COLUMN IF NOT EXISTS plan text NOT NULL DEFAULT 'free'
   CHECK (plan IN ('free','growth','pro','lifetime'));
 
--- Immediately grant lifetime access to the owner account.
--- If the row doesn't exist yet it will be set to 'lifetime' on first login via
--- the upsert in the auth callback — the UPDATE is a safe no-op when the row is absent.
-UPDATE users
-  SET plan = 'lifetime', is_admin = true
-  WHERE email = '***REMOVED***';
+-- Owner lifetime/admin access is derived at session time by the server-side
+-- identity digest check. No owner identifier is stored in this migration.
 
 -- ── user_integrations ────────────────────────────────────────────────────────
 -- Stores per-user outbound integration configuration: webhooks, CRM keys, etc.

@@ -1,17 +1,20 @@
-// Central admin allowlist. Server-side only.
+// Central admin identity check. Server-side only.
 //
-// Hard-locked to a single owner account. This is intentionally NOT driven by
-// env vars: a stray or misconfigured ADMIN_EMAIL/ADMIN_EMAILS value (or anyone
-// with access to the Vercel dashboard) must never be able to grant admin to
-// another address. ***REMOVED*** is the sole admin, full stop.
-export const OWNER_EMAIL = "***REMOVED***";
+// The raw owner email must never live in source control. Authorization is
+// hard-locked to a salted SHA-256 digest committed here; environment variables
+// cannot add another admin identity. The comparison uses timingSafeEqual.
 
-// Returns the canonical admin allowlist. Always exactly the owner — the `env`
-// parameter is ignored and kept only for signature compatibility with callers.
-export function adminEmailsFromEnv() {
-  return [OWNER_EMAIL];
+import { createHash, timingSafeEqual } from "node:crypto";
+
+const OWNER_EMAIL_DIGEST = Buffer.from("f3eba6be9575c9f822a9a319a688dec5f03d0885c75ab8d32ea3aefcdf47f3d2", "hex");
+const OWNER_EMAIL_NAMESPACE = "simpleitsrq-owner-v1:";
+
+function digestEmail(email) {
+  return createHash("sha256")
+    .update(OWNER_EMAIL_NAMESPACE + String(email || "").trim().toLowerCase(), "utf8")
+    .digest();
 }
 
 export function isAdminEmail(email) {
-  return String(email || "").trim().toLowerCase() === OWNER_EMAIL;
+  return timingSafeEqual(digestEmail(email), OWNER_EMAIL_DIGEST);
 }

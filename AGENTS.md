@@ -9,8 +9,8 @@
 
 - **NO EMOJIS EVER**: Never use emojis in UI, buttons, MDX posts, commits, or responses. All icons must be pure Lucide SVG vector graphics.
 - **OFFICIAL PHONE NUMBER**: **`(813) 434-3230`** (`tel:+18134343230`, `sms:+18134343230`, `+1-813-434-3230` in SEO schema). NEVER expose personal cell `(407) 242-1456` or placeholder numbers anywhere.
-- **PRIVACY & EMAIL MASKING**: Never print raw email addresses (e.g. `***REMOVED***`) on public form headers or banners. Always use masked role text (e.g. `Signed in to Client Portal`).
-- **SOLE ADMIN OWNER**: `OWNER_EMAIL = "***REMOVED***"` in `api/_lib/admin.js`.
+- **PRIVACY & EMAIL MASKING**: Never print raw personal/admin email addresses in source, public form headers, banners, logs, or docs. Use masked role text (e.g. `Signed in to Client Portal`).
+- **SOLE ADMIN OWNER**: `api/_lib/admin.js` uses a one-way owner identity digest. Never place the raw owner email in source control or client code.
 - **CSS SELECTORS**:
   - Top header navbar links use `.nav-link` and `.nav-group-btn` in `src/components/Navbar.jsx`.
   - Never style `.nav-top-link` exclusively without including `.nav-link` and `.nav-group-btn`.
@@ -23,7 +23,7 @@
 
 > [!NOTE]
 > The primary business number `(813) 434-3230` is a Google Voice number.
-> - **Permissions**: Configuration (forwarding, voicemail, blocked numbers) must be managed by the Workspace Admin (`***REMOVED***`) via the [Google Voice Admin Console](https://admin.google.com).
+> - **Permissions**: Configuration (forwarding, voicemail, blocked numbers) must be managed by the owner Workspace Admin via the [Google Voice Admin Console](https://admin.google.com).
 > - **API Access**: There is no direct programmatic API for this number in the web application codebase. Any SMS or Voice routing needs must be configured manually in the Google Workspace portal or by setting up a third-party webhook (e.g., Twilio) if an automated voice/SMS response system is required in the future.
 
 ---

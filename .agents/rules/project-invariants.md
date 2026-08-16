@@ -11,8 +11,8 @@
 | :--- | :--- | :--- | :--- |
 | **No Emojis** | **STRICTLY ZERO EMOJIS EVER** | Pure Lucide vector SVGs (`<Sparkles />`, `<Phone />`) | Emojis in UI, buttons, MDX, or text responses |
 | **Official Phone** | **`(813) 434-3230`** | `tel:+18134343230`, `(813) 434-3230` | Personal cell `407-242-1456` or placeholder numbers |
-| **Privacy / Email** | **Mask Personal Email** | `Signed in to Client Portal` | Exposing raw email (`***REMOVED***`) in forms |
-| **Admin Owner** | `***REMOVED***` | Hardcoded sole owner in `api/_lib/admin.js` | Env var fallback for admin access |
+| **Privacy / Email** | **Mask Personal/Admin Email** | `Signed in to Client Portal` | Exposing raw owner identity in source, forms, logs, or docs |
+| **Admin Owner** | One-way identity digest | Sole-owner digest check in `api/_lib/admin.js` | Raw owner email or env-var allowlist |
 | **Navbar Selector** | `.nav-link` & `.nav-group-btn` | `.nav-link` & `.nav-group-btn` in `src/App.css` | Styling `.nav-top-link` exclusively |
 
 ---

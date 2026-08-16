@@ -552,12 +552,9 @@ export async function handleRunAuditMigration(session) {
   } catch (e) {
     results.push({ step: "add users.plan column (018)", ok: false, error: String(e.message || e) });
   }
-  try {
-    await sql`UPDATE users SET plan = 'lifetime', is_admin = true WHERE email = '***REMOVED***'`;
-    results.push({ step: "grant lifetime plan to owner (018)", ok: true });
-  } catch (e) {
-    results.push({ step: "grant lifetime plan to owner (018)", ok: false, error: String(e.message || e) });
-  }
+  // Owner lifetime access is derived from the server-side identity digest
+  // when a session is built; migrations never need the owner identifier.
+  results.push({ step: "owner lifetime access derived at session time (018)", ok: true });
   try {
     await sql`
       CREATE TABLE IF NOT EXISTS user_integrations (

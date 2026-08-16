@@ -13,7 +13,7 @@
 // Variables and Secrets):
 //   INBOUND_API_URL  = https://simpleitsrq.com/api/portal?action=inbound-email
 //   INBOUND_SECRET   = <same random value as INBOUND_SHARED_SECRET in Vercel>  (encrypt it)
-//   FORWARD_TO       = ***REMOVED***  (must be a verified Email Routing destination)
+//   FORWARD_TO       = <verified owner mailbox>  (must be a verified Email Routing destination)
 //
 // Setup: Cloudflare dashboard → your domain → Email → Email Routing →
 //   1. Email Workers → Create → paste this file → Deploy.
