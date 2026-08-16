@@ -6,7 +6,16 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Wed, 12 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 16 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>Private AI for Small Business: Google’s Encryption Breakthrough</title>
+      <link>https://simpleitsrq.com/blog/private-ai-google-homomorphic-encryption-smb</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/private-ai-google-homomorphic-encryption-smb</guid>
+      <pubDate>Sun, 16 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Privacy</category>
+      <description>Google just made private AI more practical with a new open-source tool. Here’s why data privacy matters more than ever for small businesses in Bradenton and Sarasota—and what you can do about it.</description>
+    </item>
     <item>
       <title>Fast Workstation &amp; Network Repair for Sarasota Small Businesses</title>
       <link>https://simpleitsrq.com/blog/sarasota-workstation-network-repair-guide-2</link>
