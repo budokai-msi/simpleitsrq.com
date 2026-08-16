@@ -485,3 +485,25 @@ html[data-theme="dark"] .leadgen-prospect-card.is-selected::after {
   font-size: .62rem;
   line-height: 1.4;
 }
+
+
+/* Leadgen cleanup: one clear identity hierarchy on narrow cards. */
+.leadgen-prospect-card__name-copy { display:flex; flex-direction:column; gap:3px; min-width:0; line-height:1.2; }
+.leadgen-prospect-card__name-copy > strong,
+.leadgen-prospect-card__name-copy > span { display:block; min-width:0; overflow-wrap:anywhere; }
+.leadgen-prospect-card__name-copy > strong { color:var(--lg-text); font-size:.9rem; line-height:1.16; }
+.leadgen-prospect-card__name-copy > span { color:var(--lg-faint); font-size:.66rem; line-height:1.35; }
+.leadgen-prospect-card.is-selected::after { content:none !important; display:none !important; }
+.leadgen-prospect-card.is-selected .leadgen-prospect-card__toggle { padding-right:13px; }
+.leadgen-fit-badge {
+  display:inline-flex; flex:0 0 auto; align-items:center; justify-content:center;
+  min-height:28px; padding:4px 9px; border:1px solid var(--aura-border-strong);
+  border-radius:999px; background:var(--aura-accent-soft); color:var(--lg-text);
+  font-size:.64rem; font-weight:800; white-space:nowrap;
+}
+@media (max-width:640px) {
+  .leadgen-prospect-card__top { align-items:flex-start; }
+  .leadgen-prospect-card__toggle { grid-template-columns:minmax(0,1fr) auto auto; align-items:center; }
+  .leadgen-prospect-card__name { align-items:flex-start; }
+  .leadgen-prospect-card__name-copy > strong { font-size:.86rem; }
+}

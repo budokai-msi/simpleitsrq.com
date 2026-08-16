@@ -29,6 +29,7 @@
     "@vercel/analytics": "2.0.1",
     "@vercel/speed-insights": "2.0.0",
     "botid": "1.5.11",
+    "cheerio": "1.2.0",
     "dotenv": "^17.4.2",
     "framer-motion": "^12.42.2",
     "imapflow": "^1.6.5",

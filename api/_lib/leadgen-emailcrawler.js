@@ -1,22 +1,26 @@
 // Bounded public website contact finder for Leadgen.
-// Purposefully narrow: emails, contact-form presence, and public social links.
-// No DNS scoring, domain-age scoring, PageSpeed, technology fingerprinting, or
-// speculative business signals.
+// Purposefully narrow: contact details, contact-form/social evidence, and a
+// small brand asset discovered from the same public pages.
+// No DNS scoring, domain-age scoring, PageSpeed, or technology fingerprinting.
 
 import dns from "node:dns/promises";
 import net from "node:net";
+import * as cheerio from "cheerio";
 
 const PAGE_BYTES_CAP = 220 * 1024;
 const HOST_PAGES_CAP = 4;
 const FETCH_TIMEOUT_MS = 7000;
 const MAX_REDIRECTS = 3;
+const BRAND_BYTES_CAP = 48 * 1024;
+const BRAND_FETCH_TIMEOUT_MS = 4500;
 const CONTACT_PATHS = ["/contact", "/contact-us", "/about", "/about-us", "/team", "/staff"];
 const REJECT_SUBSTR = ["example.com", "example.org", "domain.com", "yourdomain", "@sentry.io", "@wix.com", "@wixsite", "@squarespace.com", "u003c", "u003e"];
 const REJECT_LOCAL = new Set(["noreply", "no-reply", "donotreply", "do-not-reply", "postmaster", "abuse", "webmaster", "hostmaster", "mailer-daemon"]);
 const EMAIL_RE = /([A-Z0-9._%+-]+)@([A-Z0-9.-]+\.[A-Z]{2,24})/gi;
+const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon"]);
 
 function ua() {
-  return process.env.LEADGEN_USER_AGENT || "simpleitsrq-leadgen/3.0 (+https://simpleitsrq.com; contact: hello@simpleitsrq.com)";
+  return process.env.LEADGEN_USER_AGENT || "simpleitsrq-leadgen/3.1 (+https://simpleitsrq.com; contact: hello@simpleitsrq.com)";
 }
 
 function isPrivateAddress(address) {
@@ -53,7 +57,11 @@ function originOf(url) {
 }
 
 function safeUrl(input, base) {
-  try { return new URL(input, base).toString(); } catch { return null; }
+  try {
+    const url = new URL(input, base);
+    if (!/^https?:$/.test(url.protocol)) return null;
+    return url.toString();
+  } catch { return null; }
 }
 
 async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0) {
@@ -62,7 +70,7 @@ async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0) {
   const timer = setTimeout(() => ctrl.abort(), ms);
   try {
     const response = await fetch(url, {
-      headers: { "User-Agent": ua(), Accept: "text/html,text/plain,*/*;q=0.5" },
+      headers: { "User-Agent": ua(), Accept: "text/html,text/plain,image/*,*/*;q=0.4" },
       redirect: "manual",
       signal: ctrl.signal,
     });
@@ -78,33 +86,41 @@ async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0) {
   }
 }
 
+async function readBytesCapped(res, cap) {
+  const declared = Number(res.headers.get("content-length") || 0);
+  if (declared > cap) throw new Error("asset_too_large");
+  const reader = res.body?.getReader();
+  if (!reader) {
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (bytes.length > cap) throw new Error("asset_too_large");
+    return bytes;
+  }
+  const chunks = [];
+  let total = 0;
+  while (total <= cap) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    if (!value) continue;
+    total += value.length;
+    if (total > cap) {
+      try { await reader.cancel(); } catch {}
+      throw new Error("asset_too_large");
+    }
+    chunks.push(value);
+  }
+  const joined = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.length; }
+  return joined;
+}
+
 async function fetchBodyCapped(url) {
   const res = await fetchWithTimeout(url);
   if (!res.ok) return { ok: false, status: res.status, body: "", finalUrl: res.url, headers: res.headers };
   const contentType = res.headers.get("content-type") || "";
   if (!/text\/|application\/xhtml/i.test(contentType)) return { ok: false, status: 415, body: "", finalUrl: res.url, headers: res.headers };
-  const reader = res.body?.getReader();
-  if (!reader) {
-    const text = await res.text();
-    return { ok: true, status: res.status, body: text.slice(0, PAGE_BYTES_CAP), finalUrl: res.url, headers: res.headers };
-  }
-  const chunks = [];
-  let total = 0;
-  while (total < PAGE_BYTES_CAP) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    if (!value) continue;
-    const remaining = PAGE_BYTES_CAP - total;
-    chunks.push(value.slice(0, remaining));
-    total += Math.min(value.length, remaining);
-  }
-  try { await reader.cancel(); } catch {}
-  let length = 0;
-  for (const chunk of chunks) length += chunk.length;
-  const joined = new Uint8Array(length);
-  let offset = 0;
-  for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.length; }
-  return { ok: true, status: res.status, body: new TextDecoder().decode(joined), finalUrl: res.url, headers: res.headers };
+  const bytes = await readBytesCapped(res, PAGE_BYTES_CAP);
+  return { ok: true, status: res.status, body: new TextDecoder().decode(bytes), finalUrl: res.url, headers: res.headers };
 }
 
 async function robotsAllowsRoot(origin) {
@@ -160,37 +176,137 @@ function extractEmails(body, pageUrl) {
   return Array.from(found.values());
 }
 
-function extractContactLinks(homepageBody, origin) {
-  const set = new Set(CONTACT_PATHS.map((path) => `${origin}${path}`));
-  const linkRe = /href\s*=\s*["']([^"'#]+)/gi;
-  let match;
-  while ((match = linkRe.exec(homepageBody)) !== null && set.size < HOST_PAGES_CAP * 4) {
-    const url = safeUrl(match[1], origin);
-    if (!url || originOf(url) !== origin) continue;
-    const path = new URL(url).pathname.toLowerCase().replace(/\/$/, "");
-    if (CONTACT_PATHS.some((candidate) => path === candidate || path.startsWith(`${candidate}/`))) set.add(url);
+function walkLogo(value) {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = walkLogo(item);
+      if (found) return found;
+    }
+    return null;
   }
-  return Array.from(set);
+  if (typeof value === "object") {
+    if (value.logo) {
+      const found = walkLogo(value.logo);
+      if (found) return found;
+    }
+    for (const key of ["url", "contentUrl", "@id"]) {
+      if (typeof value[key] === "string") return value[key];
+    }
+    if (value["@graph"]) return walkLogo(value["@graph"]);
+  }
+  return null;
 }
 
-function extractContactSignals(body, finalUrl) {
-  const html = String(body || "");
-  const social = {};
-  const patterns = {
-    linkedin: /https?:\/\/(?:www\.)?linkedin\.com\/[^"'\s<>]+/i,
-    facebook: /https?:\/\/(?:www\.)?facebook\.com\/[^"'\s<>]+/i,
-    instagram: /https?:\/\/(?:www\.)?instagram\.com\/[^"'\s<>]+/i,
+function brandCandidates($, pageUrl) {
+  const out = [];
+  const add = (href, type, confidence) => {
+    const url = safeUrl(href, pageUrl);
+    if (!url || out.some((item) => item.url === url)) return;
+    out.push({ url, type, confidence });
   };
-  for (const [key, pattern] of Object.entries(patterns)) {
-    const match = html.match(pattern);
-    if (match) social[key] = match[0].replace(/&amp;/g, "&");
-  }
+
+  $('link[rel~="apple-touch-icon"][href]').each((_, el) => add($(el).attr("href"), "apple-touch-icon", 1.0));
+  $('link[rel~="icon"][href]').each((_, el) => add($(el).attr("href"), "favicon", 0.95));
+
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      const parsed = JSON.parse($(el).text());
+      const logo = walkLogo(parsed);
+      if (logo) add(logo, "structured-logo", 0.9);
+    } catch {}
+  });
+
+  $('img[src]').each((_, el) => {
+    const node = $(el);
+    const hint = `${node.attr("id") || ""} ${node.attr("class") || ""} ${node.attr("alt") || ""}`.toLowerCase();
+    if (/\blogo\b|brand/.test(hint)) add(node.attr("src"), "page-logo", 0.82);
+  });
+
+  const og = $('meta[property="og:image"][content]').first().attr("content");
+  if (og) add(og, "open-graph", 0.45);
+
+  return out.sort((a, b) => b.confidence - a.confidence).slice(0, 6);
+}
+
+function extractDocumentSignals(body, finalUrl) {
+  const $ = cheerio.load(String(body || ""));
+  const social = {};
+  const socialPatterns = {
+    linkedin: /(?:^|\.)linkedin\.com$/i,
+    facebook: /(?:^|\.)facebook\.com$/i,
+    instagram: /(?:^|\.)instagram\.com$/i,
+  };
+
+  $("a[href]").each((_, el) => {
+    const href = safeUrl($(el).attr("href"), finalUrl);
+    if (!href) return;
+    try {
+      const host = new URL(href).hostname;
+      for (const [key, pattern] of Object.entries(socialPatterns)) {
+        if (!social[key] && pattern.test(host)) social[key] = href;
+      }
+    } catch {}
+  });
+
+  const hasContactForm = $("form").toArray().some((el) => {
+    const node = $(el);
+    const text = `${node.attr("id") || ""} ${node.attr("class") || ""} ${node.text()}`.toLowerCase();
+    return /contact|message|inquiry|quote|email/.test(text);
+  });
+
   return {
     source: "website_contact_check",
     source_url: finalUrl,
     fetched_at: new Date().toISOString(),
-    has_contact_form: /<form[\s\S]{0,10000}(contact|message|inquiry|quote|email)/i.test(html),
+    has_contact_form: hasContactForm,
     social,
+    brand_candidates: brandCandidates($, finalUrl),
+  };
+}
+
+function extractContactLinks(body, origin) {
+  const $ = cheerio.load(String(body || ""));
+  const set = new Set(CONTACT_PATHS.map((path) => `${origin}${path}`));
+  $("a[href]").each((_, el) => {
+    if (set.size >= HOST_PAGES_CAP * 4) return;
+    const url = safeUrl($(el).attr("href"), origin);
+    if (!url || originOf(url) !== origin) return;
+    const path = new URL(url).pathname.toLowerCase().replace(/\/$/, "");
+    if (CONTACT_PATHS.some((candidate) => path === candidate || path.startsWith(`${candidate}/`))) set.add(url);
+  });
+  return Array.from(set);
+}
+
+async function resolveBrandAsset(candidates) {
+  for (const candidate of candidates || []) {
+    try {
+      const response = await fetchWithTimeout(candidate.url, BRAND_FETCH_TIMEOUT_MS);
+      if (!response.ok) continue;
+      const contentType = String(response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+      if (!IMAGE_TYPES.has(contentType)) continue;
+      const bytes = await readBytesCapped(response, BRAND_BYTES_CAP);
+      if (!bytes.length) continue;
+      return {
+        type: candidate.type,
+        confidence: candidate.confidence,
+        source_url: candidate.url,
+        content_type: contentType,
+        bytes: bytes.length,
+        data_uri: `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`,
+      };
+    } catch {}
+  }
+  return null;
+}
+
+export function inspectWebsiteHtml(body, pageUrl) {
+  const signals = extractDocumentSignals(body, pageUrl);
+  return {
+    has_contact_form: signals.has_contact_form,
+    social: signals.social,
+    brand_candidates: signals.brand_candidates,
   };
 }
 
@@ -206,9 +322,19 @@ export async function crawlEmails(websiteUrl) {
   const home = await fetchBodyCapped(origin).catch((error) => ({ ok: false, error: String(error?.message || error) }));
   if (!home.ok) return { ok: false, host: origin, error: home.error || `home_${home.status}`, emails: [], websiteSignals: null };
 
-  const websiteSignals = extractContactSignals(home.body, home.finalUrl);
+  const homeSignals = extractDocumentSignals(home.body, home.finalUrl);
+  const websiteSignals = {
+    source: homeSignals.source,
+    source_url: homeSignals.source_url,
+    fetched_at: homeSignals.fetched_at,
+    has_contact_form: homeSignals.has_contact_form,
+    social: homeSignals.social,
+    brand_asset: await resolveBrandAsset(homeSignals.brand_candidates),
+  };
+
   const out = new Map();
   for (const email of extractEmails(home.body, home.finalUrl)) out.set(email.email, email);
+
   const candidates = extractContactLinks(home.body, origin).slice(0, HOST_PAGES_CAP - 1);
   let pagesFetched = 1;
   for (const url of candidates) {
@@ -220,9 +346,12 @@ export async function crawlEmails(websiteUrl) {
       const previous = out.get(email.email);
       if (!previous || email.confidence > previous.confidence) out.set(email.email, email);
     }
-    const extraSignals = extractContactSignals(response.body, response.finalUrl);
-    websiteSignals.has_contact_form ||= extraSignals.has_contact_form;
-    websiteSignals.social = { ...websiteSignals.social, ...extraSignals.social };
+    const extra = extractDocumentSignals(response.body, response.finalUrl);
+    websiteSignals.has_contact_form ||= extra.has_contact_form;
+    websiteSignals.social = { ...websiteSignals.social, ...extra.social };
+    if (!websiteSignals.brand_asset && extra.brand_candidates.length) {
+      websiteSignals.brand_asset = await resolveBrandAsset(extra.brand_candidates);
+    }
   }
 
   websiteSignals.pages_fetched = pagesFetched;

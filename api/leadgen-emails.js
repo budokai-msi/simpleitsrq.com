@@ -1,6 +1,7 @@
 // /api/leadgen-emails — on-demand contact discovery from public business websites.
 // Premium feature. Kept intentionally narrow so the feature stays useful and
-// maintainable: email addresses, contact-form presence, and public social links.
+// maintainable: email addresses, contact-form/social evidence, and a bounded
+// brand asset discovered from the same public website.
 
 import { json } from "./_lib/http.js";
 import { getSession } from "./_lib/session.js";
@@ -93,7 +94,7 @@ export async function GET() {
   return json(200, {
     ok: true,
     description: "POST { domain } or { domains: [] } to find public business contact details.",
-    signals: ["emails", "contact form", "LinkedIn", "Facebook", "Instagram"],
+    signals: ["emails", "contact form", "brand asset", "LinkedIn", "Facebook", "Instagram"],
     plans: ["growth", "pro", "lifetime"],
   });
 }

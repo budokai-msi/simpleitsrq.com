@@ -1,24 +1,56 @@
-// /api/leadgen-integrations — manage and trigger outbound integrations for
-// premium lead gen customers (Growth / Pro / Lifetime).
-//
-// GET  /api/leadgen-integrations                   → list user's integrations
-// POST /api/leadgen-integrations                   { kind, label, config }  → upsert
-// DELETE /api/leadgen-integrations?id=N            → remove
-// POST /api/leadgen-integrations?action=push       { id, leads[] }          → push leads
-// POST /api/leadgen-integrations?action=test       { id }                   → test payload
-//
-// Supported kinds: webhook | mailchimp | hubspot | activecampaign | zapier | gohighlevel
+// /api/leadgen-integrations — intentionally small outbound integration surface.
+// CSV export is client-side. Server-side integrations are HubSpot and a generic
+// webhook, which covers automation platforms without one-off adapters.
 
+import dns from "node:dns/promises";
+import net from "node:net";
 import { json } from "./_lib/http.js";
 import { sql } from "./_lib/db.js";
 import { getSession } from "./_lib/session.js";
 import { clientIp, rateLimit } from "./_lib/security.js";
 import { encryptSecret, decryptSecret } from "./_lib/crypto.js";
-import { testImapConnection } from "./_lib/leadgen-imap.js";
-import nodemailer from "nodemailer";
 
 const ALLOWED_PLANS = new Set(["growth", "pro", "lifetime", "exclusive"]);
-const VALID_KINDS = new Set(["webhook", "mailchimp", "hubspot", "activecampaign", "zapier", "gohighlevel", "salesforce", "pipedrive", "smtp"]);
+const VALID_KINDS = new Set(["hubspot", "webhook"]);
+const MAX_PUSH_LEADS = 100;
+
+function safeError(error) {
+  return String(error?.message || error || "Integration failed")
+    .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+/gi, "Bearer [redacted]")
+    .replace(/([?&](?:api[_-]?key|token|secret|access_token)=)[^&\s]+/gi, "$1[redacted]")
+    .slice(0, 220);
+}
+
+function isPrivateAddress(address) {
+  if (!address) return true;
+  if (net.isIPv4(address)) {
+    const p = address.split(".").map(Number);
+    return p[0] === 0 || p[0] === 10 || p[0] === 127 || (p[0] === 169 && p[1] === 254)
+      || (p[0] === 172 && p[1] >= 16 && p[1] <= 31) || (p[0] === 192 && p[1] === 168)
+      || p[0] >= 224;
+  }
+  if (net.isIPv6(address)) {
+    const lower = address.toLowerCase();
+    return lower === "::1" || lower === "::" || lower.startsWith("fc") || lower.startsWith("fd") || /^fe[89ab]/.test(lower);
+  }
+  return true;
+}
+
+async function assertPublicWebhook(input) {
+  let url;
+  try { url = new URL(String(input || "")); }
+  catch { throw new Error("Webhook URL is invalid."); }
+  if (!/^https?:$/.test(url.protocol)) throw new Error("Webhook must use HTTP or HTTPS.");
+  const host = url.hostname.toLowerCase();
+  if (!host || host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local")) throw new Error("Webhook host is not public.");
+  if (net.isIP(host)) {
+    if (isPrivateAddress(host)) throw new Error("Webhook host is not public.");
+    return url;
+  }
+  const records = await dns.lookup(host, { all: true, verbatim: true });
+  if (!records.length || records.some((record) => isPrivateAddress(record.address))) throw new Error("Webhook host is not public.");
+  return url;
+}
 
 async function requireSession(request) {
   const session = await getSession(request);
@@ -34,394 +66,145 @@ async function requireSession(request) {
       }),
     };
   }
-  return { session, user: session.user };
+  return { user: session.user };
 }
 
-// ── Push helpers ──────────────────────────────────────────────────────────────
-
 async function pushWebhook(config, leads) {
-  const { url, secret } = config;
-  if (!url) throw new Error("Webhook URL not configured.");
-  const headers = { "Content-Type": "application/json", "User-Agent": "simpleitsrq-leadgen/1.0" };
-  if (secret) headers["X-Webhook-Secret"] = String(secret);
-  const res = await fetch(url, {
+  const target = await assertPublicWebhook(config?.url);
+  const headers = { "Content-Type": "application/json", "User-Agent": "simpleitsrq-leadgen/2.0" };
+  if (config?.secret) headers["X-Webhook-Secret"] = String(config.secret);
+  const response = await fetch(target, {
     method: "POST",
     headers,
+    redirect: "manual",
     body: JSON.stringify({ leads, sent_at: new Date().toISOString() }),
     signal: AbortSignal.timeout(10000),
   });
-  if (!res.ok) throw new Error(`Webhook returned ${res.status}`);
+  if (!response.ok) throw new Error(`Webhook returned ${response.status}`);
   return { sent: leads.length };
 }
 
-async function pushMailchimp(config, leads) {
-  const { api_key, list_id, server_prefix } = config;
-  if (!api_key || !list_id) throw new Error("Mailchimp API key and list ID required.");
-  const prefix = server_prefix || api_key.split("-").pop() || "us1";
-  const members = leads.filter((l) => l.email);
-  if (!members.length) return { sent: 0, skipped: leads.length };
-  // Batch import via /lists/{list_id} bulk endpoint
-  const batchBody = {
-    members: members.map((l) => ({
-      email_address: l.email,
-      status: "subscribed",
-      merge_fields: {
-        COMPANY: l.name || "",
-        PHONE: l.phone || "",
-        ADDRESS: [l.address, l.city, l.state].filter(Boolean).join(", "),
-        INDUSTRY: l.industry_group || l.industry || "",
-      },
-    })),
-    update_existing: true,
-  };
-  const res = await fetch(`https://${prefix}.api.mailchimp.com/3.0/lists/${list_id}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Basic ${btoa(`anystring:${api_key}`)}`,
-    },
-    body: JSON.stringify(batchBody),
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Mailchimp error ${res.status}`);
-  }
-  const data = await res.json().catch(() => ({}));
-  return { sent: data.new_members?.length ?? members.length, skipped: leads.length - members.length, errors: data.errors?.length ?? 0 };
-}
-
 async function pushHubspot(config, leads) {
-  const { access_token } = config;
-  if (!access_token) throw new Error("HubSpot access token required.");
+  const accessToken = String(config?.access_token || "").trim();
+  if (!accessToken) throw new Error("HubSpot access token required.");
   const results = await Promise.allSettled(
-    leads.map((l) =>
+    leads.map((lead) =>
       fetch("https://api.hubapi.com/crm/v3/objects/contacts", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${access_token}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify({
           properties: {
-            email: l.email || "",
-            company: l.name || "",
-            phone: l.phone || "",
-            address: l.address || "",
-            city: l.city || "",
-            state: l.state || "",
-            zip: l.zip || "",
-            website: l.website || "",
-            industry: l.industry_group || l.industry || "",
-            leadsource: "Leadgen Scanner",
+            email: lead.email || "",
+            company: lead.name || "",
+            phone: lead.phone || "",
+            address: lead.address || "",
+            city: lead.city || "",
+            state: lead.state || "",
+            zip: lead.zip || "",
+            website: lead.website || "",
+            industry: lead.industry_group || lead.industry || "",
+            leadsource: "Simple IT SRQ Leadgen",
           },
         }),
         signal: AbortSignal.timeout(10000),
-      }).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.message || `HubSpot ${r.status}`); }))
-    )
-  );
-  return { sent: results.filter((r) => r.status === "fulfilled").length, failed: results.filter((r) => r.status === "rejected").length };
-}
-
-async function pushActiveCampaign(config, leads) {
-  const { api_url, api_key, company_field_id, industry_field_id } = config;
-  if (!api_url || !api_key) throw new Error("ActiveCampaign URL and API key required.");
-  const base = api_url.replace(/\/$/, "");
-  const results = await Promise.allSettled(
-    leads.filter((l) => l.email).map((l) => {
-      // AC custom fields are referenced by the account's NUMERIC field id, not a
-      // name — only attach them when the customer has supplied the id, otherwise
-      // AC rejects the unknown reference. (The old code hardcoded "COMPANY",
-      // which never resolved to a real field.)
-      const fieldValues = [
-        company_field_id ? { field: String(company_field_id), value: l.name || "" } : null,
-        industry_field_id ? { field: String(industry_field_id), value: l.industry_group || l.industry || "" } : null,
-      ].filter(Boolean);
-      return fetch(`${base}/api/3/contacts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Api-Token": api_key },
-        body: JSON.stringify({
-          contact: {
-            email: l.email,
-            firstName: (l.name || "").split(" ")[0] || undefined,
-            lastName: (l.name || "").split(" ").slice(1).join(" ") || undefined,
-            phone: l.phone || "",
-            ...(fieldValues.length ? { fieldValues } : {}),
-          },
-        }),
-        signal: AbortSignal.timeout(10000),
-      }).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.message || `ActiveCampaign ${r.status}`); }));
-    })
-  );
-  return {
-    sent: results.filter((r) => r.status === "fulfilled").length,
-    failed: results.filter((r) => r.status === "rejected").length,
-  };
-}
-
-async function pushGoHighLevel(config, leads) {
-  const { api_key, location_id } = config;
-  if (!api_key) throw new Error("GoHighLevel private integration token required.");
-  // The v2 API (LeadConnector) scopes every contact to a location, so the
-  // Location ID is mandatory — a Private Integration Token won't work against
-  // the deprecated v1 host.
-  if (!location_id) throw new Error("GoHighLevel Location ID is required.");
-  const results = await Promise.allSettled(
-    leads.filter((l) => l.email || l.phone).map((l) =>
-      fetch("https://services.leadconnectorhq.com/contacts/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${api_key}`,
-          "Version": "2021-07-28",
-        },
-        body: JSON.stringify({
-          locationId: location_id,
-          email: l.email || undefined,
-          phone: l.phone || undefined,
-          firstName: (l.name || "").split(" ")[0] || undefined,
-          lastName: (l.name || "").split(" ").slice(1).join(" ") || undefined,
-          companyName: l.name || undefined,
-          address1: l.address || undefined,
-          city: l.city || undefined,
-          state: l.state || undefined,
-          postalCode: l.zip || undefined,
-          website: l.website || undefined,
-          source: "Leadgen Scanner",
-        }),
-        signal: AbortSignal.timeout(10000),
-      }).then((r) => r.ok ? r.json() : r.json().then((e) => { throw new Error(e.message || e.error || `GoHighLevel ${r.status}`); }))
+      }).then(async (response) => {
+        if (response.ok) return response.json().catch(() => ({}));
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.message || `HubSpot ${response.status}`);
+      })
     )
   );
   return {
-    sent: results.filter((r) => r.status === "fulfilled").length,
-    failed: results.filter((r) => r.status === "rejected").length,
+    sent: results.filter((result) => result.status === "fulfilled").length,
+    failed: results.filter((result) => result.status === "rejected").length,
   };
 }
 
 export async function dispatchPush(integration, leads) {
-  switch (integration.kind) {
-    case "webhook":        return pushWebhook(integration.config, leads);
-    case "mailchimp":      return pushMailchimp(integration.config, leads);
-    case "hubspot":        return pushHubspot(integration.config, leads);
-    case "activecampaign": return pushActiveCampaign(integration.config, leads);
-    case "zapier":         return pushWebhook({ url: integration.config.webhook_url || integration.config.url }, leads);
-    case "gohighlevel":    return pushGoHighLevel(integration.config, leads);
-    case "salesforce":     return pushSalesforce(integration.config, leads);
-    case "pipedrive":      return pushPipedrive(integration.config, leads);
-    case "smtp":           return pushSmtp(integration.config, leads);
-    default: throw new Error(`Unknown integration kind: ${integration.kind}`);
-  }
+  if (integration.kind === "hubspot") return pushHubspot(integration.config, leads);
+  if (integration.kind === "webhook") return pushWebhook(integration.config, leads);
+  throw new Error("Unsupported integration.");
 }
-
-async function pushSalesforce(config, leads) {
-  const { instance_url, access_token } = config;
-  if (!instance_url || !access_token) throw new Error("Salesforce instance URL and Access Token are required.");
-  const baseUrl = instance_url.replace(/\/$/, "");
-
-  let pushed = 0;
-  for (const lead of leads) {
-    const payload = {
-      FirstName: lead.name?.split(" ")[0] || "Unknown",
-      LastName: lead.name?.split(" ").slice(1).join(" ") || "Lead",
-      Company: lead.legal_name || lead.name,
-      Email: lead.email,
-      Phone: lead.phone,
-      Description: `Leadgen Push. Website: ${lead.website || "N/A"}`,
-      LeadSource: "SimpleITSRQ Leadgen"
-    };
-
-    const res = await fetch(`${baseUrl}/services/data/v57.0/sobjects/Lead/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${access_token}`
-      },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Salesforce API error: ${res.status} ${errText}`);
-    }
-    pushed++;
-  }
-  return { pushed };
-}
-
-async function pushPipedrive(config, leads) {
-  const { api_token, company_domain } = config;
-  if (!api_token || !company_domain) throw new Error("Pipedrive API token and Company Domain are required.");
-
-  let pushed = 0;
-  for (const lead of leads) {
-    // 1. Create Person
-    const personRes = await fetch(`https://${company_domain}.pipedrive.com/v1/persons?api_token=${api_token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: lead.name,
-        email: [{ value: lead.email, primary: true }],
-        phone: lead.phone ? [{ value: lead.phone, primary: true }] : []
-      })
-    });
-    if (!personRes.ok) throw new Error(`Pipedrive API error (person): ${personRes.status}`);
-    const personData = await personRes.json();
-    
-    // 2. Create Lead associated with Person
-    const leadRes = await fetch(`https://${company_domain}.pipedrive.com/v1/leads?api_token=${api_token}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: `${lead.legal_name || lead.name} Lead`,
-        person_id: personData.data.id,
-        expected_close_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
-      })
-    });
-    if (!leadRes.ok) throw new Error(`Pipedrive API error (lead): ${leadRes.status}`);
-    pushed++;
-  }
-  return { pushed };
-}
-
-async function pushSmtp(config, leads) {
-  const { host, port, user, pass, secure, imap_host, imap_port } = config;
-  if (!host || !user || !pass) throw new Error("SMTP host, user, and pass are required.");
-  const transporter = nodemailer.createTransport({
-    host,
-    port: Number(port) || 587,
-    secure: secure === true || Number(port) === 465,
-    auth: { user, pass },
-    connectionTimeout: 10000,
-  });
-  // Simply test the connection if leads were passed (the test action passes 1 mock lead)
-  await transporter.verify();
-  
-  if (imap_host) {
-    await testImapConnection({ host: imap_host, port: imap_port, user, pass, secure });
-  }
-  
-  return { sent: leads.length };
-}
-
-// ── Route handlers ──────────────────────────────────────────────────────────────
 
 async function handleGet(user) {
   const rows = await sql`
     SELECT id, kind, label, enabled, last_used_at, last_error, created_at
     FROM user_integrations
-    WHERE user_id = ${user.id}
+    WHERE user_id=${user.id} AND kind IN ('hubspot','webhook')
     ORDER BY created_at DESC
   `;
-  return json(200, { ok: true, integrations: rows });
+  return json(200, { ok: true, integrations: rows, supported_kinds: ["hubspot", "webhook"] });
 }
 
 async function handleUpsert(user, body) {
-  const { kind, label = "", config = {} } = body;
+  const kind = String(body?.kind || "").toLowerCase();
   if (!VALID_KINDS.has(kind)) {
-    return json(400, { ok: false, error: "invalid_kind", message: `kind must be one of: ${[...VALID_KINDS].join(", ")}` });
+    return json(400, { ok: false, error: "invalid_kind", message: "Supported integrations are HubSpot and webhook." });
   }
-  const sanitizedLabel = String(label).trim().slice(0, 80);
-  const sanitizedConfig = (typeof config === "object" && config !== null) ? config : {};
-  // Credentials (API keys, webhook secrets) are encrypted at the application
-  // layer before they ever touch the database — the column holds ciphertext,
-  // not the raw key. See api/_lib/crypto.js.
-  const storedConfig = encryptSecret(sanitizedConfig);
+  const label = String(body?.label || (kind === "hubspot" ? "HubSpot" : "Webhook")).trim().slice(0, 80);
+  const config = body?.config && typeof body.config === "object" ? body.config : {};
+  if (kind === "hubspot" && !String(config.access_token || "").trim()) {
+    return json(400, { ok: false, error: "missing_access_token", message: "HubSpot access token required." });
+  }
+  if (kind === "webhook") {
+    try { await assertPublicWebhook(config.url); }
+    catch (error) { return json(400, { ok: false, error: "invalid_webhook", message: safeError(error) }); }
+  }
 
+  const storedConfig = encryptSecret(config);
   const [row] = await sql`
     INSERT INTO user_integrations (user_id, kind, label, config)
-    VALUES (${user.id}, ${kind}, ${sanitizedLabel}, ${JSON.stringify(storedConfig)})
+    VALUES (${user.id}, ${kind}, ${label}, ${JSON.stringify(storedConfig)})
     ON CONFLICT (user_id, kind, label)
-    DO UPDATE SET config = EXCLUDED.config, enabled = true, updated_at = now()
+    DO UPDATE SET config=EXCLUDED.config, enabled=true, updated_at=now(), last_error=NULL
     RETURNING id, kind, label, enabled, created_at
   `;
   return json(200, { ok: true, integration: row });
 }
 
-async function handleDelete(user, id) {
-  const numericId = Number(id);
-  if (!Number.isInteger(numericId) || numericId <= 0) return json(400, { ok: false, error: "invalid_id" });
-  await sql`DELETE FROM user_integrations WHERE id = ${numericId} AND user_id = ${user.id}`;
-  return json(200, { ok: true });
-}
-
-async function handlePush(user, body) {
-  const { id, leads = [] } = body;
-  const numericId = Number(id);
-  if (!Number.isInteger(numericId) || numericId <= 0) return json(400, { ok: false, error: "invalid_id" });
-  if (!Array.isArray(leads) || !leads.length) {
-    return json(400, { ok: false, error: "no_leads", message: "Include at least one lead in the leads array." });
-  }
-  const [integration] = await sql`
-    SELECT id, kind, config, enabled FROM user_integrations
-    WHERE id = ${numericId} AND user_id = ${user.id}
+async function ownedIntegration(user, id) {
+  const [row] = await sql`
+    SELECT id, kind, label, enabled, config
+    FROM user_integrations
+    WHERE user_id=${user.id} AND id=${id} AND kind IN ('hubspot','webhook')
+    LIMIT 1
   `;
-  if (!integration) return json(404, { ok: false, error: "not_found" });
-  if (!integration.enabled) return json(409, { ok: false, error: "disabled" });
+  if (!row) return null;
+  return { ...row, config: decryptSecret(row.config) };
+}
+
+async function runIntegration(user, body, testing = false) {
+  const id = Number(body?.id);
+  if (!Number.isInteger(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
+  const integration = await ownedIntegration(user, id);
+  if (!integration || !integration.enabled) return json(404, { ok: false, error: "integration_not_found" });
+
+  const leads = testing
+    ? [{ name: "Leadgen connection test", email: "test@example.invalid", website: "https://simpleitsrq.com" }]
+    : (Array.isArray(body?.leads) ? body.leads.slice(0, MAX_PUSH_LEADS) : []);
+  if (!testing && !leads.length) return json(400, { ok: false, error: "no_leads" });
 
   try {
-    const config = decryptSecret(integration.config);
-    const result = await dispatchPush({ ...integration, config }, leads);
-    await sql`UPDATE user_integrations SET last_used_at = now(), last_error = null WHERE id = ${numericId}`;
-    return json(200, { ok: true, ...result });
-  } catch (err) {
-    const errMsg = String(err?.message || "Push failed");
-    await sql`UPDATE user_integrations SET last_error = ${errMsg}, updated_at = now() WHERE id = ${numericId}`;
-    return json(502, { ok: false, error: "push_failed", message: errMsg });
+    const result = await dispatchPush(integration, leads);
+    await sql`UPDATE user_integrations SET last_used_at=now(), last_error=NULL, updated_at=now() WHERE id=${integration.id} AND user_id=${user.id}`;
+    return json(200, { ok: true, result });
+  } catch (error) {
+    const message = safeError(error);
+    await sql`UPDATE user_integrations SET last_error=${message}, updated_at=now() WHERE id=${integration.id} AND user_id=${user.id}`;
+    return json(502, { ok: false, error: "integration_failed", message });
   }
 }
 
-async function handleTest(user, body) {
-  return handlePush(user, {
-    id: body.id,
-    leads: [{
-      name: "Test Business (Leadgen)",
-      email: "test@example.com",
-      phone: "555-000-0000",
-      website: "https://example.com",
-      address: "123 Main St",
-      city: "Sarasota",
-      state: "FL",
-      zip: "34236",
-      industry_group: "Professional Services",
-      sub_industry: "Consulting",
-    }],
-  });
+async function removeIntegration(user, request) {
+  const id = Number(new URL(request.url).searchParams.get("id"));
+  if (!Number.isInteger(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
+  const rows = await sql`
+    DELETE FROM user_integrations
+    WHERE id=${id} AND user_id=${user.id}
+    RETURNING id
+  `;
+  return rows.length ? json(200, { ok: true }) : json(404, { ok: false, error: "integration_not_found" });
 }
-
-// List an ActiveCampaign account's custom fields so the UI can offer them by
-// name — a contact's Company/Industry are custom fields referenced by NUMERIC
-// id, which nobody knows offhand. Accepts either a saved integration id or the
-// raw { config } being typed into the connect form (not yet saved).
-async function handleAcFields(user, body) {
-  let apiUrl = body?.config?.api_url;
-  let apiKey = body?.config?.api_key;
-  const numericId = Number(body?.id);
-  if (Number.isInteger(numericId) && numericId > 0) {
-    const [integration] = await sql`
-      SELECT config FROM user_integrations
-      WHERE id = ${numericId} AND user_id = ${user.id} AND kind = 'activecampaign'
-    `;
-    if (!integration) return json(404, { ok: false, error: "not_found" });
-    const cfg = decryptSecret(integration.config);
-    apiUrl = cfg.api_url;
-    apiKey = cfg.api_key;
-  }
-  if (!apiUrl || !apiKey) {
-    return json(400, { ok: false, error: "missing_credentials", message: "ActiveCampaign URL and API key are required to load fields." });
-  }
-  const base = String(apiUrl).replace(/\/$/, "");
-  try {
-    const r = await fetch(`${base}/api/3/fields?limit=100`, {
-      headers: { "Api-Token": apiKey },
-      signal: AbortSignal.timeout(10000),
-    });
-    if (!r.ok) throw new Error(`ActiveCampaign ${r.status}`);
-    const data = await r.json();
-    const fields = (data.fields || []).map((f) => ({ id: String(f.id), title: f.title || `Field ${f.id}` }));
-    return json(200, { ok: true, fields });
-  } catch (err) {
-    return json(502, { ok: false, error: "ac_fields_failed", message: String(err?.message || "Could not load ActiveCampaign fields.") });
-  }
-}
-
-// ── Main handlers ─────────────────────────────────────────────────────────────
 
 export async function GET(request) {
   const { user, error } = await requireSession(request);
@@ -432,52 +215,55 @@ export async function GET(request) {
 export async function POST(request) {
   const { user, error } = await requireSession(request);
   if (error) return error;
-
   const ip = clientIp(request);
   const rl = await rateLimit({ ip, bucket: "leadgen_integrations", windowSeconds: 60, max: 30 });
   if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
 
-  const url = new URL(request.url);
-  const action = url.searchParams.get("action") || "";
-
   let body;
   try { body = await request.json(); } catch { body = {}; }
-
-  if (action === "push") return handlePush(user, body);
-  if (action === "test") return handleTest(user, body);
-  if (action === "ac-fields") return handleAcFields(user, body);
+  const action = new URL(request.url).searchParams.get("action");
+  if (action === "push") return runIntegration(user, body, false);
+  if (action === "test") return runIntegration(user, body, true);
   return handleUpsert(user, body);
 }
 
 export async function DELETE(request) {
   const { user, error } = await requireSession(request);
   if (error) return error;
-  const url = new URL(request.url);
-  return handleDelete(user, url.searchParams.get("id") || "");
+  const ip = clientIp(request);
+  const rl = await rateLimit({ ip, bucket: "leadgen_integrations", windowSeconds: 60, max: 30 });
+  if (!rl.ok) return json(429, { ok: false, error: "rate_limited" });
+  return removeIntegration(user, request);
 }
 
 export default async function handler(req, res) {
-  const method = (req.method || "GET").toUpperCase();
+  const method = String(req.method || "GET").toUpperCase();
   const qs = new URLSearchParams(req.query || {}).toString();
-  const buildReq = () => new Request(`https://simpleitsrq.com/api/leadgen-integrations${qs ? `?${qs}` : ""}`, {
-    method: req.method,
+  const request = new Request(`https://simpleitsrq.com/api/leadgen-integrations${qs ? `?${qs}` : ""}`, {
+    method,
     headers: {
       "content-type": req.headers?.["content-type"] || "application/json",
-      "cookie": req.headers?.cookie || "",
+      cookie: req.headers?.cookie || "",
+      "cf-connecting-ip": req.headers?.["cf-connecting-ip"] || "",
       "x-real-ip": req.headers?.["x-real-ip"] || "",
       "x-forwarded-for": req.headers?.["x-forwarded-for"] || "",
+      "user-agent": req.headers?.["user-agent"] || "",
     },
-    body: ["POST", "PATCH", "PUT"].includes(method)
+    body: method === "POST"
       ? (typeof req.body === "string" ? req.body : JSON.stringify(req.body || {}))
       : undefined,
   });
-  let response;
-  if (method === "GET") response = await GET(buildReq());
-  else if (method === "POST") response = await POST(buildReq());
-  else if (method === "DELETE") response = await DELETE(buildReq());
-  else { res.status(405).json({ ok: false, error: "method_not_allowed" }); return; }
+
+  const response = method === "GET"
+    ? await GET(request)
+    : method === "POST"
+      ? await POST(request)
+      : method === "DELETE"
+        ? await DELETE(request)
+        : json(405, { ok: false, error: "method_not_allowed" });
+
   const payload = await response.text();
   res.status(response.status);
-  for (const [k, v] of response.headers.entries()) res.setHeader(k, v);
+  for (const [key, value] of response.headers.entries()) res.setHeader(key, value);
   res.send(payload);
 }

@@ -31,6 +31,15 @@ function sourceLabel(row) {
   return row?.source ? cleanText(row.source, 80) : "Public business data";
 }
 
+function fitForRow(row) {
+  const reasons = ["Located in the selected market"];
+  if (!row.is_chain) reasons.push("Likely independent");
+  else reasons.push("Brand or chain signal detected");
+  if (row.sub_industry) reasons.push("Specific business category available");
+  const label = !row.is_chain && row.sub_industry ? "Strong fit" : !row.is_chain ? "Good fit" : "Review";
+  return { fit_label: label, fit_reasons: reasons };
+}
+
 function scoreRow(row) {
   let score = 10;
   const reasons = [];
@@ -90,7 +99,7 @@ function rowForClient(row) {
     is_chain: Boolean(row.is_chain) || looksLikeChain(row.name),
     updated_at: row.updated_at || null,
   };
-  return { ...base, ...scoreRow(base) };
+  return { ...base, ...fitForRow(base), ...scoreRow(base) };
 }
 
 function industryCounts(rows) {
