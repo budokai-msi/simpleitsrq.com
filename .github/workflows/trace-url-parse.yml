@@ -1,0 +1,47 @@
+name: Trace url.parse deprecation
+
+on:
+  push:
+    branches:
+      - leadgen/cleanup-20260816
+
+permissions:
+  contents: read
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: leadgen/cleanup-20260816
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Trace route handler
+        shell: bash
+        run: |
+          set -o pipefail
+          NODE_OPTIONS=--trace-deprecation node --input-type=module <<'NODE' 2>&1 | tee /tmp/route-trace.log
+          process.env.NODE_ENV = "test";
+          const mod = await import("./api/leadgen-integrations.js");
+          const response = await mod.GET(new Request("https://simpleitsrq.com/api/leadgen-integrations"));
+          console.log("route_status", response.status);
+          NODE
+          echo '--- route deprecation trace ---'
+          grep -n -A24 -B4 -E 'DEP0169|url\.parse' /tmp/route-trace.log || true
+      - name: Find legacy parser callers in dependencies
+        shell: bash
+        run: |
+          echo '--- node_modules url.parse callers ---'
+          grep -Rns --include='*.js' --include='*.cjs' --include='*.mjs' -E 'url\.parse\(' node_modules 2>/dev/null | head -120 || true
+          echo '--- node:url parse imports ---'
+          grep -Rns --include='*.js' --include='*.cjs' --include='*.mjs' -E '(require\(["'"']url["'"']\)|from ["'"']node:url["'"']|from ["'"']url["'"'])' node_modules 2>/dev/null | head -120 || true
+      - name: Verify application source has no legacy parser
+        run: |
+          if grep -Rns --exclude-dir=node_modules --exclude-dir=.git -E 'url\.parse\(' api src middleware.js 2>/dev/null; then
+            echo 'Application source still calls url.parse()' >&2
+            exit 1
+          fi
