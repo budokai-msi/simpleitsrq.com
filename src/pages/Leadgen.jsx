@@ -8,6 +8,7 @@ import { ArrowRight, Check, ChevronDown, ExternalLink, Globe2, Mail, Phone, Sear
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
 import { csrfFetch } from "../lib/csrf";
+import { useAuth } from "../lib/authContext.js";
 
 const LEADGEN_PROMO_CODE = "LAUNCH20";
 const LEADGEN_STRIPE_LINKS = {
@@ -341,6 +342,10 @@ function LeadgenMap({ rows, scan }) {
 }
 
 function LeadgenScanApp() {
+  const { user, loading: authLoading } = useAuth();
+  const currentPlan = String(user?.plan || "").toLowerCase();
+  const canEnrichOne = Boolean(user?.isAdmin || ["growth", "pro", "lifetime"].includes(currentPlan));
+  const canBulkEnrich = Boolean(user?.isAdmin || ["pro", "lifetime"].includes(currentPlan));
   const [zip, setZip] = useState("");
   const [niche, setNiche] = useState("All");
   const [scan, setScan] = useState(null);
@@ -693,7 +698,13 @@ function LeadgenScanApp() {
           </div>
           {validZip ? (
             <div className="leadgen-product-save">
+              {authLoading ? (
+              <button type="button" className="btn btn-secondary btn-sm" disabled>Save search</button>
+            ) : user ? (
               <button type="button" className="btn btn-secondary btn-sm" onClick={saveMarket}>Save search</button>
+            ) : (
+              <Link className="btn btn-secondary btn-sm" to="/portal">Sign in to save search</Link>
+            )}
               {saveMsg ? <span className={saveMsg.ok ? "" : "is-error"}>{saveMsg.text}</span> : null}
             </div>
           ) : null}
@@ -752,9 +763,17 @@ function LeadgenScanApp() {
                 </select>
               </label>
               <button type="button" className="btn btn-secondary btn-sm" onClick={selectBest}><Check size={14} /> Select strong matches</button>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={enrichSelected} disabled={extracting}>
-                <Sparkles size={14} /> {extracting ? "Checking sites…" : "Find contacts"}
-              </button>
+              {authLoading ? (
+                <button type="button" className="btn btn-secondary btn-sm" disabled><Sparkles size={14} /> Find contacts</button>
+              ) : !user ? (
+                <Link className="btn btn-secondary btn-sm" to="/portal"><Sparkles size={14} /> Sign in to find contacts</Link>
+              ) : canBulkEnrich ? (
+                <button type="button" className="btn btn-secondary btn-sm" onClick={enrichSelected} disabled={extracting}>
+                  <Sparkles size={14} /> {extracting ? "Checking sites…" : "Find contacts"}
+                </button>
+              ) : (
+                <a className="btn btn-secondary btn-sm" href="#leadgen-plans"><Sparkles size={14} /> Bulk contact checks — Pro</a>
+              )}
             </div>
             {extractMsg ? <p className={extractMsg.ok ? "leadgen-product-message" : "form-error"} aria-live="polite">{extractMsg.text}</p> : null}
             </section>
@@ -888,10 +907,18 @@ function LeadgenScanApp() {
                                   {email ? <a className="leadgen-card-action" href={`mailto:${email}`}><Mail size={13} /> Email</a> : null}
                                   {row.website ? <a className="leadgen-card-action" href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer"><Globe2 size={13} /> Website</a> : null}
                                   {row.website ? (
+                                  authLoading ? (
+                                    <button type="button" className="leadgen-card-action is-primary" disabled><Sparkles size={13} /> Find contacts</button>
+                                  ) : !user ? (
+                                    <Link className="leadgen-card-action is-primary" to="/portal"><Sparkles size={13} /> Sign in for contacts</Link>
+                                  ) : canEnrichOne ? (
                                     <button type="button" className="leadgen-card-action is-primary" onClick={() => findProspectContacts(row)} disabled={analyzing}>
                                       <Sparkles size={13} /> {analyzing ? "Checking…" : row.website_intel ? "Recheck contacts" : "Find contacts"}
                                     </button>
-                                  ) : null}
+                                  ) : (
+                                    <a className="leadgen-card-action is-primary" href="#leadgen-plans"><Sparkles size={13} /> Unlock contacts</a>
+                                  )
+                                ) : null}
                                   {siteMessage ? <p className={`leadgen-card-action-message${siteMessage.ok ? "" : " is-error"}`} aria-live="polite">{siteMessage.text}</p> : null}
                                 </div>
 
@@ -975,7 +1002,7 @@ export default function Leadgen() {
           </ol>
         </nav>
         <LeadgenScanApp />
-        <section className="leadgen-product-upgrade">
+        <section id="leadgen-plans" className="leadgen-product-upgrade">
           <div>
             <span className="eyebrow">For repeat prospecting</span>
             <h2>Save the searches you come back to.</h2>

@@ -318,16 +318,19 @@ html[data-theme="dark"] .leadgen-breadcrumbs a:hover {
   .leadgen-app-title h2 { font-size: 1.52rem !important; }
 
   .leadgen-product-steps {
-    display: flex !important;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    overflow: visible;
+    scroll-snap-type: none;
     padding-bottom: 5px;
-    scrollbar-width: thin;
+    scrollbar-width: auto;
   }
 
   .leadgen-product-step {
-    flex: 0 0 min(78vw, 260px);
-    scroll-snap-align: start;
+    min-width: 0;
+    max-width: 100%;
+    flex: none !important;
+    scroll-snap-align: unset;
   }
 
   .leadgen-app-controls--primary,
@@ -359,6 +362,10 @@ html[data-theme="dark"] .leadgen-breadcrumbs a:hover {
   }
 
   .leadgen-product-upgrade .btn { width: 100%; }
+}
+
+@media (max-width: 390px) {
+  .leadgen-product-steps { grid-template-columns: 1fr !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -86,31 +86,48 @@ async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0) {
   }
 }
 
-async function readBytesCapped(res, cap) {
+async function readBytesCapped(res, cap, { truncate = false } = {}) {
   const declared = Number(res.headers.get("content-length") || 0);
-  if (declared > cap) throw new Error("asset_too_large");
+  if (declared > cap && !truncate) throw new Error("asset_too_large");
   const reader = res.body?.getReader();
   if (!reader) {
+    if (declared > cap) throw new Error("asset_too_large");
     const bytes = new Uint8Array(await res.arrayBuffer());
     if (bytes.length > cap) throw new Error("asset_too_large");
     return bytes;
   }
   const chunks = [];
   let total = 0;
-  while (total <= cap) {
+  while (true) {
     const { value, done } = await reader.read();
     if (done) break;
     if (!value) continue;
-    total += value.length;
-    if (total > cap) {
+    if (total + value.length > cap) {
+      if (!truncate) {
+        try { await reader.cancel(); } catch {}
+        throw new Error("asset_too_large");
+      }
+      const remaining = cap - total;
+      if (remaining > 0) {
+        chunks.push(value.slice(0, remaining));
+        total += remaining;
+      }
       try { await reader.cancel(); } catch {}
-      throw new Error("asset_too_large");
+      break;
     }
     chunks.push(value);
+    total += value.length;
+    if (truncate && total >= cap) {
+      try { await reader.cancel(); } catch {}
+      break;
+    }
   }
   const joined = new Uint8Array(total);
   let offset = 0;
-  for (const chunk of chunks) { joined.set(chunk, offset); offset += chunk.length; }
+  for (const chunk of chunks) {
+    joined.set(chunk, offset);
+    offset += chunk.length;
+  }
   return joined;
 }
 
@@ -119,7 +136,7 @@ async function fetchBodyCapped(url) {
   if (!res.ok) return { ok: false, status: res.status, body: "", finalUrl: res.url, headers: res.headers };
   const contentType = res.headers.get("content-type") || "";
   if (!/text\/|application\/xhtml/i.test(contentType)) return { ok: false, status: 415, body: "", finalUrl: res.url, headers: res.headers };
-  const bytes = await readBytesCapped(res, PAGE_BYTES_CAP);
+  const bytes = await readBytesCapped(res, PAGE_BYTES_CAP, { truncate: true });
   return { ok: true, status: res.status, body: new TextDecoder().decode(bytes), finalUrl: res.url, headers: res.headers };
 }
 
