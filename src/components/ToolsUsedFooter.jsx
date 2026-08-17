@@ -37,9 +37,9 @@ export default function ToolsUsedFooter({ content, slug }) {
   const tools = extractTools(content);
   if (tools.length === 0) return null;
   return (
-    <aside className="tools-used-footer" aria-label="Tools mentioned in this article">
-      <h3 className="tools-used-title">Tools mentioned in this article</h3>
-      <p className="tools-used-sub">Every product below is on Amazon. The links are affiliate - buying through them helps support the blog at no cost to you.</p>
+    <aside className="tools-used-footer" aria-label="Tools from this article">
+      <h3 className="tools-used-title">Tools From This Article</h3>
+      <p className="tools-used-sub">These are the products referenced above. Amazon affiliate links may earn us a commission at no extra cost to you.</p>
       <ul className="tools-used-list">
         {tools.map((t, i) => (
           <li key={i} className="tools-used-item">
