@@ -4,8 +4,8 @@ import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
 
 export default function LeadCaptureCTA({
-  title = "Get a Free 15-Min IT Assessment",
-  subtitle = "A local Sarasota/Bradenton engineer will review your Microsoft 365, security posture, and backups - no sales pitch.",
+  title = "Review Your IT Setup in 15 Minutes",
+  subtitle = "Talk through Microsoft 365, security, backups, or the IT issue you are trying to solve with a local Sarasota/Bradenton engineer. No obligation.",
   endpoint = "/api/contact",
   source = "blog-cta",
 }) {
@@ -17,7 +17,7 @@ export default function LeadCaptureCTA({
     e.preventDefault();
     setError("");
     if (!form.name || !form.email) {
-      setError("Please fill in both fields.");
+      setError("Add your name and work email to continue.");
       return;
     }
     try {
@@ -28,40 +28,41 @@ export default function LeadCaptureCTA({
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok || !data.ok) {
-        setError("We couldn't send that just now. Try again in a moment or email hello@simpleitsrq.com.");
+        setError("That did not go through. Try again, or email hello@simpleitsrq.com directly.");
         return;
       }
       track.lead(source, 250);
       setSent(true);
     } catch {
-      setError("Network hiccup. Check your connection and try again.");
+      setError("The connection dropped. Try again in a moment.");
     }
   };
 
   return (
     <aside className="lead-cta" aria-labelledby="lead-cta-title">
       <div className="lead-cta-body">
-        <span className="eyebrow">Free consultation</span>
+        <span className="eyebrow">Free · No obligation</span>
         <h3 id="lead-cta-title" className="lead-cta-title">{title}</h3>
         <p className="lead-cta-sub">{subtitle}</p>
         <ul className="lead-cta-checks">
-          <li><Check size={14} color="#107C10" /> Local Sarasota/Bradenton engineer</li>
+          <li><Check size={14} color="#107C10" /> Local Sarasota/Bradenton IT engineer</li>
           <li><Check size={14} color="#107C10" /> No contract required</li>
-          <li><Check size={14} color="#107C10" /> Written findings + recommendations</li>
+          <li><Check size={14} color="#107C10" /> Clear next-step recommendations</li>
         </ul>
       </div>
       <form className="lead-cta-form" onSubmit={submit} noValidate>
         {sent ? (
           <div className="lead-cta-success">
             <Check size={24} color="#107C10" />
-            <strong>Thanks - we'll reach out shortly.</strong>
+            <strong>Thanks — your request is in. We’ll follow up by email.</strong>
           </div>
         ) : (
           <>
             <label className="lead-cta-label">
-              Name
+              First name
               <input
                 className="lead-cta-input"
+                placeholder="e.g. Sarah"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
@@ -72,6 +73,7 @@ export default function LeadCaptureCTA({
               <input
                 className="lead-cta-input"
                 type="email"
+                placeholder="you@company.com"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
@@ -79,7 +81,7 @@ export default function LeadCaptureCTA({
             </label>
             {error && <p className="lead-cta-error">{error}</p>}
             <button type="submit" className="btn btn-primary">
-              Request my audit <ArrowRight size={14} />
+              Request My Free Assessment <ArrowRight size={14} />
             </button>
           </>
         )}
