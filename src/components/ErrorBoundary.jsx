@@ -53,13 +53,13 @@ export default class ErrorBoundary extends Component {
       return (
         <div style={{ minHeight: "60vh", display: "grid", placeItems: "center", padding: 40, textAlign: "center" }}>
           <div>
-            <h1 style={{ fontSize: "1.5rem", marginBottom: 8 }}>Something went wrong</h1>
-            <p style={{ color: "#666", marginBottom: 16 }}>Try refreshing the page.</p>
+            <h1 style={{ fontSize: "1.5rem", marginBottom: 8 }}>This page ran into a problem.</h1>
+            <p style={{ color: "#666", marginBottom: 16 }}>Reload the page and try again. If the problem keeps happening, contact us and tell us what you were doing.</p>
             <button
               onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
               style={{ padding: "8px 20px", borderRadius: 6, border: "1px solid #ccc", cursor: "pointer" }}
             >
-              Refresh
+              Reload the page
             </button>
           </div>
         </div>
