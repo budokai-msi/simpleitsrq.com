@@ -5,10 +5,11 @@ on:
     branches: [qa/copy-batch-20260817]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   verify:
+    if: github.event.head_commit.message != 'Copy batch QA passed'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -25,3 +26,11 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
+      - name: Record QA pass
+        run: |
+          printf 'unit-tests=passed\nbuild=passed\nbase-main-sha=32bc2f1bb10f9a5547383ced97bb04ff9f03c9c0\n' > .qa-copy-batch-pass
+          git config user.name 'Simple IT SRQ QA'
+          git config user.email '114784512+budokai-msi@users.noreply.github.com'
+          git add .qa-copy-batch-pass
+          git commit -m 'Copy batch QA passed'
+          git push origin HEAD:qa/copy-batch-20260817
