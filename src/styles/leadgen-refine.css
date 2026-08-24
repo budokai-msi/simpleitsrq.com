@@ -228,16 +228,6 @@ html[data-theme="dark"] .leadgen-category.is-open {
   box-shadow: 0 0 0 1px var(--aura-accent-soft), 0 16px 42px rgba(0,0,0,.24) !important;
 }
 
-/* Selected-action utility is detached visually from the content flow. */
-.leadgen-selbar {
-  width: min(100%, 1040px);
-  margin-inline: auto;
-  margin-bottom: 10px;
-  border: 1px solid var(--aura-border) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 12px 36px rgba(0,0,0,.10) !important;
-}
-
 /* Upgrade should read like a quiet secondary card, not a second hero. */
 .leadgen-product-upgrade {
   width: min(100%, 980px);
