@@ -2398,24 +2398,68 @@ main, #main {
   color: var(--text-on-accent);
 }
 
-/* Blog hero */
+/* Blog hero — vertically stacked, centered, comfortable scale.
+   The previous version was a flex row that pushed the breadcrumb to one
+   side and the copy to the other, wasting half the hero on whitespace.
+   Stack everything centered with a sane vertical rhythm instead. */
 .blog-hero {
   background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg) 100%);
   text-align: center;
+  padding: clamp(40px, 6vw, 72px) 0 clamp(48px, 7vw, 88px) !important;
+}
+
+.blog-hero .breadcrumbs {
+  margin: 0 0 20px;
+}
+
+.blog-hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+}
+
+.blog-hero__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.blog-hero .eyebrow {
+  margin: 0;
 }
 
 .blog-hero .display {
-  margin: 16px auto;
+  margin: 0;
   max-width: 760px;
+  /* Smaller scale than the homepage .display-1 so the hero doesn't
+     dominate the whole viewport. Hero headlines are read-and-scroll-past,
+     not stage presentations. */
+  font-size: clamp(30px, 4.4vw, 48px);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 700;
   background: none;
   color: var(--text-1);
   -webkit-text-fill-color: currentColor;
 }
 
 .blog-hero .lede {
-  max-width: 640px;
-  margin: 0 auto;
+  margin: 0;
+  max-width: 60ch;
+  font-size: 17px;
+  line-height: 1.55;
   color: var(--text-2);
+}
+
+@media (max-width: 720px) {
+  .blog-hero .display { font-size: clamp(24px, 7vw, 32px); line-height: 1.18; }
+  .blog-hero .lede { font-size: 16px; }
+  .blog-hero__copy { gap: 10px; }
 }
 
 .blog-empty {
@@ -7322,12 +7366,6 @@ select:focus-visible {
 .services-stat__label { font-size: 0.82rem; color: var(--text-muted, #6b7280); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
 @media (max-width: 720px) { .services-stat-band { grid-template-columns: repeat(2, 1fr); } }
 [data-theme="dark"] .services-stat__num { color: #7DB7E6; }
-
-/* ---- Blog hero with illustration ---- */
-.blog-hero__inner { display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; text-align: left; }
-.blog-hero__copy { flex: 1 1 380px; max-width: 640px; }
-.blog-hero__art { flex: 0 0 280px; display: flex; justify-content: center; filter: drop-shadow(0 12px 32px rgba(17, 24, 39, 0.15)); }
-@media (max-width: 720px) { .blog-hero__inner { flex-direction: column; text-align: center; } .blog-hero__copy { text-align: center; } .blog-hero__art { order: -1; } }
 
 /* ---- Empty state ---- */
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 48px 24px; text-align: center; color: var(--text-muted, #6b7280); border: 1px dashed var(--syn-border, #e5e7eb); border-radius: 14px; background: var(--syn-surface-muted, #fafafa); }
