@@ -7,7 +7,7 @@
     "node": "22.x"
   },
   "scripts": {
-    "publish:local": "node scripts/local-publisher.mjs",
+    "publish:local": "node --env-file=.env.local scripts/local-publisher.mjs",
     "dev": "vite",
     "prebuild": "node scripts/generate-posts-meta.mjs && node scripts/generate-sitemap.mjs && node scripts/generate-rss.mjs && node scripts/generate-og-images.mjs && node scripts/generate-city-og-images.mjs && node scripts/generate-industry-og-images.mjs",
     "build": "vite build && node scripts/generate-blog-stubs.mjs",
@@ -20,7 +20,9 @@
     "generate:images": "node scripts/generate-images.mjs",
     "benchmark:scan": "node scripts/benchmark/run-batch-scan.mjs",
     "benchmark:report": "node scripts/benchmark/generate-report.mjs",
-    "db:push": "node --env-file=.env.local scripts/db/push.mjs"
+    "db:push": "node --env-file=.env.local scripts/db/push.mjs",
+    "blog:daemon": "node --env-file=.env.local scripts/local-cron-daemon.mjs",
+    "blog:once": "node --env-file=.env.local scripts/local-cron-daemon.mjs --once"
   },
   "dependencies": {
     "@mapbox/vector-tile": "2.0.4",
