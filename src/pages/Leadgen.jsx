@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import "../styles/leadgen.css";
 import "../styles/leadgen-mobile-restore.css";
+import "../styles/leadgen-daisyui-polish.css";
 import { Link } from "../lib/Link";
 import { ArrowRight, Check, ChevronDown, ExternalLink, Globe2, Mail, Phone, Search, Sparkles } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
@@ -586,7 +587,7 @@ function LeadgenScanApp() {
       if (email) setExtractedEmails((current) => ({ ...current, [key]: email }));
       if (data.websiteSignals) setWebsiteIntel((current) => ({ ...current, [key]: data.websiteSignals }));
       setOpenProspects((current) => ({ ...current, [prospectKey(row)]: true }));
-      setSiteMessages((current) => ({ ...current, [key]: { ok: true, text: "Contact check updated." } }));
+      setSiteMessages((current) => ({ ...current, [key]: { ok: true, text: "Contacts updated." } }));
       trackEvent("generate_lead", { source: "leadgen_contact_enrichment", company: row.name || "prospect" });
     } catch (error) {
       setSiteMessages((current) => ({ ...current, [key]: { ok: false, text: error.message || "Could not check this website for contacts." } }));
@@ -692,17 +693,17 @@ function LeadgenScanApp() {
               </select>
             </label>
             <button type="button" className="btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
-              <Search size={16} /> {busy ? "Searching…" : "Find businesses"}
+              <Search size={16} /> {busy ? "Scanning market…" : "Scan this market"}
             </button>
           </div>
           {validZip ? (
             <div className="leadgen-product-save">
               {authLoading ? (
-              <button type="button" className="btn btn-secondary btn-sm" disabled>Save search</button>
+              <button type="button" className="btn btn-secondary btn-sm" disabled>Save this search</button>
             ) : user ? (
-              <button type="button" className="btn btn-secondary btn-sm" onClick={saveMarket}>Save search</button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={saveMarket}>Save this search</button>
             ) : (
-              <Link className="btn btn-secondary btn-sm" to="/portal">Sign in to save search</Link>
+              <Link className="btn btn-secondary btn-sm" to="/portal">Sign in to save searches</Link>
             )}
               {saveMsg ? <span className={saveMsg.ok ? "" : "is-error"}>{saveMsg.text}</span> : null}
             </div>
@@ -761,17 +762,17 @@ function LeadgenScanApp() {
                   <option value="name">Company name</option>
                 </select>
               </label>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={selectBest}><Check size={14} /> Select strong matches</button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={selectBest}><Check size={14} /> Auto-select strong fits</button>
               {authLoading ? (
-                <button type="button" className="btn btn-secondary btn-sm" disabled><Sparkles size={14} /> Find contacts</button>
+                <button type="button" className="btn btn-secondary btn-sm" disabled><Sparkles size={14} /> Enrich contacts</button>
               ) : !user ? (
-                <Link className="btn btn-secondary btn-sm" to="/portal"><Sparkles size={14} /> Sign in to find contacts</Link>
+                <Link className="btn btn-secondary btn-sm" to="/portal"><Sparkles size={14} /> Sign in to enrich</Link>
               ) : canBulkEnrich ? (
                 <button type="button" className="btn btn-secondary btn-sm" onClick={enrichSelected} disabled={extracting}>
-                  <Sparkles size={14} /> {extracting ? "Checking sites…" : "Find contacts"}
+                  <Sparkles size={14} /> {extracting ? "Checking websites…" : "Enrich all contacts"}
                 </button>
               ) : (
-                <a className="btn btn-secondary btn-sm" href="#leadgen-plans"><Sparkles size={14} /> Bulk contact checks — Pro</a>
+                <a className="btn btn-secondary btn-sm" href="#leadgen-plans"><Sparkles size={14} /> Unlock bulk enrichment</a>
               )}
             </div>
             {extractMsg ? <p className={extractMsg.ok ? "leadgen-product-message" : "form-error"} aria-live="polite">{extractMsg.text}</p> : null}
@@ -789,7 +790,7 @@ function LeadgenScanApp() {
                 <div className="leadgen-use-card__actions">
                   <button type="button" className="btn btn-secondary btn-sm" disabled={!selectedRows.length} onClick={() => downloadCsv(`leadgen-${zip}.csv`, selectedRows.map((row) => ({ ...row, email: bestEmail(row) })))}>Download CSV</button>
                   {destinations.length ? <select value={pushTarget} onChange={(event) => setPushTarget(event.target.value)} aria-label="CRM destination">{destinations.map((destination) => <option key={destination.id} value={destination.id}>{destination.label || destination.kind}</option>)}</select> : null}
-                  {destinations.length ? <button type="button" className="btn btn-primary btn-sm" onClick={pushSelected} disabled={!selectedRows.length || pushBusy}>{pushBusy ? "Sending…" : "Send selected"}</button> : <span className="leadgen-app-private-note">Connect HubSpot or a webhook in your account to send selected records.</span>}
+                  {destinations.length ? <button type="button" className="btn btn-primary btn-sm" onClick={pushSelected} disabled={!selectedRows.length || pushBusy}>{pushBusy ? "Sending to CRM…" : "Push to CRM"}</button> : <span className="leadgen-app-private-note">Connect HubSpot or a webhook in your account to send selected records.</span>}
                 </div>
               </div>
               {pushMsg ? <p className={pushMsg.ok ? "leadgen-product-message" : "form-error"} aria-live="polite">{pushMsg.text}</p> : null}
@@ -802,8 +803,8 @@ function LeadgenScanApp() {
                 <p>Open a category, compare its businesses, then expand a prospect for contact details and source evidence.</p>
               </div>
               <div className="leadgen-explorer-actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={expandAllGroups}>Open all</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={collapseAllGroups}>Close all</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={expandAllGroups}>Expand all</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={collapseAllGroups}>Collapse all</button>
               </div>
             </div>
 
@@ -851,7 +852,7 @@ function LeadgenScanApp() {
                             ))}
                           </div>
                           <div className="leadgen-category__qualify">
-                            <button type="button" className="btn btn-secondary btn-sm" onClick={() => qualifyGroup(group)}>Select strong matches</button>
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={() => qualifyGroup(group)}>Select strong fits</button>
                             <button type="button" className="btn btn-secondary btn-sm" onClick={() => clearGroup(group)}>Clear selections</button>
                           </div>
                         </div>
@@ -904,18 +905,18 @@ function LeadgenScanApp() {
                                 <div className="leadgen-prospect-card__actions">
                                   {row.phone ? <a className="leadgen-card-action" href={telHref(row.phone)}><Phone size={13} /> Call</a> : null}
                                   {email ? <a className="leadgen-card-action" href={`mailto:${email}`}><Mail size={13} /> Email</a> : null}
-                                  {row.website ? <a className="leadgen-card-action" href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer"><Globe2 size={13} /> Website</a> : null}
+                                  {row.website ? <a className="leadgen-card-action" href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer"><Globe2 size={13} /> Visit site</a> : null}
                                   {row.website ? (
                                   authLoading ? (
-                                    <button type="button" className="leadgen-card-action is-primary" disabled><Sparkles size={13} /> Find contacts</button>
+                                    <button type="button" className="leadgen-card-action is-primary" disabled><Sparkles size={13} /> Enrich contacts</button>
                                   ) : !user ? (
-                                    <Link className="leadgen-card-action is-primary" to="/portal"><Sparkles size={13} /> Sign in for contacts</Link>
+                                    <Link className="leadgen-card-action is-primary" to="/portal"><Sparkles size={13} /> Sign in to enrich</Link>
                                   ) : canEnrichOne ? (
                                     <button type="button" className="leadgen-card-action is-primary" onClick={() => findProspectContacts(row)} disabled={analyzing}>
-                                      <Sparkles size={13} /> {analyzing ? "Checking…" : row.website_intel ? "Recheck contacts" : "Find contacts"}
+                                      <Sparkles size={13} /> {analyzing ? "Checking website…" : row.website_intel ? "Re-check contacts" : "Find contacts"}
                                     </button>
                                   ) : (
-                                    <a className="leadgen-card-action is-primary" href="#leadgen-plans"><Sparkles size={13} /> Unlock contacts</a>
+                                    <a className="leadgen-card-action is-primary" href="#leadgen-plans"><Sparkles size={13} /> Upgrade to enrich</a>
                                   )
                                 ) : null}
                                   {siteMessage ? <p className={`leadgen-card-action-message${siteMessage.ok ? "" : " is-error"}`} aria-live="polite">{siteMessage.text}</p> : null}
@@ -950,7 +951,7 @@ function LeadgenScanApp() {
                                             <p className="leadgen-evidence-note">Checked the business website for public email addresses, a contact form, and public social links. Missing details are left unknown.</p>
                                           </>
                                         ) : (
-                                          <p className="leadgen-card-empty">Use Find contacts to check a small set of public pages on this business website. It only checks public contact pages; technical diagnostics are intentionally excluded.</p>
+                                          <p className="leadgen-card-empty">Use the Find contacts button to check public pages on this business website. It only checks public contact pages; technical diagnostics are intentionally excluded.</p>
                                         )}
                                       </section>
 

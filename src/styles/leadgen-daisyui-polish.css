@@ -1,0 +1,510 @@
+/* ============================================================
+   LEADGEN DAISYUI POLISH
+   Enhances the leadgen result cards, scorecards, badges, buttons,
+   and prospect card elements with daisyUI-inspired component styling
+   that builds on the existing Aura design system — no Tailwind needed.
+   ============================================================ */
+
+/* ── Scorecard: daisyUI stats-like cards ───────────────────────────── */
+
+.leadgen-results-scorecard {
+  gap: 12px !important;
+}
+
+.leadgen-results-scorecard article {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px !important;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease;
+}
+
+.leadgen-results-scorecard article::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--aura-accent-soft), transparent 60%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.leadgen-results-scorecard article:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+}
+
+.leadgen-results-scorecard strong {
+  font-size: 1.5rem !important;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.leadgen-results-scorecard span {
+  font-size: .65rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  opacity: 0.7;
+  position: relative;
+}
+
+/* ── Intel strip: daisyUI stat-like tiles ───────────────────────────── */
+
+.leadgen-intel-strip article {
+  border-radius: 14px !important;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms ease;
+}
+
+.leadgen-intel-strip article:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .07) !important;
+}
+
+.leadgen-intel-strip article.is-wide {
+  background: linear-gradient(135deg, var(--aura-accent-soft), transparent 70%) !important;
+}
+
+/* ── Prospect cards: daisyUI card with hover lift ───────────────────── */
+
+.leadgen-prospect-card {
+  border-radius: 16px !important;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 200ms ease,
+              border-color 200ms ease !important;
+}
+
+.leadgen-prospect-card:hover:not(.is-expanded) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .08) !important;
+  border-color: var(--aura-border-strong) !important;
+}
+
+.leadgen-prospect-card.is-expanded {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .10) !important;
+}
+
+/* Selected state: daisyUI-style ring + accent bg */
+.leadgen-prospect-card.is-selected {
+  border-color: var(--aura-accent-strong) !important;
+  box-shadow: 0 0 0 3px var(--aura-accent-soft), 0 12px 30px rgba(0, 0, 0, .07) !important;
+}
+
+html[data-theme="light"] .leadgen-prospect-card.is-selected {
+  background: color-mix(in srgb, var(--aura-accent) 4%, var(--aura-surface)) !important;
+}
+
+/* ── Fit badge: daisyUI badge styling ──────────────────────────────── */
+
+.leadgen-fit-badge {
+  min-height: 26px !important;
+  padding: 4px 11px !important;
+  font-size: .62rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.leadgen-fit-badge:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px var(--aura-accent-glow);
+}
+
+/* ── Card action buttons: daisyUI btn-like polish ──────────────────── */
+
+.leadgen-card-action {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 140ms ease,
+              background 140ms ease,
+              box-shadow 140ms ease !important;
+}
+
+.leadgen-card-action:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .08);
+}
+
+.leadgen-card-action:active:not(:disabled) {
+  transform: scale(0.97);
+  transition-duration: 60ms;
+}
+
+.leadgen-card-action.is-primary {
+  background: linear-gradient(135deg, var(--aura-accent-strong), var(--aura-accent)) !important;
+  color: var(--aura-on-accent) !important;
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 0 0 1px var(--aura-accent-soft), 0 4px 14px var(--aura-accent-glow) !important;
+  font-weight: 800 !important;
+}
+
+.leadgen-card-action.is-primary:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px var(--aura-border-strong), 0 8px 22px var(--aura-accent-glow) !important;
+  transform: translateY(-1px) scale(1.03);
+}
+
+/* ── Signal chips: daisyUI badge variants ───────────────────────────── */
+
+.leadgen-prospect-card__signals span {
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.leadgen-prospect-card__signals span.is-positive {
+  background: color-mix(in srgb, #22c55e 8%, var(--lg-panel-soft)) !important;
+  border-color: color-mix(in srgb, #22c55e 22%, var(--lg-border-faint)) !important;
+  color: #15803d !important;
+}
+
+html[data-theme="dark"] .leadgen-prospect-card__signals span.is-positive {
+  color: #4ade80 !important;
+}
+
+.leadgen-prospect-card__signals span.is-gap {
+  background: color-mix(in srgb, #f59e0b 10%, var(--lg-panel-soft)) !important;
+  border-color: color-mix(in srgb, #f59e0b 24%, var(--lg-border-faint)) !important;
+  color: #b45309 !important;
+}
+
+html[data-theme="dark"] .leadgen-prospect-card__signals span.is-gap {
+  color: #fbbf24 !important;
+}
+
+.leadgen-prospect-card__signals span.is-intel {
+  background: color-mix(in srgb, #6366f1 8%, var(--lg-panel-soft)) !important;
+  border-color: color-mix(in srgb, #6366f1 22%, var(--lg-border-faint)) !important;
+}
+
+.leadgen-prospect-card__signals span:hover {
+  transform: scale(1.05);
+}
+
+/* ── Card meter: daisyUI progress polish ────────────────────────────── */
+
+.leadgen-card-meter__track {
+  height: 8px !important;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--lg-faint) 10%, transparent) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .06);
+}
+
+.leadgen-card-meter__fill {
+  border-radius: 999px !important;
+  transition: width 400ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ── Category accordion: daisyUI collapse-style ─────────────────────── */
+
+.leadgen-category {
+  border-radius: 18px !important;
+  transition: border-color 200ms ease, box-shadow 200ms ease !important;
+}
+
+.leadgen-category:hover:not(.is-open) {
+  border-color: var(--aura-border) !important;
+}
+
+.leadgen-category__toggle {
+  border-radius: 18px 18px 0 0;
+  transition: background-color 160ms ease !important;
+}
+
+.leadgen-category__quickstats > span {
+  font-weight: 700 !important;
+  transition: transform 120ms ease;
+}
+
+.leadgen-category__quickstats > span:hover {
+  transform: scale(1.05);
+}
+
+.leadgen-category__dashboard article {
+  border-radius: 12px !important;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.leadgen-category__dashboard article:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .05);
+}
+
+.leadgen-category__dashboard strong {
+  font-size: 1.1rem !important;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* ── Subcategory tabs: daisyUI tab-like ─────────────────────────────── */
+
+.leadgen-subcategory-tabs button {
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  transition: all 140ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.leadgen-subcategory-tabs button:hover:not(.is-active) {
+  border-color: var(--aura-border) !important;
+  background: var(--aura-surface) !important;
+  transform: translateY(-1px);
+}
+
+.leadgen-subcategory-tabs button.is-active {
+  background: linear-gradient(135deg, var(--aura-accent-strong), var(--aura-accent)) !important;
+  color: var(--aura-on-accent) !important;
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 4px 14px var(--aura-accent-glow) !important;
+}
+
+.leadgen-subcategory-tabs button span {
+  font-weight: 800 !important;
+}
+
+/* ── Prospect card toggle: smoother chevron ────────────────────────── */
+
+.leadgen-prospect-card__toggle {
+  transition: background-color 160ms ease !important;
+  border-radius: 14px 14px 0 0;
+}
+
+.leadgen-prospect-card__toggle > svg {
+  transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* ── Prospect detail grid: daisyUI card sections ────────────────────── */
+
+.leadgen-prospect-detail-grid > section {
+  border-radius: 14px !important;
+  transition: box-shadow 160ms ease;
+}
+
+.leadgen-prospect-detail-grid > section:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .04);
+}
+
+.leadgen-prospect-detail-grid > section > strong {
+  font-size: .7rem !important;
+  letter-spacing: 0.08em;
+  color: var(--lg-muted) !important;
+}
+
+/* ── Evidence note: subtle divider ──────────────────────────────────── */
+
+.leadgen-evidence-note {
+  font-size: .66rem !important;
+  line-height: 1.5;
+  color: var(--lg-faint);
+  opacity: 0.85;
+}
+
+/* ── Use card: daisyUI action card ──────────────────────────────────── */
+
+.leadgen-use-card {
+  border-radius: 18px !important;
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.leadgen-use-card:hover {
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .06);
+  border-color: var(--aura-border) !important;
+}
+
+/* ── Product steps: daisyUI step polish ─────────────────────────────── */
+
+.leadgen-product-step {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 180ms ease,
+              background 180ms ease,
+              box-shadow 180ms ease !important;
+}
+
+.leadgen-product-step:hover {
+  transform: translateY(-2px);
+}
+
+.leadgen-product-step.is-active {
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 0 0 3px var(--aura-accent-soft), 0 8px 24px rgba(0, 0, 0, .06) !important;
+}
+
+.leadgen-product-step__index {
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.leadgen-product-step.is-active .leadgen-product-step__index {
+  background: linear-gradient(135deg, var(--aura-accent-strong), var(--aura-accent)) !important;
+  color: var(--aura-on-accent) !important;
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 4px 12px var(--aura-accent-glow);
+}
+
+/* ── Breadcrumbs: daisyUI breadcrumbs polish ───────────────────────── */
+
+.leadgen-section-breadcrumbs {
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--lg-panel-soft) 50%, transparent);
+}
+
+.leadgen-section-breadcrumbs a {
+  transition: color 140ms ease, transform 120ms ease;
+}
+
+.leadgen-section-breadcrumbs a:hover {
+  transform: translateX(1px);
+}
+
+/* ── Scan card: daisyUI hero/fieldset polish ────────────────────────── */
+
+.leadgen-scan-card {
+  transition: box-shadow 200ms ease;
+}
+
+.leadgen-scan-card:hover {
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .07) !important;
+}
+
+/* ── Product upgrade: daisyUI hero polish ───────────────────────────── */
+
+.leadgen-product-upgrade {
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.leadgen-product-upgrade:hover {
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .07) !important;
+  border-color: var(--aura-border) !important;
+}
+
+/* ── Empty state: daisyUI alert-like ────────────────────────────────── */
+
+.leadgen-category-empty {
+  padding: 24px 18px;
+  border: 1px dashed var(--lg-border-faint);
+  border-radius: 14px;
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+/* ── Card action message: daisyUI alert-like ────────────────────────── */
+
+.leadgen-card-action-message {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--lg-panel-soft) 60%, transparent);
+  font-weight: 600 !important;
+}
+
+.leadgen-card-action-message.is-error {
+  background: color-mix(in srgb, #ef4444 8%, transparent);
+  color: #dc2626 !important;
+}
+
+/* ── Contact rows: daisyUI key-value polish ─────────────────────────── */
+
+.leadgen-card-contact-row > span:first-child {
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  opacity: 0.65;
+}
+
+.leadgen-card-contact-row a {
+  font-weight: 600;
+  transition: color 140ms ease;
+}
+
+/* ── Button text: better hierarchy for btn-sm ──────────────────────── */
+
+.leadgen-product-toolbar .btn-secondary,
+.leadgen-use-card__actions .btn-secondary,
+.leadgen-use-card__actions .btn-primary,
+.leadgen-category__qualify .btn-secondary,
+.leadgen-explorer-actions .btn-secondary {
+  white-space: nowrap;
+  gap: 6px;
+}
+
+/* ── Checkbox: daisyUI checkbox polish ─────────────────────────────── */
+
+.leadgen-product-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--lg-border-soft);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-items: center;
+}
+
+.leadgen-product-check input[type="checkbox"]::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  transform: scale(0);
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--aura-accent-strong);
+}
+
+.leadgen-product-check input[type="checkbox"]:checked {
+  border-color: var(--aura-accent-strong);
+  background: color-mix(in srgb, var(--aura-accent) 12%, transparent);
+}
+
+.leadgen-product-check input[type="checkbox"]:checked::after {
+  transform: scale(1);
+}
+
+.leadgen-product-check input[type="checkbox"]:focus-visible {
+  outline: 3px solid var(--aura-accent-glow);
+  outline-offset: 2px;
+}
+
+/* ── Explorer head: daisyUI title polish ────────────────────────────── */
+
+.leadgen-explorer-head h3 {
+  font-weight: 800 !important;
+  letter-spacing: -0.02em;
+}
+
+.leadgen-explorer-head .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  font-size: .68rem;
+  color: var(--aura-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ── Mobile polish for daisyUI enhancements ─────────────────────────── */
+
+@media (max-width: 640px) {
+  .leadgen-results-scorecard article {
+    padding: 12px 10px !important;
+  }
+
+  .leadgen-results-scorecard strong {
+    font-size: 1.2rem !important;
+  }
+
+  .leadgen-card-action {
+    font-size: .66rem !important;
+    padding: 6px 10px !important;
+    min-height: 36px !important;
+  }
+
+  .leadgen-fit-badge {
+    font-size: .56rem !important;
+    padding: 3px 8px !important;
+  }
+
+  .leadgen-prospect-detail-grid > section {
+    padding: 10px !important;
+  }
+}
