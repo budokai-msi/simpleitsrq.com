@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import "../styles/leadgen.css";
+import "../styles/leadgen-mobile-restore.css";
 import { Link } from "../lib/Link";
 import { ArrowRight, Check, ChevronDown, ExternalLink, Globe2, Mail, Phone, Search, Sparkles } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
