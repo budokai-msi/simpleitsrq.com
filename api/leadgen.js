@@ -2,6 +2,7 @@ import { json } from "./_lib/http.js";
 import { sql } from "./_lib/db.js";
 import { bboxForZip, discoverBusinessesByZip } from "./_lib/leadgen-osm.js";
 import { discoverOvertureBusinesses } from "./_lib/leadgen-overture.js";
+import { discoverBusinessesByZipPlaces } from "./_lib/leadgen-places.js";
 import { classifyIndustry, INDUSTRY_OPTIONS, looksLikeChain } from "./_lib/leadgen-classify.js";
 import { clientIp, isHostileGeo, logThreatActor, rateLimit } from "./_lib/security.js";
 
@@ -366,10 +367,31 @@ async function upsertBusinesses(businesses) {
   await persistEmails(idRows, clean);
 }
 
-async function discoverLiveBusinesses(zip) {
+async function discoverLiveBusinesses(zip, niche = "All") {
   let area = null;
   try { area = await bboxForZip(zip); }
   catch (err) { console.warn("[leadgen] zip boundary lookup failed", err?.message || err); }
+
+  // Preferred source when configured: Google Places Text Search. It returns
+  // phone + website + rating in one call and respects the requested niche,
+  // which the tile-based Overture/OSM sources can't filter server-side.
+  if (process.env.GOOGLE_MAPS_API_KEY) {
+    try {
+      const places = await discoverBusinessesByZipPlaces(zip, niche);
+      if (places.ok && places.businesses?.length) {
+        await upsertBusinesses(places.businesses);
+        return {
+          ok: true,
+          source: "google_places",
+          businesses: places.businesses,
+          bbox: area?.bbox || null,
+          centroid: places.centroid || area?.centroid || null,
+        };
+      }
+    } catch (err) {
+      console.warn("[leadgen] Google Places discovery failed; falling back to Overture/OSM", err?.message || err);
+    }
+  }
 
   let overture = { ok: false, businesses: [] };
   if (area?.bbox) {
@@ -424,7 +446,7 @@ async function discoverOrLoadBusinesses(zip, niche = "All") {
   }
 
   try {
-    const fresh = await discoverLiveBusinesses(zip);
+    const fresh = await discoverLiveBusinesses(zip, niche);
     if (fresh.ok && fresh.businesses?.length) return fresh;
   } catch (err) {
     console.warn("[leadgen] live discovery failed", err?.message || err);
