@@ -207,13 +207,14 @@ Rewrite the FULL post fixing every issue. Keep what works; cut everything the ed
 // Slug + persistence
 // ---------------------------------------------------------------
 
+// Return the slug only if it is free. On collision, return null so the
+// caller SKIPS the story entirely — we never publish -NNNN numbered
+// duplicate variants of an existing post.
 async function pickFreeSlug(base) {
-  let attempt = String(base || 'post').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 96) || 'post';
-  for (let i = 0; i < 5; i++) {
-    const existing = await sql`SELECT 1 FROM draft_posts WHERE slug = ${attempt} LIMIT 1`;
-    if (existing.length === 0) return attempt;
-    attempt = `${attempt}-${Math.floor(Math.random() * 1000)}`;
-  }
+  const attempt = String(base || 'post').toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 96) || 'post';
+  const existing = await sql`SELECT 1 FROM draft_posts WHERE slug = ${attempt} LIMIT 1`;
+  if (existing.length === 0) return attempt;
+  console.log(`[blog] Slug already exists: ${attempt}. Skipping story instead of creating a numbered variant.`);
   return null;
 }
 
@@ -289,7 +290,10 @@ Score: ${story.score}`;
 
   // --- Persist + publish ---
   const finalSlug = await pickFreeSlug(post.slug);
-  if (!finalSlug) throw new Error('No free slug found');
+  if (!finalSlug) {
+    console.log('[blog] Slug collision — skipping story entirely.');
+    return { ok: false, reason: 'slug_collision', slug: post.slug };
+  }
 
   const inserted = await sql`
     INSERT INTO draft_posts (title, slug, category, excerpt, body, meta_desc, model)

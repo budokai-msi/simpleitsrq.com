@@ -266,18 +266,17 @@ function normalizeSlug(s) {
     .slice(0, 120);
 }
 
-// Pick a non-colliding slug. The slug column is UNIQUE across draft_posts,
-// so a model that picks a slug we have already used (in any status —
-// draft / approved / rejected / published) makes INSERT throw and used to
-// kill the whole run silently. We try the model's slug first, then -2, -3…
-// up to -9 before giving up.
+// Return the model's slug only if it is free. The slug column is UNIQUE
+// across draft_posts, so a model that picks a slug we have already used
+// (in any status — draft / approved / rejected / published) makes INSERT
+// throw. On collision we SKIP the story entirely (log it) — never create
+// -NNNN numbered duplicate variants.
 async function pickFreeSlug(base) {
-  const root = normalizeSlug(base) || `post-${Date.now()}`;
-  for (let i = 0; i < 10; i++) {
-    const candidate = i === 0 ? root : `${root}-${i + 1}`;
-    const collision = await sql`SELECT 1 FROM draft_posts WHERE slug = ${candidate} LIMIT 1`.catch(() => []);
-    if (collision.length === 0) return candidate;
-  }
+  const candidate = normalizeSlug(base);
+  if (!candidate) return null;
+  const collision = await sql`SELECT 1 FROM draft_posts WHERE slug = ${candidate} LIMIT 1`.catch(() => [{ exists: true }]);
+  if (collision.length === 0) return candidate;
+  console.log(`[agent] Slug collision: ${candidate} already used. Skipping story.`);
   return null;
 }
 
