@@ -693,7 +693,7 @@ function LeadgenScanApp() {
               </select>
             </label>
             <button type="button" className="btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
-              <Search size={16} /> {busy ? "Scanning market…" : "Scan this market"}
+              <Search size={16} /> {busy ? "Looking…" : "Find local businesses"}
             </button>
           </div>
           {validZip ? (
