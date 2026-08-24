@@ -37,6 +37,7 @@ const TABS = [
   ["ops", "Ops", Activity],
   ["leads", "Leads", Inbox],
   ["visitors", "Visitors", Eye],
+  ["content", "Content", BookOpen],
   ["drafts", "Drafts", FileText],
   ["affiliate", "Affiliate", DollarSign],
   ["leadgen", "Leadgen", Target],
@@ -52,6 +53,7 @@ const CORE_ACTIONS = [
   "affiliate-stats",
   "revenue-signals",
   "behavior-insights",
+  "content-insights",
   "hot-leads",
   "lead-intel",
   "leads-inbox",
@@ -408,6 +410,7 @@ export default function AdminOps() {
           {tab === "ops" && <OpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
           {tab === "leads" && <LeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
           {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
+          {tab === "content" && <ContentTab data={data["content-insights"]} error={errors["content-insights"]} />}
           {tab === "drafts" && <DraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
           {tab === "affiliate" && <AffiliateTab data={data} />}
           {tab === "leadgen" && <LeadgenTab status={data["leadgen-status"]} />}
@@ -1016,6 +1019,113 @@ function LeadIntelPanels({ leadIntel, error }) {
   );
 }
 
+// Content tab — which posts attract, hold, and convert readers.
+function ContentTab({ data, error }) {
+  const topPosts = data?.topPosts || [];
+  const entryPosts = data?.entryPosts || [];
+  const converters = data?.exitToBook || [];
+  const searches = data?.searchTerms || [];
+  const stale = data?.stalePosts || [];
+
+  return (
+    <div className="ops-grid">
+      {error ? <EmptyState>{error}</EmptyState> : null}
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Top posts (30d)</h2><BookOpen size={16} /></div>
+        <Table
+          columns={["Post", "Views", "Unique", "Avg dwell", "Max scroll"]}
+          rows={topPosts}
+          empty="No blog engagement recorded in the last 30 days."
+          renderRow={(row) => (
+            <tr key={row.slug}>
+              <td className="ops-path-cell"><a href={`/blog/${row.slug}`} target="_blank" rel="noreferrer">{row.slug}</a></td>
+              <td>{fmtNumber(row.views)}</td>
+              <td>{fmtNumber(row.unique_visitors)}</td>
+              <td>{row.avg_dwell_sec != null ? `${row.avg_dwell_sec}s` : "-"}</td>
+              <td>{row.max_scroll_pct != null ? `${row.max_scroll_pct}%` : "-"}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Blog → booking paths</h2></div>
+        <p className="ops-panel__copy">Posts read before a /book or /contact visit. These are your money posts — keep them fresh and interlinked.</p>
+        <Table
+          columns={["Post", "Visitors who booked"]}
+          rows={converters}
+          empty="No blog-to-booking journeys recorded yet."
+          renderRow={(row) => (
+            <tr key={row.path}>
+              <td className="ops-path-cell">{row.path}</td>
+              <td><SignalPill state={Number(row.visitors_who_booked) > 0 ? "good" : "neutral"}>{fmtNumber(row.visitors_who_booked)}</SignalPill></td>
+            </tr>
+          )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Blog entry pages (30d)</h2></div>
+        <Table
+          columns={["Landing post", "Entries", "Bounce rate", "Avg dwell"]}
+          rows={entryPosts}
+          empty="No blog entries recorded yet."
+          renderRow={(row) => {
+            const bounceRate = row.total_sessions > 0 ? Math.round((row.bounces / row.total_sessions) * 100) : 0;
+            return (
+              <tr key={row.landing_path}>
+                <td className="ops-path-cell">{row.landing_path}</td>
+                <td>{fmtNumber(row.entries)}</td>
+                <td><SignalPill state={bounceRate > 60 ? "warn" : "good"}>{bounceRate}%</SignalPill></td>
+                <td>{row.avg_dwell_sec != null ? `${row.avg_dwell_sec}s` : "-"}</td>
+              </tr>
+            );
+          }}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>On-site searches (30d)</h2></div>
+        <p className="ops-panel__copy">What visitors look for that they can't find by browsing. Unanswered searches are content ideas.</p>
+        <Table
+          columns={["Query", "Searches"]}
+          rows={searches}
+          empty="No site searches recorded yet."
+          renderRow={(row) => (
+            <tr key={row.query}>
+              <td>{row.query}</td>
+              <td>{fmtNumber(row.searches)}</td>
+            </tr>
+          )}
+        />
+      </section>
+
+      {stale.length ? (
+        <section className="admin-aff-card ops-panel ops-panel--wide">
+          <div className="ops-panel__head"><h2>Traffic dropping — refresh candidates</h2><AlertTriangle size={16} /></div>
+          <p className="ops-panel__copy">These posts lost 50%+ of their views vs the prior 30 days. Updating them (new info, internal links to new posts) is the cheapest SEO win available.</p>
+          <Table
+            columns={["Post", "Last 30d views", "Prior 30d", "Change"]}
+            rows={stale}
+            renderRow={(row) => {
+              const change = row.prior_views > 0 ? Math.round(((row.recent_views - row.prior_views) / row.prior_views) * 100) : 0;
+              return (
+                <tr key={row.slug}>
+                  <td className="ops-path-cell"><a href={`/blog/${row.slug}`} target="_blank" rel="noreferrer">{row.slug}</a></td>
+                  <td>{fmtNumber(row.recent_views)}</td>
+                  <td>{fmtNumber(row.prior_views)}</td>
+                  <td><SignalPill state="bad">{change}%</SignalPill></td>
+                </tr>
+              );
+            }}
+          />
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
 function VisitorsTab({ data, hotLeads, leadIntel, errors }) {
   const totals = data?.totals || {};
   const situationFunnel = data?.situationFunnel || {};
@@ -1097,6 +1207,31 @@ function VisitorsTab({ data, hotLeads, leadIntel, errors }) {
               <td>{row.avg_dwell_sec ? `${row.avg_dwell_sec}s` : "-"}</td>
             </tr>
           )}
+        />
+      </section>
+
+      <section className="admin-aff-card ops-panel">
+        <div className="ops-panel__head"><h2>Core Web Vitals (14d)</h2><Activity size={16} /></div>
+        <p className="ops-panel__copy">Real-user performance from the web-vitals library. P75 thresholds: LCP 2500ms, INP 200ms, CLS 0.1.</p>
+        <Table
+          columns={["Metric", "Samples", "Avg", "P75", "Good", "Needs work", "Poor"]}
+          rows={data?.vitals || []}
+          empty="No vitals data yet — collects once visitors opt in to analytics."
+          renderRow={(row) => {
+            const poor = Number(row.poor || 0);
+            const total = Math.max(Number(row.samples || 1), 1);
+            return (
+              <tr key={row.metric}>
+                <td><strong>{row.metric}</strong></td>
+                <td>{fmtNumber(row.samples)}</td>
+                <td>{fmtNumber(row.avg_value)}{row.metric === "CLS" ? "" : "ms"}</td>
+                <td>{fmtNumber(row.p75)}{row.metric === "CLS" ? "" : "ms"}</td>
+                <td><SignalPill state={poor / total > 0.15 ? "warn" : "good"}>{fmtNumber(row.good)}</SignalPill></td>
+                <td>{fmtNumber(row.ni)}</td>
+                <td><SignalPill state={poor / total > 0.15 ? "bad" : "neutral"}>{fmtNumber(poor)}</SignalPill></td>
+              </tr>
+            );
+          }}
         />
       </section>
 

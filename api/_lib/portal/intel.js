@@ -191,6 +191,7 @@ export async function handleBehaviorInsights(session) {
     situationSummary,
     situationByScenario,
     situationRecent,
+    vitalsRows,
   ] = await Promise.all([
     sql`
       SELECT ws.id, ws.anon_id, ws.ip, ws.country, ws.region, ws.city,
@@ -375,6 +376,19 @@ export async function handleBehaviorInsights(session) {
       ORDER BY ts DESC
       LIMIT 40
     `.catch(() => []),
+    sql`
+      SELECT value_text AS metric,
+             COUNT(*)::int AS samples,
+             ROUND(AVG(value_num))::int AS avg_value,
+             percentile_cont(0.75) WITHIN GROUP (ORDER BY value_num)::int AS p75,
+             COUNT(*) FILTER (WHERE COALESCE(meta->>'rating','') = 'good')::int AS good,
+             COUNT(*) FILTER (WHERE COALESCE(meta->>'rating','') = 'needs-improvement')::int AS ni,
+             COUNT(*) FILTER (WHERE COALESCE(meta->>'rating','') = 'poor')::int AS poor
+      FROM engagement_events
+      WHERE kind = 'vitals' AND ts > now() - interval '14 days'
+      GROUP BY value_text
+      ORDER BY value_text
+    `.catch(() => []),
   ]);
 
   const totals = {
@@ -427,6 +441,7 @@ export async function handleBehaviorInsights(session) {
     },
     situationByScenario,
     situationRecent,
+    vitals: vitalsRows,
     privacy: {
       note: "Form telemetry stores field/form names and character counts, not raw typed text, passwords, emails, phone numbers, or message bodies.",
     },

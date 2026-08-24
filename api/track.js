@@ -172,6 +172,7 @@ export async function POST(request) {
       "form_focus", "input_intent",
       "home_situation_first_interaction", "home_situation_switch",
       "home_situation_cta_click", "home_situation_scroll_depth",
+      "vitals",
     ]);
 
     const UUID_RE_ENG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

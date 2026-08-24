@@ -53,6 +53,7 @@ import {
   handleHoneypotCreds,
   handleBlockIp,
 } from "./_lib/portal/intel.js";
+import { handleContentInsights } from "./_lib/portal/content.js";
 import {
   handleAdminStatus,
   handleHealth,
@@ -152,6 +153,7 @@ async function requireSession(request) {
 const ADMIN_TOKEN_ACTIONS = new Set([
   // read-only / observability
   "admin-status",
+  "content-insights",
   "leadgen-businesses",
   "leadgen-campaigns",
   "leadgen-jobs",
@@ -323,6 +325,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "countermeasures"      && method === "GET")  return handleCountermeasures(session);
   if (action === "revenue-signals"      && method === "GET")  return handleRevenueSignals(session);
   if (action === "behavior-insights"    && method === "GET")  return handleBehaviorInsights(session);
+  if (action === "content-insights"     && method === "GET")  return handleContentInsights(session);
   if (action === "hot-leads"            && method === "GET")  return handleHotLeads(session);
   if (action === "lead-intel"           && method === "GET")  return handleLeadIntel(session);
   if (action === "leads-inbox"          && method === "GET")  return handleLeadsInbox(session, url);

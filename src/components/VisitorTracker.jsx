@@ -19,6 +19,7 @@ import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { readConsent, CONSENT_EVENT } from "../lib/consent.js";
 import { installBehaviorBeacon, startPageview } from "../lib/behaviorBeacon.js";
+import { installWebVitals } from "../lib/webVitals.js";
 import { captureUtmParams, getUtmParams } from "../lib/utm.js";
 
 const RAW_TRACKING_ENABLED = !import.meta.env.DEV || import.meta.env.VITE_ENABLE_LOCAL_TRACKING === "true";
@@ -126,6 +127,7 @@ export default function VisitorTracker() {
   // visibilitychange, pagehide). Idempotent - safe under StrictMode.
   useEffect(() => {
     installBehaviorBeacon();
+    installWebVitals();
   }, []);
 
   useEffect(() => {

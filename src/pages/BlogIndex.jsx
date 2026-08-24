@@ -4,6 +4,7 @@ import { Link } from "../lib/Link";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import posts from "../data/posts-meta.json";
 import { useSEO } from "../lib/seo";
+import Breadcrumbs from "../components/Breadcrumbs";
 import BlogCover from "../components/BlogCover";
 import BlogSearch from "../components/BlogSearch";
 import EmptyState from "../components/EmptyState";
@@ -96,6 +97,7 @@ export default function BlogIndex() {
     <main id="main">
       <section className="section blog-hero">
         <div className="container blog-hero__inner">
+          <Breadcrumbs items={[{ name: "Blog", url: "/blog" }]} />
           <div className="blog-hero__copy">
             <span className="eyebrow">Field notes & analysis</span>
             <h1 className="display">Technology news is only useful when it changes what you do.</h1>
