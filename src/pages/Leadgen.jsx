@@ -1017,59 +1017,79 @@ function LeadgenScanApp() {
                             const siteMessage = siteMessages[row.website];
                             return (
                               <article id={`leadgen-prospect-${row.__scanIndex}`} className={`leadgen-prospect-card${selected ? " is-selected" : ""}${expanded ? " is-expanded" : ""}`} key={key}>
-                                <div className="leadgen-prospect-card__top">
-                                  <label className="leadgen-product-check" aria-label={`Select ${row.name}`}>
-                                    <input type="checkbox" checked={selected} onChange={(event) => setSelected(row, event.target.checked)} />
-                                  </label>
-                                  <button type="button" className="leadgen-prospect-card__toggle" onClick={() => toggleProspect(key)} aria-expanded={expanded}>
-                                    <div className="leadgen-prospect-card__name">
-                                      <BusinessFavicon brandAsset={row.website_intel?.brand_asset} name={row.name} />
-                                      <div className="leadgen-prospect-card__name-copy">
-                                        <strong>{row.name}</strong>
-                                        <span>{[row.sub_industry || row.industry_group, row.city, row.zip].filter(Boolean).join(" · ")}</span>
-                                      </div>
+                                {/* ── Header: avatar + title + select + expand ───────── */}
+                                <header className="leadgen-card-header">
+                                  <div className="leadgen-card-header__lead">
+                                    <label className="leadgen-card-checkbox" aria-label={`Select ${row.name}`}>
+                                      <input type="checkbox" checked={selected} onChange={(event) => setSelected(row, event.target.checked)} />
+                                    </label>
+                                    <BusinessFavicon brandAsset={row.website_intel?.brand_asset} name={row.name} />
+                                    <div className="leadgen-card-title">
+                                      <h3 className="leadgen-card-title__name">{row.name}</h3>
+                                      <p className="leadgen-card-title__meta">{[row.sub_industry || row.industry_group, row.city, row.zip].filter(Boolean).join(" · ")}</p>
                                     </div>
-                                    <span className="leadgen-fit-badge">{fitLabel(row)}</span>
-                                    <ChevronDown size={18} aria-hidden="true" />
-                                  </button>
-                                </div>
-
-                                <div className="leadgen-prospect-card__health">
-                                  <div className="leadgen-card-meter" aria-label={`Data coverage ${coverage.percent}%`}>
-                                    <div className="leadgen-card-meter__label"><span>Data coverage</span><strong>{coverage.percent}%</strong></div>
-                                    <div className="leadgen-card-meter__track"><span className="leadgen-card-meter__fill" style={{ width: `${coverage.percent}%` }} /></div>
                                   </div>
-                                  <div className="leadgen-card-opportunity"><strong>{fitLabel(row)}</strong><br />{row.is_chain ? "Brand or chain signal detected" : coverage.missing.length ? `Data gaps: ${coverage.missing.slice(0, 2).join(" + ")}` : "Core public fields are present"}</div>
-                                </div>
-
-                                <div className="leadgen-prospect-card__signals">
-                                  <span className={row.website ? "is-positive" : "is-gap"}>{row.website ? hostnameOf(row.website) : "No website"}</span>
-                                  <span className={row.phone ? "is-positive" : "is-gap"}>{row.phone ? "Phone" : "Phone missing"}</span>
-                                  <span className={email ? "is-positive" : "is-gap"}>{email ? "Email" : "Email not found"}</span>
-                                  {row.website_intel ? <span className="is-intel">Evidence checked</span> : null}
-                                  {row.website_intel?.brand_asset?.data_uri ? <span className="is-intel">Brand found</span> : null}
-                                </div>
-
-                                <div className="leadgen-prospect-card__actions">
-                                  {row.phone ? <a className="leadgen-card-action" href={telHref(row.phone)}><Phone size={13} /> Call</a> : null}
-                                  {email ? <a className="leadgen-card-action" href={`mailto:${email}`}><Mail size={13} /> Email</a> : null}
-                                  {row.website ? <a className="leadgen-card-action" href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer"><Globe2 size={13} /> Visit site</a> : null}
-                                  {row.website ? (
-                                  authLoading ? (
-                                    <button type="button" className="leadgen-card-action is-primary" disabled><Sparkles size={13} /> Enrich contacts</button>
-                                  ) : !user ? (
-                                    <Link className="leadgen-card-action is-primary" to="/portal"><Sparkles size={13} /> Sign in to enrich</Link>
-                                  ) : canEnrichOne ? (
-                                    <button type="button" className="leadgen-card-action is-primary" onClick={() => findProspectContacts(row)} disabled={analyzing}>
-                                      <Sparkles size={13} /> {analyzing ? "Checking website…" : row.website_intel ? "Re-check contacts" : "Find contacts"}
+                                  <div className="leadgen-card-header__trail">
+                                    <span className={`leadgen-fit-badge is-${fitLabel(row).toLowerCase().replace(/\s+/g, "-")}`}>{fitLabel(row)}</span>
+                                    <button type="button" className="leadgen-card-expand" onClick={() => toggleProspect(key)} aria-expanded={expanded} aria-label={expanded ? "Collapse details" : "Expand details"}>
+                                      <ChevronDown size={18} aria-hidden="true" />
                                     </button>
-                                  ) : (
-                                    <a className="leadgen-card-action is-primary" href="#leadgen-plans"><Sparkles size={13} /> Upgrade to enrich</a>
-                                  )
-                                ) : null}
-                                  {siteMessage ? <p className={`leadgen-card-action-message${siteMessage.ok ? "" : " is-error"}`} aria-live="polite">{siteMessage.text}</p> : null}
+                                  </div>
+                                </header>
+
+                                {/* ── Stats row: daisyUI stats — coverage + opportunity ── */}
+                                <div className="leadgen-card-stats" role="group" aria-label="Lead summary">
+                                  <div className="leadgen-card-stat">
+                                    <div className="leadgen-card-stat__label">Data coverage</div>
+                                    <div className="leadgen-card-stat__value">{coverage.percent}<span className="leadgen-card-stat__unit">%</span></div>
+                                    <div className="leadgen-card-meter" aria-hidden="true">
+                                      <span className="leadgen-card-meter__fill" style={{ width: `${coverage.percent}%` }} />
+                                    </div>
+                                  </div>
+                                  <div className="leadgen-card-stat">
+                                    <div className="leadgen-card-stat__label">Opportunity</div>
+                                    <div className={`leadgen-card-stat__caption is-${fitLabel(row).toLowerCase().replace(/\s+/g, "-")}`}>
+                                      {row.is_chain ? "Brand or chain signal detected" : coverage.missing.length ? `Missing: ${coverage.missing.slice(0, 2).join(", ")}` : "Core public fields are present"}
+                                    </div>
+                                  </div>
                                 </div>
 
+                                {/* ── Signal chips: website / phone / email / evidence ── */}
+                                <div className="leadgen-card-badges">
+                                  <span className={`leadgen-card-badge ${row.website ? "is-positive" : "is-gap"}`}>
+                                    <Globe2 size={12} aria-hidden="true" /> {row.website ? hostnameOf(row.website) : "No website"}
+                                  </span>
+                                  <span className={`leadgen-card-badge ${row.phone ? "is-positive" : "is-gap"}`}>
+                                    <Phone size={12} aria-hidden="true" /> {row.phone ? "Phone" : "Phone missing"}
+                                  </span>
+                                  <span className={`leadgen-card-badge ${email ? "is-positive" : "is-gap"}`}>
+                                    <Mail size={12} aria-hidden="true" /> {email ? "Email" : "Email not found"}
+                                  </span>
+                                  {row.website_intel ? <span className="leadgen-card-badge is-intel"><Check size={12} aria-hidden="true" /> Evidence</span> : null}
+                                </div>
+
+                                {/* ── Actions: daisyUI card-actions justify-end ────────── */}
+                                <div className="leadgen-card-actions">
+                                  {row.phone ? <a className="leadgen-card-btn" href={telHref(row.phone)}><Phone size={13} /> Call</a> : null}
+                                  {email ? <a className="leadgen-card-btn" href={`mailto:${email}`}><Mail size={13} /> Email</a> : null}
+                                  {row.website ? <a className="leadgen-card-btn" href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer"><Globe2 size={13} /> Visit site</a> : null}
+                                  {row.website ? (
+                                    authLoading ? (
+                                      <button type="button" className="leadgen-card-btn is-primary" disabled><Sparkles size={13} /> Enrich contacts</button>
+                                    ) : !user ? (
+                                      <Link className="leadgen-card-btn is-primary" to="/portal"><Sparkles size={13} /> Sign in to enrich</Link>
+                                    ) : canEnrichOne ? (
+                                      <button type="button" className="leadgen-card-btn is-primary" onClick={() => findProspectContacts(row)} disabled={analyzing}>
+                                        <Sparkles size={13} /> {analyzing ? "Checking website…" : row.website_intel ? "Re-check contacts" : "Find contacts"}
+                                      </button>
+                                    ) : (
+                                      <a className="leadgen-card-btn is-primary" href="#leadgen-plans"><Sparkles size={13} /> Upgrade to enrich</a>
+                                    )
+                                  ) : null}
+                                </div>
+                                {siteMessage ? <p className={`leadgen-card-action-message${siteMessage.ok ? "" : " is-error"}`} aria-live="polite">{siteMessage.text}</p> : null}
+
+                                {/* ── Drawer: detail grid (collapsed by default) ─────────── */}
                                 <div className="leadgen-prospect-card__drawer" aria-hidden={!expanded}>
                                   <div className="leadgen-prospect-card__drawer-inner">
                                     <div className="leadgen-prospect-detail-grid leadgen-prospect-detail-grid--realized">
@@ -1104,7 +1124,7 @@ function LeadgenScanApp() {
                                       </section>
 
                                       <section className="is-wide">
-                                        <strong>Evidence & provenance</strong>
+                                        <strong>Evidence &amp; provenance</strong>
                                         <div className="leadgen-prospect-links">
                                           {row.website ? <a href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer">Website <ExternalLink size={12} /></a> : null}
                                           {row.source_url ? <a href={row.source_url} target="_blank" rel="noopener noreferrer">Source record <ExternalLink size={12} /></a> : null}

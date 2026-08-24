@@ -534,3 +534,545 @@ html[data-theme="dark"] .leadgen-prospect-card__signals span.is-gap {
 .leadgen-zip-source .link-btn:hover {
   color: var(--aura-accent-strong);
 }
+
+/* ─────────────────────────────────────────────────────────────────────── */
+/*  Result cards: daisyUI card layout                                      */
+/* ─────────────────────────────────────────────────────────────────────── */
+
+.leadgen-prospect-card {
+  display: grid;
+  grid-template-rows: auto auto auto auto auto;
+  gap: 0;
+  min-width: 0;
+  padding: 0;
+  background: var(--aura-surface);
+  border: 1px solid var(--aura-border);
+  border-radius: 18px;
+  box-shadow: 0 1px 0 var(--aura-border), 0 12px 32px rgba(15, 23, 42, .04);
+  transition: transform .18s var(--ease-out, ease), box-shadow .18s var(--ease-out, ease), border-color .18s var(--ease-out, ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.leadgen-prospect-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 1px 0 var(--aura-border), 0 18px 44px rgba(15, 23, 42, .07);
+  border-color: var(--aura-border-strong);
+}
+
+.leadgen-prospect-card.is-selected {
+  border-color: var(--aura-border-strong);
+  box-shadow: 0 0 0 2px var(--aura-accent-soft), 0 14px 36px rgba(15, 23, 42, .07);
+}
+
+.leadgen-prospect-card.is-expanded {
+  grid-column: 1 / -1;
+}
+
+/* Card header — avatar + title row */
+.leadgen-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 12px;
+}
+
+.leadgen-card-header__lead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.leadgen-card-header__trail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.leadgen-card-checkbox {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.leadgen-card-checkbox input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--aura-border);
+  border-radius: 5px;
+  background: var(--aura-surface-strong);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.leadgen-card-checkbox input[type="checkbox"]:hover {
+  border-color: var(--aura-border-strong);
+}
+
+.leadgen-card-checkbox input[type="checkbox"]:checked {
+  border-color: var(--aura-accent-strong);
+  background: var(--aura-accent);
+}
+
+.leadgen-card-checkbox input[type="checkbox"]:checked::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--aura-on-accent);
+  transform: scale(1);
+}
+
+.leadgen-card-checkbox input[type="checkbox"]:focus-visible {
+  outline: 3px solid var(--aura-accent-glow);
+  outline-offset: 2px;
+}
+
+.leadgen-business-favicon {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+}
+
+.leadgen-business-favicon img {
+  width: 24px;
+  height: 24px;
+}
+
+.leadgen-business-favicon.is-fallback {
+  font-size: .68rem;
+}
+
+.leadgen-card-title {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.leadgen-card-title__name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leadgen-card-title__meta {
+  margin: 0;
+  font-size: .78rem;
+  color: var(--aura-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Fit badge — daisyUI badge variants */
+.leadgen-fit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  border: 1px solid var(--aura-border);
+  background: var(--aura-surface-strong);
+  color: var(--aura-muted);
+  white-space: nowrap;
+}
+
+.leadgen-fit-badge.is-strong-fit {
+  color: #067647;
+  background: #ecfdf3;
+  border-color: #abefc6;
+}
+
+.leadgen-fit-badge.is-good-fit {
+  color: var(--aura-accent-strong);
+  background: var(--aura-accent-soft);
+  border-color: var(--aura-border);
+}
+
+.leadgen-fit-badge.is-review {
+  color: #b54708;
+  background: #fff8e6;
+  border-color: #fedf89;
+}
+
+[data-theme="dark"] .leadgen-fit-badge.is-strong-fit {
+  color: #6ce9a6;
+  background: #0676472e;
+  border-color: #06764766;
+}
+
+[data-theme="dark"] .leadgen-fit-badge.is-good-fit {
+  color: var(--aura-accent-strong);
+  background: var(--aura-accent-soft);
+  border-color: var(--aura-border);
+}
+
+[data-theme="dark"] .leadgen-fit-badge.is-review {
+  color: #fdb022;
+  background: #b5470833;
+  border-color: #b5470866;
+}
+
+.leadgen-card-expand {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--aura-border);
+  border-radius: 8px;
+  background: var(--aura-surface-strong);
+  color: var(--aura-muted);
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease, transform .22s var(--ease-out, ease);
+}
+
+.leadgen-card-expand:hover {
+  color: var(--aura-accent-strong);
+  border-color: var(--aura-border-strong);
+  background: var(--aura-accent-soft);
+}
+
+.leadgen-prospect-card.is-expanded .leadgen-card-expand {
+  transform: rotate(180deg);
+  color: var(--aura-accent-strong);
+  border-color: var(--aura-border-strong);
+}
+
+/* Stats block — daisyUI stats component style */
+.leadgen-card-stats {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(0, 1.4fr);
+  gap: 1px;
+  margin: 0 18px;
+  background: var(--aura-border);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--aura-border);
+}
+
+.leadgen-card-stat {
+  background: var(--aura-surface-strong);
+  padding: 12px 14px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.leadgen-card-stat__label {
+  color: var(--aura-muted);
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.leadgen-card-stat__value {
+  color: var(--text-1);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.leadgen-card-stat__unit {
+  color: var(--aura-muted);
+  font-size: .8rem;
+  font-weight: 600;
+  margin-left: 1px;
+}
+
+.leadgen-card-stat__caption {
+  color: var(--aura-muted);
+  font-size: .82rem;
+  line-height: 1.4;
+}
+
+.leadgen-card-stat__caption.is-strong-fit { color: #067647; }
+.leadgen-card-stat__caption.is-good-fit { color: var(--aura-accent-strong); }
+.leadgen-card-stat__caption.is-review { color: #b54708; }
+
+[data-theme="dark"] .leadgen-card-stat__caption.is-strong-fit { color: #6ce9a6; }
+[data-theme="dark"] .leadgen-card-stat__caption.is-good-fit { color: var(--aura-accent-strong); }
+[data-theme="dark"] .leadgen-card-stat__caption.is-review { color: #fdb022; }
+
+.leadgen-card-meter {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--aura-accent) 14%, transparent);
+  margin-top: 4px;
+}
+
+.leadgen-card-meter__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--aura-accent-strong), var(--aura-accent));
+  box-shadow: 0 0 10px var(--aura-accent-glow);
+  transition: width .35s var(--ease-out, ease);
+}
+
+/* Badges row — daisyUI badge variants for signals */
+.leadgen-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 14px 18px 6px;
+}
+
+.leadgen-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--aura-border);
+  background: var(--aura-surface-strong);
+  color: var(--aura-muted);
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leadgen-card-badge.is-positive {
+  color: var(--text-1);
+  background: var(--aura-surface-strong);
+}
+
+.leadgen-card-badge.is-gap {
+  color: #b54708;
+  background: #fff8e6;
+  border-color: #fedf89;
+}
+
+.leadgen-card-badge.is-intel {
+  color: #4f46e5;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+[data-theme="dark"] .leadgen-card-badge.is-gap {
+  color: #fdb022;
+  background: #b5470829;
+  border-color: #b5470859;
+}
+
+[data-theme="dark"] .leadgen-card-badge.is-intel {
+  color: #a5b4fc;
+  background: #4f46e52e;
+  border-color: #4f46e559;
+}
+
+/* Card actions — daisyUI card-actions justify-end */
+.leadgen-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 18px 16px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.leadgen-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--aura-border);
+  background: var(--aura-surface-strong);
+  color: var(--text-1);
+  font-size: .76rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease, transform .14s var(--ease-out, ease);
+}
+
+.leadgen-card-btn:hover {
+  background: var(--aura-accent-soft);
+  border-color: var(--aura-border-strong);
+  color: var(--aura-accent-strong);
+  transform: translateY(-1px);
+}
+
+.leadgen-card-btn.is-primary {
+  color: var(--aura-on-accent) !important;
+  background: linear-gradient(135deg, var(--aura-accent-strong), var(--aura-accent)) !important;
+  border-color: var(--aura-border-strong) !important;
+  box-shadow: 0 0 0 1px var(--aura-accent-soft), 0 4px 12px var(--aura-accent-glow);
+}
+
+.leadgen-card-btn.is-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px var(--aura-border-strong), 0 6px 16px var(--aura-accent-glow);
+}
+
+.leadgen-card-action-message {
+  margin: 0 18px 14px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: .76rem;
+  background: color-mix(in srgb, var(--success, #067647) 8%, transparent);
+  color: var(--success, #067647);
+  border: 1px solid color-mix(in srgb, var(--success, #067647) 22%, transparent);
+}
+
+.leadgen-card-action-message.is-error {
+  background: color-mix(in srgb, var(--error, #b50d1a) 8%, transparent);
+  color: var(--error, #b50d1a);
+  border-color: color-mix(in srgb, var(--error, #b50d1a) 22%, transparent);
+}
+
+/* Drawer / detail grid — keep existing animation, just tighten spacing */
+.leadgen-prospect-card__drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  border-top: 1px solid transparent;
+  transition: grid-template-rows .26s cubic-bezier(.2, .8, .2, 1), opacity .18s ease, visibility .18s step-end;
+}
+
+.leadgen-prospect-card.is-expanded .leadgen-prospect-card__drawer {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  border-top-color: var(--aura-border);
+  transition: grid-template-rows .26s cubic-bezier(.2, .8, .2, 1), opacity .18s ease, visibility 0s;
+}
+
+.leadgen-prospect-card__drawer-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.leadgen-prospect-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px 18px 18px;
+  background: var(--aura-surface);
+}
+
+.leadgen-prospect-detail-grid > section {
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--aura-border);
+  border-radius: 12px;
+  background: var(--aura-surface-strong);
+}
+
+.leadgen-prospect-detail-grid > section > strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-1);
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 800;
+}
+
+.leadgen-prospect-detail-grid p {
+  margin: 0;
+  color: var(--aura-muted);
+  font-size: .76rem;
+  line-height: 1.5;
+}
+
+/* Responsive: stack stats vertically on small cards */
+@media (max-width: 480px) {
+  .leadgen-card-stats {
+    grid-template-columns: 1fr;
+  }
+  .leadgen-card-actions {
+    justify-content: stretch;
+  }
+  .leadgen-card-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
+/* Toolbar polish — daisyUI navbar-style */
+.leadgen-product-toolbar--realized {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) minmax(160px, .8fr) auto auto;
+  gap: 10px;
+  align-items: end;
+  padding: 12px 14px;
+  background: var(--aura-surface);
+  border: 1px solid var(--aura-border);
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, .03);
+  margin-bottom: 12px;
+}
+
+.leadgen-product-toolbar--realized label > span,
+.leadgen-toolbar-field > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--aura-muted);
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+.leadgen-product-toolbar--realized input,
+.leadgen-product-toolbar--realized select {
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid var(--aura-border);
+  border-radius: 9px;
+  background: var(--aura-surface-strong);
+  color: var(--text-1);
+  font-size: .86rem;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.leadgen-product-toolbar--realized input:focus,
+.leadgen-product-toolbar--realized select:focus {
+  outline: none;
+  border-color: var(--aura-border-strong);
+  box-shadow: 0 0 0 3px var(--aura-accent-soft);
+}
+
+@media (max-width: 760px) {
+  .leadgen-product-toolbar--realized {
+    grid-template-columns: 1fr 1fr;
+  }
+  .leadgen-product-toolbar--realized > label:first-child {
+    grid-column: 1 / -1;
+  }
+}
