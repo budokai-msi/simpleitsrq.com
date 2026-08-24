@@ -4,7 +4,7 @@ import "../styles/leadgen.css";
 import "../styles/leadgen-mobile-restore.css";
 import "../styles/leadgen-daisyui-polish.css";
 import { Link } from "../lib/Link";
-import { ArrowRight, Check, ChevronDown, ExternalLink, Globe2, Mail, Phone, Search, Sparkles } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, ExternalLink, Globe2, Mail, MapPin, Phone, Search, Sparkles } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
 import { csrfFetch } from "../lib/csrf";
@@ -23,6 +23,45 @@ const LEADGEN_STRIPE_LINKS = {
 };
 const PUBLIC_NICHES = ["All", "Healthcare", "Trades", "Professional Services", "Automotive", "Hospitality", "Personal Services", "Retail", "Food & Drink", "Education", "Real Estate", "Cleaning & Maintenance", "Media & Creative", "Recreation"];
 const SCAN_LIMIT = 80;
+
+// Reverse-geocode lat/lon → US ZIP via OpenStreetMap Nominatim.
+// Free, no API key, CORS-enabled, low-volume use is fine per their policy.
+// We send a descriptive User-Agent (Nominatim blocks bare Node fetchers)
+// and a contact email query param so their abuse team can reach us.
+//
+// zoom=14 returns the postcode reliably (zoom=10 only returns the city
+// without postcode for many US metro areas).
+async function reverseGeocodeZip(lat, lon, { signal } = {}) {
+  const url = new URL("https://nominatim.openstreetmap.org/reverse");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("lat", String(lat));
+  url.searchParams.set("lon", String(lon));
+  url.searchParams.set("zoom", "14");
+  url.searchParams.set("addressdetails", "1");
+  url.searchParams.set("email", "hello@simpleitsrq.com");
+  const res = await fetch(url, {
+    signal,
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "simpleitsrq-leadgen/1.0 (https://simpleitsrq.com; hello@simpleitsrq.com)",
+    },
+  });
+  if (!res.ok) return null;
+  const data = await res.json().catch(() => null);
+  const addr = data?.address || {};
+  const candidate = addr.postcode || addr.postal_code || "";
+  const match = String(candidate).match(/\b(\d{5})\b/);
+  return match ? match[1] : null;
+}
+
+function getStoredZipPref() {
+  if (typeof window === "undefined") return null;
+  try { return window.localStorage.getItem("leadgen.zipPref"); } catch { return null; }
+}
+function setStoredZipPref(state) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.setItem("leadgen.zipPref", state); } catch {}
+}
 
 function stripeSafeParam(value, fallback = "leadgen") {
   const safe = String(value ?? "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 80);
@@ -347,6 +386,8 @@ function LeadgenScanApp() {
   const canEnrichOne = Boolean(user?.isAdmin || ["growth", "pro", "lifetime"].includes(currentPlan));
   const canBulkEnrich = Boolean(user?.isAdmin || ["pro", "lifetime"].includes(currentPlan));
   const [zip, setZip] = useState("");
+  const [zipSource, setZipSource] = useState(null); // "geo" | "manual" | null
+  const [geoState, setGeoState] = useState("idle"); // idle | asking | granted | denied | unavailable | error
   const [niche, setNiche] = useState("All");
   const [scan, setScan] = useState(null);
   const [review, setReview] = useState({});
@@ -371,6 +412,97 @@ function LeadgenScanApp() {
 
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const validZip = /^\d{5}$/.test(zip);
+
+  // First-visit geolocation prompt: if the user hasn't decided yet and
+  // the browser supports it, ask for permission, reverse-geocode to ZIP,
+  // and prefill. Silent if denied or unavailable — they can type a ZIP
+  // or click "Use my location" later. We remember the decision so we
+  // don't pester them on every visit.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!("geolocation" in navigator)) {
+      setGeoState("unavailable");
+      return;
+    }
+    const stored = getStoredZipPref();
+    if (stored === "denied" || stored === "unavailable") {
+      setGeoState(stored);
+      return;
+    }
+    if (stored === "granted" && zip) return; // already have ZIP from a prior visit (component already initialized it)
+    let cancelled = false;
+    const ac = new AbortController();
+    setGeoState("asking");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        if (cancelled) return;
+        try {
+          const found = await reverseGeocodeZip(pos.coords.latitude, pos.coords.longitude, { signal: ac.signal });
+          if (cancelled) return;
+          if (found) {
+            setZip((current) => current || found);
+            setZipSource((src) => src || "geo");
+            setGeoState("granted");
+            setStoredZipPref("granted");
+            trackEvent("leadgen_zip_autofilled", { source: "geolocation" });
+          } else {
+            setGeoState("error");
+          }
+        } catch (err) {
+          if (cancelled || err?.name === "AbortError") return;
+          setGeoState("error");
+        }
+      },
+      (err) => {
+        if (cancelled) return;
+        if (err?.code === 1) {
+          setGeoState("denied");
+          setStoredZipPref("denied");
+        } else if (err?.code === 2) {
+          setGeoState("unavailable");
+          setStoredZipPref("unavailable");
+        } else if (err?.code === 3) {
+          setGeoState("error");
+        }
+      },
+      { enableHighAccuracy: false, maximumAge: 60 * 60 * 1000, timeout: 8000 },
+    );
+    return () => { cancelled = true; ac.abort(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const requestGeolocation = () => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      setGeoState("unavailable");
+      return;
+    }
+    setGeoState("asking");
+    const ac = new AbortController();
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const found = await reverseGeocodeZip(pos.coords.latitude, pos.coords.longitude, { signal: ac.signal });
+          if (found) {
+            setZip(found);
+            setZipSource("geo");
+            setGeoState("granted");
+            setStoredZipPref("granted");
+            trackEvent("leadgen_zip_autofilled", { source: "geolocation_manual_retry" });
+          } else {
+            setGeoState("error");
+          }
+        } catch (err) {
+          if (err?.name !== "AbortError") setGeoState("error");
+        }
+      },
+      (err) => {
+        if (err?.code === 1) { setGeoState("denied"); setStoredZipPref("denied"); }
+        else if (err?.code === 2) { setGeoState("unavailable"); setStoredZipPref("unavailable"); }
+        else { setGeoState("error"); }
+      },
+      { enableHighAccuracy: false, maximumAge: 60_000, timeout: 8000 },
+    );
+  };
   const rows = scan?.rows || [];
   const bestEmail = (row) => row.email || row.emails?.[0]?.email || extractedEmails[row.website] || "";
 
@@ -684,7 +816,7 @@ function LeadgenScanApp() {
           <div className="leadgen-app-controls leadgen-app-controls--primary">
             <label>
               <span>ZIP code</span>
-              <input inputMode="numeric" value={zip} onChange={(event) => setZip(event.target.value.replace(/\D/g, "").slice(0, 5))} placeholder="34236" />
+              <input inputMode="numeric" value={zip} onChange={(event) => { setZip(event.target.value.replace(/\D/g, "").slice(0, 5)); setZipSource("manual"); }} placeholder="34236" />
             </label>
             <label>
               <span>Industry</span>
@@ -693,9 +825,25 @@ function LeadgenScanApp() {
               </select>
             </label>
             <button type="button" className="btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
-              <Search size={16} /> {busy ? "Looking…" : "Find local businesses"}
+              <Search size={16} /> {busy ? "Searching…" : "Search"}
             </button>
           </div>
+          {zipSource === "geo" && validZip ? (
+            <p className="leadgen-zip-source" aria-live="polite">
+              <MapPin size={13} aria-hidden="true" /> Using your location ({zip}) —
+              <button type="button" className="link-btn" onClick={() => { setZip(""); setZipSource(null); }}>change</button>
+            </p>
+          ) : null}
+          {zipSource !== "geo" && geoState === "asking" ? (
+            <p className="leadgen-zip-source" aria-live="polite">Detecting your location…</p>
+          ) : null}
+          {zipSource !== "geo" && (geoState === "denied" || geoState === "unavailable" || geoState === "error") && !zip ? (
+            <p className="leadgen-zip-source">
+              <button type="button" className="link-btn" onClick={requestGeolocation}>
+                <MapPin size={13} aria-hidden="true" /> {geoState === "denied" ? "Try location again" : "Use my location"}
+              </button>
+            </p>
+          ) : null}
           {validZip ? (
             <div className="leadgen-product-save">
               {authLoading ? (
