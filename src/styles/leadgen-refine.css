@@ -107,7 +107,11 @@ html[data-theme="dark"] .leadgen-app-panel--control {
 }
 
 /* Daisy-like steps: compact, readable and not stretched into empty space. */
+/* `display: grid` MUST be redeclared here so the bundler preserves it when
+   merging this rule with the original in leadgen.css — without it the
+   stepper collapses to a vertical list. */
 .leadgen-product-steps {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   max-width: 980px;
   gap: 8px;
@@ -184,7 +188,9 @@ html[data-theme="dark"] .leadgen-app-panel--control {
 }
 
 /* Results intentionally widen, while text and controls still keep readable measures. */
+/* `display: grid` MUST be redeclared — see note on .leadgen-product-steps above. */
 .leadgen-intel-strip {
+  display: grid;
   grid-template-columns: repeat(5, minmax(120px, 1fr));
   gap: 9px;
   margin-top: 22px;
@@ -204,6 +210,7 @@ html[data-theme="dark"] .leadgen-app-panel--control {
 .leadgen-intel-strip span { font-size: .68rem; }
 
 .leadgen-product-toolbar {
+  display: grid;
   grid-template-columns: minmax(260px, 1fr) auto auto;
   max-width: 1120px;
   align-items: end;
