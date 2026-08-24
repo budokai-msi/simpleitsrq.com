@@ -83,36 +83,6 @@
     "heroAlt": "Abstract illustration of encrypted data flowing securely through a cloud AI service without revealing contents."
   },
   {
-    "slug": "sarasota-workstation-network-repair-guide-2",
-    "title": "Fast Workstation & Network Repair for Sarasota Small Businesses",
-    "date": "2026-08-12",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hacker-news",
-      "local-it",
-      "dock"
-    ],
-    "excerpt": "Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
-    "metaDescription": "Workstation computer repair and Wi-Fi network setup in Sarasota, Bradenton, and Lakewood Ranch. Fast local engineer response.",
-    "heroAlt": "A local business technology note about Fast Workstation & Network Repair for Sarasota Small Businesses."
-  },
-  {
-    "slug": "microsoft-365-security-hardening-sarasota-6754",
-    "title": "Microsoft 365 Security Hardening Guide for SRQ Offices",
-    "date": "2026-08-10",
-    "category": "Cloud",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hacker-news",
-      "local-it",
-      "smb"
-    ],
-    "excerpt": "Step-by-step Microsoft 365 checklist to stop unauthorized logins, spam forwarding, and wire-fraud phishing in Sarasota offices.",
-    "metaDescription": "Hardening Microsoft 365 for Sarasota and Bradenton small offices. Disable legacy auth, enable conditional access, and enforce MFA.",
-    "heroAlt": "A local business technology note about Microsoft 365 Security Hardening Guide for SRQ Offices."
-  },
-  {
     "slug": "sarasota-small-business-ai-learning",
     "title": "How Small Businesses in Sarasota Can Leverage AI for Learning",
     "date": "2026-08-10",
@@ -126,21 +96,6 @@
     "excerpt": "Discover how small businesses in Sarasota can use Large Language Models (LLMs) to learn complex topics and improve productivity. Learn how to apply this technology to your business.",
     "metaDescription": "Sarasota small businesses can use AI for learning and productivity",
     "heroAlt": "A local business technology note about How Small Businesses in Sarasota Can Leverage AI for Learning."
-  },
-  {
-    "slug": "sarasota-workstation-network-repair-guide-9766",
-    "title": "Fast Workstation & Network Repair for Sarasota Small Businesses",
-    "date": "2026-08-10",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hacker-news",
-      "local-it",
-      "smb"
-    ],
-    "excerpt": "Diagnosing slow PCs, Wi-Fi drops, and workstation crashes in Sarasota and Manatee County offices without expensive monthly retainers.",
-    "metaDescription": "Workstation computer repair and Wi-Fi network setup in Sarasota, Bradenton, and Lakewood Ranch. Fast local engineer response.",
-    "heroAlt": "A local business technology note about Fast Workstation & Network Repair for Sarasota Small Businesses."
   },
   {
     "slug": "microsoft-365-security-hardening-sarasota",
@@ -270,21 +225,6 @@
     ],
     "excerpt": "The right to repair movement is gaining momentum, and small business owners in Sarasota, Bradenton, and Venice should take note. A recent settlement between John Deere and the FTC has implications for equipment owners and users.",
     "metaDescription": "Right to repair movement gains momentum, what does it mean for small business owners in Sarasota, Bradenton, and Venice?",
-    "heroAlt": "A local business technology note about Right to Repair: What Small Business Owners in Sarasota Need to Know."
-  },
-  {
-    "slug": "right-to-repair-sarasota-small-business",
-    "title": "Right to Repair: What Small Business Owners in Sarasota Need to Know",
-    "date": "2026-07-14",
-    "category": "Business Tech",
-    "author": "Simple IT SRQ Team",
-    "tags": [
-      "hacker-news",
-      "local-it",
-      "smb"
-    ],
-    "excerpt": "The right to repair movement is gaining momentum, and small business owners in Sarasota, Bradenton, and Venice should take note. A recent settlement between the FTC and John Deere has significant implications for equipment owners.",
-    "metaDescription": "Learn about the right to repair movement and its impact on small businesses in Sarasota, FL",
     "heroAlt": "A local business technology note about Right to Repair: What Small Business Owners in Sarasota Need to Know."
   },
   {

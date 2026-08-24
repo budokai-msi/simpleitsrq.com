@@ -6,6 +6,10 @@
   "cleanUrls": true,
   "redirects": [
     { "source": "/pricing", "destination": "/services", "permanent": true },
+    { "source": "/blog/sarasota-workstation-network-repair-guide-2", "destination": "/blog/sarasota-workstation-network-repair-guide", "permanent": true },
+    { "source": "/blog/sarasota-workstation-network-repair-guide-9766", "destination": "/blog/sarasota-workstation-network-repair-guide", "permanent": true },
+    { "source": "/blog/microsoft-365-security-hardening-sarasota-6754", "destination": "/blog/microsoft-365-security-hardening-sarasota", "permanent": true },
+    { "source": "/blog/right-to-repair-sarasota-small-business", "destination": "/blog/right-to-repair-sarasota-bradenton-venice-small-business", "permanent": true },
     { "source": "/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice-2", "destination": "/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice", "permanent": true },
     { "source": "/why", "destination": "/compare", "permanent": true },
     { "source": "/why/:path*", "destination": "/compare/:path*", "permanent": true },
