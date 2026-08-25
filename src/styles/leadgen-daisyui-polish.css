@@ -1092,3 +1092,104 @@ html[data-theme="dark"] .leadgen-prospect-card__signals span.is-gap {
   font-size: .78rem;
   line-height: 1.4;
 }
+
+/* ───────────────────────────────────────────────────────────────────────
+   Mobile fixes for the new daisyUI card structure.
+   The 18px horizontal padding everywhere (card-header / card-stats
+   / card-badges / card-actions) plus right-aligned justify-content
+   pushed every trailing button and badge past the card's right edge
+   on narrow phones (≤720px). This block tightens the gutters and
+   switches to start-aligned / stacked actions so nothing clips.
+   ─────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+  /* Tighter inner padding so cards don't waste horizontal space */
+  .leadgen-card-header,
+  .leadgen-card-actions {
+    padding-inline: 14px;
+  }
+  .leadgen-card-badges {
+    padding-inline: 14px;
+  }
+  .leadgen-card-stats {
+    margin-inline: 14px;
+  }
+
+  /* Trail (fit badge + expand chevron) must shrink so the lead
+     section (business name + meta) has room to render. Without
+     flex-shrink:1, the trail's intrinsic width pushes it past
+     the card's right edge. */
+  .leadgen-card-header__trail {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  /* Right-aligned buttons overflow the card on narrow screens.
+     Switch to flex-start so wrap leaves them inside the card. */
+  .leadgen-card-actions {
+    justify-content: flex-start;
+  }
+
+  /* Action buttons: each gets a sensible flex-basis so they wrap
+     cleanly without one button stretching the full width. */
+  .leadgen-card-btn {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  /* Compact fit badge so the trail shrinks to fit */
+  .leadgen-fit-badge {
+    padding: 3px 8px;
+    font-size: .58rem;
+  }
+
+  /* Compact expand chevron */
+  .leadgen-card-expand {
+    width: 26px;
+    height: 26px;
+  }
+
+  /* Card header on narrow screens: stack the trail below the lead
+     so the business name + meta get full width. */
+  .leadgen-card-header {
+    flex-wrap: wrap;
+  }
+
+  .leadgen-card-header__trail {
+    flex-basis: 100%;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even tighter on phones — cards stretch full width */
+  .leadgen-card-header,
+  .leadgen-card-actions {
+    padding-inline: 12px;
+  }
+  .leadgen-card-badges {
+    padding-inline: 12px;
+  }
+  .leadgen-card-stats {
+    margin-inline: 12px;
+  }
+
+  /* Stats block: stats + opportunity already stacks to 1fr here.
+     Tighten the inner padding so labels don't truncate. */
+  .leadgen-card-stat {
+    padding: 10px 12px;
+  }
+
+  /* Buttons take full width on phones so each tap target is
+     comfortably sized. */
+  .leadgen-card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .leadgen-card-btn {
+    flex: 1 1 100%;
+    justify-content: center;
+    width: 100%;
+  }
+}
