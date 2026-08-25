@@ -1,5 +1,33 @@
 [
   {
+    "slug": "arm-pcs-sarasota-businesses-reality-check",
+    "title": "Should Sarasota Small Businesses Switch to ARM-Based PCs? The Reality Check",
+    "date": "2026-08-25",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it"
+    ],
+    "excerpt": "New chip news is exciting, but for local firms in Florida, reliability and legacy software compatibility matter more than raw benchmark scores. Here is the practical view on moving to new architecture.",
+    "metaDescription": "Analyzing ARM vs Intel for Sarasota businesses. Why benchmarks dont replace proven stability for local law firms and clinics.",
+    "heroAlt": "A local business technology note about Should Sarasota Small Businesses Switch to ARM-Based PCs? The Reality Check."
+  },
+  {
+    "slug": "should-sarasota-businesses-switch-from-mac-to-xiaomi-the-hardware-reality",
+    "title": "Should Sarasota Businesses Switch from Mac to Xiaomi? The Hardware Reality",
+    "date": "2026-08-25",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it"
+    ],
+    "excerpt": "Xiaomis new ARM CPU beats Apple in multithreading, but enterprise stability matters more than benchmark scores. Here is what this means for your office tech stack.",
+    "metaDescription": "Xiaomis new CPU challenges Apple dominance. We analyze the real-world impact for Sarasota businesses and why hardware benchmarks dont equal IT reliability.",
+    "heroAlt": "A local business technology note about Should Sarasota Businesses Switch from Mac to Xiaomi? The Hardware Reality."
+  },
+  {
     "slug": "how-to-hire-an-it-company-sarasota-bradenton-checklist",
     "title": "How to Hire an IT Company in Sarasota: The 12-Question Checklist",
     "date": "2026-08-24",

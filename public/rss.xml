@@ -6,7 +6,25 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Mon, 24 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 25 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>Should Sarasota Small Businesses Switch to ARM-Based PCs? The Reality Check</title>
+      <link>https://simpleitsrq.com/blog/arm-pcs-sarasota-businesses-reality-check</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/arm-pcs-sarasota-businesses-reality-check</guid>
+      <pubDate>Tue, 25 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>New chip news is exciting, but for local firms in Florida, reliability and legacy software compatibility matter more than raw benchmark scores. Here is the practical view on moving to new architecture.</description>
+    </item>
+    <item>
+      <title>Should Sarasota Businesses Switch from Mac to Xiaomi? The Hardware Reality</title>
+      <link>https://simpleitsrq.com/blog/should-sarasota-businesses-switch-from-mac-to-xiaomi-the-hardware-reality</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/should-sarasota-businesses-switch-from-mac-to-xiaomi-the-hardware-reality</guid>
+      <pubDate>Tue, 25 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>Xiaomis new ARM CPU beats Apple in multithreading, but enterprise stability matters more than benchmark scores. Here is what this means for your office tech stack.</description>
+    </item>
     <item>
       <title>How to Hire an IT Company in Sarasota: The 12-Question Checklist</title>
       <link>https://simpleitsrq.com/blog/how-to-hire-an-it-company-sarasota-bradenton-checklist</link>
