@@ -28,6 +28,12 @@ const CITY_LINKS = [
   { name: "Lakewood Ranch",  url: "/lakewood-ranch-it-support" },
   { name: "Nokomis",         url: "/nokomis-it-support" },
   { name: "Venice",          url: "/venice-it-support" },
+  { name: "Palmetto",        url: "/palmetto-it-support" },
+  { name: "Englewood",       url: "/englewood-it-support" },
+  { name: "North Port",      url: "/north-port-it-support" },
+  { name: "Osprey",          url: "/osprey-it-support" },
+  { name: "Parrish",         url: "/parrish-it-support" },
+  { name: "Ellenton",        url: "/ellenton-it-support" },
   // Skip "Bradenton 34207" — too narrow for blog autolink; visitors who
   // need it find it via /bradenton-it-support → linked from city hub.
 ];
@@ -49,9 +55,24 @@ export default function remarkCityAutolink() {
     const fm = file?.data?.frontmatter || {};
     if (fm.noCityAutolink) return;
 
-    // Tracks which cities we've already linked in THIS file so we only
-    // hit the first occurrence per post.
-    const linkedCities = new Set();
+    // Track per-city occurrence count so we link every Nth mention
+    // (default: 1st, 4th, 7th, ...). The first mention always gets
+    // linked; subsequent mentions space out so the post doesn't end up
+    // with a wall of identical anchor text near the top.
+    //
+    //   COUNTER: 1st -> link
+    //            2nd -> skip
+    //            3rd -> skip
+    //            4th -> link
+    //            5th -> skip
+    //            6th -> skip
+    //            7th -> link
+    //
+    // This triples the inbound link density to ~3 links per post
+    // (was ~0.6) without making the anchor text feel spammy.
+    const LINK_EVERY = 3;
+    const cityOccurrences = new Map();
+    const linkedCities = new Set(); // set of city keys already linked at least once (so we always link the first occurrence)
 
     // If the post is about a specific city (slug matches one of our
     // landing pages), skip linking that city to itself.
@@ -88,9 +109,16 @@ export default function remarkCityAutolink() {
       while ((m = CITY_RE.exec(value)) !== null) {
         const matched = m[1];
         const key = matched.toLowerCase();
-        if (linkedCities.has(key)) continue; // already linked once in this file
         const url = cityUrlByName.get(key);
         if (!url) continue;
+
+        // Bump the per-city occurrence counter. The first occurrence
+        // always links; subsequent ones link every LINK_EVERYth time.
+        const occurrences = (cityOccurrences.get(key) || 0) + 1;
+        cityOccurrences.set(key, occurrences);
+        const alreadyLinked = linkedCities.has(key);
+        const shouldLink = !alreadyLinked || (occurrences - 1) % LINK_EVERY === 0;
+        if (!shouldLink) continue;
 
         // Push text before the match
         if (m.index > cursor) {

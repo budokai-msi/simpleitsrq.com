@@ -95,12 +95,27 @@ function beforeSend(event) {
 }
 
 let initialized = false;
+let warnedMissing = false;
 
 export function initSentry() {
   if (initialized) return;
   const dsn = import.meta.env.VITE_SENTRY_DSN;
   // Missing DSN must be a complete no-op — no warning, no throw.
-  if (!dsn) return;
+  if (!dsn) {
+    // One-time console nudge in production so the operator knows the
+    // Sentry is silently off and conversion/error events aren't being
+    // captured. Dev / preview builds stay silent.
+    if (import.meta.env.PROD && !warnedMissing) {
+      warnedMissing = true;
+      console.info(
+        '[sentry] VITE_SENTRY_DSN is not set — error tracking and the ' +
+        'trackEvent() conversion pipeline are no-ops. Provision a free ' +
+        'project at sentry.io, set VITE_SENTRY_DSN in Vercel env, and ' +
+        'redeploy to enable.'
+      );
+    }
+    return;
+  }
 
   Sentry.init({
     dsn,

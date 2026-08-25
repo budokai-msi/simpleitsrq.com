@@ -16,7 +16,7 @@ export const cities = {
     radiusMiles: 12,
     h1: "IT Support in Sarasota, FL",
     title: "Sarasota IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, copiers and fax, migrations, and Windows Enterprise for Sarasota businesses. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone. Free IT check-up.",
+    metaDescription: "Managed IT, computer repair, Microsoft 365, and HIPAA paperwork for Sarasota businesses. Manatee-Sarasota County team, flat pricing, free check-up.",
     intro: "Sarasota's dental groups, law firms, brokerages, and professional offices need IT that just works. Simple IT SRQ runs managed services across the city - Microsoft 365 migrations, Windows Enterprise, cybersecurity, and the office hardware most MSPs subcontract. Local engineers, networks monitored 24x7.",
     servicesIntro: "We operate full-stack IT for Sarasota organizations - from endpoint repair and cloud migrations through complex Windows Enterprise environments and integrated office hardware. The accounts we run typically map to one of three operating profiles:",
     localPatterns: [
@@ -65,7 +65,7 @@ export const cities = {
     radiusMiles: 12,
     h1: "IT Support in Bradenton, FL",
     title: "Bradenton IT Support | Local Tech Team | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, copiers and fax, migrations, and Windows Enterprise for Bradenton, FL businesses. Flat monthly pricing, HIPAA paperwork, and a local Manatee County team. Free IT check-up.",
+    metaDescription: "Local IT support, computer repair, Microsoft 365, and HIPAA paperwork for Bradenton, FL businesses. Manatee County team, flat monthly pricing, free IT check-up.",
     intro: "Bradenton is our home market. Simple IT SRQ runs managed IT for the businesses that keep Manatee County moving - medical offices on Manatee Avenue, construction and marine operations near the Port, and professional firms across Bradenton, Palmetto, and Ellenton. Microsoft 365, Windows Enterprise, backups, and local on-site support.",
     servicesIntro: "Our Bradenton engagements span the full stack - endpoint repair, Windows Enterprise migrations, integrated office hardware, and continuity planning. Accounts split roughly into three operating profiles:",
     localPatterns: [
@@ -114,7 +114,7 @@ export const cities = {
     radiusMiles: 8,
     h1: "IT Support in Lakewood Ranch, FL",
     title: "Lakewood Ranch IT Support | Local IT Help | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Lakewood Ranch professional offices and residential clients. Flat monthly pricing, HIPAA paperwork, and a real team that picks up the phone.",
+    metaDescription: "Managed IT, security cameras, and Microsoft 365 for Lakewood Ranch professional offices. HIPAA and SEC paperwork, flat monthly pricing, same-day local support.",
     intro: "Lakewood Ranch is a fast-growing professional hub. Simple IT SRQ runs managed IT for the law firms, financial advisors, medical specialists, and brokerages around Main Street, the Medical Center, and the UTC corridor - security, Microsoft 365, and compliance documentation that scales with you.",
     servicesIntro: "Lakewood Ranch is a professional-services market: law, finance, medical, insurance, real estate. Most LWR engagements run 15-to-50 seats, framed by a security renewal cycle or a buildout at Center Point or Waterside Place. The capabilities below ship on every engagement - only the prioritization changes.",
     localPatterns: [
@@ -163,7 +163,7 @@ export const cities = {
     radiusMiles: 8,
     h1: "IT Support in Nokomis, FL",
     title: "Nokomis IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Nokomis and Casey Key businesses and residential clients. Flat monthly pricing, HIPAA paperwork, and a real team based in Sarasota County. Free IT check-up.",
+    metaDescription: "Managed IT, security cameras, and computer repair for Nokomis and Casey Key businesses. HIPAA paperwork, flat monthly pricing, local Sarasota County team.",
     intro: "Nokomis sits at the south end of Sarasota County around Casey Key. Simple IT SRQ supports its vacation-rental managers, marine services, medical offices, and professional practices along US-41 and Albee Road - plus Casey Key residential. Local engineers dispatched from Sarasota County, not Tampa.",
     servicesIntro: "Nokomis accounts cluster in 5-to-30-seat offices along US-41 and Casey Key - weighted toward vacation rental, marine services, and independent medical, each carrying its own seasonal load curve. Capacity is sized for the November-through-April surge, not the summer baseline.",
     localPatterns: [
@@ -212,7 +212,7 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Venice, FL",
     title: "Venice IT Support | Local IT Help and HIPAA Compliance | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for Venice, FL - businesses and residential. Helpdesk for medical, legal, and professional offices along Venice Avenue, Jacaranda, and the airport corridor. Flat monthly pricing and HIPAA-ready compliance work.",
+    metaDescription: "Managed IT, security cameras, and HIPAA paperwork for Venice, FL medical, legal, and professional offices. Flat monthly pricing, local Sarasota County team.",
     intro: "Venice runs two markets at once - a healthcare cluster around the hospital and a historic downtown of professional practices - plus a snowbird season that doubles network load November through April. Simple IT SRQ runs managed IT for Venice medical, legal, accounting, dental, and real-estate offices, sized for the seasonal peak and the year-round compliance load.",
     servicesIntro: "Venice operates as two markets at once - a downtown of long-running professional practices, and a healthcare cluster around ShoreView Hospital. Both roughly double in network load November through April. Capacity is engineered against the seasonal peak, not the summer baseline.",
     localPatterns: [
@@ -267,8 +267,8 @@ export const cities = {
     lat: 27.455,
     lng: -82.588,
     radiusMiles: 10,
-    title: "Bradenton 34207 IT Support | Bayshore Gardens, West Bradenton | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, security cameras, and enterprise IT for businesses and residential clients in West Bradenton, Bayshore Gardens, Samoset, Oneco, and every address inside a 10-mile radius of ZIP 34207. Local Manatee County team, flat monthly pricing for businesses, no-contract repair for residential.",
+    title: "Bradenton 34207 IT Support | Bayshore Gardens & West Bradenton",
+    metaDescription: "Managed IT, computer repair, and security cameras for businesses and homes in West Bradenton and Bayshore Gardens (34207). Manatee County team, flat pricing.",
     intro: "34207 is where Simple IT SRQ is headquartered. We run managed IT for businesses and homes across West Bradenton, Bayshore Gardens, Samoset, and Oneco - and everywhere inside a 10-mile dispatch radius: downtown Bradenton, Palmetto, Ellenton, the Anna Maria barrier islands, Cortez, and north Longboat Key.",
     servicesIntro: "Accounts inside this dispatch radius split across three operating profiles: medical and dental practices along Cortez Road and 14th Street West; construction, marine, and trades operations near the Port and along SR-64; and retail + hospitality across the barrier-island tourist corridor. The capabilities ship on every engagement - only the emphasis shifts.",
     localPatterns: [
@@ -318,7 +318,7 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Palmetto, FL",
     title: "Palmetto IT Support | Local IT Help for Manatee County | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Palmetto, FL businesses - from the US-301 produce corridor to the Regatta Pointe waterfront. Flat monthly pricing and a Manatee County team that answers the phone.",
+    metaDescription: "Managed IT, computer repair, and HIPAA paperwork for Palmetto, FL businesses. Manatee County team, flat monthly pricing, answers the phone.",
     intro: "Palmetto runs on industries most IT vendors skip - produce and agribusiness along US-301, marine operations at Snead Island and Regatta Pointe, and light manufacturing near Port Manatee. Simple IT SRQ is minutes away across the river: cold-storage and logistics networks, dock Wi-Fi that survives salt air, and reliable support for the offices along Riverside Drive.",
     servicesIntro: "Palmetto accounts cluster into three operating profiles - agribusiness and distribution along the US-301 corridor, marine and waterfront operations on the river, and professional and medical offices downtown. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
@@ -367,7 +367,7 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Ellenton, FL",
     title: "Ellenton IT Support | Local IT for Retail & Logistics | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, networking, and PCI-ready point-of-sale help for Ellenton, FL - from the Premium Outlets to the I-75 logistics corridor. Flat monthly pricing and a local Manatee County team.",
+    metaDescription: "Managed IT, computer repair, and PCI-ready point-of-sale for Ellenton, FL retailers and logistics. Manatee County team, flat monthly pricing.",
     intro: "Ellenton is retail and logistics - the Premium Outlets off I-75 exit 224, the Gateway distribution corridor, and professional and medical offices serving the growth toward Parrish. Simple IT SRQ runs the IT: point-of-sale uptime through peak weekends, warehouse Wi-Fi that reaches every rack, and the security paperwork your processor expects. Local Manatee County team.",
     servicesIntro: "Ellenton accounts split across retail and hospitality near the outlets, distribution and logistics along the I-75 / Gateway corridor, and professional and medical offices on US-301. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
@@ -416,7 +416,7 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Parrish, FL",
     title: "Parrish IT Support | Local IT for a Growing Town | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, office buildouts, and HIPAA documentation for Parrish, FL - the fastest-growing corner of Manatee County. New-office network setup, flat monthly pricing, and a real local team.",
+    metaDescription: "Managed IT, computer repair, and HIPAA paperwork for Parrish, FL new offices. Manatee County team, flat monthly pricing, free intake call.",
     intro: "Parrish is the fastest-growing corner of Manatee County, and the IT needs are new-office needs: a practice opening in North River Ranch, a builder working the growth corridors, an office setting up on US-301. Simple IT SRQ runs the buildout - cabling, Wi-Fi, Microsoft 365 done right, HIPAA paperwork, and field-ready IT for contractors.",
     servicesIntro: "Parrish accounts skew new: medical and dental practices opening in master-planned communities, construction and development firms building the growth corridors, and professional offices setting up for the first time. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
@@ -465,7 +465,7 @@ export const cities = {
     radiusMiles: 8,
     h1: "IT Support in Osprey, FL",
     title: "Osprey IT Support | Local IT Help and Cybersecurity | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Osprey, FL businesses and Casey Key residences - from Bay Street to Blackburn Point. Flat monthly pricing and a Sarasota County team that picks up.",
+    metaDescription: "Managed IT, computer repair, and HIPAA paperwork for Osprey, FL businesses and Casey Key residences. Sarasota County team, flat pricing.",
     intro: "Osprey sits on US-41 between Sarasota and Venice. Simple IT SRQ supports its small professional offices, independent medical practices, and the waterfront businesses around Blackburn Point and Casey Key - Microsoft 365, backups, security paperwork, and a local tech who answers the phone. Dispatched from Sarasota County, not Tampa.",
     servicesIntro: "Osprey accounts are small and personal - professional and medical offices along US-41, marine and waterfront operations near Blackburn Point, and high-end residential and home offices on Casey Key. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
@@ -514,7 +514,7 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in Englewood, FL",
     title: "Englewood IT Support | Local IT Help and HIPAA | Simple IT SRQ",
-    metaDescription: "Local IT support, computer repair, networking, and HIPAA documentation for Englewood, FL - Dearborn Street, Manasota Key, and Lemon Bay. Medical, marine, and vacation-rental IT with flat monthly pricing and a local team.",
+    metaDescription: "Managed IT, computer repair, and HIPAA paperwork for Englewood, FL medical and marine businesses. Local Gulf Coast team, flat pricing.",
     intro: "Englewood straddles the Sarasota–Charlotte line, shaped by the water - fishing and marine on Lemon Bay, vacation rentals on Manasota Key, and medical practices serving a retiree-heavy population. Simple IT SRQ covers Englewood from Venice: HIPAA paperwork, salt-air-ready hardware, and a tech who shows up.",
     servicesIntro: "Englewood accounts cluster into three operating profiles - medical and dental practices serving a retiree-heavy population, marine and fishing operations on Lemon Bay, and vacation-rental and hospitality on Manasota Key. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
@@ -563,7 +563,7 @@ export const cities = {
     radiusMiles: 10,
     h1: "IT Support in North Port, FL",
     title: "North Port IT Support | Local IT for a Growing City | Simple IT SRQ",
-    metaDescription: "IT support, new-office buildouts, computer repair, and HIPAA documentation for North Port, FL - Wellen Park, West Villages, and the Sumter/Toledo Blade corridors. Flat monthly pricing and a Gulf Coast team.",
+    metaDescription: "Managed IT, computer repair, and HIPAA paperwork for North Port, FL new offices in Wellen Park and West Villages. Gulf Coast team, flat pricing.",
     intro: "North Port is booming around Wellen Park and the West Villages - new practices, new offices, and the builders behind them. Simple IT SRQ handles new-office IT from our Venice base: cabling, Wi-Fi, Microsoft 365, and HIPAA paperwork. It's the south edge of our range, so on-site is scheduled, not same-day - same engineering, same flat pricing.",
     servicesIntro: "North Port accounts skew new and fast-growing: medical and dental practices opening in Wellen Park, construction and development firms building the West Villages, and professional offices setting up along Sumter and Toledo Blade. The capabilities below ship on every engagement; only the emphasis changes.",
     localPatterns: [
