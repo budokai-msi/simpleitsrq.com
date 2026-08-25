@@ -68,9 +68,14 @@ function scoreRow(row) {
 }
 
 function rowForClient(row) {
-  const classified = row.industry_group
-    ? { industry: row.industry_group, sub_industry: row.sub_industry }
-    : classifyIndustry(row.industry);
+  // Always re-classify from the raw source type (row.industry). Stored
+  // industry_group may hold a stale "Other" written by the old classifier,
+  // so trusting it would keep cached rows collapsed into a single bucket.
+  const classified = classifyIndustry(row.industry);
+  const industryGroup = classified.industry === "Other" && row.industry_group
+    ? cleanText(row.industry_group, 80)
+    : classified.industry || cleanText(row.industry_group, 80) || "Other";
+  const subIndustry = cleanText(row.sub_industry, 120) || classified.sub_industry;
   const email = cleanText(row.email, 240);
   const emails = Array.from(new Set([
     email,
@@ -93,8 +98,8 @@ function rowForClient(row) {
     source_confidence: Number.isFinite(Number(row.source_confidence)) ? Number(row.source_confidence) : null,
     source_datasets: Array.isArray(row.source_datasets) ? row.source_datasets.map((item) => cleanText(item, 80)).filter(Boolean).slice(0, 6) : [],
     industry: cleanText(row.industry, 160),
-    industry_group: cleanText(row.industry_group || classified.industry || "Other", 80),
-    sub_industry: cleanText(row.sub_industry || classified.sub_industry, 120),
+    industry_group: industryGroup,
+    sub_industry: subIndustry,
     lat: Number.isFinite(Number(row.lat)) ? Number(row.lat) : null,
     lng: Number.isFinite(Number(row.lng)) ? Number(row.lng) : null,
     is_chain: Boolean(row.is_chain) || looksLikeChain(row.name),

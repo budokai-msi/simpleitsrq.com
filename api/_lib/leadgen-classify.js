@@ -178,27 +178,281 @@ const MAP = {
   "shop:art":             ["Media & Creative", "Art gallery / shop"],
 };
 
+// Human-friendly subcategory name from a raw token (snake_case or
+// dotted Overture category ids like "retail.auto_parts").
+function prettyName(token) {
+  if (!token) return null;
+  const cleaned = String(token)
+    .replace(/^overture:/i, "")
+    .replace(/\./g, " ")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!cleaned) return null;
+  return cleaned.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Google Places + Overture type names → [industry group, friendly subcategory].
+// OSM MAP above keys on "key:value" tags; this covers the bare type strings the
+// live providers return, so businesses no longer collapse into a single "Other".
+const PROVIDER_MAP = {
+  // Automotive
+  car_dealer: ["Automotive", "Car dealer"],
+  car_rental: ["Automotive", "Car rental"],
+  car_repair: ["Automotive", "Auto repair"],
+  car_wash: ["Automotive", "Car wash"],
+  auto_parts_store: ["Automotive", "Auto parts"],
+  motor_vehicle_dealer: ["Automotive", "Car dealer"],
+  truck_dealer: ["Automotive", "Truck dealer"],
+  used_car_dealer: ["Automotive", "Used car dealer"],
+  motor_vehicle_store: ["Automotive", "Vehicle store"],
+  vehicle_financing: ["Automotive", "Vehicle financing"],
+  auto_detailing: ["Automotive", "Auto detailing"],
+  motorcycle_dealer: ["Automotive", "Motorcycle dealer"],
+  gas_station: ["Automotive", "Gas station"],
+  boat_service: ["Recreation", "Boat service"],
+  boat_rental: ["Recreation", "Boat rental"],
+  // Healthcare
+  dentist: ["Healthcare", "Dentist"],
+  dental_clinic: ["Healthcare", "Dentist"],
+  doctor: ["Healthcare", "Doctor"],
+  hospital: ["Healthcare", "Hospital"],
+  pharmacy: ["Healthcare", "Pharmacy"],
+  chiropractor: ["Healthcare", "Chiropractor"],
+  optometrist: ["Healthcare", "Optometrist"],
+  physiotherapist: ["Healthcare", "Physical therapy"],
+  dermatologist: ["Healthcare", "Dermatologist"],
+  physiotherapy_center: ["Healthcare", "Physical therapy"],
+  medical_clinic: ["Healthcare", "Clinic"],
+  medical_lab: ["Healthcare", "Medical lab"],
+  medical_spa: ["Healthcare", "Medical spa"],
+  ambulance_service: ["Healthcare", "Ambulance"],
+  health: ["Healthcare", "Health service"],
+  doctor_office: ["Healthcare", "Doctor"],
+  nursing_home: ["Healthcare", "Nursing home"],
+  veterinary_care: ["Healthcare", "Veterinary"],
+  pet_veterinarian: ["Healthcare", "Veterinary"],
+  // Professional services
+  insurance_agency: ["Professional Services", "Insurance"],
+  accountancy: ["Professional Services", "Accountant"],
+  real_estate_agency: ["Real Estate", "Real estate agency"],
+  lawyer: ["Professional Services", "Lawyer"],
+  law_firm: ["Professional Services", "Law firm"],
+  bank: ["Professional Services", "Bank"],
+  finance: ["Professional Services", "Financial service"],
+  financial_institution: ["Professional Services", "Financial service"],
+  travel_agency: ["Professional Services", "Travel agency"],
+  taxi_service: ["Professional Services", "Taxi service"],
+  employment_agency: ["Professional Services", "Employment agency"],
+  notary_public: ["Professional Services", "Notary"],
+  architect: ["Professional Services", "Architect"],
+  electrician: ["Trades", "Electrician"],
+  plumber: ["Trades", "Plumber"],
+  general_contractor: ["Trades", "Contractor"],
+  contractor: ["Trades", "Contractor"],
+  hvac: ["Trades", "HVAC"],
+  roofing_contractor: ["Trades", "Roofer"],
+  painter: ["Trades", "Painter"],
+  landscaper: ["Trades", "Landscaping"],
+  property_maintenance: ["Cleaning & Maintenance", "Maintenance"],
+  moving_company: ["Cleaning & Maintenance", "Moving"],
+  // Retail / grocery
+  supermarket: ["Retail", "Supermarket"],
+  grocery_store: ["Retail", "Grocery store"],
+  convenience_store: ["Retail", "Convenience store"],
+  hardware_store: ["Retail", "Hardware"],
+  electronics_store: ["Retail", "Electronics"],
+  furniture_store: ["Retail", "Furniture"],
+  clothing_store: ["Retail", "Clothing"],
+  shoe_store: ["Retail", "Shoes"],
+  jewelry_store: ["Retail", "Jewelry"],
+  book_store: ["Retail", "Books"],
+  gift_shop: ["Retail", "Gift shop"],
+  department_store: ["Retail", "Department store"],
+  mobile_phone_store: ["Retail", "Mobile phone"],
+  computer_store: ["Retail", "Computers"],
+  wholesale_store: ["Retail", "Wholesale"],
+  storage: ["Storage & Logistics", "Self storage"],
+  self_storage: ["Storage & Logistics", "Self storage"],
+  pawn_shop: ["Retail", "Pawn shop"],
+  home_improvement_store: ["Retail", "Home improvement"],
+  building_materials_store: ["Retail", "Building materials"],
+  // Food & Drink
+  restaurant: ["Food & Drink", "Restaurant"],
+  seafood_restaurant: ["Food & Drink", "Seafood restaurant"],
+  fast_food_restaurant: ["Food & Drink", "Fast food"],
+  cafe: ["Food & Drink", "Café"],
+  coffee_shop: ["Food & Drink", "Coffee shop"],
+  bar: ["Food & Drink", "Bar"],
+  bakery: ["Food & Drink", "Bakery"],
+  ice_cream_shop: ["Food & Drink", "Ice cream"],
+  pizzeria: ["Food & Drink", "Pizza"],
+  sandwich_shop: ["Food & Drink", "Sandwich shop"],
+  meal_takeaway: ["Food & Drink", "Takeaway"],
+  liquor_store: ["Retail", "Liquor"],
+  wine_store: ["Retail", "Wine"],
+  liquor_store_2: ["Retail", "Liquor"],
+  // Personal services
+  beauty_salon: ["Personal Services", "Beauty salon"],
+  hair_salon: ["Personal Services", "Hair salon"],
+  barber_shop: ["Personal Services", "Barber"],
+  spa: ["Personal Services", "Spa"],
+  massage: ["Personal Services", "Massage"],
+  tattoo_parlor: ["Personal Services", "Tattoo"],
+  nail_salon: ["Personal Services", "Nails"],
+  laundry: ["Personal Services", "Laundry"],
+  dry_cleaning: ["Personal Services", "Dry cleaning"],
+  tailor: ["Personal Services", "Tailor"],
+  funeral_home: ["Personal Services", "Funeral home"],
+  // Lodging / recreation
+  lodging: ["Hospitality", "Lodging"],
+  hotel: ["Hospitality", "Hotel"],
+  motel: ["Hospitality", "Motel"],
+  campground: ["Hospitality", "Campground"],
+  museum: ["Recreation", "Museum"],
+  art_gallery: ["Recreation", "Art gallery"],
+  historic_site: ["Recreation", "Historic site"],
+  park: ["Recreation", "Park"],
+  zoo: ["Recreation", "Zoo"],
+  aquarium: ["Recreation", "Aquarium"],
+  bowling_alley: ["Recreation", "Bowling"],
+  movie_theater: ["Recreation", "Cinema"],
+  gym: ["Recreation", "Gym"],
+  sports_club: ["Recreation", "Sports club"],
+  fitness_center: ["Recreation", "Gym"],
+  golf_course: ["Recreation", "Golf course"],
+  recreation_center: ["Recreation", "Recreation"],
+  place_of_worship: ["Recreation", "Place of worship"],
+  church: ["Recreation", "Church"],
+  synagogue: ["Recreation", "Synagogue"],
+  mosque: ["Recreation", "Mosque"],
+  stadium: ["Recreation", "Stadium"],
+  amusement_park: ["Recreation", "Amusement park"],
+  event_venue: ["Recreation", "Event venue"],
+  performing_arts_theater: ["Recreation", "Theatre"],
+  night_club: ["Recreation", "Nightclub"],
+  // Education
+  school: ["Education", "School"],
+  elementary_school: ["Education", "Elementary school"],
+  high_school: ["Education", "High school"],
+  middle_school: ["Education", "Middle school"],
+  preschool: ["Education", "Preschool"],
+  kindergarten: ["Education", "Kindergarten"],
+  college: ["Education", "College"],
+  university: ["Education", "University"],
+  library: ["Education", "Library"],
+  tutoring_center: ["Education", "Tutoring"],
+  child_care_agency: ["Education", "Childcare"],
+  vocational_school: ["Education", "Vocational school"],
+  driving_school: ["Education", "Driving school"],
+  language_school: ["Education", "Language school"],
+  // Trades
+  window_tinting_service: ["Automotive", "Window tinting"],
+  transmission_shop: ["Automotive", "Transmission repair"],
+  key_and_lock_repair: ["Professional Services", "Locksmith"],
+  locksmith: ["Professional Services", "Locksmith"],
+  marina: ["Recreation", "Marina"],
+  pet_store: ["Retail", "Pet supplies"],
+  pet_groomer: ["Personal Services", "Pet grooming"],
+  veterinary: ["Healthcare", "Veterinary"],
+  home_inspector: ["Professional Services", "Home inspector"],
+  land_surveyor: ["Professional Services", "Land surveying"],
+  it_services: ["Professional Services", "IT services"],
+  computer_repair: ["Professional Services", "IT services"],
+  internet_cafe: ["Recreation", "Internet cafe"],
+  funeral_service: ["Personal Services", "Funeral service"],
+  home_goods_store: ["Retail", "Home goods"],
+  shop: ["Retail", "Store"],
+  rental: ["Real Estate", "Rental service"],
+  building: ["Trades", "Building service"],
+  business_to_business: ["Professional Services", "B2B service"],
+  motorcycle: ["Automotive", "Motorcycle"],
+  trust: ["Professional Services", "Trust"],
+  youth_organization: ["Recreation", "Youth organization"],
+};
+
+// Keyword fallback so unknown provider type names still land in a real group
+// (e.g. "auto_parts_wholesaler", "oil_change", "cafe_terrace") instead of "Other".
+const KEYWORD_RULES = [
+  ["Healthcare", /dent|clinic|doctor|medic|health|pharma|chiropr|physio|therapy|optometr|veterinar|nurse|hospital|hearing|dermatolog|psycholog|pediatr/],
+  ["Automotive", /auto|car |vehicle|tire|tyre|mechanic|gas_station|fuel|motorcycle|transmission|tint|detailing|car_wash|dealership|automotive|oil_change|lube|alignment|brake/],
+  ["Food & Drink", /restaurant|cafe|coffee|bar$|pub$|bakery|food|pizza|burger|sandwich|ice_cream|brew|wine|beer|bistro|breakfast|donut|caterer/],
+  ["Hospitality", /hotel|motel|lodging|hostel|resort|camp|guest_house|bed_and_breakfast|vacation_rental/],
+  ["Personal Services", /barber|hair|salon|beauty|massage|tattoo|nail|laundry|dry_clean|funeral|spa|grooming|tanning|lash|fitness_gym/],
+  ["Cleaning & Maintenance", /clean|janitor|maintenance|pool_service|window_clean|carpet_clean|pest|landscap|lawn/],
+  ["Real Estate", /real_estate|property|mortgage|realtor|appraiser|home_inspect/],
+  ["Trades", /plumb|electric|roof|contract|carpent|hvac|heating|air_condition|builder|paint|surveyor|mason|flooring|fencing|glass|welding|contractor/],
+  ["Education", /school|college|universit|childcare|daycare|kindergarden|library|tutor|education|training|academy|driving_school/],
+  ["Recreation", /gym|fitness|sport|theatre|theater|cinema|bowling|dance|museum|gallery|recreation|park|zoo|aquarium|club|venue|event|entertainment|casino|game/],
+  ["Professional Services", /lawyer|attorney|law_firm|account|financial|insurance|consult|architect|engineer|notary|tax_|business|office|it_|technology|software|advertising|marketing|recruit|security_service|courier/],
+  ["Retail", /store|shop|retail|market|supermarket|grocery|clothing|shoe|jewel|book|electronic|furniture|hardware|florist|pet|sporting|gift|pawn|antique|fabric|photo|tobacco|furnishings|department/],
+  ["Food & Drink", /grill|burger|pizza|sushi|breakfast|lunch|dinner|brewery|tasting/],
+];
+
+function keywordIndustry(raw) {
+  for (const [industry, re] of KEYWORD_RULES) if (re.test(raw)) return industry;
+  return null;
+}
+
 /**
- * Classify a raw OSM industry tag (e.g. "shop:car_parts") into a
- * two-level taxonomy. Falls back to splitting the tag on ":" so the
- * "Other" bucket still has *some* hierarchy.
+ * Classify a raw industry tag into a two-level taxonomy.
+ *
+ * Accepts three shapes the live providers emit:
+ *  - OSM key:value tags ("shop:car_parts", "amenity:fast_food")
+ *  - Google Places / Overture bare type names ("car_dealer", "insurance_agency",
+ *    "overture:retail.auto_parts")
+ *  - Anything else, via a keyword fallback so rows land in a real group rather
+ *    than all collapsing into "Other".
  */
 export function classifyIndustry(rawTag) {
   if (!rawTag) return { industry: "Other", sub_industry: null };
-  const hit = MAP[rawTag];
+
+  const raw = String(rawTag).trim();
+  const lower = raw.toLowerCase();
+
+  // 1. Exact OSM map (key:value).
+  const hit = MAP[lower];
   if (hit) return { industry: hit[0], sub_industry: hit[1] };
-  // Unknown — bucket by OSM key (shop, amenity, healthcare…) and use the
-  // value as sub-industry, prettified.
-  const [key, val] = String(rawTag).split(":");
-  const groupMap = {
-    shop: "Retail", amenity: "Other", healthcare: "Healthcare",
-    office: "Professional Services", craft: "Trades", tourism: "Hospitality",
-    leisure: "Recreation", building: "Other",
-  };
-  return {
-    industry: groupMap[key] || "Other",
-    sub_industry: val ? val.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()) : null,
-  };
+
+  // 2. Exact provider map (bare type name, optionally with a prefix).
+  const providerKey = lower.replace(/^(overture|google)[:_-]+/i, "");
+  if (PROVIDER_MAP[providerKey]) {
+    const [industry, sub] = PROVIDER_MAP[providerKey];
+    return { industry, sub_industry: sub };
+  }
+
+  // 3. Split on the OSM separator to bucket by key.
+  if (lower.includes(":")) {
+    const [key, ...rest] = lower.split(":");
+    const val = rest.join(" ");
+    const groupMap = {
+      shop: "Retail", amenity: "Other", healthcare: "Healthcare",
+      office: "Professional Services", craft: "Trades", tourism: "Hospitality",
+      leisure: "Recreation", building: "Other", landuse: "Other",
+    };
+    if (key === "overture") {
+      const classified = classifyProviderValue(val);
+      if (classified) return classified;
+    }
+    const industry = groupMap[key] || keywordIndustry(val) || "Other";
+    return {
+      industry,
+      sub_industry: prettyName(val) || prettyName(key),
+    };
+  }
+
+  // 4. Bare token (Google type, Overture category id, "auto_dealer", etc.).
+  const industry = keywordIndustry(lower) || "Other";
+  return { industry, sub_industry: prettyName(raw) };
+}
+
+function classifyProviderValue(val) {
+  // Values like "retail.auto_parts" or "car_dealer".
+  const providerKey = val.replace(/[._-]+/g, "_");
+  const hit = PROVIDER_MAP[providerKey];
+  if (hit) return { industry: hit[0], sub_industry: hit[1] };
+  for (const [industry, re] of KEYWORD_RULES) if (re.test(val)) return { industry, sub_industry: prettyName(val) };
+  return null;
 }
 
 /**

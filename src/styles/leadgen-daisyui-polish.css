@@ -263,6 +263,47 @@ html[data-theme="dark"] .leadgen-prospect-card__signals span.is-gap {
   font-weight: 800 !important;
 }
 
+/* Subcategory picker — a compact select replaces the wall of pills when a
+   category has dozens of subcategories (e.g. a bare ZIP "All" scan). A native
+   <select> reads as a normal tool, not an AI-generated pill garden. */
+.leadgen-subcategory-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+.leadgen-subcategory-select__label {
+  flex: 0 0 auto;
+  color: var(--lg-faint);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.leadgen-subcategory-select select {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 8px;
+  background: var(--lg-panel);
+  color: var(--lg-text);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.leadgen-subcategory-select select:hover {
+  border-color: var(--lg-text);
+}
+.leadgen-subcategory-select select:focus-visible {
+  outline: 2px solid var(--lg-blue);
+  outline-offset: 1px;
+}
+
 /* ── Prospect card toggle: smoother chevron ────────────────────────── */
 
 .leadgen-prospect-card__toggle {

@@ -376,3 +376,101 @@ html[data-theme="dark"] .leadgen-breadcrumbs a:hover {
   .leadgen-category,
   .leadgen-product-step { transition: none !important; }
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   HUMAN RESTRAINT — remove the daisyUI/AI-generated tells.
+   A research tool should read as something a person built: flat surfaces,
+   one quiet shadow, normal corners, no hover-lift or glow everywhere, and
+   type that doesn't shout. These overrides load last and flatten the
+   gradient/glow/lift vocabulary from leadgen-daisyui-polish.css.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Panels: kill the layered 64px+ shadows and colored borders. One hairline. */
+.leadgen-app-panel--control,
+.leadgen-scan-card,
+.leadgen-product-upgrade {
+  box-shadow: none !important;
+}
+html[data-theme="light"] .leadgen-app-panel--control,
+html[data-theme="light"] .leadgen-scan-card,
+html[data-theme="light"] .leadgen-product-upgrade {
+  border-color: var(--aura-border) !important;
+}
+
+/* Card hover: drop the translateY lift and big shadows — a subtle border is enough. */
+.leadgen-prospect-card,
+.leadgen-prospect-card.is-expanded,
+.leadgen-results-scorecard article,
+.leadgen-intel-strip article,
+.leadgen-category__dashboard article,
+.leadgen-prospect-detail-grid > section,
+.leadgen-use-card,
+.leadgen-product-step {
+  transition: border-color 160ms ease, box-shadow 160ms ease !important;
+}
+.leadgen-prospect-card:hover:not(.is-expanded),
+.leadgen-results-scorecard article:hover,
+.leadgen-intel-strip article:hover,
+.leadgen-category__dashboard article:hover,
+.leadgen-prospect-detail-grid > section:hover,
+.leadgen-use-card:hover,
+.leadgen-scan-card:hover,
+.leadgen-product-upgrade:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Scorecard: no fake gradient wash behind the numbers. */
+.leadgen-results-scorecard article::before {
+  background: none !important;
+  opacity: 1 !important;
+}
+.leadgen-results-scorecard article,
+.leadgen-intel-strip article.is-wide {
+  background: var(--aura-surface-strong) !important;
+}
+
+/* Primary buttons: flat solid, no gradient, no glow ring. */
+.leadgen-card-btn.is-primary,
+.leadgen-product-step.is-active .leadgen-product-step__index,
+.leadgen-subcategory-tabs button.is-active {
+  background: var(--aura-accent-strong) !important;
+  box-shadow: none !important;
+}
+
+/* Progress meter: quiet track, no glow on the fill. */
+.leadgen-card-meter__fill {
+  background: var(--aura-accent-strong) !important;
+  box-shadow: none !important;
+}
+
+/* Fit badge: stop pill-scaling on hover. */
+.leadgen-fit-badge,
+.leadgen-card-badge,
+.leadgen-category__quickstats > span {
+  transition: none !important;
+  transform: none !important;
+}
+.leadgen-fit-badge:hover,
+.leadgen-card-badge:hover,
+.leadgen-category__quickstats > span:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Type: drop the uppercase shout. Read as a working tool. */
+.leadgen-card-stat__label,
+.leadgen-prospect-detail-grid > section > strong,
+.leadgen-card-contact-row > span:first-child,
+.leadgen-product-toolbar--realized label > span,
+.leadgen-toolbar-field > span {
+  font-weight: 600 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+/* Favicon + card header: normal radii instead of the pill everything. */
+.leadgen-business-favicon,
+.leadgen-card-expand {
+  border-radius: 6px !important;
+}

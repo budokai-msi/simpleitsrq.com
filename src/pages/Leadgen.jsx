@@ -991,16 +991,19 @@ function LeadgenScanApp() {
                         </div>
 
                         <div className="leadgen-category__tools">
-                          <div className="leadgen-subcategory-tabs" role="group" aria-label={`${group.name} subcategories`}>
-                            <button type="button" className={activeSub === "All" ? "is-active" : ""} onClick={() => setActiveSubs((current) => ({ ...current, [group.name]: "All" }))}>
-                              All <span>{group.rows.length}</span>
-                            </button>
-                            {subEntries.map(([sub, subRows]) => (
-                              <button type="button" key={sub} className={activeSub === sub ? "is-active" : ""} onClick={() => setActiveSubs((current) => ({ ...current, [group.name]: sub }))}>
-                                {sub} <span>{subRows.length}</span>
-                              </button>
-                            ))}
-                          </div>
+                          <label className="leadgen-subcategory-select">
+                            <span className="leadgen-subcategory-select__label">Type</span>
+                            <select
+                              aria-label={`${group.name} subcategories`}
+                              value={activeSub}
+                              onChange={(event) => setActiveSubs((current) => ({ ...current, [group.name]: event.target.value }))}
+                            >
+                              <option value="All">All {group.rows.length} businesses</option>
+                              {subEntries.map(([sub, subRows]) => (
+                                <option key={sub} value={sub}>{sub} ({subRows.length})</option>
+                              ))}
+                            </select>
+                          </label>
                           <div className="leadgen-category__qualify">
                             <button type="button" className="btn btn-secondary btn-sm" onClick={() => qualifyGroup(group)}>Select strong fits</button>
                             <button type="button" className="btn btn-secondary btn-sm" onClick={() => clearGroup(group)}>Clear selections</button>
