@@ -80,7 +80,7 @@ function friendlyCrawlError(code) {
     case "too_large":
       return "The website is unusually large. Try a specific contact page if you know one.";
     case "forbidden":
-      return "This site blocks automated checks. We can't read its public pages.";
+      return "The website returned a 403 when we tried to read it. The site is probably fine in your browser — the host is blocking our check from a server address. Use Visit site to confirm.";
     case "not_found":
       return "The site URL didn't resolve. The business may have moved or shut down.";
     case "gone":

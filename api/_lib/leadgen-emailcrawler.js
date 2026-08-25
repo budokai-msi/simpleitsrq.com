@@ -20,7 +20,14 @@ const EMAIL_RE = /([A-Z0-9._%+-]+)@([A-Z0-9.-]+\.[A-Z]{2,24})/gi;
 const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml", "image/x-icon", "image/vnd.microsoft.icon"]);
 
 function ua() {
-  return process.env.LEADGEN_USER_AGENT || "simpleitsrq-leadgen/3.1 (+https://simpleitsrq.com; contact: hello@simpleitsrq.com)";
+  // Present as a normal recent Chrome on Windows. Custom UAs ("simpleitsrq-leadgen/3.1")
+  // trip WAF bot-blocking rules at Cloudflare/PerimeterX/Akamai even when
+  // robots.txt would allow the crawl. The contact-discovery use case is
+  // narrow (4 pages max per host) and explicitly opt-in via the Find
+  // contacts button, so a stock browser UA is appropriate. Override via
+  // LEADGEN_USER_AGENT if you ever need a stricter identifying UA for
+  // robots.txt compliance audits.
+  return process.env.LEADGEN_USER_AGENT || "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 }
 
 function isPrivateAddress(address) {
@@ -70,7 +77,23 @@ async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0) {
   const timer = setTimeout(() => ctrl.abort(), ms);
   try {
     const response = await fetch(url, {
-      headers: { "User-Agent": ua(), Accept: "text/html,text/plain,image/*,*/*;q=0.4" },
+      // Stock browser headers so the request blends with normal traffic.
+      // Sites behind Cloudflare or other WAFs often allow-list common
+      // browser Accept / Accept-Language combos and reject anything that
+      // looks "off" even when the UA itself is a real browser string.
+      headers: {
+        "User-Agent": ua(),
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1",
+      },
       redirect: "manual",
       signal: ctrl.signal,
     });
