@@ -2282,10 +2282,13 @@
     position: static;
   }
   .leadgen-side-nav {
+    display: none;
+  }
+}
 
 /* ============================================================
    PRO OPTIMIZATION & DENSITY SYSTEM
-   Ultra-fast micro-animations, compact window cards, 
+   Ultra-fast micro-animations, compact window cards,
    glassmorphism highlights, and productive navigation polish.
    ============================================================ */
 

@@ -1,8 +1,10 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
-import "../styles/leadgen.css";
-import "../styles/leadgen-mobile-restore.css";
-import "../styles/leadgen-daisyui-polish.css";
+// Leadgen CSS is imported eagerly in main.jsx so the whole stylesheet ships
+// in a single bundle that is always linked from index.html. Importing here
+// caused Vite/Rollup to split the CSS into orphan chunks that were never
+// referenced from the page bundle, leaving the new daisyUI card classes
+// unstyled on production.
 import { Link } from "../lib/Link";
 import { ArrowRight, Check, ChevronDown, ExternalLink, Globe2, Mail, MapPin, Phone, Search, Sparkles } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";

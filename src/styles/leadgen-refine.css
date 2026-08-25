@@ -21,8 +21,14 @@
   max-width: 1440px !important;
 }
 
+/* Top breadcrumb — Home › Leadgen. The .leadgen-product-page wrapper
+   already constrains width and centers itself, so the breadcrumb just
+   needs to be a normal horizontal flex with auto overflow. The previous
+   max-width: 760px left the breadcrumb left-aligned in a constrained box,
+   which made it visually "shift to the left" against the centered page. */
 .leadgen-breadcrumbs {
-  max-width: 760px;
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
   color: var(--aura-muted);

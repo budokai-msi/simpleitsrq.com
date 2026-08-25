@@ -67,6 +67,13 @@ jobs:
           fi
           echo "Build output verified: $(ls dist | wc -l) entries in dist/"
 
+      - name: Verify CSS bundling
+        # Regression guard for the leadgen orphan-CSS-chunk bug. Catches
+        # situations where Vite splits a CSS import into a chunk that is
+        # emitted but never referenced from index.html, leaving the page
+        # unstyled even though the source CSS file shipped intact.
+        run: node scripts/verify-css-bundling.mjs
+
   # ── Soft gate: lint reports errors but doesn't block (pre-existing) ──
   lint:
     name: Lint (non-blocking)

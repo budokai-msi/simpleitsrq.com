@@ -1076,3 +1076,19 @@ html[data-theme="dark"] .leadgen-prospect-card__signals span.is-gap {
     grid-column: 1 / -1;
   }
 }
+
+/* Private-mode note shown inside the Use card when no CRM destinations
+   are configured. Soft accent border, muted text — same vocabulary as
+   the rest of the use-card messages. */
+.leadgen-app-private-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--aura-accent) 6%, transparent);
+  color: var(--aura-muted);
+  border: 1px solid color-mix(in srgb, var(--aura-border) 70%, transparent);
+  font-size: .78rem;
+  line-height: 1.4;
+}
