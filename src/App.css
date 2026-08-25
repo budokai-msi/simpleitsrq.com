@@ -2721,6 +2721,82 @@ main, #main {
   color: var(--text-2);
 }
 
+/* Related-product cross-link — placed in every blog post so Googlebot
+   can reach /leadgen from any /blog/{slug} crawl path and so readers
+   see a natural next step after a topic-related post. Uses the same
+   daisyUI-inspired vocabulary as the leadgen product cards. */
+.blog-related-product {
+  margin: 28px 0 32px;
+}
+.blog-related-product__link {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface-2), color-mix(in srgb, var(--surface-2) 70%, var(--surface-1)));
+  color: inherit;
+  text-decoration: none;
+  transition: transform .18s var(--ease-out, ease), border-color .18s var(--ease-out, ease), box-shadow .18s var(--ease-out, ease);
+}
+.blog-related-product__link:hover {
+  border-color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, .06);
+}
+.blog-related-product__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  color: var(--brand);
+  flex: 0 0 36px;
+}
+.blog-related-product__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.blog-related-product__eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.blog-related-product__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  line-height: 1.3;
+}
+.blog-related-product__sub {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+[data-theme="dark"] .blog-related-product__link {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--surface-2) 85%, transparent), var(--surface-1));
+}
+@media (max-width: 640px) {
+  .blog-related-product__link {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+  .blog-related-product__icon {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+  .blog-related-product__title { font-size: 15px; }
+  .blog-related-product__sub { font-size: 12px; }
+}
+
 .blog-post-source {
   font-size: 13px;
   color: var(--text-3);

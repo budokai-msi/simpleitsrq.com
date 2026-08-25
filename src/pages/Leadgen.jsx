@@ -1160,6 +1160,27 @@ export default function Leadgen() {
     description: "Research local businesses by ZIP code and industry, compare records, find public contact details, and export only the prospects you choose.",
     canonical: `${SITE_URL}/leadgen`,
     image: `${SITE_URL}/og-image.png`,
+    breadcrumbs: [
+      { name: "Home", url: `${SITE_URL}/` },
+      { name: "Leadgen", url: `${SITE_URL}/leadgen` },
+    ],
+    products: [
+      {
+        title: "Leadgen Growth",
+        description: "Scan ZIP codes and industries, compare prospects by data quality, and export the ones worth contacting. Built for repeat local-market prospecting.",
+        slug: "growth",
+        price: 99,
+        buyLink: LEADGEN_STRIPE_LINKS.growth.monthly,
+      },
+      {
+        title: "Leadgen Pro",
+        description: "Adds saved searches, contact enrichment from public business websites, HubSpot and webhook delivery, suppression, and attribution.",
+        slug: "pro",
+        price: 249,
+        buyLink: LEADGEN_STRIPE_LINKS.pro.monthly,
+      },
+    ],
+    productBasePath: "/leadgen",
   });
 
   return (

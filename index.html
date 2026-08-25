@@ -68,6 +68,35 @@
     <meta name="geo.position" content="27.4989;-82.5748" />
     <meta name="ICBM" content="27.4989, -82.5748" />
 
+    <!-- Self-referencing canonical URL.
+         The default <link rel="canonical"> above points at the homepage
+         because Vite serves one index.html for every route (SPA). Googlebot
+         reads this static HTML first, so a hardcoded homepage canonical
+         tells Google every page is the homepage and tanks indexation of
+         /leadgen, /blog, /blog/{slug}, /services, etc.
+
+         This inline script runs synchronously before any module loads,
+         replaces the canonical + og:url with the actual URL Googlebot
+         requested, and also strips the trailing slash for consistency
+         with the sitemap. The SPA's useSEO hook will overwrite this on
+         hydration but the values match — no double-update flash.
+
+         Per Google: https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls -->
+    <script>
+      (function () {
+        try {
+          var path = window.location.pathname;
+          // Collapse multiple slashes and strip trailing slash (except for "/")
+          path = path.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
+          var canonical = "https://simpleitsrq.com" + path;
+          var link = document.querySelector('link[rel="canonical"]');
+          if (link) link.setAttribute("href", canonical);
+          var og = document.querySelector('meta[property="og:url"]');
+          if (og) og.setAttribute("content", canonical);
+        } catch (e) { /* stay with the static fallback */ }
+      })();
+    </script>
+
     <!-- Google AdSense — site verification (meta) + script loader.
          Loading the script in <head> is what AdSense's site-review crawler
          expects to see; loading it later via JS delays approval. The
@@ -96,6 +125,67 @@
           document.documentElement.dataset.theme = "light";
         }
       })();
+    </script>
+
+    <!-- Schema.org Product JSON-LD for the Leadgen pricing tiers.
+         Always present in the static HTML so Googlebot sees it on the
+         first render of /leadgen (and any page where Leadgen is the
+         intent). The SPA's useSEO will REPLACE this content with the
+         runtime version on hydration so the data stays in sync. On
+         other routes, useSEO removes this script via removeJsonLd() if
+         no products are passed. -->
+    <script type="application/ld+json" id="jsonld-products">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "Leadgen Pricing Plans",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "Product",
+            "name": "Leadgen Growth",
+            "description": "Scan ZIP codes and industries, compare prospects by data quality, and export the ones worth contacting. Built for repeat local-market prospecting.",
+            "brand": { "@type": "Brand", "name": "Simple IT SRQ" },
+            "image": "https://simpleitsrq.com/og-image.png",
+            "url": "https://simpleitsrq.com/leadgen",
+            "offers": {
+              "@type": "Offer",
+              "name": "Leadgen Growth (monthly)",
+              "url": "https://buy.stripe.com/8x2cMYaAX3qg648aUlak01y",
+              "price": "99.00",
+              "priceCurrency": "USD",
+              "priceValidUntil": "2026-12-31",
+              "availability": "https://schema.org/InStock",
+              "seller": { "@type": "Organization", "name": "Simple IT SRQ", "url": "https://simpleitsrq.com" }
+            }
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "Product",
+            "name": "Leadgen Pro",
+            "description": "Adds saved searches, contact enrichment from public business websites, HubSpot and webhook delivery, suppression, and attribution.",
+            "brand": { "@type": "Brand", "name": "Simple IT SRQ" },
+            "image": "https://simpleitsrq.com/og-image.png",
+            "url": "https://simpleitsrq.com/leadgen",
+            "offers": {
+              "@type": "Offer",
+              "name": "Leadgen Pro (monthly)",
+              "url": "https://buy.stripe.com/14A8wI5gDbWM0JO9Qhak01A",
+              "price": "249.00",
+              "priceCurrency": "USD",
+              "priceValidUntil": "2026-12-31",
+              "availability": "https://schema.org/InStock",
+              "seller": { "@type": "Organization", "name": "Simple IT SRQ", "url": "https://simpleitsrq.com" }
+            }
+          }
+        }
+      ]
+    }
     </script>
 
     <script type="application/ld+json">

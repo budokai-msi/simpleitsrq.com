@@ -1,7 +1,7 @@
 import { createElement, useMemo, useState, useEffect, lazy, Suspense } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Link } from "../lib/Link";
-import { ArrowRight, Calendar, User, Tag, ArrowLeft, Lock, Server, Cloud, FileCheck, Shield, Briefcase, Star } from "lucide-react";
+import { ArrowRight, Calendar, User, Tag, ArrowLeft, Lock, Server, Cloud, FileCheck, Shield, Briefcase, Star, Target } from "lucide-react";
 import postsMeta from "../data/posts-meta.json";
 import { resolveAffiliate, postHasAffiliateContent } from "../data/affiliates";
 import { useSEO } from "../lib/seo";
@@ -365,6 +365,20 @@ export default function BlogPost() {
             {(post.tags || []).map((t) => <span key={t} className="blog-tag">{t}</span>)}
           </div>
           <ToolsUsedFooter content={rawBody} slug={post.slug} />
+          {/* Related-product CTA — gives every blog post an internal link
+              to /leadgen so Googlebot discovers the product page from
+              blog crawl paths, and so readers prospecting local
+              businesses have a natural next step. */}
+          <aside className="blog-related-product" aria-label="Related tools">
+            <Link to="/leadgen" className="blog-related-product__link">
+              <span className="blog-related-product__icon"><Target size={16} /></span>
+              <span className="blog-related-product__body">
+                <span className="blog-related-product__eyebrow">From the same engineers</span>
+                <span className="blog-related-product__title">Find local businesses by ZIP and industry →</span>
+                <span className="blog-related-product__sub">Leadgen scans public records by ZIP, niche, and contact completeness — built for repeat Sarasota/Bradenton prospecting.</span>
+              </span>
+            </Link>
+          </aside>
           <LeadCaptureCTA />
           <Newsletter />
           <AffiliateDisclosure variant={hasAffiliate ? "affiliate" : "partnership"} />
