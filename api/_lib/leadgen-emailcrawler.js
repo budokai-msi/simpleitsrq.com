@@ -327,6 +327,69 @@ export function inspectWebsiteHtml(body, pageUrl) {
   };
 }
 
+// Classify a fetch() rejection into our short error-code vocabulary.
+// Node's undici-based fetch wraps every network failure as a TypeError;
+// the underlying cause is on err.cause. We surface a friendly code
+// rather than leaking "TypeError: fetch failed" / SSL codes.
+function classifyFetchError(error) {
+  // AbortController timeout → AbortError
+  if (error?.name === "AbortError") {
+    return { ok: false, status: undefined, error: "timeout" };
+  }
+  const cause = error?.cause;
+  const causeCode = String(cause?.code || cause?.errno || "").toUpperCase();
+  const causeMsg = String(cause?.message || error?.message || "").toLowerCase();
+  // SSL/TLS handshake problems (hostname mismatch, expired, untrusted CA).
+  // WordPress.com parking pages, GoDaddy landers, and stale certs hit this.
+  if (
+    causeCode === "ERR_TLS_CERT_ALTNAME_INVALID" ||
+    causeCode === "CERT_HAS_EXPIRED" ||
+    causeCode === "DEPTH_ZERO_SELF_SIGNED_CERT" ||
+    causeCode === "SELF_SIGNED_CERT_IN_CHAIN" ||
+    causeCode === "UNABLE_TO_VERIFY_LEAF_SIGNATURE" ||
+    causeCode === "ERR_TLS_CERT_ALTNAME" ||
+    causeCode === "EPROTO" ||
+    /wrong principal|cert.*(expired|invalid|mismatch|untrusted)|self.signed/i.test(causeMsg)
+  ) {
+    return { ok: false, status: undefined, error: "ssl_error" };
+  }
+  // DNS resolution failure
+  if (causeCode === "ENOTFOUND" || /getaddrinfo.*notfound/i.test(causeMsg)) {
+    return { ok: false, status: undefined, error: "dns_failure" };
+  }
+  // Connection refused / network unreachable
+  if (causeCode === "ECONNREFUSED" || causeCode === "ECONNRESET" ||
+      causeCode === "ENETUNREACH" || causeCode === "EHOSTUNREACH" ||
+      causeCode === "ETIMEDOUT" || causeCode === "EAI_AGAIN") {
+    return { ok: false, status: undefined, error: "connection_error" };
+  }
+  // Generic network failure fallback (the literal "fetch failed" TypeError
+  // surfaces when undici can't categorize the cause).
+  return { ok: false, status: undefined, error: String(error?.message || "unreachable") };
+}
+
+// Map the classification result to a stable short code. Centralized so
+// the API layer only has to know one vocabulary.
+function mapFetchErrorToCode(home) {
+  // Classification from classifyFetchError
+  if (home.error && ["timeout", "ssl_error", "dns_failure", "connection_error"].includes(home.error)) {
+    return home.error;
+  }
+  // asset_too_large comes from fetchBodyCapped's read path, not from
+  // the network — pass through if we ever see it here.
+  if (home.error === "asset_too_large") return "too_large";
+  // HTTP status-based errors
+  if (home.status === 403) return "forbidden";
+  if (home.status === 404) return "not_found";
+  if (home.status === 410) return "gone";
+  if (home.status === 415) return "wrong_type";
+  if (home.status === 429) return "rate_limited";
+  if (home.status === 500 || home.status === 502 || home.status === 503 || home.status === 504) {
+    return "server_error";
+  }
+  return "unreachable";
+}
+
 export async function crawlEmails(websiteUrl) {
   const origin = originOf(websiteUrl);
   if (!origin) return { ok: false, error: "invalid_url", emails: [], websiteSignals: null };
@@ -336,21 +399,23 @@ export async function crawlEmails(websiteUrl) {
   const robotsAllowed = await robotsAllowsRoot(origin);
   if (!robotsAllowed) return { ok: true, host: origin, robotsAllowed: false, pagesFetched: 0, emails: [], websiteSignals: null };
 
-  const home = await fetchBodyCapped(origin).catch((error) => ({ ok: false, error: error?.name === "AbortError" ? "timeout" : String(error?.message || error) }));
+  let home = await fetchBodyCapped(origin).catch((error) => classifyFetchError(error));
+  // SSL handshake failure is often a parked domain or stale cert. Try
+  // HTTP as a fallback before giving up — many parked domains respond
+  // on HTTP with a clearer "domain not found" 404, which the UI can
+  // present accurately instead of a confusing certificate message.
+  if (!home.ok && home.error === "ssl_error") {
+    const httpOrigin = origin.replace(/^https:/i, "http:");
+    if (httpOrigin !== origin) {
+      home = await fetchBodyCapped(httpOrigin).catch((error) => classifyFetchError(error));
+    }
+  }
   if (!home.ok) {
     // Translate raw HTTP status codes into user-facing copy. The UI used
     // to show "home_403" / "home_404" / "home_500" — leaked internal
     // jargon. Now we hand back a short code that the API layer maps to a
     // real sentence.
-    const errorCode =
-      home.error === "timeout" ? "timeout" :
-      home.error === "asset_too_large" ? "too_large" :
-      home.status === 403 ? "forbidden" :
-      home.status === 404 ? "not_found" :
-      home.status === 410 ? "gone" :
-      home.status === 429 ? "rate_limited" :
-      home.status === 500 || home.status === 502 || home.status === 503 || home.status === 504 ? "server_error" :
-      home.status === 415 ? "wrong_type" : "unreachable";
+    const errorCode = mapFetchErrorToCode(home);
     return { ok: false, host: origin, error: errorCode, emails: [], websiteSignals: null };
   }
 

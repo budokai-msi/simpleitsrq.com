@@ -70,6 +70,12 @@ function friendlyCrawlError(code) {
   switch (code) {
     case "timeout":
       return "The website took too long to respond. Try again or visit the site directly.";
+    case "ssl_error":
+      return "This site's security certificate has a problem. It may still work in your browser — try the Visit site button to confirm.";
+    case "dns_failure":
+      return "We couldn't resolve this domain. The website may be down or the URL may be wrong.";
+    case "connection_error":
+      return "We couldn't connect to this website. It may be temporarily down.";
     case "asset_too_large":
     case "too_large":
       return "The website is unusually large. Try a specific contact page if you know one.";
