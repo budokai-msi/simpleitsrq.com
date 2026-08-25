@@ -336,8 +336,23 @@ export async function crawlEmails(websiteUrl) {
   const robotsAllowed = await robotsAllowsRoot(origin);
   if (!robotsAllowed) return { ok: true, host: origin, robotsAllowed: false, pagesFetched: 0, emails: [], websiteSignals: null };
 
-  const home = await fetchBodyCapped(origin).catch((error) => ({ ok: false, error: String(error?.message || error) }));
-  if (!home.ok) return { ok: false, host: origin, error: home.error || `home_${home.status}`, emails: [], websiteSignals: null };
+  const home = await fetchBodyCapped(origin).catch((error) => ({ ok: false, error: error?.name === "AbortError" ? "timeout" : String(error?.message || error) }));
+  if (!home.ok) {
+    // Translate raw HTTP status codes into user-facing copy. The UI used
+    // to show "home_403" / "home_404" / "home_500" — leaked internal
+    // jargon. Now we hand back a short code that the API layer maps to a
+    // real sentence.
+    const errorCode =
+      home.error === "timeout" ? "timeout" :
+      home.error === "asset_too_large" ? "too_large" :
+      home.status === 403 ? "forbidden" :
+      home.status === 404 ? "not_found" :
+      home.status === 410 ? "gone" :
+      home.status === 429 ? "rate_limited" :
+      home.status === 500 || home.status === 502 || home.status === 503 || home.status === 504 ? "server_error" :
+      home.status === 415 ? "wrong_type" : "unreachable";
+    return { ok: false, host: origin, error: errorCode, emails: [], websiteSignals: null };
+  }
 
   const homeSignals = extractDocumentSignals(home.body, home.finalUrl);
   const websiteSignals = {

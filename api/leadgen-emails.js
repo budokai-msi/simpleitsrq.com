@@ -45,6 +45,15 @@ async function requirePremiumSession(request) {
 
 async function enrichOne(origin) {
   const result = await crawlEmails(origin);
+  // Translate the crawler's short error codes into copy the UI can
+  // show directly. Old behavior leaked "home_403" / "asset_too_large"
+  // / raw error strings into the user-visible message.
+  if (result.ok === false && result.error) {
+    return {
+      ...result,
+      message: friendlyCrawlError(result.error),
+    };
+  }
   return {
     ...result,
     websiteSignals: result.websiteSignals ? {
@@ -53,6 +62,37 @@ async function enrichOne(origin) {
       robots_allowed: result.robotsAllowed !== false,
     } : null,
   };
+}
+
+// Short error codes from crawlEmails → real sentences. The UI shows
+// these verbatim. Keep them short and action-oriented (no jargon).
+function friendlyCrawlError(code) {
+  switch (code) {
+    case "timeout":
+      return "The website took too long to respond. Try again or visit the site directly.";
+    case "asset_too_large":
+    case "too_large":
+      return "The website is unusually large. Try a specific contact page if you know one.";
+    case "forbidden":
+      return "This site blocks automated checks. We can't read its public pages.";
+    case "not_found":
+      return "The site URL didn't resolve. The business may have moved or shut down.";
+    case "gone":
+      return "This site is permanently unavailable.";
+    case "rate_limited":
+      return "The site rate-limited our check. Try again in a minute.";
+    case "server_error":
+      return "The website had a server error. Try again or visit the site directly.";
+    case "wrong_type":
+      return "The site's home page isn't HTML. We only check normal websites.";
+    case "unsafe_host":
+      return "This URL points to a private network. We only check public websites.";
+    case "invalid_url":
+      return "That URL doesn't look like a public website.";
+    case "unreachable":
+    default:
+      return "We couldn't reach this website. It may be down or blocking automated checks.";
+  }
 }
 
 export async function POST(request) {
