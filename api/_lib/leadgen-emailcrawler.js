@@ -71,7 +71,7 @@ function safeUrl(input, base) {
   } catch { return null; }
 }
 
-async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0) {
+async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0, { followRedirects = true } = {}) {
   const url = await assertPublicUrl(input);
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
@@ -81,6 +81,11 @@ async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0) {
       // Sites behind Cloudflare or other WAFs often allow-list common
       // browser Accept / Accept-Language combos and reject anything that
       // looks "off" even when the UA itself is a real browser string.
+      //
+      // Skip Upgrade-Insecure-Requests: that header tells servers to
+      // upgrade an http:// request to https://, which is exactly what
+      // we DON'T want when we're falling back from a failing HTTPS
+      // origin to plain HTTP.
       headers: {
         "User-Agent": ua(),
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
@@ -92,16 +97,15 @@ async function fetchWithTimeout(input, ms = FETCH_TIMEOUT_MS, redirects = 0) {
         "Sec-Fetch-Mode": "navigate",
         "Sec-Fetch-Site": "none",
         "Sec-Fetch-User": "?1",
-        "Upgrade-Insecure-Requests": "1",
       },
       redirect: "manual",
       signal: ctrl.signal,
     });
-    if (response.status >= 300 && response.status < 400) {
+    if (followRedirects && response.status >= 300 && response.status < 400) {
       if (redirects >= MAX_REDIRECTS) throw new Error("too_many_redirects");
       const location = response.headers.get("location");
       if (!location) return response;
-      return fetchWithTimeout(new URL(location, url).toString(), ms, redirects + 1);
+      return fetchWithTimeout(new URL(location, url).toString(), ms, redirects + 1, { followRedirects });
     }
     return response;
   } finally {
@@ -154,8 +158,8 @@ async function readBytesCapped(res, cap, { truncate = false } = {}) {
   return joined;
 }
 
-async function fetchBodyCapped(url) {
-  const res = await fetchWithTimeout(url);
+async function fetchBodyCapped(url, opts = {}) {
+  const res = await fetchWithTimeout(url, FETCH_TIMEOUT_MS, 0, opts);
   if (!res.ok) return { ok: false, status: res.status, body: "", finalUrl: res.url, headers: res.headers };
   const contentType = res.headers.get("content-type") || "";
   if (!/text\/|application\/xhtml/i.test(contentType)) return { ok: false, status: 415, body: "", finalUrl: res.url, headers: res.headers };
@@ -430,7 +434,30 @@ export async function crawlEmails(websiteUrl) {
   if (!home.ok && home.error === "ssl_error") {
     const httpOrigin = origin.replace(/^https:/i, "http:");
     if (httpOrigin !== origin) {
-      home = await fetchBodyCapped(httpOrigin).catch((error) => classifyFetchError(error));
+      // Disable redirect following on the fallback: a 301 → https on
+      // plain HTTP would otherwise loop us back onto the failing
+      // HTTPS origin. A parked domain that returns 404 on HTTP is the
+      // signal we want to surface, not a loop back to SSL.
+      const fallback = await fetchBodyCapped(httpOrigin, { followRedirects: false }).catch((error) => classifyFetchError(error));
+      // Priority for choosing what to report:
+      //   1. HTTP 404 (parked domain) wins — most actionable signal.
+      //   2. HTTP 2xx success wins — HTTP version of the site works
+      //      (rare but possible; e.g. dev environments).
+      //   3. HTTP 3xx that redirects back to https on the same host
+      //      is the same SSL problem — keep ssl_error.
+      //   4. Anything else (5xx, network error on HTTP, weird 3xx)
+      //      keeps ssl_error because HTTPS was the real failure.
+      const fallbackLocation = fallback?.headers?.get?.("location") || "";
+      const fallbackPointsBack = /^https:/i.test(fallbackLocation) && fallbackLocation.includes(new URL(origin).hostname);
+      if (fallback.ok === false && fallback.status === 404) {
+        home = fallback;
+      } else if (fallback.ok) {
+        home = fallback;
+      } else if (fallbackPointsBack) {
+        // Keep the original ssl_error.
+      } else {
+        // Keep the original ssl_error — HTTP didn't give us anything better.
+      }
     }
   }
   if (!home.ok) {
