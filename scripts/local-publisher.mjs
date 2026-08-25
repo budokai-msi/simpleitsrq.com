@@ -11,6 +11,33 @@ const SLOP_THRESHOLD = Number(process.env.BLOG_SLOP_THRESHOLD || 8);
 
 const HN_RELEVANT = /security|hack|breach|password|backup|cloud|aws|azure|vpn|firewall|malware|ransomware|phishing|privacy|encryption|network|server|infrastructure|devops|saas|outage|pricing|ai|llm|openai|chatgpt|microsoft|google|apple|linux|windows|update|patch|vulnerability|cve|zero.day|exploit|incident|response|disaster|recovery|continuity|legal|finance|healthcare|construction|real\.estate|remote|work|wifi|router|switch|camera|surveillance|ups|battery|power|hardware|laptop|dock|nas/i;
 const HN_BANNED_TITLE = /who is hiring|ask hn|show hn|launch hn|tell hn|poll:|job:|hiring/i;
+// Default lowered from 80 → 30: top 30 of HN rarely has multiple
+// small-business-relevant stories above 80 in a single day. 30 still
+// filters pure noise without leaving us with 21/30 days of "no_story".
+const HN_MIN_SCORE = Number(process.env.HN_MIN_SCORE || 30);
+const HN_TOP_N    = Number(process.env.HN_TOP_N || 30);
+
+// Reddit sources — fallback for days HN top 30 is all hiring/Show HN.
+const REDDIT_SOURCES = [
+  { subreddit: 'sysadmin',        minScore: 50, limit: 25, label: 'r/sysadmin' },
+  { subreddit: 'msp',             minScore: 20, limit: 25, label: 'r/msp' },
+  { subreddit: 'cybersecurity',   minScore: 100, limit: 25, label: 'r/cybersecurity' },
+  { subreddit: 'netsec',          minScore: 80, limit: 25, label: 'r/netsec' },
+];
+const REDDIT_BANNED = /\[meta\]|\[meme\]|\[discussion\]|weekly|monthly|megathread|ama:|daily|question|hire me|for hire|looking for/i;
+
+// CISA — perfect for an IT services company. Two complementary sources:
+//
+//   1. advisories RSS at /ncas/alerts.xml — slow but long-form, covers
+//      the high-impact advisories (one per week, maybe).
+//   2. KEV (Known Exploited Vulnerabilities) JSON catalog — daily-updated,
+//      lists every CVE currently being exploited in the wild. Much higher
+//      cadence; we pick the most recent 1-3 to give the writer a story.
+//
+// Both are free, no key, no rate limit.
+const CISA_ADVISORIES_RSS = 'https://www.cisa.gov/ncas/alerts.xml';
+const CISA_KEV_JSON      = 'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json';
+const CISA_RELEVANT = /microsoft|google|apple|linux|windows|vmware|cisco|fortinet|sophos|exchange|office|chrome|safari|firefox|edge|aws|azure|gcp|okta|ad\.|active directory|kerberos|ransomware|phishing|exploit|vulnerability|cve/i;
 
 // ---------------------------------------------------------------
 // Ollama helpers
@@ -56,15 +83,22 @@ function parseJsonLoose(text, fallbackAttempt = 0) {
 }
 
 // ---------------------------------------------------------------
-// Story selection
+// Story selection — pluggable sources
 // ---------------------------------------------------------------
+//
+// Order: HN (tech-savvy readers, fresh) → Reddit (sub-communities,
+// broader audience) → CISA (official, always relevant, lower volume).
+// Each source is independent; we accept the first non-null result.
+//
+// All stories share the shape { id, title, url, score, source } so
+// downstream code doesn't care which one won.
 
 async function fetchHNTopStory() {
   try {
     const topRes = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
     const topIds = await topRes.json();
     const candidates = await Promise.all(
-      topIds.slice(0, 30).map(async (id) => {
+      topIds.slice(0, HN_TOP_N).map(async (id) => {
         const res = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
         return res.json();
       })
@@ -73,23 +107,190 @@ async function fetchHNTopStory() {
     // Don't repeat stories already covered by published drafts.
     let seenUrls = new Set();
     try {
-      const rows = await sql`SELECT source_url FROM draft_posts WHERE source_url IS NOT NULL`;
-      seenUrls = new Set(rows.map((r) => r.source_url));
+      const rows = await sql`SELECT title FROM draft_posts WHERE title IS NOT NULL`;
+      seenUrls = new Set(rows.map((r) => r.title.toLowerCase().trim()));
     } catch { /* table column may not exist yet */ }
 
     const scored = candidates
-      .filter((s) => s && s.type === 'story' && s.score > 80 && s.title && s.url)
+      .filter((s) => s && s.type === 'story' && s.score > HN_MIN_SCORE && s.title && s.url)
       .filter((s) => !HN_BANNED_TITLE.test(s.title))
-      .filter((s) => !seenUrls.has(s.url))
+      .filter((s) => !seenUrls.has(s.title.toLowerCase().trim()))
       .filter((s) => HN_RELEVANT.test(`${s.title} ${s.url || ''}`))
       .map((s) => ({ ...s, weight: s.score * (HN_RELEVANT.test(s.title) ? 2 : 1) }))
       .sort((a, b) => b.weight - a.weight);
 
-    return scored[0] || null;
+    const winner = scored[0];
+    if (!winner) return null;
+    return { ...winner, source: 'hn' };
   } catch (err) {
     console.error('[hn] fetch error', err);
     return null;
   }
+}
+
+async function fetchRedditTopStory() {
+  // Try each subreddit in turn; return first non-null hit.
+  for (const src of REDDIT_SOURCES) {
+    try {
+      const url = `https://www.reddit.com/r/${src.subreddit}/top.json?t=day&limit=${src.limit}`;
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'simpleitsrq-blog-publisher/1.0 (by /u/simpleitsrq)' },
+      });
+      if (!res.ok) {
+        console.warn(`[reddit] ${src.label} HTTP ${res.status}`);
+        continue;
+      }
+      const data = await res.json();
+      const posts = (data?.data?.children || []).map((c) => c.data);
+
+      let seenTitles = new Set();
+      try {
+        const rows = await sql`SELECT title FROM draft_posts WHERE title IS NOT NULL`;
+        seenTitles = new Set(rows.map((r) => r.title.toLowerCase().trim()));
+      } catch { /* table column may not exist yet */ }
+
+      const winner = posts
+        .filter((p) => p && p.score >= src.minScore)
+        .filter((p) => !p.over_18 && !p.spoiler && !p.stickied)
+        .filter((p) => !REDDIT_BANNED.test(p.title || ''))
+        .filter((p) => HN_RELEVANT.test(`${p.title} ${p.url || ''}`))
+        .filter((p) => p.url && /^https?:\/\//.test(p.url) && !p.url.includes('reddit.com'))
+        .filter((p) => !seenTitles.has((p.title || '').toLowerCase().trim()))
+        .sort((a, b) => b.score - a.score)[0];
+
+      if (winner) {
+        return {
+          id: winner.id,
+          title: winner.title,
+          url: winner.url,
+          score: winner.score,
+          source: src.label,
+        };
+      }
+    } catch (err) {
+      console.warn(`[reddit] ${src.label} error: ${err.message?.slice(0, 100)}`);
+    }
+  }
+  return null;
+}
+
+async function fetchCISAAlert() {
+  // Try KEV (Known Exploited Vulnerabilities) first — it's a JSON
+  // catalog updated daily with a list of CVEs actively being exploited
+  // in the wild. Higher cadence, easier to parse, and immediately
+  // relevant to an IT services company. Falls back to the advisories
+  // RSS for longer-form coverage.
+  try {
+    const res = await fetch(CISA_KEV_JSON, {
+      headers: { 'User-Agent': 'simpleitsrq-blog-publisher/1.0' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const vulns = Array.isArray(data?.vulnerabilities) ? data.vulnerabilities : [];
+
+      let seenTitles = new Set();
+      try {
+        const rows = await sql`SELECT title FROM draft_posts WHERE title IS NOT NULL`;
+        seenTitles = new Set(rows.map((r) => r.title.toLowerCase().trim()));
+      } catch { /* table column may not exist yet */ }
+
+      // Pick the most recent KEV entry whose vendor+product is relevant
+      // and whose title we haven't already covered.
+      const winner = vulns
+        .filter((v) => v && v.cveID && v.vendorProject && v.product)
+        .filter((v) => CISA_RELEVANT.test(`${v.vendorProject} ${v.product} ${v.vulnerabilityName || ''}`))
+        .sort((a, b) => (b.dateAdded || '').localeCompare(a.dateAdded || ''))
+        .find((v) => {
+          const title = `${v.cveID} ${v.vendorProject} ${v.product}`.toLowerCase().trim();
+          return !seenTitles.has(title);
+        });
+
+      if (winner) {
+        // Build a richer story from the CVE so the writer has real
+        // material to work with — not just a bare CVE number.
+        return {
+          id: winner.cveID,
+          title: `${winner.cveID}: ${winner.vendorProject} ${winner.product} ${winner.vulnerabilityName || 'actively exploited'}`,
+          url: `https://nvd.nist.gov/vuln/detail/${winner.cveID}`,
+          score: 1000, // KEV = always high-signal
+          source: 'cisa-kev',
+          cveID: winner.cveID,
+          vendor: winner.vendorProject,
+          product: winner.product,
+          cveName: winner.vulnerabilityName,
+          shortDescription: winner.shortDescription,
+          requiredAction: winner.requiredAction,
+          dateAdded: winner.dateAdded,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn(`[cisa] KEV fetch error: ${err.message?.slice(0, 100)}`);
+  }
+
+  // Fallback: advisories RSS (long-form, lower cadence).
+  try {
+    const res = await fetch(CISA_ADVISORIES_RSS, {
+      headers: { 'User-Agent': 'simpleitsrq-blog-publisher/1.0' },
+    });
+    if (!res.ok) return null;
+    const xml = await res.text();
+    const items = [];
+    const itemRe = /<item\b[^>]*>([\s\S]*?)<\/item>/g;
+    const titleRe = /<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/;
+    const linkRe = /<link>(?:<!\[CDATA\[)?(https?:\/\/[^\s<]+)(?:\]\]>)?<\/link>/;
+    let m;
+    while ((m = itemRe.exec(xml))) {
+      const block = m[1];
+      const t = titleRe.exec(block)?.[1]?.trim();
+      const l = linkRe.exec(block)?.[1]?.trim();
+      if (t && l) items.push({ title: t, url: l });
+    }
+
+    let seenTitles = new Set();
+    try {
+      const rows = await sql`SELECT title FROM draft_posts WHERE title IS NOT NULL`;
+      seenTitles = new Set(rows.map((r) => r.title.toLowerCase().trim()));
+    } catch { /* table column may not exist yet */ }
+
+    const winner = items
+      .filter((it) => CISA_RELEVANT.test(`${it.title} ${it.url}`))
+      .find((it) => !seenTitles.has(it.title.toLowerCase().trim()));
+
+    if (!winner) return null;
+    return {
+      id: winner.url,
+      title: winner.title,
+      url: winner.url,
+      score: 1000, // CISA is always high-signal
+      source: 'cisa',
+    };
+  } catch (err) {
+    console.warn(`[cisa] advisories fetch error: ${err.message?.slice(0, 100)}`);
+  }
+  return null;
+}
+
+// Try each source in priority order; first non-null wins.
+// Order: HN → Reddit → CISA. (HN is freshest and most tech-savvy;
+// CISA is a long-tail fallback that's still on-topic for a security
+// and IT company when HN and Reddit are both dry.)
+async function fetchStory() {
+  const sources = [
+    { name: 'hn',     fn: fetchHNTopStory },
+    { name: 'reddit', fn: fetchRedditTopStory },
+    { name: 'cisa',   fn: fetchCISAAlert },
+  ];
+  for (const src of sources) {
+    const t0 = Date.now();
+    const story = await src.fn();
+    if (story) {
+      console.log(`[story] Picked from ${src.name} in ${Date.now() - t0}ms: ${story.title}`);
+      return story;
+    }
+    console.log(`[story] ${src.name} had no publishable story (${Date.now() - t0}ms).`);
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------
@@ -225,19 +426,41 @@ async function pickFreeSlug(base) {
 export async function generateLocalDraft() {
   console.log(`[blog] writer=${WRITER_MODEL} critic=${CRITIC_MODEL} slop_threshold=${SLOP_THRESHOLD}`);
 
-  const story = await fetchHNTopStory();
+  const story = await fetchStory();
   if (!story) {
-    console.log('[blog] No fresh relevant HN story. Skipping.');
+    console.log('[blog] No fresh relevant story from any source. Skipping.');
     return { ok: false, reason: 'no_story' };
   }
-  const hnUrl = `https://news.ycombinator.com/item?id=${story.id}`;
-  console.log(`[blog] Story: ${story.title} (score ${story.score})`);
+  const hnUrl = story.source === 'hn'
+    ? `https://news.ycombinator.com/item?id=${story.id}`
+    : story.url;
+  console.log(`[blog] Story (${story.source}): ${story.title} (score ${story.score})`);
 
-  const userPrompt = `Rewrite this Hacker News story for the Simple IT SRQ blog.
+  const sourceLabel = {
+    hn:     'Hacker News',
+    'r/sysadmin':     'the r/sysadmin subreddit',
+    'r/msp':          'the r/msp subreddit',
+    'r/cybersecurity': 'the r/cybersecurity subreddit',
+    'r/netsec':       'the r/netsec subreddit',
+    cisa:     'a CISA cybersecurity advisory',
+    'cisa-kev': 'a CISA Known Exploited Vulnerability (KEV) entry',
+  }[story.source] || 'a tech news story';
+
+  // For CISA-KEV we have rich structured data — feed it to the writer
+  // so the post is grounded in the real CVE details, not invented.
+  const cveContext = story.source === 'cisa-kev' ? `
+CVE: ${story.cveID}
+Vendor/Product: ${story.vendor} ${story.product}
+Vulnerability: ${story.cveName || ''}
+Description: ${story.shortDescription || ''}
+Required action: ${story.requiredAction || ''}
+Date added to KEV: ${story.dateAdded || ''}
+` : '';
+
+  const userPrompt = `Rewrite this ${sourceLabel} story for the Simple IT SRQ blog.
 Title: ${story.title}
 URL: ${story.url}
-HN discussion: ${hnUrl}
-Score: ${story.score}`;
+${story.source === 'hn' ? `HN discussion: ${hnUrl}\n` : ''}Score: ${story.score}${cveContext}`;
 
   // --- Write ---
   console.log(`[blog] Drafting with ${WRITER_MODEL}...`);

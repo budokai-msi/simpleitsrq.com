@@ -94,3 +94,10 @@ SITE-INVENTORY.md
 .env*.local
 data/benchmark-results/
 .env*
+
+
+# Blog publisher heartbeat — written by local-cron-daemon.mjs on every
+# run. Sidecar record of the last publish/no-publish decision so
+# operators (and any future alerting) can tell when the daemon last
+# actually shipped a post vs. silently failed.
+.last-publish.json
