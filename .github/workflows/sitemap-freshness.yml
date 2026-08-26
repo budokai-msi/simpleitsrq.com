@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 # contents: write is only needed on push to main, where the job commits
 # regenerated artifacts after the blog auto-publish cron lands a new MDX
