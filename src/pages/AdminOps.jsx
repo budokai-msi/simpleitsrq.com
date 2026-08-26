@@ -28,6 +28,13 @@ import { csrfFetch } from "../lib/csrf";
 import { useSEO } from "../lib/seo";
 import AdminNav from "../components/AdminNav";
 import NotFound from "./NotFound";
+import {
+  SignalPill,
+  deriveIntel,
+  fmtNumber,
+  getJson,
+  postJson,
+} from "../components/admin/shared";
 // Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
 // in a lazy CSS chunk instead of the global render-blocking bundle. Vite
 // dedupes the import across the leadgen routes.
