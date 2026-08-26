@@ -474,3 +474,74 @@ html[data-theme="light"] .leadgen-product-upgrade {
 .leadgen-card-expand {
   border-radius: 6px !important;
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+   SEARCH JOIN — daisyUI `join` pattern as a compact single control.
+   Fuses ZIP + industry + search into one element so the search bar takes
+   ~half the vertical space and reads as one action, not three stacked
+   fields. Outside corners rounded, inner dividers square — the classic
+   daisyUI join. Stacks to full-width rows on narrow screens.
+   ──────────────────────────────────────────────────────────────────────── */
+.leadgen-join {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  max-width: 640px;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--lg-panel);
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.leadgen-join__field {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+.leadgen-join__zip { flex: 0 0 92px; }
+.leadgen-join__industry { flex: 1 1 auto; min-width: 0; border-left: 1px solid var(--lg-border-soft); }
+.leadgen-join input,
+.leadgen-join select {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--lg-text);
+  font: inherit;
+  font-size: .9rem;
+  outline: none;
+}
+.leadgen-join input::placeholder { color: var(--lg-faint); }
+.leadgen-join input:focus-visible,
+.leadgen-join select:focus-visible { outline: 2px solid var(--lg-blue); outline-offset: -2px; }
+.leadgen-join__btn {
+  flex: 0 0 auto;
+  border: 0;
+  border-left: 1px solid var(--lg-border-soft);
+  border-radius: 0 !important;
+  min-height: 44px;
+  min-width: 96px;
+  font-size: .86rem !important;
+}
+.leadgen-join__btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Mobile: stack the join so each control gets full width. */
+@media (max-width: 640px) {
+  .leadgen-join {
+    flex-direction: column;
+    border-radius: 10px;
+  }
+  .leadgen-join__zip,
+  .leadgen-join__industry {
+    border-left: 0;
+    border-bottom: 1px solid var(--lg-border-soft);
+  }
+  .leadgen-join__zip { flex: none; }
+  .leadgen-join__btn {
+    border-left: 0;
+    min-height: 48px;
+    width: 100%;
+  }
+}

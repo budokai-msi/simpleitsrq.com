@@ -813,21 +813,21 @@ function LeadgenScanApp() {
 
         <section id="leadgen-discover" className="leadgen-scan-card leadgen-workflow-target" aria-labelledby="leadgen-discover-title">
           <nav className="leadgen-section-breadcrumbs" aria-label="Discover section">
-            <a href="#leadgen-discover">Leadgen</a><span aria-hidden="true">›</span><strong id="leadgen-discover-title">Discover</strong>
+            <a href="#leadgen-discover">Leadgen</a><span aria-hidden="true">›</span><strong id="leadgen-discover-title">Find</strong>
           </nav>
-          <div className="leadgen-app-controls leadgen-app-controls--primary">
-            <label>
-              <span>ZIP code</span>
-              <input inputMode="numeric" value={zip} onChange={(event) => { setZip(event.target.value.replace(/\D/g, "").slice(0, 5)); setZipSource("manual"); }} placeholder="34236" />
+          <div className="leadgen-join" role="search" aria-label="Search local businesses">
+            <label className="leadgen-join__field leadgen-join__zip">
+              <span className="sr-only">ZIP code</span>
+              <input inputMode="numeric" value={zip} onChange={(event) => { setZip(event.target.value.replace(/\D/g, "").slice(0, 5)); setZipSource("manual"); }} placeholder="ZIP" aria-label="ZIP code" />
             </label>
-            <label>
-              <span>Industry</span>
-              <select value={niche} onChange={(event) => setNiche(event.target.value)}>
+            <label className="leadgen-join__field leadgen-join__industry">
+              <span className="sr-only">Industry</span>
+              <select value={niche} onChange={(event) => setNiche(event.target.value)} aria-label="Industry">
                 {PUBLIC_NICHES.map((option) => <option key={option}>{option}</option>)}
               </select>
             </label>
-            <button type="button" className="btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
-              <Search size={16} /> {busy ? "Searching…" : "Search"}
+            <button type="button" className="leadgen-join__btn btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
+              {busy ? "…" : <><Search size={15} aria-hidden="true" /> <span>Search</span></>}
             </button>
           </div>
           {zipSource === "geo" && validZip ? (

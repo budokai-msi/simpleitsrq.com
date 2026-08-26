@@ -36,6 +36,22 @@ import { requireAdmin } from "./shared.js";
 const LEADGEN_VALID_KINDS = new Set(["osm_zip", "website_emails"]);
 let leadgenTaxonomyReady = false;
 
+// Fire-and-forget: ask the on-demand worker (/api/leadgen-worker) to drain the
+// queue right after a job is enqueued, so jobs start within seconds instead of
+// waiting for the daily cron. Uses CRON_SECRET so the endpoint isn't a public
+// job-runner. Never awaited — if it fails, the daily cron is the fallback.
+async function kickWorker() {
+  const secret = process.env.CRON_SECRET;
+  const base = process.env.SELF_BASE_URL || "https://simpleitsrq.com";
+  try {
+    const headers = { "content-type": "application/json" };
+    if (secret) headers.authorization = `Bearer ${secret}`;
+    await fetch(`${base}/api/leadgen-worker`, { method: "POST", headers });
+  } catch {
+    /* non-fatal: daily cron covers it */
+  }
+}
+
 async function ensureLeadgenTaxonomyColumns() {
   if (leadgenTaxonomyReady) return;
   await sql`ALTER TABLE lead_businesses ADD COLUMN IF NOT EXISTS industry_group text`;
@@ -338,6 +354,7 @@ export async function handleLeadgenDiscover(session, request) {
     VALUES ('osm_zip', 'pending', ${JSON.stringify({ zip })}::jsonb, ${userId})
     RETURNING id
   `;
+  kickWorker();
   return json(200, { ok: true, job_id: rows[0].id });
 }
 
@@ -386,6 +403,7 @@ export async function handleLeadgenCrawlEmails(session, request) {
     `;
     inserted.push(r[0].id);
   }
+  kickWorker();
   return json(200, { ok: true, queued: inserted.length, ids: inserted });
 }
 
