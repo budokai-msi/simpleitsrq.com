@@ -55,10 +55,6 @@ jobs:
           git --no-pager diff --stat public/sitemap.xml public/rss.xml src/data/posts-meta.json
           exit 1
 
-      # On main, drift is expected: the daily blog cron publishes MDX posts
-      # via the Contents API without regenerating these derived files, so the
-      # job commits them here. `[skip ci]` stops the auto-commit from
-      # re-triggering this workflow, so there is no loop.
       - name: Commit regenerated artifacts (main)
         if: github.event_name == 'push'
         run: |
@@ -71,4 +67,11 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add public/sitemap.xml public/rss.xml src/data/posts-meta.json
           git commit -m "chore(ci): regenerate prebuild artifacts [skip ci]"
+          # Two cron publishes can land back-to-back and run this job in
+          # parallel; each generates the same derived files and pushes. A bare
+          # `git push` then fails with "rejected ... fetch first" for the run
+          # that loses the race. Rebase onto the latest main first so the
+          # commit applies cleanly and the push succeeds. `[skip ci]` keeps the
+          # rebased commit from re-triggering this workflow.
+          git pull --rebase origin "${{ github.ref_name }}"
           git push
