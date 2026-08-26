@@ -111,6 +111,7 @@ function ProsConsColumn({ product }) {
 export default function CompareDetail() {
   const { slug } = useParams();
   const comparison = useMemo(() => getComparison(slug), [slug]);
+  const whyData = useMemo(() => getWhyVs(slug), [slug]);
 
   // Per-product Product JSON-LD - two separate blobs so Google understands
   // these are two products being compared, not a single comparison article.

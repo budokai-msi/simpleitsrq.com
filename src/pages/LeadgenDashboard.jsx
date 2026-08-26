@@ -226,7 +226,6 @@ function LeadgenIntegrationsManager() {
                 value={config[f.key] || ""}
                 onChange={(e) => setConfig((c) => ({ ...c, [f.key]: e.target.value }))}
                 placeholder={f.placeholder || ""}
-                list={f.datalist === "ac" && acFields.length ? "leadgen-ac-fields" : undefined}
                 autoComplete="off"
               />
             </label>
@@ -1659,22 +1658,19 @@ function DiscoverTab({ onStatusChange }) {
     setGeneratingId(row.id);
     setErr("");
     try {
-      const aiRes = await fetcher("/api/portal?action=leadgen-ai", {
-        method: "POST",
-        body: JSON.stringify({
-          mode: "personalize",
-          business_name: row.name,
-          industry: row.sub_industry || row.industry_group || row.industry,
-          website: row.website
-        }),
+      const aiRes = await postJson("/api/portal?action=leadgen-ai", {
+        mode: "personalize",
+        business_name: row.name,
+        industry: row.sub_industry || row.industry_group || row.industry,
+        website: row.website
       });
       if (aiRes.error) throw new Error(aiRes.error);
       const opener = aiRes.result?.opener;
       if (!opener) throw new Error("No opener returned");
 
-      const updateRes = await fetcher("/api/portal?action=leadgen-business-update", {
-        method: "POST",
-        body: JSON.stringify({ id: row.id, notes: opener }),
+      const updateRes = await postJson("/api/portal?action=leadgen-business-update", {
+        id: row.id,
+        notes: opener,
       });
       if (updateRes.error) throw new Error(updateRes.error);
 

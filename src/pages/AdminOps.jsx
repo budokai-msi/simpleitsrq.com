@@ -1,30 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity,
-  AlertTriangle,
   BarChart3,
   BookOpen,
-  CheckCircle2,
-  ClipboardList,
   DollarSign,
-  ExternalLink,
   Eye,
   FileText,
   Inbox,
   Lock,
-  Mail,
-  RadioTower,
   RefreshCcw,
-  Search,
-  Send,
   Shield,
   Target,
   Ticket,
-  XCircle,
 } from "lucide-react";
-import { csrfFetch } from "../lib/csrf";
 import { useSEO } from "../lib/seo";
 import AdminNav from "../components/AdminNav";
 import NotFound from "./NotFound";
@@ -259,15 +248,17 @@ export default function AdminOps() {
         </nav>
 
         <section className="admin-leadgen-tab-body">
-          {tab === "ops" && <OpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
-          {tab === "leads" && <LeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
-          {tab === "visitors" && <VisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
-          {tab === "content" && <ContentTab data={data["content-insights"]} error={errors["content-insights"]} />}
-          {tab === "drafts" && <DraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
-          {tab === "affiliate" && <AffiliateTab data={data} />}
-          {tab === "leadgen" && <LeadgenTab status={data["leadgen-status"]} />}
-          {tab === "adsense" && <AdsenseTab health={data["adsense-health"]} />}
-          {tab === "opsec" && <OpsecTab data={{ ...(data["opsec-data"] || {}), huntBrief: data["opsec-hunt-brief"] }} busy={busy} runAction={runAction} />}
+          <Suspense fallback={<div className="ops-tab-loading">Loading…</div>}>
+            {tab === "ops" && <LazyOpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
+            {tab === "leads" && <LazyLeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
+            {tab === "visitors" && <LazyVisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
+            {tab === "content" && <LazyContentTab data={data["content-insights"]} error={errors["content-insights"]} />}
+            {tab === "drafts" && <LazyDraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
+            {tab === "affiliate" && <LazyAffiliateTab data={data} />}
+            {tab === "leadgen" && <LazyLeadgenTab status={data["leadgen-status"]} />}
+            {tab === "adsense" && <LazyAdsenseTab health={data["adsense-health"]} />}
+            {tab === "opsec" && <LazyOpsecTab data={{ ...(data["opsec-data"] || {}), huntBrief: data["opsec-hunt-brief"] }} busy={busy} runAction={runAction} />}
+          </Suspense>
         </section>
       </div>
     </main>
