@@ -21,6 +21,8 @@
     "benchmark:scan": "node scripts/benchmark/run-batch-scan.mjs",
     "benchmark:report": "node scripts/benchmark/generate-report.mjs",
     "db:push": "node --env-file=.env.local scripts/db/push.mjs",
+    "leadgen:work": "node --env-file=.env.local scripts/leadgen-worker.mjs",
+    "leadgen:watch": "node --env-file=.env.local scripts/leadgen-worker.mjs --watch",
     "blog:daemon": "node --env-file=.env.local scripts/local-cron-daemon.mjs",
     "blog:once": "node --env-file=.env.local scripts/local-cron-daemon.mjs --once"
   },
