@@ -774,10 +774,10 @@ function LeadgenScanApp() {
   const collapseAllGroups = () => setOpenGroups(Object.fromEntries(groupedRows.map((group) => [group.name, false])));
   const stage = !scan ? 0 : selectedRows.length === 0 ? 1 : selectedRows.some((row) => row.website && !row.website_intel) ? 2 : 3;
   const workflow = [
-    { id: "leadgen-discover", number: "1", label: "Discover", body: "Choose the ZIP code and industry you want to study." },
-    { id: "leadgen-qualify", number: "2", label: "Qualify", body: "Compare the businesses and select the ones worth working." },
-    { id: "leadgen-enrich", number: "3", label: "Enrich", body: "Add useful contact details from the business website." },
-    { id: "leadgen-use", number: "4", label: "Use", body: "Download selected prospects or send them to your CRM." },
+    { id: "leadgen-discover", number: "1", label: "Find", body: "Pick a ZIP and industry." },
+    { id: "leadgen-qualify", number: "2", label: "Shortlist", body: "See the businesses and mark the ones worth working." },
+    { id: "leadgen-enrich", number: "3", label: "Get contacts", body: "Check a business's website for public email and social links." },
+    { id: "leadgen-use", number: "4", label: "Export", body: "Download the ones you picked, or push them to a CRM." },
   ];
 
   return (
@@ -785,12 +785,12 @@ function LeadgenScanApp() {
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
           <span className="leadgen-app-live"><span /> Local business research</span>
-          <span className="leadgen-app-portal-link">Evidence-backed market view</span>
+          <span className="leadgen-app-portal-link">Built for the Suncoast</span>
         </div>
 
         <div className="leadgen-app-title">
-          <h2 className="title-2">Start with a market. Find the businesses worth a closer look.</h2>
-          <p>Scan by ZIP code and industry, compare fit with data quality, inspect the evidence behind each record, then enrich and export only the prospects you choose.</p>
+          <h2 className="title-2">Look up a ZIP, see who's there.</h2>
+          <p>Enter a ZIP code and industry, and we'll pull the local businesses, their websites, phones, and what's missing from their online presence. You pick who's worth contacting.</p>
         </div>
 
         <nav className="leadgen-product-steps" aria-label="Leadgen workflow">
@@ -935,7 +935,7 @@ function LeadgenScanApp() {
               <div className="leadgen-use-card__body">
                 <div>
                   <strong>{selectedRows.length ? `${selectedRows.length} prospect${selectedRows.length === 1 ? "" : "s"} ready` : "Select prospects to continue"}</strong>
-                  <span>Download a clean CSV, send to HubSpot, or hand selected records to a webhook workflow.</span>
+                  <span>Download the list as a CSV, or send it to HubSpot or a webhook.</span>
                 </div>
                 <div className="leadgen-use-card__actions">
                   <button type="button" className="btn btn-secondary btn-sm" disabled={!selectedRows.length} onClick={() => downloadCsv(`leadgen-${zip}.csv`, selectedRows.map((row) => ({ ...row, email: bestEmail(row) })))}>Download CSV</button>
@@ -948,9 +948,9 @@ function LeadgenScanApp() {
 
             <div className="leadgen-explorer-head">
               <div>
-                <span className="eyebrow">Market explorer</span>
+                <span className="eyebrow">What's in the ZIP</span>
                 <h3>{groupedRows.length} industries in ZIP {zip}</h3>
-                <p>Open a category, compare its businesses, then expand a prospect for contact details and source evidence.</p>
+                <p>Businesses are grouped by type. Open a group to compare them, then expand one for contact details.</p>
               </div>
               <div className="leadgen-explorer-actions">
                 <button type="button" className="btn btn-secondary btn-sm" onClick={expandAllGroups}>Expand all</button>
@@ -1103,7 +1103,7 @@ function LeadgenScanApp() {
                                         <div className="leadgen-signal-chips">
                                           {(row.fit_reasons?.length ? row.fit_reasons : [row.is_chain ? "Brand or chain signal" : "Likely independent", row.sub_industry ? "Specific category available" : "Category needs review"]).map((reason) => <span key={reason}>{reason}</span>)}
                                         </div>
-                                        <p className="leadgen-evidence-note">Fit only summarizes observable market and business-type signals. It does not claim purchase intent.</p>
+                                        <p className="leadgen-evidence-note">Fit is a rough read of business type and whether it looks independent. It's not a promise that they're looking to buy.</p>
                                       </section>
 
                                       <section>
@@ -1121,10 +1121,10 @@ function LeadgenScanApp() {
                                         {row.website_intel ? (
                                           <>
                                             {contactSignals.length ? <div className="leadgen-signal-chips is-intel">{contactSignals.map((label) => <span key={label}>{label}</span>)}</div> : null}
-                                            <p className="leadgen-evidence-note">Checked the business website for public email addresses, a contact form, and public social links. Missing details are left unknown.</p>
+                                            <p className="leadgen-evidence-note">We checked the business website for a public email, a contact form, and social links. If something's missing, we left it unknown rather than guessing.</p>
                                           </>
                                         ) : (
-                                          <p className="leadgen-card-empty">Use the Find contacts button to check public pages on this business website. It only checks public contact pages; technical diagnostics are intentionally excluded.</p>
+                                          <p className="leadgen-card-empty">Hit "Find contacts" to check the public pages on this business's website for an email or contact form.</p>
                                         )}
                                       </section>
 
@@ -1134,7 +1134,7 @@ function LeadgenScanApp() {
                                           {row.website ? <a href={websiteHref(row.website)} target="_blank" rel="noopener noreferrer">Website <ExternalLink size={12} /></a> : null}
                                           {row.source_url ? <a href={row.source_url} target="_blank" rel="noopener noreferrer">Source record <ExternalLink size={12} /></a> : null}
                                         </div>
-                                        <p className="leadgen-evidence-note">Discovery source: {row.source_label || scan.scan_source || "public business data"}{Number.isFinite(Number(row.source_confidence)) ? ` · source confidence ${Math.round(Number(row.source_confidence) * 100)}%` : ""}{row.source_id ? ` · record ${row.source_id}` : ""}. Contact enrichment only checks public website pages you request.</p>
+                                        <p className="leadgen-evidence-note">Where this record came from: {row.source_label || scan.scan_source || "public business data"}{Number.isFinite(Number(row.source_confidence)) ? ` · we trust it ${Math.round(Number(row.source_confidence) * 100)}%` : ""}. Contact details only come from the public pages you ask us to check.</p>
                                       </section>
                                     </div>
                                   </div>
@@ -1148,7 +1148,7 @@ function LeadgenScanApp() {
                   </section>
                 );
               })}
-              {!groupedRows.length ? <p className="leadgen-category-empty">No businesses match this search.</p> : null}
+              {!groupedRows.length ? <p className="leadgen-category-empty">Nothing in this ZIP matches that search. Try a different industry.</p> : null}
             </div>
           </>
         ) : null}
