@@ -44,6 +44,11 @@
   --brand-pressed: #000000;
   --brand-subtle: #E8E8E8;
   --brand-glow: rgba(17, 24, 39, 0.22);
+  /* RGB triplets for rgba() usage — must track --brand / --surface so
+   * rgba(var(--brand-rgb, ...), a) resolves per-theme instead of
+   * falling back to near-black in dark mode. */
+  --brand-rgb: 17, 24, 39;
+  --surface-rgb: 250, 247, 242;
 
   /* Text — darker for more punch against warm backgrounds */
   --text-1: #141414;
@@ -92,6 +97,10 @@
   --brand-pressed: #C0C8D4;
   --brand-subtle: rgba(232, 238, 246, 0.14);
   --brand-glow: rgba(232, 238, 246, 0.28);
+  /* RGB triplets — track --brand / --surface so rgba(var(--brand-rgb), a)
+   * resolves to a light tint in dark mode instead of near-black. */
+  --brand-rgb: 232, 238, 246;
+  --surface-rgb: 20, 23, 28;
 
   /* Text */
   --text-1: #F4F5F7;

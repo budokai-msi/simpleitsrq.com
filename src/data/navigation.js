@@ -11,10 +11,43 @@ export const SERVICE_AREA_LINKS = cityList
   .map((city) => ({ id: city.slug, label: city.city, to: `/${city.slug}`, icon: "MapPin" }));
 
 export const PRIMARY_NAV = [
-  { id: "repair", label: "Computer Repair", to: "/services#computer-repair", icon: "Wrench", activePaths: ["/services"] },
-  { id: "managed-it", label: "Managed IT", to: "/services#managed-it", icon: "Briefcase", activePaths: ["/services"] },
+  {
+    id: "services",
+    label: "Services",
+    icon: "Wrench",
+    activePaths: ["/services"],
+    items: [
+      { id: "computer-repair", label: "Computer Repair", description: "Diagnostics, repair, and upgrades", to: "/services#computer-repair", icon: "Wrench" },
+      { id: "hardware-upgrades", label: "Hardware Upgrades", description: "Memory, storage, docks, monitors", to: "/services#hardware-upgrades", icon: "ShoppingBag" },
+      { id: "it-integration", label: "Systems & App Integration", description: "Make your tools work together", to: "/services#it-integration", icon: "LayoutGrid" },
+      { id: "managed-it", label: "Managed IT", description: "Ongoing business IT support", to: "/services#managed-it", icon: "Briefcase" },
+    ],
+  },
+  {
+    id: "locations",
+    label: "Locations",
+    icon: "MapPin",
+    activePrefixes: ["/sarasota-it-support", "/bradenton-it-support", "/lakewood-ranch-it-support", "/service-area"],
+    items: [
+      { id: "sarasota", label: "Sarasota", description: "IT support in Sarasota", to: "/sarasota-it-support", icon: "MapPin" },
+      { id: "bradenton", label: "Bradenton", description: "IT support in Bradenton", to: "/bradenton-it-support", icon: "MapPin" },
+      { id: "lakewood-ranch", label: "Lakewood Ranch", description: "IT support in Lakewood Ranch", to: "/lakewood-ranch-it-support", icon: "MapPin" },
+      { id: "service-area", label: "All service areas", description: "We travel to you", to: "/service-area", icon: "MapPin" },
+    ],
+  },
+  {
+    id: "resources",
+    label: "Resources",
+    icon: "BookOpen",
+    activePrefixes: ["/blog", "/tools", "/compare", "/glossary"],
+    items: [
+      { id: "blog", label: "Blog", description: "Field notes & analysis", to: "/blog", icon: "BookOpen" },
+      { id: "tools", label: "Free tools", description: "Exposure scan, password check", to: "/tools", icon: "Search" },
+      { id: "compare", label: "Compare", description: "X vs Y buying guides", to: "/compare", icon: "Shield" },
+      { id: "glossary", label: "Glossary", description: "IT terms explained", to: "/glossary", icon: "Info" },
+    ],
+  },
   { id: "leadgen", label: "Leadgen", to: "/leadgen", icon: "Target", activePaths: ["/leadgen"] },
-  { id: "blog", label: "Blog", to: "/blog", icon: "BookOpen", activePrefixes: ["/blog"] },
 ];
 
 export const FOOTER_COLUMNS = [
