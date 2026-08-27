@@ -9,6 +9,7 @@ import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/h
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics";
+import { adChannelLabel } from "../lib/utm";
 
 function Hero() {
   return (
@@ -25,6 +26,7 @@ function Hero() {
           </div>
           <ul className="home-hero__proof" aria-label="Service area and focus">
                       <li><MapPin size={15} /> Sarasota & Bradenton</li>
+                      <li><Wrench size={15} /> Mobile & on-site service</li>
                       <li><Clock size={15} /> Same-day response</li>
                       <li><Star size={15} /> 4.9★ on Google</li>
                     </ul>
@@ -66,7 +68,7 @@ const ERROR_MESSAGES = { captcha_required:"Please complete the security check be
 function Contact() {
   const [form,setForm]=useState({name:"",company:"",email:"",phone:"",message:"",_hp:""}); const [status,setStatus]=useState("idle"); const [errorMsg,setErrorMsg]=useState(""); const [token,setToken]=useState("");
   const {containerRef,reset}=useTurnstile(setToken); const update=(k)=>(e)=>setForm((f)=>({...f,[k]:e.target.value}));
-  const submit=async(e)=>{e.preventDefault(); if(status==="submitting")return; if(TURNSTILE_SITE_KEY&&!token){errorHaptic();setStatus("error");setErrorMsg(ERROR_MESSAGES.captcha_required);return;} selectionHaptic();setStatus("submitting");setErrorMsg(""); try{const r=await csrfFetch("/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...form,turnstileToken:token})});const d=await r.json().catch(()=>({}));if(r.ok&&d.ok){successHaptic();setStatus("success");trackEvent("generate_lead",{source:"home_contact"});}else{throw new Error(d.error||"send_failed");}}catch(err){errorHaptic();setStatus("error");setErrorMsg(ERROR_MESSAGES[err.message]||ERROR_MESSAGES.send_failed);setToken("");reset();}};
+  const submit=async(e)=>{e.preventDefault(); if(status==="submitting")return; if(TURNSTILE_SITE_KEY&&!token){errorHaptic();setStatus("error");setErrorMsg(ERROR_MESSAGES.captcha_required);return;} selectionHaptic();setStatus("submitting");setErrorMsg(""); try{const r=await csrfFetch("/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...form,turnstileToken:token,source:["home_contact",adChannelLabel()].filter(Boolean).join("+")})});const d=await r.json().catch(()=>({}));if(r.ok&&d.ok){successHaptic();setStatus("success");trackEvent("generate_lead",{source:"home_contact"});}else{throw new Error(d.error||"send_failed");}}catch(err){errorHaptic();setStatus("error");setErrorMsg(ERROR_MESSAGES[err.message]||ERROR_MESSAGES.send_failed);setToken("");reset();}};
   return <section className="section" id="contact"><div className="container"><div className="section-head"><span className="eyebrow">Need a second set of eyes?</span><h2 className="title-1">Tell us what is going on.</h2><p className="section-sub">Describe the computer, network, Microsoft 365, or business IT problem in plain language. If it fits our scope, we will explain the next step. If it does not, we will tell you that too.</p></div><div className="contact-grid"><div className="form-shell"><form className="form" onSubmit={submit}><label><span>What is happening?</span><textarea rows="6" value={form.message} onChange={update("message")} required /></label><div className="row-2"><label><span>Email</span><input type="email" value={form.email} onChange={update("email")} required /></label><label><span>Name</span><input value={form.name} onChange={update("name")}/></label></div>{TURNSTILE_SITE_KEY&&<div ref={containerRef}/>}<button className="btn btn-primary btn-lg" disabled={status==="submitting"} onPointerDown={tapHaptic}>{status==="submitting"?<><Loader2 size={18} className="spin"/> Sending...</>:<><Send size={16}/> Get a response today</>}</button>{status==="error"&&<div className="form-banner form-banner-error"><AlertCircle size={18}/>{errorMsg}</div>}{status==="success"&&<div className="form-banner"><CheckCircle2 size={18}/> Message sent. We will reply during business hours.</div>}</form></div><aside className="contact-info"><div className="info-row"><Mail size={18}/><div><strong>Email</strong><br/>hello@simpleitsrq.com</div></div><div className="info-row"><MapPin size={18}/><div><strong>Service area</strong><br/>Sarasota and Bradenton area</div></div><div className="info-row"><Clock size={18}/><div><strong>Best fit</strong><br/>Computer repair, diagnostics, networks, and ongoing business IT.</div></div></aside></div></div></section>;
 }
 

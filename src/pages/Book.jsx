@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import {
   Calendar, Clock, Video, ShieldCheck, Check, Mail, Loader2,
-  AlertTriangle, Send, ArrowRight,
+  AlertTriangle, Send, ArrowRight, MapPin,
 } from "lucide-react";
 import { useSEO } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { track, trackEvent } from "../lib/analytics";
 import { loadContactProfile, saveContactProfile } from "../lib/contactProfile";
+import { adChannelLabel } from "../lib/utm";
 import { Link } from "../lib/Link";
 
 // Full Cal.com path, e.g. "simpleitsrq/free-consultation". Set via Vercel
@@ -39,6 +40,11 @@ const BOOK_FAQS = [
     question: "Can we use Google Meet, Zoom, or Microsoft Teams?",
     answer:
       "Yes. We can meet on Google Meet, Zoom, or Microsoft Teams based on your team's preference.",
+  },
+  {
+    question: "Do you come to our office for repairs and setup?",
+    answer:
+      "Yes. We travel to your site for computer repairs, hardware upgrades, and network or integration work across Sarasota, Bradenton, Lakewood Ranch, Venice, and the surrounding area.",
   },
 ];
 
@@ -174,7 +180,7 @@ function ConsultationForm() {
           company: company.trim(),
           phone: phone.trim(),
           message,
-          source: "book-consultation",
+          source: ["book-consultation", adChannelLabel()].filter(Boolean).join("+"),
           turnstileToken,
         }),
       });
@@ -341,6 +347,7 @@ export default function Book() {
   const bullets = [
     { Icon: Clock, text: "30 minutes, no obligation" },
     { Icon: Video, text: "Google Meet, Zoom, or Microsoft Teams" },
+    { Icon: MapPin, text: "On-site visits for repair and setup" },
     { Icon: ShieldCheck, text: "Covered by an NDA on request" },
     { Icon: Check, text: "Same-day confirmation" },
   ];

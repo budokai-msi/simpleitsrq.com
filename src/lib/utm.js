@@ -62,3 +62,21 @@ export function getUtmParams() {
   }
   return {};
 }
+
+/** Build a short, human-readable ad-channel tag from captured UTM/gclid
+ *  params, e.g. "ad:google-ads/computer-repair" or "utm:newsletter".
+ *  Returns "" when no paid/UTM signal is present, so callers can append
+ *  it to a lead `source` string without breaking existing sources. */
+export function adChannelLabel(params = getUtmParams()) {
+  if (!params || typeof params !== "object") return "";
+  if (params.gclid) {
+    return `ad:google-ads${params.utm_campaign ? "/" + params.utm_campaign : ""}`;
+  }
+  if (params.fbclid) {
+    return `ad:meta${params.utm_campaign ? "/" + params.utm_campaign : ""}`;
+  }
+  if (params.utm_source) {
+    return `utm:${params.utm_source}`;
+  }
+  return "";
+}

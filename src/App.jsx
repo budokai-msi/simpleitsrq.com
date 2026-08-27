@@ -28,6 +28,7 @@ import VisitorTracker from "./components/VisitorTracker.jsx";
 import { useAnalyticsPageviews, useAnalyticsConsent, trackEvent } from "./lib/analytics.js";
 import { useClarity } from "./lib/clarity.js";
 import { useEngagementTracking } from "./lib/engagement.js";
+import { captureUtmParams, getUtmParams } from "./lib/utm.js";
 import { AutoAds } from "./components/AdSense.jsx";
 import LiveChat from "./components/LiveChat.jsx";
 import AIChat from "./components/AIChat.jsx";
@@ -471,6 +472,12 @@ function AnalyticsMount() {
   useAnalyticsPageviews();
   useClarity();
   useEngagementTracking();
+  // Capture gclid / UTM params into session+local storage once per
+  // landing so every lead form submission on this visit can be tagged
+  // with the ad channel that brought the visitor in.
+  useEffect(() => {
+    captureUtmParams();
+  }, []);
   return null;
 }
 

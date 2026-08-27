@@ -16,10 +16,17 @@
 
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { readConsent, CONSENT_EVENT, hasAnalyticsConsent } from "./consent.js";
+import { readConsent, CONSENT_EVENT, hasAnalyticsConsent, hasMarketingConsent } from "./consent.js";
 
 const GA_ID =
   import.meta.env.VITE_GA_MEASUREMENT_ID || "G-YBMM01FMVW";
+
+// Google Ads conversion tracking ID (e.g. "AW-123456789"). Optional —
+// when set, trackConversion() fires gtag('event', 'conversion', ...)
+// so Google Ads can attribute leads to ad clicks. Gate behind marketing
+// consent (same as ad_* flags) so we never fire conversion pings before
+// the visitor opts into ad personalization.
+const GADS_ID = import.meta.env.VITE_GADS_CONVERSION_ID || "";
 
 // Make the ID available to ga-init.js on its next load (build cache,
 // return visits). Does nothing on first paint since ga-init.js runs
@@ -100,17 +107,35 @@ export function trackEvent(eventName, params = {}) {
   gtagSafe("event", eventName, payload);
 }
 
+/** Fire a Google Ads conversion (gtag event 'conversion'). Optional —
+ *  no-op until VITE_GADS_CONVERSION_ID is set and the visitor granted
+ *  marketing consent. Used by track.lead() so ad click → lead is
+ *  attributable in Google Ads, not just GA4. */
+export function trackConversion(value, params = {}) {
+  if (!GADS_ID) return;
+  if (!hasMarketingConsent()) return;
+  const payload = { send_to: GADS_ID };
+  if (typeof value === "number") {
+    payload.value = value;
+    payload.currency = "USD";
+  }
+  Object.assign(payload, params);
+  gtagSafe("event", "conversion", payload);
+}
+
 /** Convenience wrappers matching the common events fired on this site. */
 export const track = {
   // Visitor filled a lead form (quote request, audit intro, sponsor
   // inquiry, newsletter signup, etc.). Pass `value` when there's an
-  // expected revenue tied to the lead.
+  // expected revenue tied to the lead. Mirrors the conversion into
+  // Google Ads so ad clicks get attribution for the lead.
   lead(source, value, extra = {}) {
     trackEvent("generate_lead", {
       source,
       ...(typeof value === "number" ? { value } : {}),
       ...extra,
     });
+    trackConversion(value);
   },
   // Visitor clicked an affiliate link. Mirrors the /api/track beacon so
   // both sides (our DB + GA) see the same conversion.

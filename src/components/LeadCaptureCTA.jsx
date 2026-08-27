@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
+import { adChannelLabel } from "../lib/utm";
 
 export default function LeadCaptureCTA({
   title = "Review Your IT Setup in 15 Minutes",
@@ -24,7 +25,7 @@ export default function LeadCaptureCTA({
       const r = await csrfFetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, source }),
+        body: JSON.stringify({ ...form, source: [source, adChannelLabel()].filter(Boolean).join("+") }),
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok || !data.ok) {
