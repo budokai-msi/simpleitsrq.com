@@ -26,6 +26,91 @@ const REDDIT_SOURCES = [
 ];
 const REDDIT_BANNED = /\[meta\]|\[meme\]|\[discussion\]|weekly|monthly|megathread|ama:|daily|question|hire me|for hire|looking for/i;
 
+// ─────────────────────────────────────────────────────────────
+// Local-SEO keyword bank — the PRIMARY source.
+//
+// The old pipeline only rewrote HN/Reddit/CISA stories, so every
+// post was reactive tech news that nobody searching for a local IT
+// provider would ever find. This bank targets the high-intent
+// queries a Sarasota/Bradenton business owner actually types into
+// Google. Each entry is an evergreen topic we can write authoritatively
+// about regardless of the news cycle. Rotated round-robin so we don't
+// repeat until the whole bank is exhausted.
+//
+// `query`  = the search phrase we're targeting (used in title/meta).
+// `title`  = a concrete, human title template (not keyword-stuffed).
+// `cat`    = blog category.
+// `angle`  = the specific local angle the writer should lead with.
+// ─────────────────────────────────────────────────────────────
+const LOCAL_KEYWORDS = [
+  { query: "IT support Sarasota", title: "IT Support in Sarasota: What a Local Provider Actually Does", cat: "Business Tech", angle: "why a local Sarasota provider beats a national helpdesk for a Gulf Coast business" },
+  { query: "managed IT services Bradenton", title: "Managed IT Services in Bradenton: What You're Paying For", cat: "Business Tech", angle: "the flat-fee managed IT model and what it covers for a Bradenton office" },
+  { query: "computer repair Sarasota", title: "Computer Repair in Sarasota: When to Fix It vs. Replace It", cat: "Business Tech", angle: "a practical fix-vs-replace decision guide for Sarasota businesses" },
+  { query: "small business IT support Sarasota", title: "Small Business IT Support in Sarasota: What You Actually Need", cat: "Business Tech", angle: "right-sized IT for a 5-50 person Sarasota company, no enterprise bloat" },
+  { query: "how much does managed IT cost", title: "How Much Does Managed IT Cost in 2026? A Straight Answer", cat: "Business Tech", angle: "real per-user pricing ranges for managed IT, and what changes the number" },
+  { query: "IT support for law firms Sarasota", title: "IT Support for Law Firms in Sarasota: Security and Ethics Rules", cat: "Business Tech", angle: "the confidentiality, retention, and ABA-adjacent obligations a Sarasota firm can't ignore" },
+  { query: "IT support for medical offices Sarasota", title: "IT Support for Medical Offices in Sarasota: HIPAA Without the Headache", cat: "Business Tech", angle: "HIPAA-compliant IT for Sarasota practices, from risk assessments to BAAs" },
+  { query: "ransomware protection for small business", title: "Ransomware Protection for Small Business: The 5 Things That Actually Stop It", cat: "Cybersecurity", angle: "the concrete controls that stop ransomware, not the fear-mongering" },
+  { query: "backup and disaster recovery Sarasota", title: "Backup and Disaster Recovery in Sarasota: Hurricane-Proof Your Data", cat: "Cybersecurity", angle: "why a Sarasota business needs offsite backup before hurricane season" },
+  { query: "Microsoft 365 setup Sarasota", title: "Microsoft 365 Setup for Sarasota Businesses: Do It Right the First Time", cat: "Cloud", angle: "the right way to stand up M365 for a small business, avoiding the common misconfigs" },
+  { query: "network security audit Sarasota", title: "Network Security Audit in Sarasota: What We Check and Why", cat: "Cybersecurity", angle: "what a real security audit covers for a Sarasota small business" },
+  { query: "cloud migration for small business", title: "Cloud Migration for Small Business: A Sarasota IT Provider's Playbook", cat: "Cloud", angle: "moving a small business to the cloud without downtime or surprises" },
+  { query: "cybersecurity for small business Sarasota", title: "Cybersecurity for Small Business in Sarasota: Where to Start", cat: "Cybersecurity", angle: "a prioritized starting point for Sarasota businesses with a limited budget" },
+  { query: "IT help desk for small business", title: "IT Help Desk for Small Business: What Good Support Looks Like", cat: "Business Tech", angle: "what responsive, human IT support should feel like for a small business" },
+  { query: "server maintenance Sarasota", title: "Server Maintenance in Sarasota: Keep It Running or Replace It", cat: "Business Tech", angle: "the maintenance that keeps a Sarasota office server alive, and when to move on" },
+  { query: "data backup for small business", title: "Data Backup for Small Business: The 3-2-1 Rule, Plainly", cat: "Cybersecurity", angle: "the 3-2-1 backup rule explained for a non-technical business owner" },
+  { query: "business internet setup Bradenton", title: "Business Internet in Bradenton: Picking the Right Connection", cat: "Business Tech", angle: "choosing the right business internet for a Bradenton office" },
+  { query: "HIPAA compliant IT Sarasota", title: "HIPAA-Compliant IT in Sarasota: What a Practice Needs", cat: "Cybersecurity", angle: "the IT side of HIPAA compliance for Sarasota healthcare practices" },
+  { query: "managed IT pricing", title: "Managed IT Pricing: Per-User vs. Per-Device, Explained", cat: "Business Tech", angle: "the two pricing models for managed IT and which fits a small business" },
+  { query: "IT company Sarasota FL", title: "How to Choose an IT Company in Sarasota, FL", cat: "Business Tech", angle: "the questions to ask before hiring a Sarasota IT provider" },
+];
+
+// Round-robin pointer persisted in a tiny table so we don't repeat
+// keywords until the whole bank is exhausted. Table is created
+// idempotently so the pipeline works without a manual migration.
+async function ensureLocalKeywordTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS local_keyword_used (
+      keyword   text PRIMARY KEY,
+      used_at   timestamptz NOT NULL DEFAULT now()
+    )
+  `.catch((err) => console.warn(`[local] ensure table failed: ${err.message?.slice(0, 100)}`));
+}
+
+async function nextLocalKeyword() {
+  await ensureLocalKeywordTable();
+  const used = await sql`SELECT keyword FROM local_keyword_used ORDER BY used_at DESC LIMIT 100`;
+  const usedSet = new Set(used.map((r) => r.keyword));
+  const fresh = LOCAL_KEYWORDS.filter((k) => !usedSet.has(k.query));
+  const pool = fresh.length ? fresh : LOCAL_KEYWORDS; // exhausted → restart
+  // Deterministic pick: rotate by count of used entries.
+  const idx = used.length % pool.length;
+  const kw = pool[idx];
+  await sql`
+    INSERT INTO local_keyword_used (keyword, used_at)
+    VALUES (${kw.query}, now())
+    ON CONFLICT (keyword) DO UPDATE SET used_at = now()
+  `.catch(() => {});
+  return kw;
+}
+
+async function fetchLocalKeyword() {
+  try {
+    const kw = await nextLocalKeyword();
+    return {
+      id: `local-${kw.query}`,
+      title: kw.title,
+      url: `https://simpleitsrq.com/blog`,
+      score: 100,
+      source: 'local',
+      keyword: kw,
+    };
+  } catch (err) {
+    console.warn(`[local] keyword pick failed: ${err.message?.slice(0, 100)}`);
+    return null;
+  }
+}
+
 // CISA — perfect for an IT services company. Two complementary sources:
 //
 //   1. advisories RSS at /ncas/alerts.xml — slow but long-form, covers
@@ -272,11 +357,12 @@ async function fetchCISAAlert() {
 }
 
 // Try each source in priority order; first non-null wins.
-// Order: HN → Reddit → CISA. (HN is freshest and most tech-savvy;
-// CISA is a long-tail fallback that's still on-topic for a security
-// and IT company when HN and Reddit are both dry.)
+// Order: Local-SEO keyword (evergreen, targets real search queries) →
+// HN (tech-savvy readers, fresh) → Reddit (sub-communities,
+// fallback) → CISA (long-tail security fallback).
 async function fetchStory() {
   const sources = [
+    { name: 'local',  fn: fetchLocalKeyword },
     { name: 'hn',     fn: fetchHNTopStory },
     { name: 'reddit', fn: fetchRedditTopStory },
     { name: 'cisa',   fn: fetchCISAAlert },
@@ -437,6 +523,7 @@ export async function generateLocalDraft() {
   console.log(`[blog] Story (${story.source}): ${story.title} (score ${story.score})`);
 
   const sourceLabel = {
+    local:    'a local search query',
     hn:     'Hacker News',
     'r/sysadmin':     'the r/sysadmin subreddit',
     'r/msp':          'the r/msp subreddit',
@@ -445,6 +532,16 @@ export async function generateLocalDraft() {
     cisa:     'a CISA cybersecurity advisory',
     'cisa-kev': 'a CISA Known Exploited Vulnerability (KEV) entry',
   }[story.source] || 'a tech news story';
+
+  // For the local-SEO source, feed the writer the target query + angle
+  // so the post is written to rank for that phrase, not to react to news.
+  const localContext = story.source === 'local' ? `
+Target search query: ${story.keyword.query}
+Local angle to lead with: ${story.keyword.angle}
+Write this as an evergreen, authoritative guide that answers the query
+directly. Use the query phrase naturally in the title, first paragraph,
+and at least one H2. Do NOT reference a news story or date — this is a
+timeless local guide.` : '';
 
   // For CISA-KEV we have rich structured data — feed it to the writer
   // so the post is grounded in the real CVE details, not invented.
@@ -460,7 +557,7 @@ Date added to KEV: ${story.dateAdded || ''}
   const userPrompt = `Rewrite this ${sourceLabel} story for the Simple IT SRQ blog.
 Title: ${story.title}
 URL: ${story.url}
-${story.source === 'hn' ? `HN discussion: ${hnUrl}\n` : ''}Score: ${story.score}${cveContext}`;
+${story.source === 'hn' ? `HN discussion: ${hnUrl}\n` : ''}Score: ${story.score}${cveContext}${localContext}`;
 
   // --- Write ---
   console.log(`[blog] Drafting with ${WRITER_MODEL}...`);
@@ -533,7 +630,9 @@ ${story.source === 'hn' ? `HN discussion: ${hnUrl}\n` : ''}Score: ${story.score}
     excerpt: post.excerpt || '',
     body: post.body,
     meta_desc: post.metaDescription || '',
-    tags: ['hacker-news', 'local-it'],
+    tags: story.source === 'local'
+      ? ['local-it', 'sarasota', 'bradenton', 'managed-it']
+      : ['hacker-news', 'local-it'],
     sourceUrl: story.url,
   });
 
