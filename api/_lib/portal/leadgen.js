@@ -8,7 +8,7 @@
 import { sql } from "../db.js";
 import { json } from "../http.js";
 import { clampString } from "../sanitize.js";
-import { runLeadgenWorker } from "../../cron/agent.js";
+import { runLeadgenWorker } from "../leadgen-worker.js";
 import { looksLikeChain } from "../leadgen-classify.js";
 import { requireAdmin } from "./shared.js";
 
