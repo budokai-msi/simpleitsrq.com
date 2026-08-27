@@ -855,9 +855,18 @@ async function selfHealthCheck() {
 
   const results = [];
   let failures = 0;
+  // The cron runs from a Vercel datacenter IP. Without a browser-like UA,
+  // the site's own bot-protection (Cloudflare) 403s these fetches, so the
+  // monitor false-alarms on healthy endpoints. Send a real browser UA.
+  const headers = {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+  };
   for (const ep of endpoints) {
     try {
-      const res = await fetch(`${appUrl}${ep.path}`, { redirect: "follow" });
+      const res = await fetch(`${appUrl}${ep.path}`, { redirect: "follow", headers });
       const ok = res.status === ep.expect;
       if (!ok) failures++;
       results.push({ path: ep.path, status: res.status, expected: ep.expect, ok });
