@@ -56,6 +56,13 @@ export function organizationSchema() {
     logo: `${SITE_URL}/logo.png`,
     email: "hello@simpleitsrq.com",
     telephone: "+1-813-434-3230",
+    // sameAs links the site to the verified Google Business Profile so
+    // Google treats them as the same entity (strengthens the knowledge
+    // panel + local ranking). Short link resolves to the Simple IT SRQ
+    // Google Maps place listing.
+    sameAs: [
+      "https://maps.app.goo.gl/TLXwRHgQSFnUMd3P6",
+    ],
     areaServed: { "@type": "State", name: "Florida" },
     contactPoint: {
       "@type": "ContactPoint",

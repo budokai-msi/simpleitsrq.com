@@ -6,6 +6,7 @@ import {
   AtSign, Menu, X, ChevronDown, Sun, Moon, LogIn, User as UserIcon, MapPin,
   Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, BookOpen,
   Shield, ShieldAlert, Wrench, FileText, Info, Briefcase, Target, Search, Lock,
+  Star,
 } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -293,6 +294,14 @@ function Footer() {
           <div style={{ marginTop: 20 }}>
             <a className="footer-email" href="mailto:hello@simpleitsrq.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}>
               <AtSign size={16} color="var(--brand)" /> hello@simpleitsrq.com
+            </a>
+            <a
+              href="https://maps.app.goo.gl/TLXwRHgQSFnUMd3P6"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', marginTop: 10, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+            >
+              <Star size={16} color="var(--brand)" /> Leave a Google review
             </a>
           </div>
         </div>
