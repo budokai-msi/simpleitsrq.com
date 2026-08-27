@@ -25,6 +25,15 @@ dist-ssr
 public/og-blog-*.png
 public/og-product-*.png
 
+# Per-city + per-industry Open Graph cards — regenerated at prebuild via
+# scripts/generate-city-og-images.mjs and generate-industry-og-images.mjs.
+# Vercel runs prebuild on every deploy, so these are build artifacts like
+# og-blog-*.png. Keeping them tracked made the Sitemap-freshness CI fail:
+# a cold .og-cache/ regenerates all of them, leaving unstaged changes that
+# break the workflow's `git pull --rebase`.
+public/og-city-*.png
+public/og-industry-*.png
+
 # OG generator cache — sidecar manifests written at prebuild. Lives
 # outside public/ so it never ships to the live site.
 .og-cache/

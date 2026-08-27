@@ -1,5 +1,53 @@
 [
   {
+    "slug": "carhartt-data-breach-small-business-cloud",
+    "title": "Carhartt Data Breach: Cloud Lessons for Small Business",
+    "date": "2026-08-27",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "data-breach",
+      "cloud-security",
+      "shinyhunters",
+      "small-business",
+      "customer-privacy"
+    ],
+    "excerpt": "ShinyHunters dumped Carhartt customer records after a $3.3 million extortion attempt failed. The leak came from a cloud analytics platform many offices already use.",
+    "metaDescription": "The Carhartt data breach exposed 12.9M accounts from a cloud analytics tool. Here is what Sarasota and Bradenton owners should do this week.",
+    "heroAlt": "Retail clothing racks and a laptop showing a customer database in a small business office.",
+    "image": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1600&q=80"
+  },
+  {
+    "slug": "human-it-over-ai-promises-sarasota",
+    "title": "Why Your Sarasota Business Needs Human IT, Not Just AI Promises",
+    "date": "2026-08-27",
+    "category": "AI & Productivity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it"
+    ],
+    "excerpt": "The viral OpenExecutive story proves that cutting staff for AI is dangerous. Here is how to keep your local business secure with real people and solid tools.",
+    "metaDescription": "Sarasota businesses must balance AI efficiency with human oversight. Learn why physical IT presence matters more than software hype in our community.",
+    "heroAlt": "A local business technology note about Why Your Sarasota Business Needs Human IT, Not Just AI Promises."
+  },
+  {
+    "slug": "why-local-it-support-sarasota-businesses",
+    "title": "Why Local IT Support Saves Sarasota Businesses More Than National Chains",
+    "date": "2026-08-27",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "local-it",
+      "sarasota",
+      "bradenton",
+      "managed-it"
+    ],
+    "excerpt": "National helpdesks cannot fix humidity damage or hurricane outages. See why Sarasota and Bradenton businesses need on-the-ground IT partners who understand local infrastructure risks.",
+    "metaDescription": "Local IT support in Sarasota beats national chains for storm prep and ransomware recovery. See how proximity saves your business during Floridas unique tech threats.",
+    "heroAlt": "A local business technology note about Why Local IT Support Saves Sarasota Businesses More Than National Chains."
+  },
+  {
     "slug": "apple-m4-ultra-vs-m3-sarasota-it-strategy",
     "title": "Apple M4 Ultra vs. M3: What It Means for Sarasota Professionals",
     "date": "2026-08-26",

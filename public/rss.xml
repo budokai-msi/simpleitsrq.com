@@ -6,7 +6,34 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Wed, 26 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 27 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>Carhartt Data Breach: Cloud Lessons for Small Business</title>
+      <link>https://simpleitsrq.com/blog/carhartt-data-breach-small-business-cloud</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/carhartt-data-breach-small-business-cloud</guid>
+      <pubDate>Thu, 27 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>ShinyHunters dumped Carhartt customer records after a $3.3 million extortion attempt failed. The leak came from a cloud analytics platform many offices already use.</description>
+    </item>
+    <item>
+      <title>Why Your Sarasota Business Needs Human IT, Not Just AI Promises</title>
+      <link>https://simpleitsrq.com/blog/human-it-over-ai-promises-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/human-it-over-ai-promises-sarasota</guid>
+      <pubDate>Thu, 27 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>AI &amp; Productivity</category>
+      <description>The viral OpenExecutive story proves that cutting staff for AI is dangerous. Here is how to keep your local business secure with real people and solid tools.</description>
+    </item>
+    <item>
+      <title>Why Local IT Support Saves Sarasota Businesses More Than National Chains</title>
+      <link>https://simpleitsrq.com/blog/why-local-it-support-sarasota-businesses</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/why-local-it-support-sarasota-businesses</guid>
+      <pubDate>Thu, 27 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>National helpdesks cannot fix humidity damage or hurricane outages. See why Sarasota and Bradenton businesses need on-the-ground IT partners who understand local infrastructure risks.</description>
+    </item>
     <item>
       <title>Apple M4 Ultra vs. M3: What It Means for Sarasota Professionals</title>
       <link>https://simpleitsrq.com/blog/apple-m4-ultra-vs-m3-sarasota-it-strategy</link>
