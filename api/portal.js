@@ -110,6 +110,7 @@ import {
 import {
   handleOpsecData,
   handleOpsecHuntBrief,
+  handleOpsecScan,
   handleOpsecDomainAdd,
   handleOpsecDomainToggle,
   handleOpsecIocAdd,
@@ -174,6 +175,7 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   // opsec portal — defensive personal ops dashboard
   "opsec-data",
   "opsec-hunt-brief",
+  "opsec-scan",
   "opsec-domain-add",
   "opsec-domain-toggle",
   "opsec-ioc-add",
@@ -381,6 +383,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   // the same admin-token allowlist.
   if (action === "opsec-data"          && method === "GET")  return handleOpsecData(session);
   if (action === "opsec-hunt-brief"    && method === "GET")  return handleOpsecHuntBrief(session);
+  if (action === "opsec-scan"          && method === "POST") return handleOpsecScan(session);
   if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
   if (action === "opsec-domain-toggle" && method === "POST") return handleOpsecDomainToggle(session, request);
   if (action === "opsec-ioc-add"       && method === "POST") return handleOpsecIocAdd(session, request);

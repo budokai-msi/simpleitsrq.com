@@ -4,6 +4,7 @@ import {
   RadioTower,
   Search,
   Shield,
+  RefreshCw,
 } from "lucide-react";
 import { Metric, SignalPill, Table, fmtNumber, fmtTime } from "./shared";
 
@@ -12,6 +13,7 @@ function OpsecTab({ data, busy, runAction }) {
   const [domain, setDomain] = useState("");
   const [ioc, setIoc] = useState({ ioc_type: "domain", value: "", severity: "medium" });
   const [note, setNote] = useState({ title: "", body: "", tags: "" });
+  const certChecks = data?.certChecks || [];
 
   return (
     <div className="ops-grid">
@@ -31,6 +33,37 @@ function OpsecTab({ data, busy, runAction }) {
           <Metric label="Threat feeds" value={fmtNumber(hunt?.metrics?.threatFeedEntries)} hint={`${fmtNumber(hunt?.metrics?.threatFeedSources)} sources`} />
           <Metric label="Active IOCs" value={fmtNumber(hunt?.metrics?.activeIocs)} />
         </div>
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head">
+          <h2>Watched-domain cert health</h2>
+          <button
+            className="btn btn-primary btn-sm"
+            disabled={busy === "opsec-scan"}
+            onClick={() => runAction("opsec-scan", {}, "Domain sweep complete.")}
+          >
+            <RefreshCw size={14} style={{ marginRight: 6 }} />
+            {busy === "opsec-scan" ? "Scanning…" : "Scan now"}
+          </button>
+        </div>
+        <Table
+          columns={["Domain", "Cert expires", "Days left", "Issuer", "Status"]}
+          rows={certChecks}
+          empty="No cert checks yet. Add watched domains and run a scan."
+          renderRow={(row) => (
+            <tr key={`${row.domain}-${row.ts}`}>
+              <td className="ops-mono">{row.domain}</td>
+              <td>{row.not_after ? new Date(row.not_after).toLocaleDateString() : "—"}</td>
+              <td>{row.days_left != null ? row.days_left : "—"}</td>
+              <td>{row.issuer || "—"}</td>
+              <td>
+                <SignalPill state={row.ok ? "good" : "bad"}>
+                  {row.ok ? "ok" : "alert"}
+                </SignalPill>
+              </td>
+            </tr>
+          )}
+        />
       </section>
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head"><h2>Action queue</h2><Shield size={16} /></div>

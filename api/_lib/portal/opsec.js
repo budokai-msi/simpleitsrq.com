@@ -6,6 +6,7 @@
 import { sql } from "../db.js";
 import { json } from "../http.js";
 import { requireAdmin } from "./shared.js";
+import { sweepWatchedDomains } from "../domainwatch.js";
 
 // ────────────────────────────────────────────────────────────
 // Internal OpSec handlers. No public SPA route imports these screens.
@@ -30,7 +31,7 @@ export async function handleOpsecData(session) {
   // missing-table doesn't blow up first-render after a fresh deploy
   // where the migration hasn't been applied yet.
   const safe = async (q) => { try { return await q; } catch { return []; } };
-  const [domains, iocs, notes, threatTop, threatTotal] = await Promise.all([
+  const [domains, iocs, notes, threatTop, threatTotal, certChecks] = await Promise.all([
     safe(sql`SELECT id, domain, label, notes, is_active, created_at, last_scanned_at
              FROM opsec_watched_domains ORDER BY is_active DESC, created_at DESC LIMIT 100`),
     safe(sql`SELECT id, ioc_type, value, source, severity, notes, first_seen_at, last_seen_at, is_active
@@ -40,6 +41,13 @@ export async function handleOpsecData(session) {
     safe(sql`SELECT feed_name, count(*)::int AS n, max(fetched_at) AS fetched_at
              FROM threat_feeds GROUP BY feed_name ORDER BY n DESC LIMIT 10`),
     safe(sql`SELECT count(*)::int AS n FROM threat_feeds`),
+    // Latest cert check per watched domain — the most recent dns_cert_checks
+    // row for each domain, so the portal shows current cert health.
+    safe(sql`
+      SELECT DISTINCT ON (domain) domain, not_after, issuer, subject_cn, days_left, ok, detail, ts
+      FROM dns_cert_checks
+      ORDER BY domain, ts DESC
+    `),
   ]);
 
   return json(200, {
@@ -47,8 +55,17 @@ export async function handleOpsecData(session) {
     domains,
     iocs,
     notes,
+    certChecks,
     threats: { feeds: threatTop, total: threatTotal[0]?.n ?? 0 },
   });
+}
+
+/** Run a watched-domain sweep on demand (portal "Scan now" button). */
+export async function handleOpsecScan(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const result = await sweepWatchedDomains();
+  return json(200, { ok: true, ...result });
 }
 
 export async function handleOpsecHuntBrief(session) {
