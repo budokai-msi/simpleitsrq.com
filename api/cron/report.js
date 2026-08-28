@@ -10,6 +10,7 @@
 import { sql } from "../_lib/db.js";
 import { refreshThreatFeeds } from "../_lib/osint.js";
 import { aggregateScanners } from "../_lib/scanner-fingerprints.js";
+import { sweepWatchedDomains } from "../_lib/domainwatch.js";
 import { Resend } from "resend";
 import { timingSafeEqual } from "node:crypto";
 
@@ -309,6 +310,16 @@ export async function GET(request) {
     }
   }
 
+  // --- Watched-domain sweep (DNS drift + cert expiry) ---
+  // Scans every active opsec_watched_domains row for TLS cert expiry and
+  // DNS drift. Best-effort: a failure here must not block the report.
+  const domainSweep = await sweepWatchedDomains().catch((err) => ({
+    ok: false,
+    error: String(err?.message || err).slice(0, 200),
+    scanned: 0,
+    findings: [],
+  }));
+
   // --- Assemble report ---
   const report = {
     generated: now.toISOString(),
@@ -325,6 +336,8 @@ export async function GET(request) {
       sessionAnomalies: sessionAnomalies.length,
       dnsHealthy: dnsResults.every((d) => d.match),
       osintRefresh: osint,
+      watchedDomainsScanned: domainSweep.scanned || 0,
+      watchedDomainFindings: (domainSweep.findings || []).length,
     },
     topPages,
     topDevices: topDevices.map((d) => ({
@@ -390,6 +403,11 @@ export async function GET(request) {
     })),
     dnsIntegrity: dnsResults,
     opsec,
+    watchedDomains: {
+      scanned: domainSweep.scanned || 0,
+      findings: domainSweep.findings || [],
+      error: domainSweep.error || null,
+    },
   };
 
   const jsonStr = JSON.stringify(report, null, 2);
@@ -460,6 +478,20 @@ export async function GET(request) {
     </div>
   `;
 
+  // Watched-domain cert-expiry alert section. Only renders when a finding
+  // exists (cert expiring soon, or a domain that stopped serving HTTPS).
+  const certAlertHtml = (domainSweep.findings || []).length === 0 ? "" : `
+    <div style="padding:18px 22px;background:#fff;border:1px solid #fecaca;border-top:none">
+      <h3 style="margin:0 0 6px;font-size:15px;color:#B91C1C">⚠️ Watched-domain certificate alerts</h3>
+      <p style="margin:0 0 12px;font-size:13px;color:#6b7280;line-height:1.5">
+        ${domainSweep.findings.length} watched domain${domainSweep.findings.length === 1 ? "" : "s"} need attention.
+      </p>
+      <ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#374151">
+        ${domainSweep.findings.map((f) => `<li><strong>${f.domain}</strong> — ${f.detail}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+
   const htmlBody = `
     <div style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;max-width:720px;margin:0 auto;color:#1a1a1a">
       ${adsenseBannerHtml}
@@ -482,6 +514,7 @@ export async function GET(request) {
         </table>
       </div>
       ${opsecHtml}
+      ${certAlertHtml}
       <div style="padding:16px 20px;background:#f7f7f8;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px">
         <p style="margin:0;font-size:12px;color:#6b7280">Full JSON report attached. Generated ${report.generated}.</p>
       </div>

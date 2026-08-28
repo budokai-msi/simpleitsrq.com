@@ -386,6 +386,25 @@ CREATE TABLE IF NOT EXISTS dns_integrity (
 CREATE INDEX IF NOT EXISTS dns_integrity_ts_idx ON dns_integrity (ts DESC);
 CREATE INDEX IF NOT EXISTS dns_integrity_match_idx ON dns_integrity (match, ts DESC);
 
+-- ---------- dns_cert_checks ----------
+-- TLS certificate expiry + issuer history per watched domain. The daily
+-- cron scans every active opsec_watched_domains row, records the current
+-- cert's notAfter date, and alerts when it's within the warning window
+-- or the issuer/CN drifts (a sign of a hijacked or misconfigured cert).
+CREATE TABLE IF NOT EXISTS dns_cert_checks (
+  id          bigserial PRIMARY KEY,
+  domain      text NOT NULL,
+  ts          timestamptz NOT NULL DEFAULT now(),
+  not_after   timestamptz,
+  issuer      text,
+  subject_cn  text,
+  days_left   int,
+  ok          boolean NOT NULL DEFAULT true,
+  detail      text
+);
+CREATE INDEX IF NOT EXISTS dns_cert_checks_domain_ts_idx ON dns_cert_checks (domain, ts DESC);
+CREATE INDEX IF NOT EXISTS dns_cert_checks_ok_idx ON dns_cert_checks (ok, ts DESC);
+
 -- ---------- draft_posts ----------
 -- AI-generated blog posts awaiting admin review.
 CREATE TABLE IF NOT EXISTS draft_posts (
