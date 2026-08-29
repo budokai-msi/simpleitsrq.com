@@ -5,16 +5,56 @@
   "trailingSlash": false,
   "cleanUrls": true,
   "redirects": [
-    { "source": "/pricing", "destination": "/services", "permanent": true },
-    { "source": "/blog/sarasota-workstation-network-repair-guide-2", "destination": "/blog/sarasota-workstation-network-repair-guide", "permanent": true },
-    { "source": "/blog/sarasota-workstation-network-repair-guide-9766", "destination": "/blog/sarasota-workstation-network-repair-guide", "permanent": true },
-    { "source": "/blog/microsoft-365-security-hardening-sarasota-6754", "destination": "/blog/microsoft-365-security-hardening-sarasota", "permanent": true },
-    { "source": "/blog/right-to-repair-sarasota-small-business", "destination": "/blog/right-to-repair-sarasota-bradenton-venice-small-business", "permanent": true },
-    { "source": "/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice-2", "destination": "/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice", "permanent": true },
-    { "source": "/why", "destination": "/compare", "permanent": true },
-    { "source": "/why/:path*", "destination": "/compare/:path*", "permanent": true },
-    { "source": "/advertise", "destination": "/services", "permanent": true },
-    { "source": "/sponsor", "destination": "/services", "permanent": true }
+    {
+      "source": "/pricing",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/blog/sarasota-workstation-network-repair-guide-2",
+      "destination": "/blog/sarasota-workstation-network-repair-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/sarasota-workstation-network-repair-guide-9766",
+      "destination": "/blog/sarasota-workstation-network-repair-guide",
+      "permanent": true
+    },
+    {
+      "source": "/blog/microsoft-365-security-hardening-sarasota-6754",
+      "destination": "/blog/microsoft-365-security-hardening-sarasota",
+      "permanent": true
+    },
+    {
+      "source": "/blog/right-to-repair-sarasota-small-business",
+      "destination": "/blog/right-to-repair-sarasota-bradenton-venice-small-business",
+      "permanent": true
+    },
+    {
+      "source": "/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice-2",
+      "destination": "/blog/ai-psychosis-in-small-business-sarasota-bradenton-venice",
+      "permanent": true
+    },
+    {
+      "source": "/why",
+      "destination": "/compare",
+      "permanent": true
+    },
+    {
+      "source": "/why/:path*",
+      "destination": "/compare/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/advertise",
+      "destination": "/services",
+      "permanent": true
+    },
+    {
+      "source": "/sponsor",
+      "destination": "/services",
+      "permanent": true
+    }
   ],
   "crons": [
     {
@@ -27,12 +67,30 @@
     }
   ],
   "rewrites": [
-    { "source": "/health", "destination": "/api/health" },
-    { "source": "/healthz", "destination": "/api/health" },
-    { "source": "/api/health/", "destination": "/api/health" },
-    { "source": "/api/healthz/", "destination": "/api/healthz" },
-    { "source": "/api/healthcheck/", "destination": "/api/healthcheck" },
-    { "source": "/blog", "destination": "/index.html" },
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/healthz",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/api/health/",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/api/healthz/",
+      "destination": "/api/healthz"
+    },
+    {
+      "source": "/api/healthcheck/",
+      "destination": "/api/healthcheck"
+    },
+    {
+      "source": "/blog",
+      "destination": "/index.html"
+    },
     {
       "source": "/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/a-4-a/c.js",
       "destination": "https://api.vercel.com/bot-protection/v1/challenge"
@@ -41,79 +99,200 @@
       "source": "/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/:path*",
       "destination": "https://api.vercel.com/bot-protection/v1/proxy/:path*"
     },
-
-    { "source": "/.env",                       "destination": "/api/hp?canary=1&orig=.env" },
-    { "source": "/.env.:suffix",               "destination": "/api/hp?canary=1&orig=.env" },
-    { "source": "/.git/:path*",                "destination": "/api/hp?canary=1&orig=.git" },
-    { "source": "/.DS_Store",                  "destination": "/api/hp?canary=1&orig=.DS_Store" },
-    { "source": "/wp-admin/:path*",            "destination": "/api/hp?canary=1&orig=wp-admin" },
-    { "source": "/wp-login.php",               "destination": "/api/hp?canary=1&orig=wp-login.php" },
-    { "source": "/wp-config.php",              "destination": "/api/hp?canary=1&orig=wp-config.php" },
-    { "source": "/xmlrpc.php",                 "destination": "/api/hp?canary=1&orig=xmlrpc.php" },
-    { "source": "/phpmyadmin/:path*",          "destination": "/api/hp?canary=1&orig=phpmyadmin" },
-    { "source": "/pma/:path*",                 "destination": "/api/hp?canary=1&orig=phpmyadmin" },
-    { "source": "/adminer.php",                "destination": "/api/hp?canary=1&orig=adminer.php" },
-    { "source": "/admin.php",                  "destination": "/api/hp?canary=1&orig=admin.php" },
-    { "source": "/administrator/:path*",       "destination": "/api/hp?canary=1&orig=administrator" },
-    { "source": "/backup.zip",                 "destination": "/api/hp?canary=1&orig=backup.zip" },
-    { "source": "/backup.sql",                 "destination": "/api/hp?canary=1&orig=backup.sql" },
-    { "source": "/backups.tar.gz",             "destination": "/api/hp?canary=1&orig=backups.tar.gz" },
-    { "source": "/config.php",                 "destination": "/api/hp?canary=1&orig=config.php" },
-    { "source": "/server-status",              "destination": "/api/hp?canary=1&orig=server-status" },
-    { "source": "/phpinfo.php",                "destination": "/api/hp?canary=1&orig=phpinfo.php" },
-    { "source": "/_ignition/:path*",           "destination": "/api/hp?canary=1&orig=ignition" },
-
-    { "source": "/((?!api/)(?!_vercel/)(?!assets/)(?!fonts/)(?!blog/)(?!site\\.webmanifest$)(?!.*-it-support$)(?!.*-it-(sarasota|bradenton|lakewood-ranch|nokomis|venice|bradenton-34207|palmetto|ellenton|parrish|osprey|englewood|north-port)$).*)", "destination": "/index.html" }
+    {
+      "source": "/.env",
+      "destination": "/api/hp?canary=1&orig=.env"
+    },
+    {
+      "source": "/.env.:suffix",
+      "destination": "/api/hp?canary=1&orig=.env"
+    },
+    {
+      "source": "/.git/:path*",
+      "destination": "/api/hp?canary=1&orig=.git"
+    },
+    {
+      "source": "/.DS_Store",
+      "destination": "/api/hp?canary=1&orig=.DS_Store"
+    },
+    {
+      "source": "/wp-admin/:path*",
+      "destination": "/api/hp?canary=1&orig=wp-admin"
+    },
+    {
+      "source": "/wp-login.php",
+      "destination": "/api/hp?canary=1&orig=wp-login.php"
+    },
+    {
+      "source": "/wp-config.php",
+      "destination": "/api/hp?canary=1&orig=wp-config.php"
+    },
+    {
+      "source": "/xmlrpc.php",
+      "destination": "/api/hp?canary=1&orig=xmlrpc.php"
+    },
+    {
+      "source": "/phpmyadmin/:path*",
+      "destination": "/api/hp?canary=1&orig=phpmyadmin"
+    },
+    {
+      "source": "/pma/:path*",
+      "destination": "/api/hp?canary=1&orig=phpmyadmin"
+    },
+    {
+      "source": "/adminer.php",
+      "destination": "/api/hp?canary=1&orig=adminer.php"
+    },
+    {
+      "source": "/admin.php",
+      "destination": "/api/hp?canary=1&orig=admin.php"
+    },
+    {
+      "source": "/administrator/:path*",
+      "destination": "/api/hp?canary=1&orig=administrator"
+    },
+    {
+      "source": "/backup.zip",
+      "destination": "/api/hp?canary=1&orig=backup.zip"
+    },
+    {
+      "source": "/backup.sql",
+      "destination": "/api/hp?canary=1&orig=backup.sql"
+    },
+    {
+      "source": "/backups.tar.gz",
+      "destination": "/api/hp?canary=1&orig=backups.tar.gz"
+    },
+    {
+      "source": "/config.php",
+      "destination": "/api/hp?canary=1&orig=config.php"
+    },
+    {
+      "source": "/server-status",
+      "destination": "/api/hp?canary=1&orig=server-status"
+    },
+    {
+      "source": "/phpinfo.php",
+      "destination": "/api/hp?canary=1&orig=phpinfo.php"
+    },
+    {
+      "source": "/_ignition/:path*",
+      "destination": "/api/hp?canary=1&orig=ignition"
+    },
+    {
+      "source": "/((?!api/)(?!_vercel/)(?!assets/)(?!fonts/)(?!blog/)(?!site\\.webmanifest$)(?!.*-it-).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-        { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" },
-        { "key": "X-DNS-Prefetch-Control", "value": "on" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
-        { "key": "X-Powered-By", "value": "" },
-        { "key": "Server", "value": "" }
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "X-DNS-Prefetch-Control",
+          "value": "on"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Powered-By",
+          "value": ""
+        },
+        {
+          "key": "Server",
+          "value": ""
+        }
       ]
     },
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
-        { "key": "X-Powered-By", "value": "" },
-        { "key": "Server", "value": "" },
-        { "key": "Cache-Control", "value": "no-store" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "X-Powered-By",
+          "value": ""
+        },
+        {
+          "key": "Server",
+          "value": ""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
       ]
     },
     {
       "source": "/portal(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
-        { "key": "Cache-Control", "value": "no-store" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/fonts/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
       ]
     },
     {
       "source": "/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/:path*",
       "headers": [
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
       ]
     }
   ]
