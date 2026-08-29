@@ -290,6 +290,9 @@ function main() {
   }
 
   console.log(`generate-landing-stubs: wrote ${written} landing pages (${cityList.length} city + ${written - cityList.length} industry)`);
+
+  // Sentinel for prod debug: confirms postbuild output reaches deployed dist
+  fs.writeFileSync(path.join(DIST, "_landing_sentinel.txt"), `built ${new Date().toISOString()}\n${written} landing pages\n`, "utf8");
 }
 
 main();
