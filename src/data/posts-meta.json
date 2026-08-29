@@ -1,5 +1,54 @@
 [
   {
+    "slug": "cybersecurity-for-small-business-sarasota",
+    "title": "Cybersecurity for Small Business in Sarasota: Where to Start",
+    "date": "2026-08-29",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "local-it",
+      "sarasota",
+      "bradenton",
+      "managed-it"
+    ],
+    "excerpt": "A practical, budget-friendly guide to cybersecurity for small business Sarasota owners, written by a local IT expert who knows the unique challenges of our Gulf Coast community.",
+    "metaDescription": "Learn how to protect your Sarasota small business from cyber threats on a budget. Practical steps from Simple IT SRQs Dancho Ivanov.",
+    "heroAlt": "A local business technology note about Cybersecurity for Small Business in Sarasota: Where to Start."
+  },
+  {
+    "slug": "papercut-vulnerability-small-business",
+    "title": "PaperCut Vulnerability: Patch Office Print Servers",
+    "date": "2026-08-29",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "papercut",
+      "print-security",
+      "vulnerability",
+      "small-business",
+      "patch-management"
+    ],
+    "excerpt": "Hackers are already using a PaperCut vulnerability to take over print servers. Here is what a small office should do this weekend.",
+    "metaDescription": "A PaperCut vulnerability is under active attack. Sarasota and Bradenton small businesses should patch print servers and lock remote admin access now.",
+    "heroAlt": "Office printer and print-management workstation in a small business workroom.",
+    "image": "https://images.unsplash.com/photo-1586953208448-b95a79798f07?auto=format&fit=crop&w=1600&q=80"
+  },
+  {
+    "slug": "why-your-team-will-stick-to-cheap-ai-tools-over-anthropics-flagship",
+    "title": "Why Your Team Will Stick to Cheap AI Tools Over Anthropics Flagship",
+    "date": "2026-08-29",
+    "category": "AI & Productivity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "hacker-news",
+      "local-it",
+      "smb"
+    ],
+    "excerpt": "Anthropics premium models are losing ground to cheaper alternatives. Here is what that means for Sarasota businesses managing budgets and daily operations.",
+    "metaDescription": "Anthropic struggles as cheaper AI tools win adoption. Learn how this impacts business tech choices for SRQ companies and where to save money.",
+    "heroAlt": "A local business technology note about Why Your Team Will Stick to Cheap AI Tools Over Anthropics Flagship."
+  },
+  {
     "slug": "carhartt-data-breach-small-business-cloud",
     "title": "Carhartt Data Breach: Cloud Lessons for Small Business",
     "date": "2026-08-27",

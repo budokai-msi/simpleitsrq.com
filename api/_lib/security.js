@@ -58,11 +58,11 @@ export async function logThreatActor(request, extra = {}) {
 }
 
 export function clientIp(request) {
-  // The site is fronted by Cloudflare → Vercel, so the REAL visitor IP is in
-  // Cloudflare's cf-connecting-ip header. x-real-ip / x-forwarded-for only show
-  // Cloudflare's edge IP, which clusters every visitor onto a handful of shared
-  // addresses — breaking geo, per-visitor rate limits, and (worst) letting one
-  // flagged Cloudflare IP block everyone. Prefer CF's header, then Vercel's.
+  // The site is served directly by Vercel (Cloudflare proxy removed Aug 2026),
+  // so the REAL visitor IP is in Vercel's x-real-ip header. x-forwarded-for
+  // is also set by Vercel and is a comma-separated chain; the first entry is
+  // the client. cf-connecting-ip is kept as a harmless fallback in case the
+  // proxy is ever re-enabled, but it is no longer the primary source.
   const cf = request.headers.get("cf-connecting-ip");
   if (cf) return cf.trim();
   const real = request.headers.get("x-real-ip");
