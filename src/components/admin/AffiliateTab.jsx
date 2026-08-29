@@ -1,6 +1,16 @@
 
 import { useEffect, useState } from "react";
-import { Metric, SignalPill, Table, fmtNumber, fmtMoney, fmtTime, getJson } from "./shared";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
+import { Metric, SignalPill, Table, EmptyState, fmtNumber, fmtMoney, fmtTime, getJson } from "./shared";
 
 const PERIODS = [
   ["last7days", "Last 7 days"],
@@ -12,6 +22,7 @@ export default function AffiliateTab({ data }) {
   const snapshot = data["affiliate-stats"];
   const [period, setPeriod] = useState("last30days");
   const [aff, setAff] = useState(snapshot);
+  const series = aff?.series || [];
   const revenueSignals = data["revenue-signals"];
   const env = data["admin-status"]?.env || {};
   const programs = [
@@ -138,6 +149,26 @@ export default function AffiliateTab({ data }) {
             </tr>
           )}
         />
+      </section>
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Clicks over time</h2></div>
+        {series.length ? (
+          <div className="ops-chart" style={{ width: "100%", height: 260 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={series} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="period" tick={{ fontSize: 11 }} tickLine={false} axisLine={{ stroke: "#d1d5db" }} />
+                <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="clicks" name="Clicks" stroke="#0F6CBD" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="conversions" name="Conversions" stroke="#9ca3af" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <EmptyState>No click data in this period yet.</EmptyState>
+        )}
       </section>
       <section className="admin-aff-card ops-panel ops-panel--wide">
         <div className="ops-panel__head">

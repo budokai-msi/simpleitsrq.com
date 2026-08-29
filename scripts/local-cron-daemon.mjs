@@ -3,6 +3,7 @@ import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateLocalDraft } from './local-publisher.mjs';
+import { fetchTrends } from './trends/fetch-trends.mjs';
 
 // Daily cron daemon. Fires once per day at the configured hour (default 11:00).
 // Uses the write→critique→revise pipeline in local-publisher.mjs.
@@ -65,6 +66,12 @@ function writeHeartbeat(result, errorMsg) {
 async function runOnce() {
   const t0 = Date.now();
   try {
+    // Refresh daily trends first; a failure here must not block the blog publish.
+    try {
+      await fetchTrends();
+    } catch (err) {
+      console.error('[cron] Trends refresh failed (continuing):', err?.message || err);
+    }
     const result = await generateLocalDraft();
     result.ms = Date.now() - t0;
     const record = writeHeartbeat(result);
