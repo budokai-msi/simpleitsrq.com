@@ -180,7 +180,7 @@
       "destination": "/api/hp?canary=1&orig=ignition"
     },
     {
-      "source": "/((?!api/)(?!_vercel/)(?!assets/)(?!fonts/)(?!blog/)(?!site\\.webmanifest$)(?!.*-it-).*)",
+      "source": "/((?!api/)(?!_vercel/)(?!assets/)(?!fonts/)(?!blog/)(?!site\\.webmanifest$)(?!sarasota-it-support)(?!bradenton-it-support)(?!lakewood-ranch-it-support)(?!nokomis-it-support)(?!venice-it-support)(?!bradenton-34207-it-support)(?!palmetto-it-support)(?!ellenton-it-support)(?!parrish-it-support)(?!osprey-it-support)(?!englewood-it-support)(?!north-port-it-support)(?!medical-it-sarasota)(?!medical-it-bradenton)(?!medical-it-lakewood-ranch)(?!medical-it-nokomis)(?!medical-it-venice)(?!medical-it-bradenton-34207)(?!medical-it-palmetto)(?!medical-it-ellenton)(?!medical-it-parrish)(?!medical-it-osprey)(?!medical-it-englewood)(?!medical-it-north-port)(?!law-firm-it-sarasota)(?!law-firm-it-venice)(?!financial-advisor-it-lakewood-ranch)(?!marine-it-bradenton)(?!marine-it-nokomis)(?!marine-it-bradenton-34207)(?!marine-it-palmetto)(?!marine-it-osprey)(?!marine-it-englewood)(?!construction-it-bradenton)(?!construction-it-parrish)(?!construction-it-north-port)(?!vacation-rental-it-nokomis)(?!vacation-rental-it-englewood).*)",
       "destination": "/index.html"
     }
   ],
