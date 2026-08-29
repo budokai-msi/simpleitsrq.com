@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Metric, SignalPill, Table, fmtNumber, fmtTime } from "./shared";
 
-function OpsecTab({ data, busy, runAction }) {
+export default function OpsecTab({ data, busy, runAction }) {
   const hunt = data?.huntBrief;
   const [domain, setDomain] = useState("");
   const [ioc, setIoc] = useState({ ioc_type: "domain", value: "", severity: "medium" });

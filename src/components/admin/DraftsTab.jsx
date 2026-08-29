@@ -3,7 +3,7 @@ import {
 } from "lucide-react";
 import { EmptyState, SignalPill, Table, fmtTime } from "./shared";
 
-function DraftsTab({ drafts, errors, busy, runAction }) {
+export default function DraftsTab({ drafts, errors, busy, runAction }) {
   const pending = drafts.filter((d) => d.status === "draft");
   return (
     <div className="ops-grid">

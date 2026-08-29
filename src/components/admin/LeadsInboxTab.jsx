@@ -10,7 +10,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState, SignalPill, StatusChip, analyzeMicrosoftDocs, fmtNumber, postJson } from "./shared";
 
-function LeadsInboxTab({ data, error, reload }) {
+export default function LeadsInboxTab({ data, error, reload }) {
   const leads = data?.leads || [];
   const counts = data?.counts || {};
   const [selectedLead, setSelectedLead] = useState(null);

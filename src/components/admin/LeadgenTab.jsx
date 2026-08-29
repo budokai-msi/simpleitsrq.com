@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Metric, SignalPill, Table, fmtNumber, fmtTime, formatJobOutput, formatJobProgress } from "./shared";
 
-function LeadgenTab({ status }) {
+export default function LeadgenTab({ status }) {
   return (
     <div className="ops-grid">
       <section className="admin-aff-card ops-panel">

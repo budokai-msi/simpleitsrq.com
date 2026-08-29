@@ -6,7 +6,7 @@ import {
 import { Link } from "react-router-dom";
 import { Metric, SignalPill, Table, fmtMoney, fmtNumber, fmtTime, formatJobOutput, formatJobProgress } from "./shared";
 
-function OpsTab({ data, errors, intel, busy, runAction }) {
+export default function OpsTab({ data, errors, intel, busy, runAction }) {
   const admin = data["admin-status"];
   const counts = admin?.counts || {};
   const revenue = data["revenue-summary"];

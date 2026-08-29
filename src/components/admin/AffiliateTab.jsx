@@ -1,7 +1,7 @@
 
 import { Metric, SignalPill, Table, fmtNumber, fmtTime } from "./shared";
 
-function AffiliateTab({ data }) {
+export default function AffiliateTab({ data }) {
   const aff = data["affiliate-stats"];
   const revenueSignals = data["revenue-signals"];
   const env = data["admin-status"]?.env || {};

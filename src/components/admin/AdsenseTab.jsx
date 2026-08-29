@@ -1,7 +1,7 @@
 
 import { Metric, SignalPill, Table, fmtNumber } from "./shared";
 
-function AdsenseTab({ health }) {
+export default function AdsenseTab({ health }) {
   return (
     <div className="ops-grid">
       <section className="admin-aff-card ops-panel ops-panel--wide">

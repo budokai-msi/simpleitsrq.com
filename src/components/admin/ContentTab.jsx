@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 import { EmptyState, SignalPill, Table, fmtNumber } from "./shared";
 
-function ContentTab({ data, error }) {
+export default function ContentTab({ data, error }) {
   const topPosts = data?.topPosts || [];
   const entryPosts = data?.entryPosts || [];
   const converters = data?.exitToBook || [];

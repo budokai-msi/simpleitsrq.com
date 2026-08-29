@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { EmptyState, HotLeadsPanel, LeadIntelPanels, Metric, SignalPill, Table, fmtDuration, fmtNumber, fmtTime } from "./shared";
 
-function VisitorsTab({ data, hotLeads, leadIntel, errors }) {
+export default function VisitorsTab({ data, hotLeads, leadIntel, errors }) {
   const totals = data?.totals || {};
   const situationFunnel = data?.situationFunnel || {};
   const engagedRate = totals.sessions14d
