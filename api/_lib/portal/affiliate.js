@@ -405,6 +405,26 @@ export async function handleAffiliateStats(session, url) {
 
   const byProduct = byProductResult;
 
+  // By slug (top 20). Groups clicks by the page slug they were tracked on.
+  const bySlugResult = await sql.query(`
+    SELECT
+      c.slug as slug,
+      COUNT(*) as clicks,
+      COUNT(DISTINCT c.anon_id) as unique_visitors,
+      COUNT(*) FILTER (WHERE c.id IN (SELECT click_id FROM affiliate_conversions)) as conversions,
+      COALESCE(SUM(ac.commission_cents) FILTER (WHERE ac.status IN ('approved', 'paid')), 0) as commissions_cents,
+      MAX(c.ts) as last_click
+    FROM affiliate_clicks c
+    LEFT JOIN affiliate_conversions ac ON ac.click_id = c.id
+    ${dateFilter}
+    ${networkFilter}
+    GROUP BY c.slug
+    ORDER BY clicks DESC
+    LIMIT 20
+  `, networkParam);
+
+  const bySlug = bySlugResult;
+
   // Recent clicks (for the dashboard tab)
   const recentResult = await sql.query(`
     SELECT ts, network, label, slug, country
@@ -454,6 +474,14 @@ export async function handleAffiliateStats(session, url) {
       commissionsCents: Number(p.commissions_cents),
       epc: p.clicks > 0 ? Number(p.commissions_cents) / Number(p.clicks) : 0,
       conversionRate: p.clicks > 0 ? Number(p.conversions) / Number(p.clicks) : 0,
+    })),
+    bySlug: bySlug.map(s => ({
+      slug: s.slug,
+      clicks: Number(s.clicks),
+      unique_visitors: Number(s.unique_visitors || 0),
+      conversions: Number(s.conversions),
+      commissionsCents: Number(s.commissions_cents),
+      lastClick: s.last_click,
     })),
     recent: recent.map(r => ({
       ts: r.ts,
