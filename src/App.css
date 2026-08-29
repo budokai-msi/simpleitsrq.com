@@ -158,14 +158,11 @@ main, #main {
   background: var(--brand-hover);
   color: var(--text-on-accent);
   border-color: var(--brand-hover);
-  box-shadow: var(--shadow-luminate), var(--btn-shadow-hover);
-  transform: translateY(-1px);
 }
 .btn-primary:active { 
   background: var(--brand-pressed); 
   border-color: var(--brand-pressed);
   transform: translateY(0) scale(0.985);
-  box-shadow: var(--btn-shadow);
 }
 .btn-secondary {
   background: var(--bg-elevated);
@@ -177,12 +174,9 @@ main, #main {
   background: var(--surface-2); 
   color: var(--text-1); 
   border-color: var(--text-2);
-  box-shadow: var(--btn-shadow-hover);
-  transform: translateY(-1px);
 }
 .btn-secondary:active {
   transform: translateY(0) scale(0.985);
-  box-shadow: var(--btn-shadow);
 }
 .btn:disabled,
 .btn[aria-disabled="true"] {

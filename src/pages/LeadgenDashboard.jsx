@@ -43,6 +43,7 @@ import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics.js";
 import { useSEO } from "../lib/seo";
 import AdminNav from "../components/AdminNav";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 // ---------- helpers ----------
 
@@ -587,6 +588,10 @@ export default function LeadgenDashboard() {
     <section className="section admin-affiliates admin-leadgen">
         <div className="container">
           <AdminNav />
+          <Breadcrumbs items={[
+            { name: "Client Portal", url: "/portal" },
+            { name: "Leadgen", url: "/portal/leadgen" },
+          ]} />
           <header className="admin-aff-head leadgen-admin-hero">
           <div className="leadgen-admin-hero__row">
             <div>

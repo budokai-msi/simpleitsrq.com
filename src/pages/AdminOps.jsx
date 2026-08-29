@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useSEO } from "../lib/seo";
 import AdminNav from "../components/AdminNav";
+import Breadcrumbs from "../components/Breadcrumbs";
 import NotFound from "./NotFound";
 import {
   SignalPill,
@@ -180,6 +181,10 @@ export default function AdminOps() {
     <main id="main" className="section admin-affiliates admin-ops">
       <div className="container">
         <AdminNav />
+        <Breadcrumbs items={[
+          { name: "Client Portal", url: "/portal" },
+          { name: "Operations", url: "/portal/ops" },
+        ]} />
         <header className="admin-aff-head ops-head">
           <div className="ops-head__row">
             <div>

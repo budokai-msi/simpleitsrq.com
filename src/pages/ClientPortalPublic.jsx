@@ -4,6 +4,7 @@ import { useAuth } from "../lib/authContext.js";
 import { csrfFetch } from "../lib/csrf";
 import { useSEO } from "../lib/seo";
 import AdminNav from "../components/AdminNav";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 const STRIPE_BILLING_URL = "https://billing.stripe.com/p/login/5kQ7sE7oL9OEgIM2nPak000";
 const TICKET_STATUSES = ["open", "in_progress", "waiting", "resolved", "closed"];
@@ -679,6 +680,10 @@ function Dashboard({ user, logout }) {
 
   return (
     <div className="portal-dashboard">
+      <Breadcrumbs items={[
+        { name: "Home", url: "/" },
+        { name: "Client Portal", url: "/portal" },
+      ]} />
       <header className="portal-head">
         <div>
           <p className="eyebrow">Signed in</p>

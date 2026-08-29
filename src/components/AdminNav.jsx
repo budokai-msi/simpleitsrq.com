@@ -24,7 +24,6 @@ export default function AdminNav() {
                   className={`admin-global-nav__link ${isActive ? "is-active" : ""}`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <span className="admin-global-nav__halo"></span>
                   <Icon size={16} className="admin-global-nav__icon" />
                   <span className="admin-global-nav__label">{label}</span>
                 </Link>
