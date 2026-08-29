@@ -76,7 +76,6 @@ import {
 } from "./_lib/portal/content.js";
 import {
   handleRevenueSignals,
-  handleAffiliateStats,
   handleRevenueSummary,
   handleCreateInvoice,
   handleSendInvoice,
@@ -118,6 +117,14 @@ import {
   handleOpsecNoteSave,
   handleOpsecNoteDelete,
 } from "./_lib/portal/opsec.js";
+import {
+  handleAffiliateDashboardSummary,
+  handleTrends,
+  handleAffiliateProducts,
+  handleAffiliateNetworks,
+  handleAffiliateSync,
+  handleAffiliateStats,
+} from "./_lib/portal/affiliate.js";
 import {
   handleHotLeads,
   handleLeadIntel,
@@ -182,6 +189,13 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "opsec-ioc-toggle",
   "opsec-note-save",
   "opsec-note-delete",
+  // affiliate dashboard
+  "affiliate-dashboard-summary",
+  "trends",
+  "affiliate-products",
+  "affiliate-stats",
+  "affiliate-networks",
+  "affiliate-sync",
 ]);
 
 function verifyAdminToken(request) {
@@ -380,18 +394,26 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "admin-status"             && method === "GET")  return handleAdminStatus(session);
 
   // Internal OpSec data/actions. All admin-only; mutations write through
-  // the same admin-token allowlist.
-  if (action === "opsec-data"          && method === "GET")  return handleOpsecData(session);
-  if (action === "opsec-hunt-brief"    && method === "GET")  return handleOpsecHuntBrief(session);
-  if (action === "opsec-scan"          && method === "POST") return handleOpsecScan(session);
-  if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
-  if (action === "opsec-domain-toggle" && method === "POST") return handleOpsecDomainToggle(session, request);
-  if (action === "opsec-ioc-add"       && method === "POST") return handleOpsecIocAdd(session, request);
-  if (action === "opsec-ioc-toggle"    && method === "POST") return handleOpsecIocToggle(session, request);
-  if (action === "opsec-note-save"     && method === "POST") return handleOpsecNoteSave(session, request);
-  if (action === "opsec-note-delete"   && method === "POST") return handleOpsecNoteDelete(session, request);
+    // the same admin-token allowlist.
+    if (action === "opsec-data"          && method === "GET")  return handleOpsecData(session);
+    if (action === "opsec-hunt-brief"    && method === "GET")  return handleOpsecHuntBrief(session);
+    if (action === "opsec-scan"          && method === "POST") return handleOpsecScan(session);
+    if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
+    if (action === "opsec-domain-toggle" && method === "POST") return handleOpsecDomainToggle(session, request);
+    if (action === "opsec-ioc-add"       && method === "POST") return handleOpsecIocAdd(session, request);
+    if (action === "opsec-ioc-toggle"    && method === "POST") return handleOpsecIocToggle(session, request);
+    if (action === "opsec-note-save"     && method === "POST") return handleOpsecNoteSave(session, request);
+    if (action === "opsec-note-delete"   && method === "POST") return handleOpsecNoteDelete(session, request);
 
-  return json(404, { ok: false, error: "unknown_action" });
+    // Affiliate Dashboard actions. All admin-only; read + sync via admin token.
+    if (action === "affiliate-dashboard-summary" && method === "GET") return handleAffiliateDashboardSummary(session, url);
+    if (action === "trends"                   && method === "GET")  return handleTrends(session, url);
+    if (action === "affiliate-products"       && method === "GET")  return handleAffiliateProducts(session, url);
+    if (action === "affiliate-stats"          && method === "GET")  return handleAffiliateStats(session, url);
+    if (action === "affiliate-networks"       && method === "GET")  return handleAffiliateNetworks(session);
+    if (action === "affiliate-sync"           && method === "POST") return handleAffiliateSync(session, request);
+
+    return json(404, { ok: false, error: "unknown_action" });
 }
 
 export async function GET(request)   { return dispatch(request, "GET"); }
