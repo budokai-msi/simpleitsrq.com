@@ -3,8 +3,15 @@ import { sql } from '../api/_lib/db.js';
 import { publishDraftToGitHub } from '../api/_lib/publish-draft.js';
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
-const WRITER_MODEL  = process.env.LOCAL_LLM_WRITER  || 'qwen3.6:35b';
-const CRITIC_MODEL  = process.env.LOCAL_LLM_CRITIC  || 'gemma4:12b';
+// LLM backend: 'ollama' (default, local) or 'gemini' (cloud). When 'gemini',
+// the writer/critic model names are Gemini model IDs and GEMINI_API_KEY must
+// be set. This lets the blog daemon run fully in the cloud with no local
+// Ollama models loaded.
+const LLM_BACKEND = (process.env.LLM_BACKEND || 'ollama').toLowerCase();
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const GEMINI_BASE_URL = process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
+const WRITER_MODEL  = process.env.LOCAL_LLM_WRITER  || (LLM_BACKEND === 'gemini' ? 'gemini-3-flash-preview' : 'qwen3.6:35b');
+const CRITIC_MODEL  = process.env.LOCAL_LLM_CRITIC  || (LLM_BACKEND === 'gemini' ? 'gemini-3.5-flash-lite' : 'gemma4:12b');
 const MAX_REVISIONS = Number(process.env.LOCAL_LLM_MAX_REVISIONS || 2);
 // Slop score at or below which a post is allowed to publish.
 const SLOP_THRESHOLD = Number(process.env.BLOG_SLOP_THRESHOLD || 8);
@@ -129,6 +136,9 @@ const CISA_RELEVANT = /microsoft|google|apple|linux|windows|vmware|cisco|fortine
 // ---------------------------------------------------------------
 
 async function ollamaGenerate(model, system, prompt, { timeoutMs = 20 * 60 * 1000 } = {}) {
+  if (LLM_BACKEND === 'gemini') {
+    return geminiGenerate(model, system, prompt, { timeoutMs });
+  }
   const res = await fetch(`${OLLAMA_URL}/api/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -140,6 +150,48 @@ async function ollamaGenerate(model, system, prompt, { timeoutMs = 20 * 60 * 100
   if (!res.ok) throw new Error(`Ollama ${model} error ${res.status}: ${(await res.text()).slice(0, 300)}`);
   const data = await res.json();
   return data.response || '';
+}
+
+// Gemini cloud backend. The pipeline expects a raw JSON string back (the
+// caller runs parseJsonLoose on it), so we ask Gemini for plain JSON text and
+// return the text part. Uses the v1beta generateContent endpoint.
+async function geminiGenerate(model, system, prompt, { timeoutMs = 20 * 60 * 1000 } = {}) {
+  if (!GEMINI_API_KEY) throw new Error('LLM_BACKEND=gemini but GEMINI_API_KEY is not set');
+  const url = `${GEMINI_BASE_URL}/models/${encodeURIComponent(model)}:generateContent`;
+  // Gemini's free tier returns 503 "high demand" under load. Retry with
+  // backoff so a transient spike doesn't abort the whole blog run.
+  const MAX_ATTEMPTS = 4;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-goog-api-key': GEMINI_API_KEY },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.7,
+          maxOutputTokens: 8192,
+        },
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (res.status === 503 && attempt < MAX_ATTEMPTS) {
+      const waitMs = 5000 * attempt; // 5s, 10s, 15s
+      console.warn(`[blog] Gemini ${model} 503 (high demand); retry ${attempt}/${MAX_ATTEMPTS - 1} in ${waitMs / 1000}s`);
+      await new Promise((r) => setTimeout(r, waitMs));
+      continue;
+    }
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`Gemini ${model} error ${res.status}: ${body.slice(0, 300)}`);
+    }
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || '').join('') || '';
+    if (!text) throw new Error(`Gemini ${model} returned empty response`);
+    return text;
+  }
+  throw new Error(`Gemini ${model} still 503 after ${MAX_ATTEMPTS} attempts`);
 }
 
 function parseJsonLoose(text, fallbackAttempt = 0) {
