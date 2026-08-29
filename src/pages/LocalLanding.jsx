@@ -316,7 +316,7 @@ export default function LocalLanding() {
               if (verticals.length === 0) return null;
               return (
                 <div style={{ marginTop: 24, padding: "16px 18px", borderRadius: 10, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
-                  <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--syn-text-muted, #6b7280)" }}>
+                  <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: "var(--syn-text-muted, #6b7280)" }}>
                     Industry-specific pages for {city.city}
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -325,7 +325,7 @@ export default function LocalLanding() {
                         key={v.slug}
                         to={`/${v.slug}-${cityKey}`}
                         style={{
-                          padding: "6px 12px", borderRadius: 999,
+                          padding: "6px 12px", borderRadius: 8,
                           background: "var(--syn-surface-2, #fff)",
                           border: "1px solid var(--syn-border, #e5e7eb)",
                           fontSize: 13, fontWeight: 500, color: "var(--text-1)",

@@ -149,7 +149,7 @@ function StackCalculator() {
               />
             </label>
 
-            <div style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--syn-text-muted, #6b7280)", marginBottom: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--syn-text-muted, #6b7280)", marginBottom: 8 }}>
               Include in estimate
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

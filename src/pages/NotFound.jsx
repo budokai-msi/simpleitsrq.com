@@ -105,7 +105,7 @@ export default function NotFound() {
                   border: "1px solid var(--border)",
                   color: "var(--text-1)",
                   textDecoration: "none",
-                  transition: "border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease",
+                  transition: "border-color 180ms ease",
                 }}
                 className="notfound-card"
               >
@@ -131,9 +131,7 @@ export default function NotFound() {
       </section>
       <style>{`
         .notfound-card:hover {
-          transform: translateY(-2px);
           border-color: var(--brand);
-          box-shadow: 0 8px 24px rgba(17, 24, 39, 0.10);
         }
       `}</style>
     </main>

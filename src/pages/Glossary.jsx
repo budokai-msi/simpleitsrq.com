@@ -3,6 +3,7 @@ import { BookOpen, ArrowRight } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { glossaryAlphabetical } from "../data/glossary";
 import AdUnit from "../components/AdSense";
+import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
 
 export default function Glossary() {
   const entries = glossaryAlphabetical();
@@ -38,7 +39,7 @@ export default function Glossary() {
             </p>
           </div>
 
-          <AdUnit format="auto" className="ad-in-article" />
+          <AdUnit slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
 
           {/* A-Z list, big tappable cards. Each click is its own pageview =
               its own AdSense impression set. */}
@@ -58,7 +59,7 @@ export default function Glossary() {
             ))}
           </div>
 
-          <AdUnit format="auto" className="ad-in-article" />
+          <AdUnit slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
 
           <div style={{ marginTop: 32, padding: "20px 24px", borderRadius: 12, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
             <h2 className="title-2" style={{ marginTop: 0 }}>Need help turning this into real IT work?</h2>

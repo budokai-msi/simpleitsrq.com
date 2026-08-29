@@ -1,6 +1,8 @@
 import { Link } from "../lib/Link";
 import { ArrowLeft } from "lucide-react";
 import { useSEO } from "../lib/seo";
+import AdUnit from "../components/AdSense";
+import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
 
 // Keep this in sync with the underlying privacy / data-flow changes. Any
 // material change (new sub-processor, new cookie category, new retention
@@ -21,6 +23,7 @@ function LegalShell({ title, lede, children }) {
             <span style={{ marginLeft: 12 }}>Effective: {EFFECTIVE_DATE}</span>
           </div>
           <div className="blog-post-content">
+            <AdUnit slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
             {children}
           </div>
         </div>

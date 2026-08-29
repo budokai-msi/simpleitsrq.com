@@ -7,6 +7,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
 import AdUnit from "../components/AdSense";
+import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
 
 const SEVERITY_STYLE = {
   critical: { bg: "rgba(220, 38, 38, 0.08)",  border: "#DC2626", label: "Critical" },
@@ -204,7 +205,7 @@ export default function ExposureScan() {
             <ReportView report={report} onNew={() => { setStatus("idle"); setReport(null); setDomain(""); }} />
           )}
 
-          <AdUnit format="auto" className="ad-in-article" />
+          <AdUnit slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
 
           <div className="exposure-details-card">
             <h2 className="title-2">

@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, BookOpen, ShieldCheck, Lightbulb } from "lucide-
 import { useSEO, SITE_URL } from "../lib/seo";
 import { findGlossaryEntry, GLOSSARY } from "../data/glossary";
 import AdUnit from "../components/AdSense";
+import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
 
 function buildDefinedTermSchema(entry) {
   // schema.org/DefinedTerm - Google sometimes surfaces this as the
@@ -76,7 +77,7 @@ export default function GlossaryEntry() {
             {entry.short}
           </p>
 
-          <AdUnit format="auto" className="ad-in-article" />
+          <AdUnit slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
 
           <div className="blog-post-content">
             {entry.full.map((paragraph, i) => (
@@ -99,7 +100,7 @@ export default function GlossaryEntry() {
               <p style={{ margin: 0, lineHeight: 1.6 }}>{entry.why}</p>
             </aside>
 
-            <AdUnit format="auto" className="ad-in-article" />
+            <AdUnit slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
 
             <aside
               style={{
@@ -118,7 +119,7 @@ export default function GlossaryEntry() {
             </aside>
           </div>
 
-          <AdUnit format="auto" className="ad-in-article" />
+          <AdUnit slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
 
           {/* Related glossary terms - multi-pageview engine. Each click
               is another AdSense impression set on a high-CPM keyword. */}

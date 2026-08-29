@@ -8,6 +8,15 @@ import { readConsent, CONSENT_EVENT } from "../lib/consent.js";
 const CLIENT_ID =
   import.meta.env.VITE_ADSENSE_CLIENT || "ca-pub-7420716928607113";
 
+// Master switch. AdSense is OFF until the owner sets
+// VITE_ADSENSE_ENABLED=true in the production env (see
+// src/lib/adsenseSlots.js for the full checklist). Gating here — not just
+// in BlogMonetizationSlot — makes the switch authoritative for every
+// placement: blog posts, the blog index in-feed unit, glossary, glossary
+// entries, exposure-scan, and the legal pages all render nothing until it
+// is flipped on.
+const ADSENSE_ENABLED = import.meta.env.VITE_ADSENSE_ENABLED === "true";
+
 // Per-placement slot IDs live in src/lib/adsenseSlots.js so this file
 // stays component-only (fast-refresh requires it). Each call site
 // passes its slot via the `slot` prop; without one, AdUnit fails closed
@@ -161,7 +170,7 @@ export default function AdUnit({ slot, format = "auto", responsive = true, class
   const effectiveSlot = slot || "";
 
   useEffect(() => {
-    if (!CLIENT_ID || !consented || !effectiveSlot || pushed.current) return;
+    if (!ADSENSE_ENABLED || !CLIENT_ID || !consented || !effectiveSlot || pushed.current) return;
     pushed.current = true;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -170,11 +179,12 @@ export default function AdUnit({ slot, format = "auto", responsive = true, class
     if (insRef.current) observeSlot(insRef.current);
   }, [consented, effectiveSlot]);
 
-  // Fail closed when client ID is unset, marketing consent isn't granted,
-  // or no per-placement slot ID is configured. Without a slot ID AdSense
-  // refuses to fill the <ins>, so rendering one would be a Lighthouse CLS
-  // culprit + a console error per placement.
-  if (!CLIENT_ID || !consented || !effectiveSlot) return null;
+  // Fail closed when the master switch is off, the client ID is unset,
+  // marketing consent isn't granted, or no per-placement slot ID is
+  // configured. Without a slot ID AdSense refuses to fill the <ins>, so
+  // rendering one would be a Lighthouse CLS culprit + a console error
+  // per placement.
+  if (!ADSENSE_ENABLED || !CLIENT_ID || !consented || !effectiveSlot) return null;
 
   return (
     <div className={`ad-container ${className}`}>

@@ -99,7 +99,7 @@ export default function IndustriesHub() {
                         background: "var(--syn-surface-2, #fff)",
                         border: "1px solid var(--syn-border, #e5e7eb)",
                       }}>
-                        <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--syn-text-muted, #6b7280)" }}>
+                        <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600, color: "var(--syn-text-muted, #6b7280)" }}>
                           {industry.displayName} IT support, by city
                         </p>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -108,7 +108,7 @@ export default function IndustriesHub() {
                               key={cityKey}
                               to={`/${industry.slug}-${cityKey}`}
                               style={{
-                                padding: "6px 12px", borderRadius: 999,
+                                padding: "6px 12px", borderRadius: 8,
                                 background: "rgba(17, 24, 39, 0.08)",
                                 color: "var(--text-1)",
                                 border: "1px solid rgba(17, 24, 39, 0.2)",
