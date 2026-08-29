@@ -176,7 +176,7 @@
       "destination": "/api/hp?canary=1&orig=ignition"
     },
     {
-      "source": "/((?!api/|_vercel/|assets/|fonts/|blog/|site\\.webmanifest$|medical-it-sarasota).*)",
+      "source": "/((?!api/|_vercel/|assets/|fonts/|blog/|site\\.webmanifest$|medical-it-sarasota/).*)",
       "destination": "/index.html"
     }
   ],
