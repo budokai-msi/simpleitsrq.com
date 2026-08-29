@@ -16,7 +16,7 @@ const MAX_REVISIONS = Number(process.env.LOCAL_LLM_MAX_REVISIONS || 2);
 // Slop score at or below which a post is allowed to publish.
 const SLOP_THRESHOLD = Number(process.env.BLOG_SLOP_THRESHOLD || 8);
 
-const HN_RELEVANT = /security|hack|breach|password|backup|cloud|aws|azure|vpn|firewall|malware|ransomware|phishing|privacy|encryption|network|server|infrastructure|devops|saas|outage|pricing|ai|llm|openai|chatgpt|microsoft|google|apple|linux|windows|update|patch|vulnerability|cve|zero.day|exploit|incident|response|disaster|recovery|continuity|legal|finance|healthcare|construction|real\.estate|remote|work|wifi|router|switch|camera|surveillance|ups|battery|power|hardware|laptop|dock|nas/i;
+const HN_RELEVANT = /security|hack|breach|password|backup|cloud|aws|azure|vpn|firewall|malware|ransomware|phishing|privacy|encryption|network|server|infrastructure|devops|saas|outage|pricing|ai|llm|openai|chatgpt|microsoft|google|apple|linux|windows|update|patch|vulnerability|cve|zero[.-]day|exploit|incident|response|disaster|recovery|continuity|legal|finance|healthcare|construction|real\.estate|remote|work|wifi|router|switch|camera|surveillance|ups|battery|power|hardware|laptop|dock|nas/i;
 const HN_BANNED_TITLE = /who is hiring|ask hn|show hn|launch hn|tell hn|poll:|job:|hiring/i;
 // Default lowered from 80 → 30: top 30 of HN rarely has multiple
 // small-business-relevant stories above 80 in a single day. 30 still
@@ -657,7 +657,22 @@ ${story.source === 'hn' ? `HN discussion: ${hnUrl}\n` : ''}Score: ${story.score}
     }
 
     console.log(`[blog] Revising per critic: ${critique.rewrite_instructions?.slice(0, 140) || '(heuristic flags)'}`);
-    post = parseJsonLoose(await ollamaGenerate(WRITER_MODEL, WRITER_SYSTEM, revisionPrompt(post, [...(critique.issues || []), ...slop.hits])));
+    let revised = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        revised = parseJsonLoose(await ollamaGenerate(WRITER_MODEL, WRITER_SYSTEM, revisionPrompt(post, [...(critique.issues || []), ...slop.hits])));
+        if (revised.title && revised.body) break;
+        console.warn(`[blog] Revision attempt ${attempt}: writer JSON missing title/body (got keys: ${Object.keys(revised || {}).join(',')})`);
+      } catch (err) {
+        console.warn(`[blog] Revision attempt ${attempt}: writer failed: ${String(err.message).slice(0, 160)}`);
+      }
+      revised = null;
+    }
+    if (!revised) {
+      console.error('[blog] Writer returned no usable revision after 3 attempts. Aborting without publishing.');
+      return { ok: false, reason: 'revision_failed' };
+    }
+    post = revised;
   }
 
   // --- Persist + publish ---
