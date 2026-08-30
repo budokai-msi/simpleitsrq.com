@@ -30,7 +30,6 @@ import { useEngagementTracking } from "./lib/engagement.js";
 import { captureUtmParams } from "./lib/utm.js";
 import { AutoAds } from "./components/AdSense.jsx";
 import LiveChat from "./components/LiveChat.jsx";
-import AIChat from "./components/AIChat.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import "./App.css";
@@ -502,7 +501,6 @@ function Layout({ children }) {
       {!isInternalOps && <CookieConsent />}
       {!isInternalOps && <AutoAds />}
       {!isInternalOps && <LiveChat />}
-      {!isInternalOps && !isLeadgenProduct && <AIChat />}
       {!isInternalOps && <Analytics />}
       {!isInternalOps && <SpeedInsights />}
     </>
