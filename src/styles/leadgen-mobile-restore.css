@@ -1267,10 +1267,6 @@
     padding: 10px;
   }
 
-  .leadgen-product-steps {
-    grid-template-columns: 1fr;
-  }
-
   .leadgen-product-step {
     min-height: 0;
   }

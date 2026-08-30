@@ -1017,14 +1017,6 @@ html[data-theme="dark"] .leadgen-prospect-card__signals span.is-gap {
   overflow: hidden;
 }
 
-.leadgen-prospect-detail-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  padding: 14px 18px 18px;
-  background: var(--aura-surface);
-}
-
 .leadgen-prospect-detail-grid > section {
   min-width: 0;
   padding: 12px 14px;
