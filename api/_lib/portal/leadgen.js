@@ -1503,6 +1503,70 @@ export async function handleLeadgenJobs(session) {
   return json(200, { ok: true, rows });
 }
 
+// GET — per-domain deliverability reputation (Postal-style). READ-ONLY.
+//
+// Aggregates every send outcome in lead_campaign_sends by the email domain
+// of to_email, then computes a per-domain bounce rate and reputation score.
+// This is the deliverability guardrail that runs BEFORE the first campaign
+// launches: if one domain (e.g. a dead @aol.com) hard-bounces, it can poison
+// the shared sending IP for ALL emails, so we surface and flag those domains
+// here. Only SELECTs — never inserts, updates, or sends.
+export async function handleLeadgenDeliverability(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const rows = await sql`
+    SELECT split_part(to_email, '@', 2) AS domain,
+           COUNT(*) FILTER (WHERE sent_at IS NOT NULL)::int AS sent_count,
+           COUNT(*) FILTER (WHERE bounced_at IS NOT NULL)::int AS bounce_count,
+           COUNT(*) FILTER (WHERE opened_at IS NOT NULL)::int AS open_count,
+           COUNT(*) FILTER (WHERE clicked_at IS NOT NULL)::int AS click_count,
+           COUNT(*) FILTER (WHERE replied_at IS NOT NULL)::int AS reply_count
+    FROM lead_campaign_sends
+    GROUP BY 1
+    ORDER BY sent_count DESC
+  `;
+
+  let totalSent = 0;
+  let totalBounced = 0;
+  const domains = (rows || []).map((r) => {
+    const sent = Number(r.sent_count) || 0;
+    const bounced = Number(r.bounce_count) || 0;
+    const opened = Number(r.open_count) || 0;
+    const clicked = Number(r.click_count) || 0;
+    const replied = Number(r.reply_count) || 0;
+    const bounceRate = sent > 0 ? (bounced / sent) * 100 : 0;
+    const reputation = Math.max(0, Math.min(100, 100 - bounceRate));
+    const status = bounceRate > 10 ? "paused" : bounceRate > 5 ? "warn" : "ok";
+    totalSent += sent;
+    totalBounced += bounced;
+    return {
+      domain: r.domain,
+      sent_count: sent,
+      bounce_count: bounced,
+      open_count: opened,
+      click_count: clicked,
+      reply_count: replied,
+      bounce_rate: Math.round(bounceRate * 100) / 100,
+      open_rate: sent > 0 ? Math.round((opened / sent) * 10000) / 100 : 0,
+      reply_rate: sent > 0 ? Math.round((replied / sent) * 10000) / 100 : 0,
+      reputation: Math.round(reputation * 100) / 100,
+      status,
+    };
+  });
+
+  return json(200, {
+    ok: true,
+    domains,
+    totals: {
+      sent: totalSent,
+      bounced: totalBounced,
+      open_rate: totalSent > 0 ? Math.round((domains.reduce((a, d) => a + d.open_count, 0) / totalSent) * 10000) / 100 : 0,
+      bounce_rate: totalSent > 0 ? Math.round((totalBounced / totalSent) * 10000) / 100 : 0,
+    },
+  });
+}
+
 // Drains the lead_crawl_jobs queue inline so admin clicks (Discover,
 // Crawl emails) feel synchronous instead of waiting on the daily cron.
 // Bounded by the worker's own LEADGEN_TIME_BUDGET_MS / max-jobs guards;

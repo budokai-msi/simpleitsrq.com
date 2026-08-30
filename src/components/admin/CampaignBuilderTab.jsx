@@ -11,6 +11,8 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
   const readySegments = status.ready_segments || [];
   const [campaigns, setCampaigns] = useState(data["leadgen-campaigns"]?.rows || []);
   const [campaignsError, setCampaignsError] = useState(null);
+  const [deliverability, setDeliverability] = useState(null);
+  const [deliverabilityError, setDeliverabilityError] = useState(null);
 
   const [step, setStep] = useState(1);
   const [zip, setZip] = useState("");
@@ -34,6 +36,12 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
         .catch((e) => setCampaignsError(String(e.message || e)));
     }
   }, [data]);
+
+  useEffect(() => {
+    getJson("leadgen-deliverability")
+      .then((res) => setDeliverability(res))
+      .catch((e) => setDeliverabilityError(String(e.message || e)));
+  }, []);
 
   const industries = [...new Set(readySegments.map((s) => s.industry_group).filter(Boolean))].sort();
 
@@ -287,6 +295,44 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
             </tr>
           )}
         />
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Deliverability</h2></div>
+        {deliverabilityError ? <div className="ops-notice">{deliverabilityError}</div> : null}
+        {deliverability ? (
+          <div>
+            <p style={{ fontSize: 14, marginBottom: 12 }}>
+              <strong>{fmtNumber(deliverability.totals?.sent)}</strong> sent ·{" "}
+              <strong>{fmtNumber(deliverability.totals?.bounced)}</strong> bounced ·{" "}
+              <strong>{deliverability.totals?.bounce_rate ?? 0}%</strong> overall bounce rate
+            </p>
+            <Table
+              columns={["Domain", "Sent", "Bounced", "Open rate", "Reply rate", "Reputation", "Status"]}
+              rows={deliverability.domains}
+              empty="No sends recorded yet."
+              renderRow={(d) => (
+                <tr key={d.domain}>
+                  <td><strong>{d.domain}</strong></td>
+                  <td>{fmtNumber(d.sent_count)}</td>
+                  <td>{fmtNumber(d.bounce_count)}</td>
+                  <td>{d.open_rate}%</td>
+                  <td>{d.reply_rate}%</td>
+                  <td>
+                    <SignalPill state={d.reputation >= 95 ? "good" : d.reputation >= 90 ? "warn" : "bad"}>
+                      {d.reputation}
+                    </SignalPill>
+                  </td>
+                  <td>
+                    <SignalPill state={d.status === "ok" ? "good" : d.status === "warn" ? "warn" : "bad"}>
+                      {d.status}
+                    </SignalPill>
+                  </td>
+                </tr>
+              )}
+            />
+          </div>
+        ) : null}
       </section>
     </div>
   );

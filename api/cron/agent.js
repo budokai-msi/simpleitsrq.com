@@ -1156,7 +1156,8 @@ async function runLeadgenSender() {
       await sql`
         UPDATE lead_campaign_sends
         SET status=${result.permanent ? "failed" : "queued"},
-            error=${result.error}
+            error=${result.error},
+            bounced_at=${result.permanent ? new Date() : null}
         WHERE id=${s.id}
       `;
       summary.failed += 1;
