@@ -14,7 +14,9 @@
 //
 // The admin editor can read the full manifest through getManifest().
 
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useAuth } from "./authContext.js";
+import EditableText from "../components/EditableText";
 
 // Module-level cache shared across all pages. `null` means "not loaded yet".
 let cache = null;
@@ -61,6 +63,12 @@ function buildOverridesMap(manifest) {
 }
 
 export function useContent() {
+  const { user } = useAuth();
+  // Only the sole owner admin becomes an "editor". For everyone else
+  // isAdminEditor is false and `t()` returns the plain string, exactly as
+  // before — visitors see zero change.
+  const isAdminEditor = Boolean(user?.isAdmin);
+
   const [overrides, setOverrides] = useState(cache ? buildOverridesMap(cache) : {});
 
   const refresh = useCallback(async () => {
@@ -79,11 +87,42 @@ export function useContent() {
   }, []);
 
   const t = useCallback(
-    (page, key, fallback) => overrides?.[page]?.[key] ?? fallback,
-    [overrides],
+    (page, key, fallback) => {
+      const current = overrides?.[page]?.[key] ?? fallback;
+      // The 23+ wired pages all use `t()` as JSX children, so rendering a
+      // React element here is safe. Non-admin users always get the string.
+      if (isAdminEditor) {
+        return React.createElement(EditableText, {
+          page,
+          // React reserves `key` and won't forward it to props, so we ALSO
+          // carry the string key through the non-reserved `refKey` prop.
+          // `key` is still set for correct reconciliation across re-renders.
+          key,
+          refKey: key,
+          fallback,
+          value: current,
+          onSave: (p, k, v) => setManifestOverride(p, k, v),
+        });
+      }
+      return current;
+    },
+    [overrides, isAdminEditor],
   );
 
   return { t, overrides, refresh };
+}
+
+// Update the module-level override cache so other components on the page
+// that read the same key pick up a freshly saved inline edit on their next
+// render. Best-effort; never throws.
+export function setManifestOverride(page, key, value) {
+  try {
+    if (cache && cache.content && typeof cache.content === "object") {
+      cache.content[`${page}.${key}`] = String(value ?? "");
+    }
+  } catch {
+    // ignore — cache is best-effort
+  }
 }
 
 // Returns the full manifest (content + design tokens + updated_at) for the
