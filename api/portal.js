@@ -118,12 +118,18 @@ import {
   handleOpsecNoteDelete,
 } from "./_lib/portal/opsec.js";
 import {
+  handleMatrixCapture,
+  handleMatrixRetain,
+} from "./_lib/portal/matrix.js";
+import { handleAnalytics } from "./_lib/portal/analytics.js";
+import {
   handleAffiliateDashboardSummary,
   handleTrends,
   handleAffiliateProducts,
   handleAffiliateNetworks,
   handleAffiliateSync,
   handleAffiliateStats,
+  handleAffiliateIngest,
 } from "./_lib/portal/affiliate.js";
 import {
   handleHotLeads,
@@ -189,6 +195,11 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "opsec-ioc-toggle",
   "opsec-note-save",
   "opsec-note-delete",
+  // ops matrix — command canvas capture/retain
+  "matrix-capture",
+  "matrix-retain",
+  // vercel-style analytics
+  "analytics",
   // affiliate dashboard
   "affiliate-dashboard-summary",
   "trends",
@@ -196,6 +207,7 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "affiliate-stats",
   "affiliate-networks",
   "affiliate-sync",
+  "affiliate-ingest",
 ]);
 
 function verifyAdminToken(request) {
@@ -404,6 +416,9 @@ async function dispatchAuthed(request, method, url, action, session) {
     if (action === "opsec-ioc-toggle"    && method === "POST") return handleOpsecIocToggle(session, request);
     if (action === "opsec-note-save"     && method === "POST") return handleOpsecNoteSave(session, request);
     if (action === "opsec-note-delete"   && method === "POST") return handleOpsecNoteDelete(session, request);
+    if (action === "matrix-capture"      && method === "POST") return handleMatrixCapture(session);
+    if (action === "matrix-retain"       && method === "GET")  return handleMatrixRetain(session, url);
+    if (action === "analytics"           && method === "GET")  return handleAnalytics(session, url);
 
     // Affiliate Dashboard actions. All admin-only; read + sync via admin token.
     if (action === "affiliate-dashboard-summary" && method === "GET") return handleAffiliateDashboardSummary(session, url);
@@ -412,6 +427,7 @@ async function dispatchAuthed(request, method, url, action, session) {
     if (action === "affiliate-stats"          && method === "GET")  return handleAffiliateStats(session, url);
     if (action === "affiliate-networks"       && method === "GET")  return handleAffiliateNetworks(session);
     if (action === "affiliate-sync"           && method === "POST") return handleAffiliateSync(session, request);
+    if (action === "affiliate-ingest"         && method === "POST") return handleAffiliateIngest(session);
 
     return json(404, { ok: false, error: "unknown_action" });
 }

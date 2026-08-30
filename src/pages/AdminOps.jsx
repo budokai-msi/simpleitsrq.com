@@ -7,12 +7,14 @@ import {
   DollarSign,
   Eye,
   FileText,
+  Grid3X3,
   Inbox,
   Lock,
   RefreshCcw,
   Shield,
   Target,
   Ticket,
+  TrendingUp,
 } from "lucide-react";
 import { useSEO } from "../lib/seo";
 import AdminNav from "../components/AdminNav";
@@ -39,9 +41,12 @@ const LazyVisitorsTab = lazy(() => import("../components/admin/VisitorsTab"));
 const LazyContentTab = lazy(() => import("../components/admin/ContentTab"));
 const LazyDraftsTab = lazy(() => import("../components/admin/DraftsTab"));
 const LazyAffiliateTab = lazy(() => import("../components/admin/AffiliateTab"));
+const LazyAffiliateDashboardTab = lazy(() => import("../components/admin/AffiliateDashboardTab"));
 const LazyLeadgenTab = lazy(() => import("../components/admin/LeadgenTab"));
 const LazyAdsenseTab = lazy(() => import("../components/admin/AdsenseTab"));
 const LazyOpsecTab = lazy(() => import("../components/admin/OpsecTab"));
+const LazyOpsMatrixTab = lazy(() => import("../components/admin/OpsMatrixTab"));
+const LazyAnalyticsTab = lazy(() => import("../components/admin/AnalyticsTab"));
 
 const TABS = [
   ["ops", "Ops", Activity],
@@ -50,9 +55,12 @@ const TABS = [
   ["content", "Content", BookOpen],
   ["drafts", "Drafts", FileText],
   ["affiliate", "Affiliate", DollarSign],
+  ["affiliate-dash", "Affiliate+Trends", TrendingUp],
   ["leadgen", "Leadgen", Target],
   ["adsense", "AdSense", BarChart3],
+  ["analytics", "Analytics", BarChart3],
   ["opsec", "OpSec", Shield],
+  ["matrix", "Matrix", Grid3X3],
 ];
 
 const CORE_ACTIONS = [
@@ -61,6 +69,7 @@ const CORE_ACTIONS = [
   "countermeasures",
   "drafts",
   "affiliate-stats",
+  "affiliate-dashboard-summary",
   "revenue-signals",
   "behavior-insights",
   "content-insights",
@@ -72,6 +81,7 @@ const CORE_ACTIONS = [
   "adsense-health",
   "opsec-data",
   "opsec-hunt-brief",
+  "analytics",
 ];
 
 
@@ -260,9 +270,12 @@ export default function AdminOps() {
             {tab === "content" && <LazyContentTab data={data["content-insights"]} error={errors["content-insights"]} />}
             {tab === "drafts" && <LazyDraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
             {tab === "affiliate" && <LazyAffiliateTab data={data} />}
+            {tab === "affiliate-dash" && <LazyAffiliateDashboardTab data={data} errors={errors} busy={busy} runAction={runAction} />}
             {tab === "leadgen" && <LazyLeadgenTab status={data["leadgen-status"]} />}
             {tab === "adsense" && <LazyAdsenseTab health={data["adsense-health"]} />}
+            {tab === "analytics" && <LazyAnalyticsTab data={data} errors={errors} busy={busy} runAction={runAction} />}
             {tab === "opsec" && <LazyOpsecTab data={{ ...(data["opsec-data"] || {}), huntBrief: data["opsec-hunt-brief"] }} busy={busy} runAction={runAction} />}
+            {tab === "matrix" && <LazyOpsMatrixTab data={data} busy={busy} runAction={runAction} />}
           </Suspense>
         </section>
       </div>

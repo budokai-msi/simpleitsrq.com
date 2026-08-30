@@ -9,6 +9,7 @@
 
 import { sql } from "../db.js";
 import { json } from "../http.js";
+import { ingestAffiliateProducts } from "../affiliate-ingest.js";
 
 /**
  * GET /api/portal?action=affiliate-dashboard-summary
@@ -577,6 +578,19 @@ export async function handleAffiliateSync(session, request) {
     status: "started",
     message: `Sync started for ${net.name} (${syncType}). Check affiliate-sync-log for progress.`,
   });
+}
+
+/**
+ * POST /api/portal?action=affiliate-ingest
+ * Manually trigger product ingestion (seed catalog + eBay if keys set).
+ */
+export async function handleAffiliateIngest(session) {
+  try {
+    const summary = await ingestAffiliateProducts();
+    return json(200, { ok: true, summary });
+  } catch (err) {
+    return json(500, { ok: false, error: String(err?.message || err).slice(0, 300) });
+  }
 }
 
 function formatProducts(rows) {
