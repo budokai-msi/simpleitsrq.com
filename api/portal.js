@@ -58,6 +58,7 @@ import {
   handleContentList,
   handleContentSave,
   handleContentDelete,
+  handleContentPublish,
   handleDesignTokenList,
   handleDesignTokenSave,
   handleDesignTokenDelete,
@@ -236,6 +237,7 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "content-list",
   "content-save",
   "content-delete",
+  "content-publish",
   "content-manifest",
   "content-revisions",
   // design-token editor (admin design-system editing)
@@ -417,6 +419,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "content-list"       && method === "GET")  return handleContentList(session);
   if (action === "content-save"       && method === "POST") return handleContentSave(session, request);
   if (action === "content-delete"     && method === "POST") return handleContentDelete(session, request);
+  if (action === "content-publish"    && method === "POST") return handleContentPublish(session);
   if (action === "design-token-list"  && method === "GET")  return handleDesignTokenList(session);
   if (action === "design-token-save"  && method === "POST") return handleDesignTokenSave(session, request);
   if (action === "design-token-delete" && method === "POST") return handleDesignTokenDelete(session, request);

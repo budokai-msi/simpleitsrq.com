@@ -160,6 +160,22 @@ async function syncToGitHubBestEffort() {
   });
 }
 
+// Publish-all action. Commits the current full override + design-token
+// manifest to content/overrides.json on GitHub main -> triggers Vercel
+// auto-deploy. This is the one-click "make every drafted change permanent
+// and version-controlled" action. It does NOT touch the DB itself (drafts
+// are already written there); it only pushes the consolidated manifest.
+export async function handleContentPublish(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const res = await commitOverridesManifest();
+  if (res.ok) {
+    return json(200, { ok: true, pushed: true });
+  }
+  return json(500, { ok: false, error: res.error || "publish_failed" });
+}
+
 // Record a row in the content_revisions audit-history table.
 async function recordRevision({ kind, refKey, oldValue, newValue, editorNote, createdBy }) {
   await sql`
@@ -212,6 +228,7 @@ export async function handleContentSave(session, request) {
   const key = String(body.key || "").trim();
   const value = String(body.value ?? "");
   const editorNote = String(body.editor_note ?? "").trim() || null;
+  const publish = body.publish === true;
 
   if (!page || !key) {
     return json(400, { ok: false, error: "page_and_key_required" });
@@ -238,8 +255,11 @@ export async function handleContentSave(session, request) {
     createdBy: session?.user?.email,
   });
 
-  // Best-effort GitHub + Vercel sync — never blocks or breaks the DB save.
-  await syncToGitHubBestEffort();
+  // GitHub + Vercel sync only when the admin explicitly publishes — "save
+  // draft" (publish=false) writes to Neon + the revision audit only. The DB
+  // write + revision insert above always run; this is pure additive gating.
+  // Never blocks or breaks the DB save.
+  if (publish) await syncToGitHubBestEffort();
 
   return json(200, { ok: true });
 }
@@ -253,6 +273,7 @@ export async function handleContentDelete(session, request) {
 
   const page = String(body.page || "").trim();
   const key = String(body.key || "").trim();
+  const publish = body.publish === true;
 
   if (!page || !key) {
     return json(400, { ok: false, error: "page_and_key_required" });
@@ -277,8 +298,8 @@ export async function handleContentDelete(session, request) {
     createdBy: session?.user?.email,
   });
 
-  // Best-effort GitHub + Vercel sync — never blocks or breaks the DB write.
-  await syncToGitHubBestEffort();
+  // GitHub + Vercel sync only when explicitly published (see handleContentSave).
+  if (publish) await syncToGitHubBestEffort();
 
   return json(200, { ok: true });
 }
@@ -402,6 +423,7 @@ export async function handleDesignTokenSave(session, request) {
   const token = String(body.token || "").trim();
   const value = String(body.value ?? "");
   const theme = String(body.theme || "both").trim();
+  const publish = body.publish === true;
 
   if (!token) {
     return json(400, { ok: false, error: "token_required" });
@@ -433,8 +455,8 @@ export async function handleDesignTokenSave(session, request) {
     createdBy: session?.user?.email,
   });
 
-  // Best-effort GitHub + Vercel sync — never blocks or breaks the DB save.
-  await syncToGitHubBestEffort();
+  // GitHub + Vercel sync only when explicitly published (see handleContentSave).
+  if (publish) await syncToGitHubBestEffort();
 
   return json(200, { ok: true });
 }
@@ -447,6 +469,7 @@ export async function handleDesignTokenDelete(session, request) {
   try { body = await request.json(); } catch { /* ignore malformed body */ }
 
   const token = String(body.token || "").trim();
+  const publish = body.publish === true;
   if (!token) {
     return json(400, { ok: false, error: "token_required" });
   }
@@ -470,8 +493,8 @@ export async function handleDesignTokenDelete(session, request) {
     createdBy: session?.user?.email,
   });
 
-  // Best-effort GitHub + Vercel sync — never blocks or breaks the DB write.
-  await syncToGitHubBestEffort();
+  // GitHub + Vercel sync only when explicitly published (see handleContentSave).
+  if (publish) await syncToGitHubBestEffort();
 
   return json(200, { ok: true });
 }

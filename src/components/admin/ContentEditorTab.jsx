@@ -11,7 +11,7 @@
 // attach an editor note per save, and lists the audit/history trail.
 
 import { useEffect, useMemo, useState } from "react";
-import { FileText, History, Plus, RotateCcw, Save } from "lucide-react";
+import { FileText, History, Plus, RotateCcw, Save, Send } from "lucide-react";
 import { getJson, postJson, SignalPill, fmtTime } from "./shared";
 import { getManifest } from "../../lib/useContent";
 
@@ -52,6 +52,7 @@ export default function ContentEditorTab({ data, busy, runAction }) {
   const [lastSync, setLastSync] = useState(null);
   const [revisions, setRevisions] = useState([]);
   const [error, setError] = useState("");
+  const [publishMsg, setPublishMsg] = useState("");
 
   const load = async () => {
     try {
@@ -79,30 +80,42 @@ export default function ContentEditorTab({ data, busy, runAction }) {
     [overrides, page],
   );
 
-  const save = async (key, value, note = "") => {
+  const save = async (key, value, note = "", publish = false) => {
     try {
-      await postJson("content-save", { page, key, value, editor_note: note });
+      await postJson("content-save", { page, key, value, editor_note: note, publish });
       await load();
     } catch (e) {
       setError(String(e.message || e));
     }
   };
 
-  const remove = async (key) => {
+  const remove = async (key, publish = false) => {
     try {
-      await postJson("content-delete", { page, key });
+      await postJson("content-delete", { page, key, publish });
       await load();
     } catch (e) {
       setError(String(e.message || e));
     }
   };
 
-  const add = async () => {
+  const add = async (publish = false) => {
     if (!newKey.trim()) return;
-    await save(newKey.trim(), newValue, newNote);
+    await save(newKey.trim(), newValue, newNote, publish);
     setNewKey("");
     setNewValue("");
     setNewNote("");
+  };
+
+  const publishAll = async () => {
+    try {
+      await postJson("content-publish", {});
+      setPublishMsg("Published — all changes committed to GitHub and Vercel deploy triggered.");
+      setError("");
+      await load();
+    } catch (e) {
+      setPublishMsg("");
+      setError(String(e.message || e));
+    }
   };
 
   return (
@@ -115,12 +128,45 @@ export default function ContentEditorTab({ data, busy, runAction }) {
       </div>
       <p className="ops-panel__copy">
         Edit the text on any page. Pages fall back to their hardcoded copy until you save an override here.
+        Saving is draft-only by default — changes are live on page load but not deployed. Click <strong>Publish
+        all pending</strong> to commit every draft to GitHub and trigger a Vercel deploy.
       </p>
 
-      <p className="ops-panel__copy" style={{ display: "flex", gap: 8, alignItems: "center", margin: "0 0 12px" }}>
-        <SignalPill state={lastSync ? "good" : "neutral"}>Sync to GitHub</SignalPill>
+      <div
+        className="ops-panel__copy"
+        style={{
+          display: "flex",
+          gap: 12,
+          alignItems: "center",
+          margin: "0 0 12px",
+          padding: 12,
+          border: "1px solid var(--syn-border, #e5e7eb)",
+          borderRadius: 8,
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          className="btn btn-primary btn-sm"
+          type="button"
+          onClick={publishAll}
+          disabled={busy === "content-publish"}
+        >
+          <Send size={14} /> Publish all pending
+        </button>
+        <SignalPill state={publishMsg ? "good" : "neutral"}>
+          {publishMsg ? "Published" : "Draft mode"}
+        </SignalPill>
         <span style={{ fontSize: 13 }}>
-          {lastSync ? `Last synced ${fmtTime(lastSync)} (content/overrides.json → Vercel auto-deploy)` : "No sync yet — save an override to commit to GitHub."}
+          {publishMsg
+            ? publishMsg
+            : "Changes deploy when you click Publish — they are saved to the database now without touching GitHub or Vercel."}
+        </span>
+      </div>
+
+      <p className="ops-panel__copy" style={{ display: "flex", gap: 8, alignItems: "center", margin: "0 0 12px" }}>
+        <SignalPill state={lastSync ? "good" : "neutral"}>Last publish</SignalPill>
+        <span style={{ fontSize: 13 }}>
+          {lastSync ? `Last published ${fmtTime(lastSync)} (content/overrides.json → Vercel auto-deploy)` : "Nothing published yet — drafts only."}
         </span>
       </p>
 
@@ -203,10 +249,18 @@ export default function ContentEditorTab({ data, busy, runAction }) {
         <button
           className="btn btn-primary btn-sm"
           type="button"
-          onClick={add}
+          onClick={() => add(false)}
           disabled={busy === "content-save" || !newKey.trim()}
         >
-          <Plus size={14} /> Add
+          <Plus size={14} /> Save draft
+        </button>
+        <button
+          className="btn btn-secondary btn-sm"
+          type="button"
+          onClick={() => add(true)}
+          disabled={busy === "content-save" || !newKey.trim()}
+        >
+          <Send size={14} /> Save & publish
         </button>
       </div>
 
@@ -278,19 +332,37 @@ function OverrideRow({ row, busy, onSave, onDelete }) {
         <button
           className="btn btn-primary btn-sm"
           type="button"
-          onClick={() => onSave(row.key, value, note)}
+          onClick={() => onSave(row.key, value, note, false)}
           disabled={busy === "content-save"}
         >
-          <Save size={14} /> Save
+          <Save size={14} /> Save draft
+        </button>
+        <button
+          className="btn btn-primary btn-sm"
+          type="button"
+          onClick={() => onSave(row.key, value, note, true)}
+          disabled={busy === "content-save"}
+          style={{ marginLeft: 6 }}
+        >
+          <Send size={14} /> Save & publish
         </button>
         <button
           className="btn btn-secondary btn-sm"
           type="button"
-          onClick={() => onDelete(row.key)}
+          onClick={() => onDelete(row.key, false)}
           disabled={busy === "content-delete"}
           style={{ marginLeft: 6 }}
         >
           <RotateCcw size={14} /> Reset
+        </button>
+        <button
+          className="btn btn-secondary btn-sm"
+          type="button"
+          onClick={() => onDelete(row.key, true)}
+          disabled={busy === "content-delete"}
+          style={{ marginLeft: 6 }}
+        >
+          <RotateCcw size={14} /> Reset & publish
         </button>
       </td>
     </tr>
