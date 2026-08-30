@@ -25,6 +25,7 @@ import {
   postJson,
 } from "../components/admin/shared";
 import { ToastProvider, useToast } from "../components/admin/Toast";
+import { PanelLoader } from "../components/admin/AnimatedLoader";
 // Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
 // in a lazy CSS chunk instead of the global render-blocking bundle. Vite
 // dedupes the import across the leadgen routes.
@@ -202,8 +203,7 @@ function AdminOpsInner() {
     return (
       <main id="main" className="section">
         <div className="container" style={{ padding: "80px 0", textAlign: "center", color: "var(--syn-text-muted, #6b7280)" }}>
-          <Lock size={20} aria-hidden="true" />
-          <p style={{ marginTop: 12 }}>Loading…</p>
+          <PanelLoader label="Loading dashboard…" />
         </div>
       </main>
     );
@@ -299,7 +299,7 @@ function AdminOpsInner() {
               exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
             >
-              <Suspense fallback={<div className="ops-tab-loading">Loading…</div>}>
+              <Suspense fallback={<PanelLoader label="Loading section…" size={32} />}>
                 {tab === "ops" && <LazyOpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
                 {tab === "leads" && <LazyLeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
                 {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
