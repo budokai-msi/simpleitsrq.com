@@ -141,6 +141,7 @@ import {
   handleLeadIntel,
   handleLeadsInbox,
   handleLeadStatus,
+  handleLeadsBulkStatus,
   handleSendLeadEmail,
   handleCreateLeadTicket,
 } from "./_lib/portal/leads.js";
@@ -371,6 +372,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "lead-intel"           && method === "GET")  return handleLeadIntel(session);
   if (action === "leads-inbox"          && method === "GET")  return handleLeadsInbox(session, url);
   if (action === "lead-status"          && method === "POST") return handleLeadStatus(session, request);
+  if (action === "leads-bulk-status"    && method === "POST") return handleLeadsBulkStatus(session, request);
   if (action === "send-lead-email"      && method === "POST") return handleSendLeadEmail(session, request);
   if (action === "create-lead-ticket"   && method === "POST") return handleCreateLeadTicket(session, request);
   if (action === "revenue-summary"      && method === "GET")  return handleRevenueSummary(session);

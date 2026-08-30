@@ -215,6 +215,22 @@ export async function handleLeadStatus(session, request) {
   return json(200, { ok: true });
 }
 
+// Bulk lead status update — used by the Leads inbox bulk action bar to mark
+// many leads (e.g. "contacted") in a single request. Admin-only; additive.
+export async function handleLeadsBulkStatus(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  const body = await request.json().catch(() => ({}));
+  const ids = Array.isArray(body.ids)
+    ? body.ids.map((n) => Number.parseInt(n, 10)).filter((n) => Number.isFinite(n) && n > 0)
+    : [];
+  const status = String(body.status || "").trim();
+  if (!ids.length) return json(400, { ok: false, error: "invalid_ids" });
+  if (!LEAD_STATUSES.includes(status)) return json(400, { ok: false, error: "invalid_status" });
+  await sql`UPDATE leads SET status = ${status}, updated_at = now() WHERE id = ANY(${ids})`.catch(() => {});
+  return json(200, { ok: true, updated: ids.length });
+}
+
 export async function handleSendLeadEmail(session, request) {
   const gate = await requireAdmin(session);
   if (gate) return gate;

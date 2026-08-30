@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   BookOpen,
+  CheckCheck,
   ExternalLink,
   Inbox,
   Mail,
@@ -20,6 +21,41 @@ export default function LeadsInboxTab({ data, error, reload }) {
   const [emailStatus, setEmailStatus] = useState(null);
   const [creatingTicket, setCreatingTicket] = useState(false);
   const [ticketStatus, setTicketStatus] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkStatus, setBulkStatus] = useState(null);
+  const selectAllRef = useRef(null);
+
+  const allSelected = leads.length > 0 && selectedIds.length === leads.length;
+  const someSelected = selectedIds.length > 0 && selectedIds.length < leads.length;
+
+  useEffect(() => {
+    if (selectAllRef.current) selectAllRef.current.indeterminate = someSelected;
+  }, [someSelected]);
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds(allSelected ? [] : leads.map((l) => l.id));
+  };
+
+  const bulkMarkContacted = async () => {
+    if (!selectedIds.length) return;
+    setBulkBusy(true);
+    setBulkStatus(null);
+    try {
+      await postJson("leads-bulk-status", { ids: selectedIds, status: "contacted" });
+      setBulkStatus({ ok: true, text: `Marked ${selectedIds.length} lead(s) contacted.` });
+      setSelectedIds([]);
+      if (reload) reload();
+    } catch (e) {
+      setBulkStatus({ ok: false, text: String(e.message || e) });
+    } finally {
+      setBulkBusy(false);
+    }
+  };
 
   const activeLead = selectedLead || leads[0] || null;
   const msDocs = useMemo(() => analyzeMicrosoftDocs(activeLead?.message), [activeLead]);
@@ -96,12 +132,24 @@ export default function LeadsInboxTab({ data, error, reload }) {
             <div style={{ overflowX: "auto" }}>
               <table className="admin-aff-table ops-table">
                 <thead>
-                  <tr><th>Lead</th><th>Status</th><th>Action</th></tr>
+                  <tr>
+                    <th style={{ width: 36 }}>
+                      <input
+                        type="checkbox"
+                        ref={selectAllRef}
+                        checked={allSelected}
+                        onChange={toggleSelectAll}
+                        aria-label="Select all leads"
+                      />
+                    </th>
+                    <th>Lead</th><th>Status</th><th>Action</th>
+                  </tr>
                 </thead>
                 <tbody>
                   <AnimatePresence>
                     {leads.map((l, i) => {
                       const isSelected = activeLead?.id === l.id;
+                      const isChecked = selectedIds.includes(l.id);
                       return (
                         <motion.tr
                           key={l.id}
@@ -119,6 +167,15 @@ export default function LeadsInboxTab({ data, error, reload }) {
                           }}
                           onClick={() => selectLead(l)}
                         >
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleSelect(l.id)}
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label={`Select ${l.name || l.email}`}
+                            />
+                          </td>
                           <td>
                             <strong>{l.name || l.email}</strong>
                             {l.company ? <><br /><span style={{ fontSize: 11, opacity: 0.8 }}>{l.company}</span></> : null}
@@ -139,6 +196,47 @@ export default function LeadsInboxTab({ data, error, reload }) {
                 </tbody>
               </table>
             </div>
+
+            {/* Bulk action bar — shown when one or more leads are selected */}
+            {selectedIds.length > 0 ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: 10,
+                  marginTop: 12,
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--border, #cbd5e1)",
+                  background: "color-mix(in srgb, var(--brand, #6366f1) 8%, var(--surface, #fff))",
+                }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-1, #0f172a)" }}>
+                  {selectedIds.length} selected
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  disabled={bulkBusy}
+                  onClick={bulkMarkContacted}
+                >
+                  <CheckCheck size={14} /> {bulkBusy ? "Marking..." : "Mark contacted"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setSelectedIds([])}
+                >
+                  Clear
+                </button>
+                {bulkStatus ? (
+                  <span style={{ color: bulkStatus.ok ? "#10b981" : "#ef4444", fontSize: 12, fontWeight: 600 }}>
+                    {bulkStatus.text}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
 
             {/* Right Column: Selected Lead Workbench */}
             <AnimatePresence mode="wait">

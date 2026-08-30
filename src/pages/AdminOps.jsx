@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
@@ -25,6 +25,7 @@ import {
   getJson,
   postJson,
 } from "../components/admin/shared";
+import { ToastProvider, useToast } from "../components/admin/Toast";
 // Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
 // in a lazy CSS chunk instead of the global render-blocking bundle. Vite
 // dedupes the import across the leadgen routes.
@@ -79,6 +80,14 @@ const CORE_ACTIONS = [
 
 
 export default function AdminOps() {
+  return (
+    <ToastProvider>
+      <AdminOpsInner />
+    </ToastProvider>
+  );
+}
+
+function AdminOpsInner() {
   useSEO({
     title: "Admin Ops | Simple IT SRQ",
     description: "Internal Simple IT SRQ operations cockpit.",
@@ -86,13 +95,14 @@ export default function AdminOps() {
     robots: "noindex, nofollow",
   });
 
+  const { toast } = useToast();
+
   const initialTab = new URLSearchParams(window.location.search).get("tab") || "ops";
   const [tab, setTab] = useState(TABS.some(([key]) => key === initialTab) ? initialTab : "ops");
   const [data, setData] = useState({});
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
-  const [notice, setNotice] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -123,19 +133,57 @@ export default function AdminOps() {
     return () => { alive = false; clearInterval(timer); };
   }, []);
 
+  // Keyboard shortcuts: 1-8 switch tabs, r refreshes, g then o/l/s navigates.
+  // Ignored while typing in an input/textarea/select.
+  const loadRef = useRef(load);
+  loadRef.current = load;
+  useEffect(() => {
+    let gPending = false;
+    let gTimer = null;
+    const onKey = (e) => {
+      const tag = e.target && e.target.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      const key = String(e.key || "").toLowerCase();
+      if (key === "g") {
+        gPending = true;
+        if (gTimer) clearTimeout(gTimer);
+        gTimer = setTimeout(() => { gPending = false; }, 1500);
+        return;
+      }
+      if (gPending) {
+        gPending = false;
+        if (gTimer) clearTimeout(gTimer);
+        if (key === "o") { window.location.href = "/portal/ops"; return; }
+        if (key === "l") { window.location.href = "/portal/leadgen"; return; }
+        if (key === "s") { window.location.href = "/portal/opsec"; return; }
+        return;
+      }
+      if (key === "r") { loadRef.current(); return; }
+      const idx = Number(key);
+      if (idx >= 1 && idx <= 8) {
+        const t = TABS[idx - 1];
+        if (t) setTab(t[0]);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (gTimer) clearTimeout(gTimer);
+    };
+  }, [setTab]);
+
   const forbidden = Object.values(errors).some((e) => /401|403|forbidden|unauthorized/i.test(e));
   const intel = useMemo(() => deriveIntel(data), [data]);
 
   const runAction = async (action, body, success) => {
     setBusy(action);
-    setNotice(null);
     try {
       await postJson(action, body);
-      setNotice(success || `${action} complete.`);
+      toast(success || `${action} complete.`, "success");
       await load();
       return true;
     } catch (e) {
-      setNotice(`Failed: ${String(e.message || e)}`);
+      toast(`Failed: ${String(e.message || e)}`, "error");
       return false;
     } finally {
       setBusy(null);
@@ -206,7 +254,9 @@ export default function AdminOps() {
               </button>
             </div>
           </div>
-          {notice ? <div className="ops-notice">{notice}</div> : null}
+          <p className="ops-panel__copy" style={{ margin: "8px 0 0", fontSize: 12, opacity: 0.7 }}>
+            1-8: tabs · r: refresh · g then o/l/s: navigate
+          </p>
         </header>
 
         {/* Master Operations Unified KPI Header */}
