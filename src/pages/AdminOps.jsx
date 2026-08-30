@@ -3,10 +3,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Activity,
-  BarChart3,
   BookOpen,
   DollarSign,
-  Eye,
   Inbox,
   Lock,
   RefreshCcw,
@@ -37,21 +35,13 @@ import "../styles/leadgen.css";
 import { lazy, Suspense } from "react";
 const LazyOpsTab = lazy(() => import("../components/admin/OpsTab"));
 const LazyLeadsInboxTab = lazy(() => import("../components/admin/LeadsInboxTab"));
-const LazyVisitorsTab = lazy(() => import("../components/admin/VisitorsTab"));
-const LazyContentTab = lazy(() => import("../components/admin/ContentTab"));
-const LazyAffiliateTab = lazy(() => import("../components/admin/AffiliateTab"));
 import OpsecTab from "../components/admin/OpsecTab";
-const LazyAnalyticsTab = lazy(() => import("../components/admin/AnalyticsTab"));
 const LazyBlogHealthTab = lazy(() => import("../components/admin/BlogHealthTab"));
 const LazyCampaignBuilderTab = lazy(() => import("../components/admin/CampaignBuilderTab"));
 
 const TABS = [
   ["ops", "Ops", Activity],
   ["leads", "Leads", Inbox],
-  ["visitors", "Visitors", Eye],
-  ["content", "Content", BookOpen],
-  ["affiliate", "Affiliate", DollarSign],
-  ["analytics", "Analytics", BarChart3],
   ["blog-health", "Blog Health", Activity],
   ["campaigns", "Campaigns", Send],
 ];
@@ -60,23 +50,15 @@ const CORE_ACTIONS = [
   "admin-status",
   "ops-status",
   "drafts",
-  "affiliate-stats",
-  "affiliate-dashboard-summary",
-  "revenue-signals",
-  "behavior-insights",
-  "content-insights",
-  "hot-leads",
-  "lead-intel",
   "leads-inbox",
   "revenue-summary",
   "leadgen-status",
-  "adsense-health",
   "opsec-data",
   "opsec-hunt-brief",
-  "analytics",
   "blog-engine-health",
   "leadgen-campaigns",
   "affiliate-setup",
+  "content-hygiene",
 ];
 
 
@@ -109,8 +91,7 @@ function AdminOpsInner() {
     setLoading(true);
     const entries = await Promise.all(CORE_ACTIONS.map(async (action) => {
       try {
-        const params = action === "affiliate-stats" ? { days: "30" } : action === "adsense-health" ? { range: "7d" } : {};
-        return [action, await getJson(action, params), null];
+        return [action, await getJson(action), null];
       } catch (e) {
         return [action, null, String(e.message || e)];
       }
@@ -134,7 +115,7 @@ function AdminOpsInner() {
     return () => { alive = false; clearInterval(timer); };
   }, []);
 
-  // Keyboard shortcuts: 1-8 switch tabs, r refreshes, g then o/l/s navigates.
+  // Keyboard shortcuts: 1-4 switch tabs, r refreshes, g then o/l/s navigates.
   // Ignored while typing in an input/textarea/select.
   const loadRef = useRef(load);
   loadRef.current = load;
@@ -161,7 +142,7 @@ function AdminOpsInner() {
       }
       if (key === "r") { loadRef.current(); return; }
       const idx = Number(key);
-      if (idx >= 1 && idx <= 8) {
+      if (idx >= 1 && idx <= TABS.length) {
         const t = TABS[idx - 1];
         if (t) setTab(t[0]);
       }
@@ -256,7 +237,7 @@ function AdminOpsInner() {
             </div>
           </div>
           <p className="ops-panel__copy" style={{ margin: "8px 0 0", fontSize: 12, opacity: 0.7 }}>
-            1-8: tabs · r: refresh · g then o/l/s: navigate
+            1-4: tabs · r: refresh · g then o/l/s: navigate
           </p>
         </header>
 
@@ -321,10 +302,6 @@ function AdminOpsInner() {
               <Suspense fallback={<div className="ops-tab-loading">Loading…</div>}>
                 {tab === "ops" && <LazyOpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
                 {tab === "leads" && <LazyLeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
-                {tab === "visitors" && <LazyVisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
-                {tab === "content" && <LazyContentTab data={data["content-insights"]} error={errors["content-insights"]} drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
-                {tab === "affiliate" && <LazyAffiliateTab data={data} errors={errors} busy={busy} runAction={runAction} />}
-                {tab === "analytics" && <LazyAnalyticsTab data={data} errors={errors} busy={busy} runAction={runAction} />}
                 {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
                 {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
               </Suspense>
