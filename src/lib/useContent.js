@@ -6,9 +6,13 @@
 // hardcoded fallback, so pages render identically until the admin edits
 // something.
 //
-// Overrides are fetched once from /api/portal?action=content-list and
-// cached at module level so every page shares a single fetch. Fetch
-// failures fall back to an empty map — the page never breaks.
+// Overrides are fetched once from /api/portal?action=content-manifest — a
+// single round-trip that returns both the content overrides AND the design
+// tokens (the same versioned manifest the editor commits to GitHub). The
+// manifest is cached at module level so every page shares a single fetch.
+// Fetch failures fall back to an empty map — the page never breaks.
+//
+// The admin editor can read the full manifest through getManifest().
 
 import { useCallback, useEffect, useState } from "react";
 
@@ -17,29 +21,23 @@ let cache = null;
 // In-flight promise so concurrent mounts share one request.
 let inflight = null;
 
-async function fetchOverrides() {
+async function loadManifest() {
   if (cache) return cache;
   if (inflight) return inflight;
   inflight = (async () => {
     try {
-      const res = await fetch("/api/portal?action=content-list", {
+      const res = await fetch("/api/portal?action=content-manifest", {
         credentials: "same-origin",
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.ok === false) {
-        throw new Error(data.error || "content-list failed");
+        throw new Error(data.error || "content-manifest failed");
       }
-      const map = {};
-      for (const o of data.overrides || []) {
-        if (!o || !o.page || !o.key) continue;
-        if (!map[o.page]) map[o.page] = {};
-        map[o.page][o.key] = o.value;
-      }
-      cache = map;
-      return map;
+      cache = data;
+      return cache;
     } catch {
       // Never break the page — fall back to hardcoded text.
-      cache = {};
+      cache = { content: {} };
       return cache;
     } finally {
       inflight = null;
@@ -48,18 +46,32 @@ async function fetchOverrides() {
   return inflight;
 }
 
+function buildOverridesMap(manifest) {
+  const map = {};
+  const content = manifest?.content || {};
+  for (const refKey of Object.keys(content)) {
+    const dot = refKey.lastIndexOf(".");
+    if (dot <= 0 || dot >= refKey.length - 1) continue;
+    const page = refKey.slice(0, dot);
+    const key = refKey.slice(dot + 1);
+    if (!map[page]) map[page] = {};
+    map[page][key] = content[refKey];
+  }
+  return map;
+}
+
 export function useContent() {
-  const [overrides, setOverrides] = useState(cache || {});
+  const [overrides, setOverrides] = useState(cache ? buildOverridesMap(cache) : {});
 
   const refresh = useCallback(async () => {
-    const map = await fetchOverrides();
-    setOverrides(map);
+    const manifest = await loadManifest();
+    setOverrides(buildOverridesMap(manifest));
   }, []);
 
   useEffect(() => {
     let alive = true;
-    fetchOverrides().then((map) => {
-      if (alive) setOverrides(map);
+    loadManifest().then((manifest) => {
+      if (alive) setOverrides(buildOverridesMap(manifest));
     });
     return () => {
       alive = false;
@@ -72,4 +84,11 @@ export function useContent() {
   );
 
   return { t, overrides, refresh };
+}
+
+// Returns the full manifest (content + design tokens + updated_at) for the
+// admin editor to display. Never throws — falls back to an empty manifest.
+export async function getManifest() {
+  const manifest = await loadManifest().catch(() => ({ content: {} }));
+  return manifest && typeof manifest === "object" ? manifest : { content: {} };
 }

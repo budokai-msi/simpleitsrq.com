@@ -61,6 +61,8 @@ import {
   handleDesignTokenList,
   handleDesignTokenSave,
   handleDesignTokenDelete,
+  handleContentRevisions,
+  handleContentManifest,
 } from "./_lib/portal/content-editor.js";
 import {
   handleAdminStatus,
@@ -234,6 +236,8 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "content-list",
   "content-save",
   "content-delete",
+  "content-manifest",
+  "content-revisions",
   // design-token editor (admin design-system editing)
   "design-token-list",
   "design-token-save",
@@ -416,6 +420,8 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "design-token-list"  && method === "GET")  return handleDesignTokenList(session);
   if (action === "design-token-save"  && method === "POST") return handleDesignTokenSave(session, request);
   if (action === "design-token-delete" && method === "POST") return handleDesignTokenDelete(session, request);
+  if (action === "content-manifest"  && method === "GET")  return handleContentManifest(session);
+  if (action === "content-revisions" && method === "GET")  return handleContentRevisions(session);
 
   // Lead generation (admin)
   if (action === "leadgen-status"           && method === "GET")  return handleLeadgenStatus(session);

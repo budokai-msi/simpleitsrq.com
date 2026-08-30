@@ -33,6 +33,141 @@ const KNOWN_PAGES = [
   "contact",
 ];
 
+// ────────────────────────────────────────────────────────────
+// GitHub commit helper (mirrors the working publish-draft pattern).
+//
+// Every overrides edit is dual-written: it lands in the Neon tables
+// (authoritative) AND is committed to `content/overrides.json` on main so
+// the change becomes part of the codebase permanently and triggers Vercel's
+// auto-deploy. The GitHub push is best-effort: it is wrapped in try/catch
+// so a GitHub failure NEVER breaks the DB write + revision insert.
+// ────────────────────────────────────────────────────────────
+
+async function githubGetFile(path, headers, branch) {
+  const repo = process.env.GITHUB_REPO || "budokai-msi/simpleitsrq.com";
+  const getUrl = `https://api.github.com/repos/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`;
+  return fetch(getUrl, { headers });
+}
+
+async function commitGithubFile({ path, content, message, sha, headers }) {
+  const token = process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_REPO || "budokai-msi/simpleitsrq.com";
+  const branch = process.env.GITHUB_BRANCH || "main";
+  if (!token) return { ok: false, error: "github_token_not_set" };
+
+  const base = `https://api.github.com/repos/${repo}/contents/${path}`;
+  const safeHeaders = headers || {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "simpleitsrq-agent",
+  };
+  const body = {
+    message,
+    content: Buffer.from(content, "utf8").toString("base64"),
+    branch,
+    committer: {
+      name: "Simple IT SRQ Agent",
+      email: "agent@simpleitsrq.com",
+    },
+  };
+  if (sha) body.sha = sha;
+
+  const putRes = await fetch(base, {
+    method: "PUT",
+    headers: { ...safeHeaders, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!putRes.ok) {
+    const txt = await putRes.text().catch(() => "");
+    if (putRes.status === 409) {
+      return { ok: false, error: "github_conflict" };
+    }
+    return { ok: false, error: `github_put_${putRes.status}`, detail: txt.slice(0, 300) };
+  }
+  const putData = await putRes.json();
+  return { ok: true, commitSha: putData.commit?.sha, path };
+}
+
+// Read the current overrides + design tokens and commit them as a versioned
+// manifest to content/overrides.json on main. Pushing to main triggers
+// Vercel's auto-deploy. Always returns { ok: boolean }; never throws.
+async function commitOverridesManifest() {
+  const token = process.env.GITHUB_TOKEN;
+  const branch = process.env.GITHUB_BRANCH || "main";
+  const path = "content/overrides.json";
+  if (!token) return { ok: false, error: "github_token_not_set" };
+
+  try {
+    const [contentRows, tokenRows] = await Promise.all([
+      sql`SELECT page, key, value FROM content_overrides`.catch(() => []),
+      sql`SELECT token, value, theme FROM design_token_overrides`.catch(() => []),
+    ]);
+
+    const content = {};
+    for (const r of contentRows) {
+      if (!r || !r.page || !r.key) continue;
+      content[`${r.page}.${r.key}`] = r.value;
+    }
+    const designTokens = {};
+    for (const r of tokenRows) {
+      if (!r || !r.token) continue;
+      designTokens[r.token] = { value: r.value, theme: r.theme || "both" };
+    }
+
+    const manifest = {
+      version: 1,
+      updated_at: new Date().toISOString(),
+      content,
+      design_tokens: designTokens,
+    };
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "simpleitsrq-agent",
+    };
+
+    const getRes = await githubGetFile(path, headers, branch);
+    if (!getRes.ok) {
+      if (getRes.status !== 404) return { ok: false, error: `github_get_${getRes.status}` };
+      return commitGithubFile({
+        path,
+        content: JSON.stringify(manifest, null, 2) + "\n",
+        message: "content: update overrides manifest",
+        headers,
+      });
+    }
+    const meta = await getRes.json();
+    return commitGithubFile({
+      path,
+      content: JSON.stringify(manifest, null, 2) + "\n",
+      message: "content: update overrides manifest",
+      sha: meta.sha,
+      headers,
+    });
+  } catch (e) {
+    return { ok: false, error: String(e.message || e) };
+  }
+}
+
+// Best-effort GitHub sync that NEVER throws. The DB write + revision insert
+// always succeed; this is fire-and-forget and only logged on failure.
+async function syncToGitHubBestEffort() {
+  await commitOverridesManifest().catch((e) => {
+    console.error("[content-editor] GitHub manifest sync failed:", e?.message || e);
+  });
+}
+
+// Record a row in the content_revisions audit-history table.
+async function recordRevision({ kind, refKey, oldValue, newValue, editorNote, createdBy }) {
+  await sql`
+    INSERT INTO content_revisions (kind, ref_key, old_value, new_value, editor_note, created_by)
+    VALUES (${kind}, ${refKey}, ${oldValue ?? ""}, ${newValue ?? ""}, ${editorNote ?? null}, ${createdBy ?? null})
+  `.catch(() => {});
+}
+
 export async function handleContentList(session) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
@@ -50,7 +185,20 @@ export async function handleContentList(session) {
     updated_at: r.updated_at,
   }));
 
-  return json(200, { ok: true, overrides, pages: KNOWN_PAGES });
+  // Coverage stats so the editor UI can show how much of each page has been
+  // overridden (e.g. "24 overrides across 9 pages").
+  const byPage = {};
+  for (const r of rows) {
+    byPage[r.page] = (byPage[r.page] || 0) + 1;
+  }
+
+  return json(200, {
+    ok: true,
+    overrides,
+    pages: KNOWN_PAGES,
+    total: rows.length,
+    countsByPage: byPage,
+  });
 }
 
 export async function handleContentSave(session, request) {
@@ -63,16 +211,35 @@ export async function handleContentSave(session, request) {
   const page = String(body.page || "").trim();
   const key = String(body.key || "").trim();
   const value = String(body.value ?? "");
+  const editorNote = String(body.editor_note ?? "").trim() || null;
 
   if (!page || !key) {
     return json(400, { ok: false, error: "page_and_key_required" });
   }
+
+  // Read the current value so we can record the audit trail (old -> new).
+  const currentRows = await sql`
+    SELECT value FROM content_overrides WHERE page = ${page} AND key = ${key}
+  `.catch(() => []);
+  const oldValue = (currentRows && currentRows[0]?.value) ?? "";
 
   await sql`
     INSERT INTO content_overrides (page, key, value)
     VALUES (${page}, ${key}, ${value})
     ON CONFLICT (page, key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()
   `.catch(() => {});
+
+  await recordRevision({
+    kind: "content",
+    refKey: `${page}.${key}`,
+    oldValue,
+    newValue: value,
+    editorNote,
+    createdBy: session?.user?.email,
+  });
+
+  // Best-effort GitHub + Vercel sync — never blocks or breaks the DB save.
+  await syncToGitHubBestEffort();
 
   return json(200, { ok: true });
 }
@@ -91,9 +258,27 @@ export async function handleContentDelete(session, request) {
     return json(400, { ok: false, error: "page_and_key_required" });
   }
 
+  const currentRows = await sql`
+    SELECT value FROM content_overrides WHERE page = ${page} AND key = ${key}
+  `.catch(() => []);
+  const oldValue = (currentRows && currentRows[0]?.value) ?? "";
+
   await sql`
     DELETE FROM content_overrides WHERE page = ${page} AND key = ${key}
   `.catch(() => {});
+
+  // A delete is recorded as a revision whose new value is empty (the reset).
+  await recordRevision({
+    kind: "content",
+    refKey: `${page}.${key}`,
+    oldValue,
+    newValue: "",
+    editorNote: null,
+    createdBy: session?.user?.email,
+  });
+
+  // Best-effort GitHub + Vercel sync — never blocks or breaks the DB write.
+  await syncToGitHubBestEffort();
 
   return json(200, { ok: true });
 }
@@ -225,6 +410,11 @@ export async function handleDesignTokenSave(session, request) {
     return json(400, { ok: false, error: "invalid_theme" });
   }
 
+  const currentRows = await sql`
+    SELECT value FROM design_token_overrides WHERE token = ${token}
+  `.catch(() => []);
+  const oldValue = (currentRows && currentRows[0]?.value) ?? "";
+
   await sql`
     INSERT INTO design_token_overrides (token, value, theme)
     VALUES (${token}, ${value}, ${theme})
@@ -233,6 +423,18 @@ export async function handleDesignTokenSave(session, request) {
       theme = EXCLUDED.theme,
       updated_at = now()
   `.catch(() => {});
+
+  await recordRevision({
+    kind: "design_token",
+    refKey: token,
+    oldValue,
+    newValue: value,
+    editorNote: null,
+    createdBy: session?.user?.email,
+  });
+
+  // Best-effort GitHub + Vercel sync — never blocks or breaks the DB save.
+  await syncToGitHubBestEffort();
 
   return json(200, { ok: true });
 }
@@ -249,9 +451,97 @@ export async function handleDesignTokenDelete(session, request) {
     return json(400, { ok: false, error: "token_required" });
   }
 
+  const currentRows = await sql`
+    SELECT value FROM design_token_overrides WHERE token = ${token}
+  `.catch(() => []);
+  const oldValue = (currentRows && currentRows[0]?.value) ?? "";
+
   await sql`
     DELETE FROM design_token_overrides WHERE token = ${token}
   `.catch(() => {});
 
+  // A delete is recorded as a revision whose new value is empty (the reset).
+  await recordRevision({
+    kind: "design_token",
+    refKey: token,
+    oldValue,
+    newValue: "",
+    editorNote: null,
+    createdBy: session?.user?.email,
+  });
+
+  // Best-effort GitHub + Vercel sync — never blocks or breaks the DB write.
+  await syncToGitHubBestEffort();
+
   return json(200, { ok: true });
+}
+
+// ────────────────────────────────────────────────────────────
+// Manifest + revision readers
+// ────────────────────────────────────────────────────────────
+//
+// GET content-manifest    -> the full manifest (content + design tokens) in
+//                            ONE round-trip (two SELECTs run concurrently).
+// GET content-revisions   -> the last 100 audit/history rows.
+
+export async function handleContentManifest(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  // Two concurrent SELECTs = one round-trip from the frontend's point of view.
+  const [contentRows, tokenRows] = await Promise.all([
+    sql`SELECT page, key, value, updated_at FROM content_overrides`.catch(() => []),
+    sql`SELECT token, value, theme, updated_at FROM design_token_overrides`.catch(() => []),
+  ]);
+
+  const content = {};
+  let maxUpdated = 0;
+  for (const r of contentRows) {
+    if (!r || !r.page || !r.key) continue;
+    content[`${r.page}.${r.key}`] = r.value;
+    const t = r.updated_at ? new Date(r.updated_at).getTime() : 0;
+    if (t > maxUpdated) maxUpdated = t;
+  }
+
+  const designTokens = {};
+  for (const r of tokenRows) {
+    if (!r || !r.token) continue;
+    designTokens[r.token] = { value: r.value, theme: r.theme || "both" };
+    const t = r.updated_at ? new Date(r.updated_at).getTime() : 0;
+    if (t > maxUpdated) maxUpdated = t;
+  }
+
+  return json(200, {
+    ok: true,
+    version: 1,
+    updated_at: maxUpdated ? new Date(maxUpdated).toISOString() : null,
+    content,
+    design_tokens: designTokens,
+    pages: KNOWN_PAGES,
+  });
+}
+
+export async function handleContentRevisions(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const rows = await sql`
+    SELECT id, kind, ref_key, old_value, new_value, editor_note, created_by, created_at
+    FROM content_revisions
+    ORDER BY created_at DESC, id DESC
+    LIMIT 100
+  `.catch(() => []);
+
+  const revisions = rows.map((r) => ({
+    id: r.id,
+    kind: r.kind,
+    ref_key: r.ref_key,
+    old_value: r.old_value,
+    new_value: r.new_value,
+    editor_note: r.editor_note,
+    created_by: r.created_by,
+    created_at: r.created_at,
+  }));
+
+  return json(200, { ok: true, revisions });
 }
