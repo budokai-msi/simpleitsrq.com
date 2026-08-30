@@ -21,6 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { trackAffiliateClick } from "../lib/trackClick";
+import { useContent } from "../lib/useContent";
 
 const ICONS = {
   power: Zap,
@@ -314,6 +315,7 @@ function CategorySection({ cat }) {
 }
 
 export default function Tools() {
+  const { t } = useContent();
   const essentials = useMemo(() => ([
     findTool("power", /line-interactive/i),
     findTool("security", /5c nfc/i),
@@ -335,11 +337,9 @@ export default function Tools() {
     <main className="tools-page">
       <header className="tools-hero tools-hero--buyer">
         <div>
-          <h1>Small-office gear we would actually install.</h1>
+          <h1>{t("tools", "hero_title", "Small-office gear we would actually install.")}</h1>
           <p>
-            Problem-first buying guides for Sarasota, Bradenton, and Venice
-            offices. Start with the outage, dead spot, backup gap, or login
-            risk. Then buy the smallest piece of gear that fixes it.
+            {t("tools", "hero_subtitle", "Problem-first buying guides for Sarasota, Bradenton, and Venice offices. Start with the outage, dead spot, backup gap, or login risk. Then buy the smallest piece of gear that fixes it.")}
           </p>
           <div className="tools-hero-actions">
             <a href="#calculators" className="btn btn-primary">

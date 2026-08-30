@@ -8,6 +8,7 @@ import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { tapHaptic, selectionHaptic, successHaptic, errorHaptic } from "../lib/haptics";
 import { csrfFetch } from "../lib/csrf";
 import { useAuth } from "../lib/authContext.js";
+import { useContent } from "../lib/useContent";
 
 const PRIORITIES = [
   { value: "low",      label: "Low - general question",                Icon: HelpCircle },
@@ -67,6 +68,7 @@ function providerLabel(provider) {
 }
 
 export default function Support() {
+  const { t } = useContent();
   useSEO({
     title: "Submit a Support Ticket | Simple IT SRQ",
     description:
@@ -167,10 +169,12 @@ export default function Support() {
       <section className="section" aria-labelledby="support-title">
         <div className="container">
           <div className="section-head">
-            <span className="eyebrow">Support</span>
-            <h1 id="support-title" className="title-1">File a support ticket</h1>
+            <span className="eyebrow">{t("support", "eyebrow", "Support")}</span>
+            <h1 id="support-title" className="title-1">{t("support", "hero_title", "File a support ticket")}</h1>
             <p className="section-sub">
-              Existing clients can file a ticket here. For critical incidents during business hours, call <a href="tel:+18134343230">(813) 434-3230</a>. We triage by priority during business hours.
+              {t("support", "hero_subtitle", "Existing clients can file a ticket here. For critical incidents during business hours, call")}{" "}
+              <a href="tel:+18134343230">(813) 434-3230</a>.{" "}
+              {t("support", "hero_subtitle_2", "We triage by priority during business hours.")}
             </p>
           </div>
 
@@ -354,7 +358,7 @@ export default function Support() {
                 {submitting ? (
                   <><Loader2 size={18} className="spin" /> Filing ticket...</>
                 ) : (
-                  <><Send size={16} /> Submit ticket</>
+                  <><Send size={16} /> {t("support", "cta_button", "Submit ticket")}</>
                 )}
               </button>
 

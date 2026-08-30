@@ -55,6 +55,11 @@ import {
 } from "./_lib/portal/intel.js";
 import { handleContentInsights } from "./_lib/portal/content.js";
 import {
+  handleContentList,
+  handleContentSave,
+  handleContentDelete,
+} from "./_lib/portal/content-editor.js";
+import {
   handleAdminStatus,
   handleHealth,
   handleAuditVerify,
@@ -222,6 +227,10 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "affiliate-setup",
   // content hygiene (duplicate-slug detection)
   "content-hygiene",
+  // content-override editor (admin content editing)
+  "content-list",
+  "content-save",
+  "content-delete",
 ]);
 
 function verifyAdminToken(request) {
@@ -394,6 +403,9 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "blog-engine-health" && method === "GET")  return handleBlogEngineHealth(session);
   if (action === "blog-retry"         && method === "POST") return handleBlogRetry(session, request);
   if (action === "content-hygiene"    && method === "GET")  return handleContentHygiene(session);
+  if (action === "content-list"       && method === "GET")  return handleContentList(session);
+  if (action === "content-save"       && method === "POST") return handleContentSave(session, request);
+  if (action === "content-delete"     && method === "POST") return handleContentDelete(session, request);
 
   // Lead generation (admin)
   if (action === "leadgen-status"           && method === "GET")  return handleLeadgenStatus(session);

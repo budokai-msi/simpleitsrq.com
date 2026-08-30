@@ -12,6 +12,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { csrfFetch } from "../lib/csrf";
 import RecommendedTools from "../components/RecommendedTools";
 import Breadcrumbs from "../components/Breadcrumbs";
+import { useContent } from "../lib/useContent";
 
 const SERVICES = [
   { Icon: Headphones, title: "Managed IT Support and Helpdesk", desc: "Unlimited help desk, proactive 24x7 monitoring, and software updates. A local tech answers the phone, and we triage critical issues first." },
@@ -152,6 +153,7 @@ function removeSchema(id) {
 }
 
 export default function LocalLanding() {
+  const { t } = useContent();
   const { pathname } = useLocation();
   const citySlug = pathname.replace(/^\//, "").replace(/\/$/, "");
   const key = citySlug.replace("-it-support", "").trim();
@@ -235,8 +237,8 @@ export default function LocalLanding() {
           ]} />
           <div className="hero-copy hero-copy-centered">
             <span className="eyebrow"><MapPin size={14} /> {city.cityFull}</span>
-            <h1 className="display">{city.h1}<br /><span className="brand-accent">Simple IT SRQ</span></h1>
-            <p className="lede">{city.intro}</p>
+            <h1 className="display">{t("local", "hero_title", city.h1)}<br /><span className="brand-accent">Simple IT SRQ</span></h1>
+            <p className="lede">{t("local", "hero_subtitle", city.intro)}</p>
             <div className="hero-ctas">
               <a href="#local-contact" className="btn btn-primary btn-lg">Get a Free IT Audit</a>
               <Link to="/#solutions" className="btn btn-secondary btn-lg">Explore Solutions</Link>

@@ -5,6 +5,7 @@ import {
   Activity,
   BookOpen,
   DollarSign,
+  FileText,
   Inbox,
   Lock,
   RefreshCcw,
@@ -39,12 +40,14 @@ const LazyLeadsInboxTab = lazy(() => import("../components/admin/LeadsInboxTab")
 import OpsecTab from "../components/admin/OpsecTab";
 const LazyBlogHealthTab = lazy(() => import("../components/admin/BlogHealthTab"));
 const LazyCampaignBuilderTab = lazy(() => import("../components/admin/CampaignBuilderTab"));
+const LazyContentEditorTab = lazy(() => import("../components/admin/ContentEditorTab"));
 
 const TABS = [
   ["ops", "Ops", Activity],
   ["leads", "Leads", Inbox],
   ["blog-health", "Blog Health", Activity],
   ["campaigns", "Campaigns", Send],
+  ["content-editor", "Content Editor", FileText],
 ];
 
 const CORE_ACTIONS = [
@@ -60,6 +63,7 @@ const CORE_ACTIONS = [
   "leadgen-campaigns",
   "affiliate-setup",
   "content-hygiene",
+  "content-list",
 ];
 
 
@@ -304,6 +308,7 @@ function AdminOpsInner() {
                 {tab === "leads" && <LazyLeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
                 {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
                 {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
+                {tab === "content-editor" && <LazyContentEditorTab data={data} busy={busy} runAction={runAction} />}
               </Suspense>
             </motion.div>
           </AnimatePresence>

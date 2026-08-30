@@ -9,6 +9,7 @@ import { STACK, resolveStackLink } from "../data/stack";
 import { resolveAffiliate } from "../data/affiliates";
 import { trackAffiliateClick } from "../lib/trackClick";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
+import { useContent } from "../lib/useContent";
 
 
 // Resolve the outbound link for one side of a comparison. Preference order:
@@ -109,6 +110,7 @@ function ProsConsColumn({ product }) {
 }
 
 export default function CompareDetail() {
+  const { t } = useContent();
   const { slug } = useParams();
   const comparison = useMemo(() => getComparison(slug), [slug]);
   const whyData = useMemo(() => getWhyVs(slug), [slug]);
@@ -197,8 +199,8 @@ export default function CompareDetail() {
               <ArrowLeft size={14} /> All comparisons
             </Link>
             <span className="eyebrow">{whyData.eyebrow}</span>
-            <h1 className="display">{whyData.h1}</h1>
-            <p className="lede">{whyData.subhead}</p>
+            <h1 className="display">{t("compare", "hero_title", whyData.h1)}</h1>
+            <p className="lede">{t("compare", "hero_subtitle", whyData.subhead)}</p>
             <div className="hero-ctas">
               <Link to={whyData.cta.primaryHref} className="btn btn-primary btn-lg">
                 {whyData.cta.primary} <ArrowRight size={16} />
@@ -285,8 +287,8 @@ export default function CompareDetail() {
             <ArrowLeft size={14} /> All comparisons
           </Link>
           <span className="eyebrow">Head-to-head</span>
-          <h1 className="display compare-h1">{comparison.h1}</h1>
-          <p className="lede">{comparison.subhead}</p>
+          <h1 className="display compare-h1">{t("compare", "hero_title", comparison.h1)}</h1>
+          <p className="lede">{t("compare", "hero_subtitle", comparison.subhead)}</p>
           <p className="compare-meta">Last reviewed: {comparison.date}</p>
         </div>
       </section>

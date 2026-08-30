@@ -8,6 +8,7 @@ import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
 import AdUnit from "../components/AdSense";
 import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
+import { useContent } from "../lib/useContent";
 
 const SEVERITY_STYLE = {
   critical: { bg: "rgba(220, 38, 38, 0.08)",  border: "#DC2626", label: "Critical" },
@@ -22,6 +23,7 @@ const GRADE_COLORS = {
 };
 
 export default function ExposureScan() {
+  const { t } = useContent();
   const [domain, setDomain] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -90,15 +92,13 @@ export default function ExposureScan() {
             <div className="exposure-scan-copy">
               <span className="eyebrow">
                 <Shield size={14} aria-hidden="true" />
-                Free Exposure Scan
+                {t("exposure-scan", "eyebrow", "Free Exposure Scan")}
               </span>
               <h1 id="scan-title" className="display">
-                See what attackers can already see.
+                {t("exposure-scan", "hero_title", "See what attackers can already see.")}
               </h1>
               <p className="lede">
-                Run a passive outside-in check of a business domain. We grade
-                email authentication, exposed subdomains, DNS records, and
-                modern-readiness without touching your servers.
+                {t("exposure-scan", "hero_subtitle", "Run a passive outside-in check of a business domain. We grade email authentication, exposed subdomains, DNS records, and modern-readiness without touching your servers.")}
               </p>
               <div className="exposure-scan-trust" aria-label="Scan guarantees">
                 <span><CheckCircle size={15} aria-hidden="true" /> No port scans</span>
@@ -167,7 +167,7 @@ export default function ExposureScan() {
                     {scanning ? (
                       <><Loader2 size={18} className="spin" /> Scanning {domain.trim() || "domain"}...</>
                     ) : (
-                      <><Search size={16} /> Run free scan</>
+                      <><Search size={16} /> {t("exposure-scan", "cta_button", "Run free scan")}</>
                     )}
                   </button>
 

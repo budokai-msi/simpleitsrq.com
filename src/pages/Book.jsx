@@ -10,6 +10,7 @@ import { track, trackEvent } from "../lib/analytics";
 import { loadContactProfile, saveContactProfile } from "../lib/contactProfile";
 import { adChannelLabel } from "../lib/utm";
 import { Link } from "../lib/Link";
+import { useContent } from "../lib/useContent";
 
 // Full Cal.com path, e.g. "simpleitsrq/free-consultation". Set via Vercel
 // env var VITE_CALCOM_CAL_LINK. When unset the page falls back to the
@@ -331,6 +332,7 @@ function ConsultationForm() {
 }
 
 export default function Book() {
+  const { t } = useContent();
   useSEO({
     title: "Book a Free IT Consultation | Simple IT SRQ",
     description:
@@ -360,14 +362,11 @@ export default function Book() {
           <div className="section-head">
             <span className="eyebrow">
               <Calendar size={14} style={{ display: "inline", marginRight: 6 }} />
-              Book a Free Consultation
+              {t("book", "eyebrow", "Book a Free Consultation")}
             </span>
-            <h1 id="book-title" className="title-1">Talk to a local engineer</h1>
+            <h1 id="book-title" className="title-1">{t("book", "hero_title", "Talk to a local engineer")}</h1>
             <p className="section-sub">
-              Pick a time that works for you. We'll meet on Google Meet, Zoom, or
-              Microsoft Teams - whichever your team prefers. Calendar invite
-              fires automatically on every device: Android, iPhone, Google
-              Workspace, or Microsoft 365.
+              {t("book", "hero_subtitle", "Pick a time that works for you. We'll meet on Google Meet, Zoom, or Microsoft Teams - whichever your team prefers. Calendar invite fires automatically on every device: Android, iPhone, Google Workspace, or Microsoft 365.")}
             </p>
           </div>
           <div className="book-hero-actions" aria-label="Booking actions">
@@ -376,7 +375,7 @@ export default function Book() {
               className="btn btn-primary btn-lg"
               onClick={() => trackEvent("generate_lead", { source: CAL_LINK ? "book_hero_open_calendar" : "book_hero_open_request_form" })}
             >
-              {CAL_LINK ? "Open calendar" : "Request consultation"} <ArrowRight size={16} />
+              {t("book", "cta_button", CAL_LINK ? "Open calendar" : "Request consultation")} <ArrowRight size={16} />
             </a>
             <Link
               to="/services"

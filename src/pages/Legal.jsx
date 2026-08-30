@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { useSEO } from "../lib/seo";
 import AdUnit from "../components/AdSense";
 import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
+import { useContent } from "../lib/useContent";
 
 // Keep this in sync with the underlying privacy / data-flow changes. Any
 // material change (new sub-processor, new cookie category, new retention
@@ -11,12 +12,13 @@ const LAST_UPDATED = "April 22, 2026";
 const EFFECTIVE_DATE = "April 22, 2026";
 
 function LegalShell({ title, lede, children }) {
+  const { t } = useContent();
   return (
     <main id="main" className="blog-post-main">
       <article className="blog-post">
         <div className="container blog-post-container">
           <Link to="/" className="blog-back"><ArrowLeft size={14} /> Back to home</Link>
-          <h1 className="blog-post-title">{title}</h1>
+          <h1 className="blog-post-title">{t("legal", "page_title", title)}</h1>
           {lede && <p className="blog-post-lede">{lede}</p>}
           <div className="blog-post-meta">
             <span>Last updated: {LAST_UPDATED}</span>

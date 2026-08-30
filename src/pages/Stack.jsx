@@ -6,6 +6,7 @@ import { STACK, resolveStackLink, stackHasAffiliates, monthlyCostFor } from "../
 import { trackAffiliateClick } from "../lib/trackClick";
 import { track } from "../lib/analytics";
 import AffiliateDisclosure from "../components/AffiliateDisclosure";
+import { useContent } from "../lib/useContent";
 
 // Map each stack tool to { Product, Offer } JSON-LD so Google surfaces rich
 // pricing snippets under the page in search results. Only tools with a
@@ -237,6 +238,7 @@ function StackCalculator() {
 }
 
 export default function Stack() {
+  const { t } = useContent();
   const itemListSchema = useMemo(() => buildItemListSchema(), []);
   const hasAnyAffiliate = useMemo(() => stackHasAffiliates(), []);
 
@@ -265,16 +267,12 @@ export default function Stack() {
       <section className="section">
         <div className="container" style={{ maxWidth: 900 }}>
           <div className="section-head">
-            <span className="eyebrow">The stack we actually run</span>
+            <span className="eyebrow">{t("stack", "eyebrow", "The stack we actually run")}</span>
             <h1 className="display">
-              The Florida small-business tech stack for 2026
+              {t("stack", "hero_title", "The Florida small-business tech stack for 2026")}
             </h1>
             <p className="lede">
-              Every tool we install for a new Sarasota or Bradenton client, grouped
-              by what it does. Tier recommendations are the ones that pass a
-              security renewal - not the cheapest that works. Links to
-              vendors we have a referral relationship with are marked; others are
-              just plain vendor links.
+              {t("stack", "hero_subtitle", "Every tool we install for a new Sarasota or Bradenton client, grouped by what it does. Tier recommendations are the ones that pass a security renewal - not the cheapest that works. Links to vendors we have a referral relationship with are marked; others are just plain vendor links.")}
             </p>
             <div
               style={{
