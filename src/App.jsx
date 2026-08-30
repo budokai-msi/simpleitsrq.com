@@ -1,7 +1,7 @@
 import { detectPreferredContact } from "./lib/detectPreferredContact";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { Link } from "./lib/Link";
-import { useEffect, useState, useMemo, useRef, lazy, Suspense } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import {
   AtSign, Menu, X, ChevronDown, Sun, Moon, LogIn, User as UserIcon, MapPin,
   Phone, MessageSquare, Mail, Calendar, LayoutGrid, ShoppingBag, BookOpen,
@@ -16,7 +16,6 @@ import {
   PRIMARY_NAV,
   SERVICE_AREA_LINKS,
   isNavItemActive,
-  isNavSectionActive,
 } from "./data/navigation";
 import { cityList } from "./data/cities";
 import { initGlobalHaptics, selectionHaptic } from "./lib/haptics";
@@ -28,7 +27,7 @@ import VisitorTracker from "./components/VisitorTracker.jsx";
 import { useAnalyticsPageviews, useAnalyticsConsent, trackEvent } from "./lib/analytics.js";
 import { useClarity } from "./lib/clarity.js";
 import { useEngagementTracking } from "./lib/engagement.js";
-import { captureUtmParams, getUtmParams } from "./lib/utm.js";
+import { captureUtmParams } from "./lib/utm.js";
 import { AutoAds } from "./components/AdSense.jsx";
 import LiveChat from "./components/LiveChat.jsx";
 import AIChat from "./components/AIChat.jsx";

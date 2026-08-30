@@ -2,27 +2,6 @@ import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 
 /**
- * Test IMAP connection
- */
-export async function testImapConnection({ host, port, user, pass, secure = true }) {
-  const client = new ImapFlow({
-    host,
-    port: Number(port) || 993,
-    secure: secure,
-    auth: { user, pass },
-    logger: false,
-  });
-
-  try {
-    await client.connect();
-    await client.logout();
-    return true;
-  } catch (err) {
-    throw new Error(`IMAP Error: ${err.message}`, { cause: err });
-  }
-}
-
-/**
  * Connect to IMAP and fetch unread emails.
  * Returns array of parsed replies.
  */

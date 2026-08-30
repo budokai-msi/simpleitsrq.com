@@ -169,8 +169,3 @@ export function requireCsrf(request) {
     }
   );
 }
-
-/** @type {string} */
-export const CSRF_COOKIE_NAME = CSRF_COOKIE;
-/** @type {string} */
-export const CSRF_HEADER_NAME = CSRF_HEADER;

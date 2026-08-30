@@ -277,5 +277,3 @@ export async function discoverOvertureBusinesses({ zip, bbox, centroid }) {
     source: "overture",
   };
 }
-
-export const OVERTURE_ATTRIBUTION = "Overture Maps Foundation";

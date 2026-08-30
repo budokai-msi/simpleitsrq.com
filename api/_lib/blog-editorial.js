@@ -15,10 +15,6 @@ function tokens(value) {
     .filter((token) => token.length >= 3 && !STOP_WORDS.has(token))));
 }
 
-export function topicFingerprint(value) {
-  return tokens(value).sort().slice(0, 16).join("|");
-}
-
 export function topicSimilarity(a, b) {
   const aa = new Set(tokens(a));
   const bb = new Set(tokens(b));

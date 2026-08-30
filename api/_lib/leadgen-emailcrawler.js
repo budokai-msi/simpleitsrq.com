@@ -345,15 +345,6 @@ async function resolveBrandAsset(candidates) {
   return null;
 }
 
-export function inspectWebsiteHtml(body, pageUrl) {
-  const signals = extractDocumentSignals(body, pageUrl);
-  return {
-    has_contact_form: signals.has_contact_form,
-    social: signals.social,
-    brand_candidates: signals.brand_candidates,
-  };
-}
-
 // Classify a fetch() rejection into our short error-code vocabulary.
 // Node's undici-based fetch wraps every network failure as a TypeError;
 // the underlying cause is on err.cause. We surface a friendly code

@@ -305,57 +305,6 @@ const HN_RELEVANT = /security|hack|breach|password|backup|cloud|aws|azure|vpn|fi
 
 const HN_BANNED_TITLE = /who is hiring|ask hn|show hn|launch hn|tell hn|poll:|job:|hiring/i;
 
-const AMAZON_GADGETS = [
-  {
-    key: "yubikey",
-    match: /password|mfa|2fa|phishing|account|identity|breach|login|security/i,
-    token: "amazon:B07HBD71HL|YubiKey 5C NFC",
-    why: "phishing-resistant MFA for Microsoft 365, Google Workspace, and admin accounts",
-  },
-  {
-    key: "ups",
-    match: /power|outage|battery|storm|server|router|switch|network|office/i,
-    token: "amazon_search:APC Back-UPS Pro 1500VA sine wave|APC Back-UPS Pro 1500VA",
-    why: "battery backup for the modem, firewall, switch, and one key workstation",
-  },
-  {
-    key: "nas",
-    match: /backup|storage|ransomware|restore|file|server|nas|disaster/i,
-    token: "amazon_search:Synology 2 bay NAS DS224+|Synology 2-bay NAS",
-    why: "local backup and file restore for small offices that cannot wait days for cloud recovery",
-  },
-  {
-    key: "dock",
-    match: /laptop|macbook|windows|hybrid|remote|monitor|desk|workstation|usb-c|thunderbolt/i,
-    token: "amazon:B09GK8LBWS|CalDigit TS4 Thunderbolt 4 Dock",
-    why: "one-cable desks for laptop-heavy offices with dual displays and wired Ethernet",
-  },
-  {
-    key: "unifi",
-    match: /wifi|wireless|router|network|switch|access point|office|latency/i,
-    token: "amazon_search:Ubiquiti UniFi U6 Pro access point|UniFi U6 Pro access point",
-    why: "business-grade WiFi with guest isolation and sane centralized management",
-  },
-  {
-    key: "shredder",
-    match: /privacy|legal|healthcare|records|paper|document|hipaa|client data/i,
-    token: "amazon_search:Fellowes micro cut shredder 12 sheet|Fellowes micro-cut shredder",
-    why: "cheap, boring protection for misprints, intake forms, and client paperwork",
-  },
-  {
-    key: "camera",
-    match: /camera|surveillance|physical|retail|warehouse|theft|office/i,
-    token: "amazon_search:Reolink PoE camera system NVR|Reolink PoE camera system",
-    why: "simple PoE cameras for front desks, stock rooms, and after-hours visibility",
-  },
-];
-
-function pickGadgetForStory(story) {
-  const text = `${story?.title || ""} ${story?.url || ""}`;
-  return AMAZON_GADGETS.find((g) => g.match.test(text)) ||
-    AMAZON_GADGETS[Math.abs(Number(story?.id) || 0) % AMAZON_GADGETS.length];
-}
-
 function scoreSlop(markdown) {
   const body = String(markdown || "");
   const rules = [

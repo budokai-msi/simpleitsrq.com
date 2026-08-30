@@ -52,16 +52,6 @@ function isProduction() {
  * @returns {string}
  * @throws {Error} when the variable is unset or empty.
  */
-export function requireEnv(name) {
-  const value = process.env[name];
-  if (value === undefined || value === null || value === "") {
-    throw new Error(
-      `Missing required env var ${name} (set it in Vercel → Settings → Environment Variables)`,
-    );
-  }
-  return value;
-}
-
 /**
  * Return the value of the named env var, or the provided fallback. Never
  * throws. Use for truly optional config where a sensible default exists.

@@ -47,7 +47,6 @@ async function fetchCert(host) {
     // request. tls.connect + TLSSocket.getPeerCertificate() gives us the
     // parsed cert object directly.
     const tls = await import("node:tls");
-    const net = await import("node:net");
     return await new Promise((resolve) => {
       const socket = tls.connect({
         host,
