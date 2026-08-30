@@ -938,7 +938,7 @@ html[data-theme="dark"] .leadgen-prospect-card__signals span.is-gap {
   flex-wrap: wrap;
   gap: 6px;
   padding: 8px 18px 16px;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
 }
 
@@ -1222,13 +1222,11 @@ html[data-theme="dark"] .leadgen-prospect-card__signals span.is-gap {
     padding: 10px 12px;
   }
 
-  /* Buttons stack vertically on phones with comfortable tap targets.
-     Each button uses its natural width (auto) but is centered in the
-     row via align-items:center so a single short button doesn't stretch
+  /* Buttons stay in a horizontal left-to-right row that wraps to new
+     lines on narrow screens — never a vertical stack. Each button uses
+     its natural width (auto) so a single short button doesn't stretch
      across the whole card. */
   .leadgen-card-actions {
-    flex-direction: column;
-    align-items: center;
     gap: 8px;
   }
   .leadgen-card-btn {
