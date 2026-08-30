@@ -6,17 +6,13 @@ import {
   BookOpen,
   DollarSign,
   Eye,
-  FileText,
-  Grid3X3,
   Inbox,
   Lock,
   RefreshCcw,
   Send,
-  Settings,
   Shield,
   Target,
   Ticket,
-  TrendingUp,
 } from "lucide-react";
 import { useSEO } from "../lib/seo";
 import AdminNav from "../components/AdminNav";
@@ -41,40 +37,29 @@ const LazyOpsTab = lazy(() => import("../components/admin/OpsTab"));
 const LazyLeadsInboxTab = lazy(() => import("../components/admin/LeadsInboxTab"));
 const LazyVisitorsTab = lazy(() => import("../components/admin/VisitorsTab"));
 const LazyContentTab = lazy(() => import("../components/admin/ContentTab"));
-const LazyDraftsTab = lazy(() => import("../components/admin/DraftsTab"));
 const LazyAffiliateTab = lazy(() => import("../components/admin/AffiliateTab"));
-const LazyAffiliateDashboardTab = lazy(() => import("../components/admin/AffiliateDashboardTab"));
 const LazyLeadgenTab = lazy(() => import("../components/admin/LeadgenTab"));
-const LazyAdsenseTab = lazy(() => import("../components/admin/AdsenseTab"));
 const LazyOpsecTab = lazy(() => import("../components/admin/OpsecTab"));
-const LazyOpsMatrixTab = lazy(() => import("../components/admin/OpsMatrixTab"));
 const LazyAnalyticsTab = lazy(() => import("../components/admin/AnalyticsTab"));
 const LazyBlogHealthTab = lazy(() => import("../components/admin/BlogHealthTab"));
 const LazyCampaignBuilderTab = lazy(() => import("../components/admin/CampaignBuilderTab"));
-const LazyAffiliateSetupTab = lazy(() => import("../components/admin/AffiliateSetupTab"));
 
 const TABS = [
   ["ops", "Ops", Activity],
   ["leads", "Leads", Inbox],
   ["visitors", "Visitors", Eye],
   ["content", "Content", BookOpen],
-  ["drafts", "Drafts", FileText],
   ["affiliate", "Affiliate", DollarSign],
-  ["affiliate-dash", "Affiliate+Trends", TrendingUp],
   ["leadgen", "Leadgen", Target],
-  ["adsense", "AdSense", BarChart3],
   ["analytics", "Analytics", BarChart3],
   ["opsec", "OpSec", Shield],
-  ["matrix", "Matrix", Grid3X3],
   ["blog-health", "Blog Health", Activity],
   ["campaigns", "Campaigns", Send],
-  ["affiliate-setup", "Affiliate Setup", Settings],
 ];
 
 const CORE_ACTIONS = [
   "admin-status",
   "ops-status",
-  "countermeasures",
   "drafts",
   "affiliate-stats",
   "affiliate-dashboard-summary",
@@ -278,18 +263,13 @@ export default function AdminOps() {
             {tab === "ops" && <LazyOpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
             {tab === "leads" && <LazyLeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
             {tab === "visitors" && <LazyVisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
-            {tab === "content" && <LazyContentTab data={data["content-insights"]} error={errors["content-insights"]} />}
-            {tab === "drafts" && <LazyDraftsTab drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
-            {tab === "affiliate" && <LazyAffiliateTab data={data} />}
-            {tab === "affiliate-dash" && <LazyAffiliateDashboardTab data={data} errors={errors} busy={busy} runAction={runAction} />}
+            {tab === "content" && <LazyContentTab data={data["content-insights"]} error={errors["content-insights"]} drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
+            {tab === "affiliate" && <LazyAffiliateTab data={data} errors={errors} busy={busy} runAction={runAction} />}
             {tab === "leadgen" && <LazyLeadgenTab status={data["leadgen-status"]} />}
-            {tab === "adsense" && <LazyAdsenseTab health={data["adsense-health"]} />}
             {tab === "analytics" && <LazyAnalyticsTab data={data} errors={errors} busy={busy} runAction={runAction} />}
             {tab === "opsec" && <LazyOpsecTab data={{ ...(data["opsec-data"] || {}), huntBrief: data["opsec-hunt-brief"] }} busy={busy} runAction={runAction} />}
-            {tab === "matrix" && <LazyOpsMatrixTab data={data} busy={busy} runAction={runAction} />}
             {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
             {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
-            {tab === "affiliate-setup" && <LazyAffiliateSetupTab data={data} />}
           </Suspense>
         </section>
       </div>
