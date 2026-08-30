@@ -99,6 +99,7 @@ import {
   handleLeadgenCampaignSave,
   handleLeadgenCampaignSetStatus,
   handleLeadgenCampaignStart,
+  handleLeadgenSegmentPreview,
   handleLeadgenCampaignTest,
   handleLeadgenCampaignSends,
   handleLeadgenJobs,
@@ -174,6 +175,7 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "content-insights",
   "leadgen-businesses",
   "leadgen-campaigns",
+  "leadgen-segment-preview",
   "leadgen-jobs",
   "leadgen-status",
   "leadgen-export",
@@ -407,6 +409,7 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "leadgen-campaign-start"   && method === "POST") return handleLeadgenCampaignStart(session, request);
   if (action === "leadgen-campaign-test"    && method === "POST") return handleLeadgenCampaignTest(session, request);
   if (action === "leadgen-campaign-sends"   && method === "GET")  return handleLeadgenCampaignSends(session, url);
+  if (action === "leadgen-segment-preview"  && method === "GET")  return handleLeadgenSegmentPreview(session, url);
   if (action === "leadgen-jobs"             && method === "GET")  return handleLeadgenJobs(session);
   if (action === "leadgen-run-jobs"         && method === "POST") return handleLeadgenRunJobs(session);
   if (action === "leadgen-reclassify"       && method === "POST") return handleLeadgenReclassify(session);

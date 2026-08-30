@@ -1375,6 +1375,50 @@ export async function handleLeadgenCampaignStart(session, request) {
   return json(200, { ok: true, queued: inserted });
 }
 
+// GET ?zip=34232&min_confidence=0.5
+//
+// Read-only preview of exactly which deliverable emails would be queued for
+// a segment, BEFORE launching a campaign. Mirrors the segment query in
+// handleLeadgenCampaignStart (same deliverable WHERE) but only SELECTs — it
+// never inserts, updates, or sends anything. Returns an exact count plus a
+// small sample so the operator can see who they'd email.
+export async function handleLeadgenSegmentPreview(session, url) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const rawZip = url.searchParams.get("zip") || "";
+  const zip = /^\d{5}$/.test(rawZip) ? rawZip : null;
+  const rawConf = Number(url.searchParams.get("min_confidence"));
+  const minConfidence = Number.isFinite(rawConf) ? rawConf : 0.5;
+
+  const countRows = await sql`
+    SELECT COUNT(*)::int AS count
+    FROM lead_emails e
+    JOIN lead_businesses b ON b.id = e.business_id
+    WHERE b.status = 'active'
+      AND e.opted_out_at IS NULL
+      AND e.bounced_at IS NULL
+      AND e.confidence >= ${minConfidence}
+      AND (${!zip}::bool OR b.zip = ${zip})
+  `;
+  const count = countRows[0]?.count ?? 0;
+
+  const sample = await sql`
+    SELECT b.name AS business_name, b.city, b.state, b.zip, e.email
+    FROM lead_emails e
+    JOIN lead_businesses b ON b.id = e.business_id
+    WHERE b.status = 'active'
+      AND e.opted_out_at IS NULL
+      AND e.bounced_at IS NULL
+      AND e.confidence >= ${minConfidence}
+      AND (${!zip}::bool OR b.zip = ${zip})
+    ORDER BY e.confidence DESC
+    LIMIT 10
+  `;
+
+  return json(200, { ok: true, count, sample, zip, min_confidence: minConfidence });
+}
+
 // POST { id, to } — send the campaign template to an arbitrary address right
 // now (no queue, no segment match). Used to preview deliverability before
 // flipping the campaign to running.

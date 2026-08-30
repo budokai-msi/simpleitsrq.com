@@ -23,6 +23,9 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
   const [savedId, setSavedId] = useState(null);
   const [aiBusy, setAiBusy] = useState(false);
   const [localError, setLocalError] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const [previewError, setPreviewError] = useState(null);
 
   useEffect(() => {
     if (!data["leadgen-campaigns"]) {
@@ -83,6 +86,19 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
     }
   };
 
+  const previewSegment = async () => {
+    setPreviewBusy(true);
+    setPreviewError(null);
+    try {
+      const res = await getJson("leadgen-segment-preview", { zip, min_confidence: 0.5 });
+      setPreview(res);
+    } catch (e) {
+      setPreviewError(String(e.message || e));
+    } finally {
+      setPreviewBusy(false);
+    }
+  };
+
   const launch = async () => {
     setLocalError(null);
     try {
@@ -138,9 +154,38 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
               {industries.map((ind) => <option key={ind} value={ind}>{ind}</option>)}
             </select>
             <p style={{ marginTop: 12, fontSize: 14 }}>
-              <strong>{fmtNumber(matchCount)}</strong> deliverable emails match this segment.
+              <strong>{fmtNumber(matchCount)}</strong> deliverable emails match this segment (client-side estimate).
             </p>
-            <button className="btn btn-primary btn-sm" type="button" onClick={() => setStep(2)}>Next</button>
+            <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+              <button className="btn btn-secondary btn-sm" type="button" disabled={previewBusy} onClick={previewSegment}>
+                {previewBusy ? "Previewing…" : "Preview segment"}
+              </button>
+              <button className="btn btn-primary btn-sm" type="button" onClick={() => setStep(2)}>Next</button>
+            </div>
+            {previewError ? <div className="ops-notice" style={{ marginTop: 12 }}>{previewError}</div> : null}
+            {preview ? (
+              <div style={{ marginTop: 12 }}>
+                <p style={{ fontSize: 14 }}>
+                  <strong>{fmtNumber(preview.count)}</strong> deliverable emails would be queued for this segment.
+                </p>
+                {preview.sample?.length ? (
+                  <Table
+                    columns={["Business", "City", "State", "ZIP", "Email"]}
+                    rows={preview.sample}
+                    empty="No matching businesses."
+                    renderRow={(r) => (
+                      <tr key={r.email}>
+                        <td>{r.business_name}</td>
+                        <td>{r.city}</td>
+                        <td>{r.state}</td>
+                        <td>{r.zip}</td>
+                        <td>{r.email}</td>
+                      </tr>
+                    )}
+                  />
+                ) : null}
+              </div>
+            ) : null}
           </div>
         )}
 
