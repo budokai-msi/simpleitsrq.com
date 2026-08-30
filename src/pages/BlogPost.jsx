@@ -18,6 +18,7 @@ import RelatedPosts from "../components/RelatedPosts";
 import ShareButton from "../components/ShareButton";
 import { trackAffiliateClick } from "../lib/trackClick";
 import Breadcrumbs from "../components/Breadcrumbs";
+import { useContent } from "../lib/useContent";
 
 // Lazy-loaded MDX modules. Each post ships as its own chunk so adding a
 // post to content/posts/*.mdx doesn't bloat the entry bundle. The `?raw`
@@ -247,6 +248,7 @@ function MdxBody({ slug }) {
 
 export default function BlogPost() {
   const { slug } = useParams();
+  const { t } = useContent();
 
   // Prefer the MDX meta entry (from posts-meta.json) so the page can render
   // SEO + hero without waiting for the MDX chunk. Fall back to the legacy
@@ -320,14 +322,14 @@ export default function BlogPost() {
             { name: "Blog", url: "/blog" },
             { name: post.title, url: `/blog/${post.slug}` },
           ]} />
-          <Link to="/blog" className="blog-back"><ArrowLeft size={14} /> Back to all posts</Link>
-          <span className="blog-card-category">{post.category}</span>
-          <h1 className="blog-post-title">{post.title}</h1>
-          <p className="blog-post-lede">{post.excerpt}</p>
+          <Link to="/blog" className="blog-back"><ArrowLeft size={14} /> {t("blogpost", "back", "Back to all posts")}</Link>
+          <span className="blog-card-category">{t("blogpost", "category", post.category)}</span>
+          <h1 className="blog-post-title">{t("blogpost", "title", post.title)}</h1>
+          <p className="blog-post-lede">{t("blogpost", "lede", post.excerpt)}</p>
           <div className="blog-post-meta">
-            <span><Calendar size={14} /> {new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
-            <span><User size={14} /> {post.author}</span>
-            <span>{minutes} min read</span>
+            <span><Calendar size={14} /> {t("blogpost", "date", new Date(post.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }))}</span>
+            <span><User size={14} /> {t("blogpost", "author", post.author)}</span>
+            <span>{t("blogpost", "min_read", "{minutes} min read").replace("{minutes}", String(minutes))}</span>
             <ShareButton
               slug={post.slug}
               title={post.title}
@@ -373,9 +375,9 @@ export default function BlogPost() {
             <Link to="/leadgen" className="blog-related-product__link">
               <span className="blog-related-product__icon"><Target size={16} /></span>
               <span className="blog-related-product__body">
-                <span className="blog-related-product__eyebrow">From the same engineers</span>
-                <span className="blog-related-product__title">Find local businesses by ZIP and industry →</span>
-                <span className="blog-related-product__sub">Leadgen scans public records by ZIP, niche, and contact completeness — built for repeat Sarasota/Bradenton prospecting.</span>
+                <span className="blog-related-product__eyebrow">{t("blogpost", "related_eyebrow", "From the same engineers")}</span>
+                <span className="blog-related-product__title">{t("blogpost", "related_title", "Find local businesses by ZIP and industry →")}</span>
+                <span className="blog-related-product__sub">{t("blogpost", "related_sub", "Leadgen scans public records by ZIP, niche, and contact completeness — built for repeat Sarasota/Bradenton prospecting.")}</span>
               </span>
             </Link>
           </aside>
@@ -383,7 +385,7 @@ export default function BlogPost() {
           <Newsletter />
           <AffiliateDisclosure variant={hasAffiliate ? "affiliate" : "partnership"} />
           {post.sourceUrl && (
-            <p className="blog-post-source">Original source: <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer">{post.sourceUrl}</a></p>
+            <p className="blog-post-source">{t("blogpost", "source_label", "Original source:")} <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer">{post.sourceUrl}</a></p>
           )}
         </div>
       </article>

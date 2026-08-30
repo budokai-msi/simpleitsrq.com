@@ -30,6 +30,7 @@ import { X, Check, Percent, ArrowRight } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
 import { loadContactProfile, saveContactProfile } from "../lib/contactProfile";
+import { useContent } from "../lib/useContent";
 
 const STORAGE_KEY = "srq_exit_intent_shown";
 const GRACE_MS = 30_000; // 30s on-page before eligible
@@ -67,6 +68,7 @@ const CHOICES = {
 };
 
 export default function ExitIntentModal() {
+  const { t } = useContent();
   const [open, setOpen] = useState(false);
   const [choice, setChoice] = useState(null); // null | "compliance"
   const [email, setEmail] = useState(() => loadContactProfile()?.email || "");
@@ -224,9 +226,9 @@ export default function ExitIntentModal() {
             <div className="exit-intent-success-icon">
               <Check size={28} aria-hidden="true" />
             </div>
-            <h2 id={titleId} className="exit-intent-title">Thanks - check your inbox.</h2>
+            <h2 id={titleId} className="exit-intent-title">{t("exitintent", "success_title", "Thanks - check your inbox.")}</h2>
             <p id={descId} className="exit-intent-sub">
-              We'll be in touch within one business day from hello@simpleitsrq.com.
+              {t("exitintent", "success_sub", "We'll be in touch within one business day from hello@simpleitsrq.com.")}
             </p>
             <button
               type="button"
@@ -234,17 +236,17 @@ export default function ExitIntentModal() {
               onClick={close}
               ref={firstFocusRef}
             >
-              Close
+              {t("exitintent", "close", "Close")}
             </button>
           </div>
         ) : !picked ? (
           <div className="exit-intent-body">
-            <span className="exit-intent-eyebrow">One last thing</span>
+            <span className="exit-intent-eyebrow">{t("exitintent", "eyebrow", "One last thing")}</span>
             <h2 id={titleId} className="exit-intent-title">
-              Before you go - renewal coming up?
+              {t("exitintent", "title", "Before you go - renewal coming up?")}
             </h2>
             <p id={descId} className="exit-intent-sub">
-              Pick whichever is more useful. One quick email, no phone tree.
+              {t("exitintent", "description", "Pick whichever is more useful. One quick email, no phone tree.")}
             </p>
             <div className="exit-intent-choices" role="group" aria-label="Pick an offer">
               {Object.values(CHOICES).map((opt, i) => {
@@ -261,8 +263,8 @@ export default function ExitIntentModal() {
                       <Icon size={20} />
                     </span>
                     <span className="exit-intent-choice-text">
-                      <strong>{opt.headline}</strong>
-                      <span>{opt.body}</span>
+                      <strong>{t("exitintent", `choice_${opt.id}_headline`, opt.headline)}</strong>
+                      <span>{t("exitintent", `choice_${opt.id}_body`, opt.body)}</span>
                     </span>
                     <ArrowRight size={16} aria-hidden="true" />
                   </button>
@@ -274,7 +276,7 @@ export default function ExitIntentModal() {
               className="exit-intent-dismiss"
               onClick={close}
             >
-              No thanks, I'm just browsing
+              {t("exitintent", "dismiss", "No thanks, I'm just browsing")}
             </button>
           </div>
         ) : (
@@ -284,22 +286,22 @@ export default function ExitIntentModal() {
               className="exit-intent-back"
               onClick={() => { setChoice(null); setError(""); }}
             >
-              ← Back
+              ← {t("exitintent", "back", "Back")}
             </button>
             <span className="exit-intent-eyebrow">
-              Compliance Library
+              {t("exitintent", "compliance_eyebrow", "Compliance Library")}
             </span>
-            <h2 id={titleId} className="exit-intent-title">{picked.headline}</h2>
-            <p id={descId} className="exit-intent-sub">{picked.body}</p>
+            <h2 id={titleId} className="exit-intent-title">{t("exitintent", `choice_${picked.id}_headline`, picked.headline)}</h2>
+            <p id={descId} className="exit-intent-sub">{t("exitintent", `choice_${picked.id}_body`, picked.body)}</p>
             <label className="exit-intent-label">
-              Work email
+              {t("exitintent", "work_email", "Work email")}
               <input
                 ref={firstFocusRef}
                 type="email"
                 className="exit-intent-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder={t("exitintent", "email_placeholder", "you@company.com")}
                 autoComplete="email"
                 required
               />
@@ -310,11 +312,11 @@ export default function ExitIntentModal() {
               className="btn btn-primary exit-intent-submit"
               disabled={status === "sending"}
             >
-              {status === "sending" ? "Sending…" : picked.cta}
+              {status === "sending" ? t("exitintent", "sending", "Sending…") : t("exitintent", `choice_${picked.id}_cta`, picked.cta)}
               <ArrowRight size={14} aria-hidden="true" />
             </button>
             <p className="exit-intent-fineprint">
-              We'll only use your email to send what you asked for. No spam.
+              {t("exitintent", "fineprint", "We'll only use your email to send what you asked for. No spam.")}
             </p>
           </form>
         )}

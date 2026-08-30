@@ -3,8 +3,10 @@ import { Mail, Check, Loader2 } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics";
 import { loadContactProfile, saveContactProfile } from "../lib/contactProfile";
+import { useContent } from "../lib/useContent";
 
 export default function Newsletter() {
+  const { t } = useContent();
   const [email, setEmail] = useState(() => loadContactProfile()?.email || "");
   const [state, setState] = useState("idle"); // idle | submitting | done | error
   const [err, setErr] = useState("");
@@ -47,19 +49,19 @@ export default function Newsletter() {
     <aside className="newsletter" aria-labelledby="newsletter-title">
       <div className="newsletter-icon"><Mail size={24} /></div>
       <div className="newsletter-body">
-        <h3 id="newsletter-title" className="newsletter-title">The Simple IT Brief</h3>
+        <h3 id="newsletter-title" className="newsletter-title">{t("newsletter", "title", "The Simple IT Brief")}</h3>
         <p className="newsletter-sub">
-          One email a month. Plain-English security, AI, and cloud news for Sarasota and Bradenton business owners. No spam, unsubscribe with one click.
+          {t("newsletter", "description", "One email a month. Plain-English security, AI, and cloud news for Sarasota and Bradenton business owners. No spam, unsubscribe with one click.")}
         </p>
         {state === "done" ? (
           <p className="newsletter-success">
-            <Check size={16} color="#107C10" /> Check your inbox - we sent a confirmation link. Click it and you&apos;re on the list.
+            <Check size={16} color="#107C10" /> {t("newsletter", "success", "Check your inbox - we sent a confirmation link. Click it and you're on the list.")}
           </p>
         ) : (
           <form className="newsletter-form" onSubmit={submit} noValidate>
             <input
               type="email"
-              placeholder="you@yourcompany.com"
+              placeholder={t("newsletter", "placeholder", "you@yourcompany.com")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -67,10 +69,10 @@ export default function Newsletter() {
               disabled={state === "submitting"}
             />
             <button type="submit" className="btn btn-primary" disabled={state === "submitting"}>
-              {state === "submitting" ? <Loader2 size={14} className="spin" /> : "Subscribe"}
+              {state === "submitting" ? <Loader2 size={14} className="spin" /> : t("newsletter", "subscribe", "Subscribe")}
             </button>
             {state === "error" && (
-              <p className="newsletter-error" role="alert">Signup failed ({err}). Try again or email hello@simpleitsrq.com.</p>
+              <p className="newsletter-error" role="alert">{t("newsletter", "error", "Signup failed ({err}). Try again or email hello@simpleitsrq.com.").replace("{err}", err)}</p>
             )}
           </form>
         )}

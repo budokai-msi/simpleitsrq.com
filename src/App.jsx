@@ -21,6 +21,7 @@ import { cityList } from "./data/cities";
 import { initGlobalHaptics, selectionHaptic } from "./lib/haptics";
 import { ThemeContext, useTheme } from "./lib/theme";
 import { useDesignTokens } from "./lib/useDesignTokens";
+import { useContent } from "./lib/useContent";
 import { AuthProvider } from "./lib/auth.jsx";
 import { useAuth } from "./lib/authContext.js";
 import CookieConsent from "./components/CookieConsent.jsx";
@@ -286,12 +287,13 @@ function Navbar() {
 }
 
 function Footer() {
+  const { t } = useContent();
   return (
     <footer className="footer" role="contentinfo">
       <div className="container footer-grid">
         <div>
           <Logo />
-          <p className="footer-desc">Computer repair and practical business IT support for Sarasota and Bradenton, plus Leadgen for local prospect research. Clear scope, useful answers, and no oversized promises.</p>
+          <p className="footer-desc">{t("footer", "desc", "Computer repair and practical business IT support for Sarasota and Bradenton, plus Leadgen for local prospect research. Clear scope, useful answers, and no oversized promises.")}</p>
           <div style={{ marginTop: 20 }}>
             <a className="footer-email" href="mailto:hello@simpleitsrq.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}>
               <AtSign size={16} color="var(--brand)" /> hello@simpleitsrq.com
@@ -302,7 +304,7 @@ function Footer() {
               rel="noopener noreferrer"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', marginTop: 10, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}
             >
-              <Star size={16} color="var(--brand)" /> Leave a Google review
+              <Star size={16} color="var(--brand)" /> {t("footer", "review", "Leave a Google review")}
             </a>
           </div>
         </div>
@@ -319,26 +321,26 @@ function Footer() {
           </div>
         ))}
         <div hidden>
-          <h4>Resources</h4>
+          <h4>{t("footer", "resources", "Resources")}</h4>
           <ul>
-            <li><Link to="/blog">Blog</Link></li>
-            <li><Link to="/glossary">Glossary</Link></li>
-            <li><Link to="/exposure-scan">Free Exposure Scan</Link></li>
-            <li><Link to="/tools">Recommended Tools</Link></li>
+            <li><Link to="/blog">{t("footer", "link_blog", "Blog")}</Link></li>
+            <li><Link to="/glossary">{t("footer", "link_glossary", "Glossary")}</Link></li>
+            <li><Link to="/exposure-scan">{t("footer", "link_exposure_scan", "Free Exposure Scan")}</Link></li>
+            <li><Link to="/tools">{t("footer", "link_tools", "Recommended Tools")}</Link></li>
             {/* Vendor Stack is /stack (the page with the cost calculator).
                 /partners is the partner-program page — different surface,
                 kept as a separate link below to avoid the previous semantic
                 404 where visitors clicked "Our Vendor Stack" expecting the
                 tools and landed on the partners page instead. */}
-            <li><Link to="/stack">Our Vendor Stack</Link></li>
-            <li><Link to="/industries">Industries we serve</Link></li>
-            <li><Link to="/partners">Partner Program</Link></li>
-            <li><Link to="/book">Book a Call</Link></li>
-            <li><Link to="/support">Support</Link></li>
+            <li><Link to="/stack">{t("footer", "link_stack", "Our Vendor Stack")}</Link></li>
+            <li><Link to="/industries">{t("footer", "link_industries", "Industries we serve")}</Link></li>
+            <li><Link to="/partners">{t("footer", "link_partners", "Partner Program")}</Link></li>
+            <li><Link to="/book">{t("footer", "link_book", "Book a Call")}</Link></li>
+            <li><Link to="/support">{t("footer", "link_support", "Support")}</Link></li>
           </ul>
         </div>
         <div>
-          <h4>Service Area</h4>
+          <h4>{t("footer", "service_area", "Service Area")}</h4>
           <ul className="footer-cities">
             {SERVICE_AREA_LINKS.map((item) => (
               <li key={item.id}>
@@ -350,20 +352,20 @@ function Footer() {
                 </Link>
               </li>
             ))}
-            <li><Link to="/service-area" className="footer-cities-all">View all markets →</Link></li>
+            <li><Link to="/service-area" className="footer-cities-all">{t("footer", "view_all_markets", "View all markets →")}</Link></li>
           </ul>
-          <p className="footer-area-note">Serving Southwest Florida - Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
+          <p className="footer-area-note">{t("footer", "note", "Serving Southwest Florida - Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.")}</p>
         </div>
       </div>
       <div className="footer-bottom">
         <div className="container footer-bottom-inner">
-          <span>(c) {new Date().getFullYear()} Simple IT SRQ. All rights reserved.</span>
+          <span>{t("footer", "copyright", "(c) {year} Simple IT SRQ. All rights reserved.").replace("{year}", String(new Date().getFullYear()))}</span>
           <span>
-            <Link to="/privacy">Privacy</Link> &middot;{" "}
-            <Link to="/terms">Terms</Link> &middot;{" "}
-            <Link to="/accessibility">Accessibility</Link> &middot;{" "}
+            <Link to="/privacy">{t("footer", "privacy", "Privacy")}</Link> &middot;{" "}
+            <Link to="/terms">{t("footer", "terms", "Terms")}</Link> &middot;{" "}
+            <Link to="/accessibility">{t("footer", "accessibility", "Accessibility")}</Link> &middot;{" "}
             <a href="https://astatus.simpleitsrq.com" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-              <span className="live-dot" style={{ width: 6, height: 6 }} /> System Status
+              <span className="live-dot" style={{ width: 6, height: 6 }} /> {t("footer", "status", "System Status")}
             </a> &middot;{" "}
             {/* Reopens the cookie-consent banner so visitors can change
                 their analytics/marketing choice without clearing
@@ -374,7 +376,7 @@ function Footer() {
               className="footer-cookie-prefs"
               onClick={() => window.dispatchEvent(new CustomEvent("sirq:reopen-consent"))}
             >
-              Cookie preferences
+              {t("footer", "cookie_prefs", "Cookie preferences")}
             </button>
           </span>
         </div>
@@ -412,6 +414,7 @@ function MobileStickyCTA() {
       trackEvent("preferred_contact_detected", { method: pref });
     }, []);
   const { pathname } = useLocation();
+  const { t } = useContent();
   // Hide where the CTA would be redundant (already-booking page) or
   // disruptive (signed-in portal area doesn't need a marketing CTA).
   if (pathname === "/book" || pathname.startsWith("/portal")) return null;
@@ -431,7 +434,7 @@ function MobileStickyCTA() {
         aria-label="Call (813) 434-3230"
       >
         <Phone size={18} aria-hidden="true" />
-        <span>Call</span>
+        <span>{t("mobile", "call", "Call")}</span>
       </a>
       <a
         href="sms:+18134343230?body=Hi%20Simple%20IT%20SRQ%20-%20"
@@ -440,7 +443,7 @@ function MobileStickyCTA() {
         aria-label="Text (813) 434-3230"
       >
         <MessageSquare size={18} aria-hidden="true" />
-        <span>Text</span>
+        <span>{t("mobile", "text", "Text")}</span>
       </a>
       <a
         href="mailto:hello@simpleitsrq.com"
@@ -449,7 +452,7 @@ function MobileStickyCTA() {
         aria-label="Email hello@simpleitsrq.com"
       >
         <Mail size={18} aria-hidden="true" />
-        <span>Email</span>
+        <span>{t("mobile", "email", "Email")}</span>
       </a>
       <Link
         to="/book"
@@ -457,7 +460,7 @@ function MobileStickyCTA() {
         onClick={tap("book")}
       >
         <Calendar size={18} aria-hidden="true" />
-        <span>Book</span>
+        <span>{t("mobile", "book", "Book")}</span>
       </Link>
     </nav>
   );

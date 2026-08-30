@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Star, ExternalLink } from "lucide-react";
+import { useContent } from "../lib/useContent";
 
 // Live Google Business Profile reviews block. Pulls from /api/reviews
 // (server-side Place Details proxy). When the backend isn't configured
@@ -27,6 +28,7 @@ function Stars({ rating }) {
 }
 
 export default function GoogleReviews() {
+  const { t } = useContent();
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ready | unconfigured | error
 
@@ -60,11 +62,11 @@ export default function GoogleReviews() {
     <section className="reviews-section" aria-labelledby="google-reviews-title">
       <div className="container">
         <div className="reviews-head">
-          <span className="eyebrow">What clients say</span>
+          <span className="eyebrow">{t("reviews", "eyebrow", "What clients say")}</span>
           <h2 id="google-reviews-title" className="title-1">
             <Stars rating={data.rating} />
             <span className="reviews-rating-num">{Number(data.rating).toFixed(1)}</span>
-            <span className="reviews-rating-suffix">on Google · {data.total} reviews</span>
+            <span className="reviews-rating-suffix">{t("reviews", "suffix", "on Google · {count} reviews").replace("{count}", String(data.total))}</span>
           </h2>
           {data.profileUrl && (
             <a
@@ -73,7 +75,7 @@ export default function GoogleReviews() {
               rel="noopener noreferrer"
               className="reviews-profile-link"
             >
-              See all reviews on Google <ExternalLink size={12} />
+              {t("reviews", "see_all", "See all reviews on Google")} <ExternalLink size={12} />
             </a>
           )}
         </div>

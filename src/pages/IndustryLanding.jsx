@@ -9,6 +9,7 @@ import {
 import { cities } from "../data/cities";
 import { industries, matchIndustryPattern } from "../data/industries";
 import { useSEO, SITE_URL } from "../lib/seo";
+import { useContent } from "../lib/useContent";
 
 // Same service tiles the city pages use - kept identical so the
 // industry pages don't drift in copy + so visitors recognize the
@@ -123,6 +124,7 @@ function removeSchema(id) {
 }
 
 export default function IndustryLanding() {
+  const { t } = useContent();
   // URL pattern: /:industrySlug-:cityKey  e.g. /medical-it-sarasota
   // We parse from the catch-all param so a single Route element handles
   // every (industry, city) combo without enumerating in App.jsx.
@@ -201,18 +203,18 @@ export default function IndustryLanding() {
           <div className="hero-copy hero-copy-centered">
             <span className="eyebrow">
               <MapPin size={14} style={{ display: "inline", marginRight: 6 }} />
-              {industry.displayName} · {city.cityFull}
+              {t("industry", "eyebrow", "{industry} · {city}").replace("{industry}", industry.displayName).replace("{city}", city.cityFull)}
             </span>
             <h1 className="display">
-              {industry.h1Prefix} <span className="brand-accent">in {city.city}</span>
+              {t("industry", "title_prefix", industry.h1Prefix)} <span className="brand-accent">{t("industry", "title_suffix", "in {city}").replace("{city}", city.city)}</span>
             </h1>
-            <p className="lede">{industry.intro}</p>
+            <p className="lede">{t("industry", "lede", industry.intro)}</p>
             <div className="hero-ctas">
               <Link to="/book" className="btn btn-primary btn-lg">
-                Book a free 30-minute consult <ArrowRight size={16} />
+                {t("industry", "cta_book", "Book a free 30-minute consult")} <ArrowRight size={16} />
               </Link>
               <Link to={`/${city.slug}`} className="btn btn-secondary btn-lg">
-                See all {city.city} IT services
+                {t("industry", "cta_see_all", "See all {city} IT services").replace("{city}", city.city)}
               </Link>
             </div>
           </div>
@@ -222,13 +224,13 @@ export default function IndustryLanding() {
       {/* Industry-specific pattern from the matching city.localPatterns block. */}
       <section className="section">
         <div className="container" style={{ maxWidth: 880 }}>
-          <h2 className="title-1">What we deliver for {industry.displayName.toLowerCase()} in {city.city}</h2>
+          <h2 className="title-1">{t("industry", "deliver_heading", "What we deliver for {industry} in {city}").replace("{industry}", industry.displayName.toLowerCase()).replace("{city}", city.city)}</h2>
           <div style={{ padding: "20px 24px", borderRadius: 12, background: "var(--syn-surface, #f9fafb)", border: "1px solid var(--syn-border, #e5e7eb)", borderLeft: "4px solid #111827", marginTop: 12 }}>
             <h3 style={{ marginTop: 0, fontSize: "1.05rem" }}>{pattern.title}</h3>
             <p style={{ margin: 0, lineHeight: 1.6 }}>{pattern.body}</p>
           </div>
 
-          <h3 style={{ marginTop: 32, fontSize: "1.15rem" }}>Where we focus for this industry</h3>
+          <h3 style={{ marginTop: 32, fontSize: "1.15rem" }}>{t("industry", "focus_heading", "Where we focus for this industry")}</h3>
           <ul style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12, padding: 0, listStyle: "none" }}>
             {industry.emphasis.map((e, i) => (
               <li key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
@@ -244,9 +246,9 @@ export default function IndustryLanding() {
       <section className="section section-alt" id="solutions">
         <div className="container">
           <div className="section-head">
-            <h2 className="title-1">All eight services on every plan</h2>
+            <h2 className="title-1">{t("industry", "services_heading", "All eight services on every plan")}</h2>
             <p className="section-sub">
-              Whether you sign up because of {industry.displayName.toLowerCase()} compliance pressure or because your network keeps dropping mid-day, every Simple IT SRQ engagement covers the same eight services. {city.city} firms get all of it on day one.
+              {t("industry", "services_sub", "Whether you sign up because of {industry} compliance pressure or because your network keeps dropping mid-day, every Simple IT SRQ engagement covers the same eight services. {city} firms get all of it on day one.").replace("{industry}", industry.displayName.toLowerCase()).replace("{city}", city.city)}
             </p>
           </div>
           <div className="solutions-grid">
@@ -264,7 +266,7 @@ export default function IndustryLanding() {
       {/* FAQ - industry-level, applies across cities. */}
       <section className="section">
         <div className="container" style={{ maxWidth: 880 }}>
-          <h2 className="title-1">Frequently asked - {industry.displayName.toLowerCase()}</h2>
+          <h2 className="title-1">{t("industry", "faq_heading", "Frequently asked - {industry}").replace("{industry}", industry.displayName.toLowerCase())}</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
             {industry.faqs.map((f, i) => (
               <details key={i} style={{ padding: "14px 18px", borderRadius: 10, background: "var(--syn-surface-2, #fff)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
@@ -280,7 +282,7 @@ export default function IndustryLanding() {
           this city has, so visitors and Google see the entity graph. */}
       <section className="section section-alt">
         <div className="container" style={{ maxWidth: 880 }}>
-          <h2 className="title-1" style={{ fontSize: "1.4rem" }}>Other industries we serve in {city.city}</h2>
+          <h2 className="title-1" style={{ fontSize: "1.4rem" }}>{t("industry", "other_heading", "Other industries we serve in {city}").replace("{city}", city.city)}</h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
             {Object.values(industries)
               .filter((i) => i.slug !== industry.slug && i.cities.includes(resolved.cityKey) && matchIndustryPattern(i, city))
@@ -296,7 +298,7 @@ export default function IndustryLanding() {
                 </Link>
               ))}
             <Link to={`/${city.slug}`} className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              All {city.city} IT services <ArrowRight size={14} />
+              {t("industry", "all_services", "All {city} IT services").replace("{city}", city.city)} <ArrowRight size={14} />
             </Link>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 import { trackSiteSearch } from "../lib/behaviorBeacon.js";
+import { useContent } from "../lib/useContent";
 
 /**
  * Client-side fuzzy-ish search for the blog index. No new deps.
@@ -47,6 +48,7 @@ function scoreEntry(entry, terms) {
 }
 
 export default function BlogSearch({ posts, onFilter, initialQuery = "", onQueryChange }) {
+  const { t } = useContent();
   const [query, setQuery] = useState(initialQuery);
   const [committed, setCommitted] = useState(initialQuery);
   const index = useMemo(() => buildSearchIndex(posts), [posts]);
@@ -115,7 +117,7 @@ export default function BlogSearch({ posts, onFilter, initialQuery = "", onQuery
 
   return (
     <div className="blog-search">
-      <label htmlFor="blog-search-input" className="blog-search-label">Search posts</label>
+      <label htmlFor="blog-search-input" className="blog-search-label">{t("blogsearch", "label", "Search posts")}</label>
       <div className="blog-search-field">
         <Search size={16} aria-hidden="true" className="blog-search-icon" />
         <input
@@ -125,7 +127,7 @@ export default function BlogSearch({ posts, onFilter, initialQuery = "", onQuery
           aria-label="Search blog posts"
           aria-describedby="blog-search-status"
           className="blog-search-input"
-          placeholder="Search by title, topic, or tag…"
+          placeholder={t("blogsearch", "placeholder", "Search by title, topic, or tag…")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoComplete="off"
@@ -147,7 +149,7 @@ export default function BlogSearch({ posts, onFilter, initialQuery = "", onQuery
           visual feedback of the list updating. */}
       <div id="blog-search-status" className="sr-only" aria-live="polite" aria-atomic="true">
         {hasQuery
-          ? `${filtered.length} ${filtered.length === 1 ? "post matches" : "posts match"} "${trimmed}"`
+          ? `${filtered.length} ${filtered.length === 1 ? t("blogsearch", "post_match", "post matches") : t("blogsearch", "posts_match", "posts match")} "${trimmed}"`
           : ""}
       </div>
     </div>

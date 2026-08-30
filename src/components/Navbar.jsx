@@ -7,6 +7,30 @@ import {
 } from "lucide-react";
 import { PRIMARY_NAV, isNavSectionActive, isNavItemActive } from "../data/navigation";
 import { useAuth } from "../lib/authContext.js";
+import { useContent } from "../lib/useContent";
+
+// Maps PRIMARY_NAV section/item ids to content-editor keys so every nav
+// label can be overridden via the admin Content Editor. Falls back to the
+// id when a new nav entry is added without a key.
+const NAV_KEYS = {
+  services: "services",
+  locations: "locations",
+  resources: "resources",
+  leadgen: "leadgen",
+  "computer-repair": "computer_repair",
+  "hardware-upgrades": "hardware_upgrades",
+  "it-integration": "it_integration",
+  "managed-it": "managed_it",
+  sarasota: "sarasota",
+  bradenton: "bradenton",
+  "lakewood-ranch": "lakewood_ranch",
+  "service-area": "service_area",
+  blog: "blog",
+  tools: "tools",
+  compare: "compare",
+  glossary: "glossary",
+};
+const navKey = (id) => NAV_KEYS[id] || id;
 
 const NAV_ICONS = {
   LayoutGrid, ShoppingBag, Briefcase, MapPin, Shield, Target,
@@ -27,6 +51,7 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const { user, loading } = useAuth();
+  const { t } = useContent();
 
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 8); }
@@ -68,10 +93,10 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
   const portalActive = location.pathname.startsWith("/portal");
   const portalItem = {
     id: "portal",
-    label: user ? "My portal" : "Sign in",
+    label: user ? t("nav", "portal", "My portal") : t("nav", "signin", "Sign in"),
     to: "/portal",
     icon: user ? "UserIcon" : "LogIn",
-    description: user ? "Tickets, leadgen, opsec, and account tools." : "Access the client portal.",
+    description: user ? t("nav", "portal_desc", "Tickets, leadgen, opsec, and account tools.") : t("nav", "signin_desc", "Access the client portal."),
     activePrefixes: ["/portal"],
   };
 
@@ -87,7 +112,7 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
     </Link>
   ) : (
     <Link to="/portal" className={`link-btn${portalActive ? " is-active" : ""}`} aria-current={portalActive ? "page" : undefined}>
-      <LogIn size={16} style={{ marginRight: 6 }} /> Sign In
+      <LogIn size={16} style={{ marginRight: 6 }} /> {t("nav", "signin", "Sign In")}
     </Link>
   );
 
@@ -106,13 +131,13 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
                   onClick={() => setOpenGroup(openGroup === section.id ? null : section.id)}
                 >
                   <NavIcon name={section.icon} size={15} />
-                  <span>{section.label}</span>
+                  <span>{t("nav", navKey(section.id), section.label)}</span>
                   <ChevronDown size={14} className="nav-chevron" />
                 </button>
               ) : (
                 <Link to={section.to} className={`nav-link${isNavSectionActive(section, location) ? " is-active" : ""}`}>
                   <NavIcon name={section.icon} size={15} />
-                  <span>{section.label}</span>
+                  <span>{t("nav", navKey(section.id), section.label)}</span>
                 </Link>
               )}
               {section.items && (
@@ -124,8 +149,8 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
                           <NavIcon name={item.icon} size={20} />
                         </div>
                         <div className="nav-dropdown-item-content">
-                          <strong className="nav-dropdown-item-title">{item.label}</strong>
-                          <span className="nav-dropdown-item-desc">{item.description}</span>
+                          <strong className="nav-dropdown-item-title">{t("nav", navKey(item.id), item.label)}</strong>
+                          <span className="nav-dropdown-item-desc">{t("nav", navKey(item.id) + "_desc", item.description)}</span>
                         </div>
                       </Link>
                     ))}
@@ -138,7 +163,7 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
         <div className="nav-actions">
           {ThemeToggle && <ThemeToggle />}
           {portalCta}
-          <Link to="/book" className="btn btn-primary">Book a Call</Link>
+          <Link to="/book" className="btn btn-primary">{t("nav", "cta", "Book a Call")}</Link>
         </div>
         <div className="nav-mobile-actions">
           {ThemeToggle && <ThemeToggle />}
@@ -148,10 +173,10 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
             </Link>
           ) : (
             <Link to="/portal" className={`nav-mobile-cta${portalActive ? " is-active" : ""}`}>
-              <LogIn size={14} /><span>Sign in</span>
+              <LogIn size={14} /><span>{t("nav", "signin", "Sign in")}</span>
             </Link>
           ))}
-          <button ref={menuButtonRef} className="menu-btn" type="button" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}>
+          <button ref={menuButtonRef} className="menu-btn" type="button" onClick={() => setOpen(!open)} aria-label={open ? t("nav", "close_menu", "Close menu") : t("nav", "open_menu", "Open menu")} aria-expanded={open}>
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
@@ -162,13 +187,13 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
             <div key={section.id} className="mobile-nav-group">
               {section.items ? (
                 <>
-                  <div className="mobile-nav-header"><NavIcon name={section.icon} size={14} /> <span>{section.label}</span></div>
+                  <div className="mobile-nav-header"><NavIcon name={section.icon} size={14} /> <span>{t("nav", navKey(section.id), section.label)}</span></div>
                   {section.items.map((item) => (
                     <Link key={item.id} to={item.to} className={`mobile-nav-link${isNavItemActive(item, location) ? " is-active" : ""}`} onClick={() => setOpen(false)}>
                       <NavIcon name={item.icon} size={18} />
                       <div className="mobile-nav-link-content">
-                        <strong>{item.label}</strong>
-                        <span>{item.description}</span>
+                        <strong>{t("nav", navKey(item.id), item.label)}</strong>
+                        <span>{t("nav", navKey(item.id) + "_desc", item.description)}</span>
                       </div>
                     </Link>
                   ))}
@@ -177,7 +202,7 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
                 <Link to={section.to} className={`mobile-nav-link${isNavItemActive(section, location) ? " is-active" : ""}`} onClick={() => setOpen(false)}>
                   <NavIcon name={section.icon} size={18} />
                   <div className="mobile-nav-link-content">
-                    <strong>{section.label}</strong>
+                    <strong>{t("nav", navKey(section.id), section.label)}</strong>
                   </div>
                 </Link>
               )}
@@ -185,7 +210,7 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
           ))}
           <div className="mobile-nav-divider" />
           <section className="mobile-nav-section mobile-nav-section--account">
-            <div className="mobile-nav-header"><UserIcon size={14} /> <span>Account</span></div>
+            <div className="mobile-nav-header"><UserIcon size={14} /> <span>{t("nav", "account", "Account")}</span></div>
             <Link to={portalItem.to} className="mobile-nav-link" onClick={() => setOpen(false)}>
               <NavIcon name={portalItem.icon} size={18} />
               <div className="mobile-nav-link-content">
@@ -194,7 +219,7 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
               </div>
             </Link>
             <Link to="/book" className="btn btn-primary mobile-menu-cta" onClick={() => setOpen(false)}>
-              <Calendar size={16} /> Book a Call
+              <Calendar size={16} /> {t("nav", "cta", "Book a Call")}
             </Link>
           </section>
         </nav>

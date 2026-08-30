@@ -3,6 +3,7 @@ import { Link } from "../lib/Link";
 import { ArrowRight } from "lucide-react";
 import postsMeta from "../data/posts-meta.json";
 import BlogCover from "./BlogCover";
+import { useContent } from "../lib/useContent";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const RECENCY_WINDOW_DAYS = 90;
@@ -55,6 +56,7 @@ function pickRelated(current, pool, limit) {
 }
 
 export default function RelatedPosts({ currentSlug, limit = 3 }) {
+  const { t } = useContent();
   const related = useMemo(() => {
     const current = postsMeta.find((p) => p.slug === currentSlug);
     if (!current) return [];
@@ -71,7 +73,7 @@ export default function RelatedPosts({ currentSlug, limit = 3 }) {
       aria-labelledby={headingId}
     >
       <div className="container">
-        <h2 id={headingId} className="title-2">Keep reading</h2>
+        <h2 id={headingId} className="title-2">{t("related", "heading", "Keep reading")}</h2>
         <div className="blog-grid">
           {related.map((p) => (
             <article key={p.slug} className="blog-card">
@@ -113,7 +115,7 @@ export default function RelatedPosts({ currentSlug, limit = 3 }) {
                     className="blog-card-readmore"
                     aria-label={`Read: ${p.title}`}
                   >
-                    Read post <ArrowRight size={14} />
+                    {t("related", "read_post", "Read post")} <ArrowRight size={14} />
                   </Link>
                 </div>
               </div>

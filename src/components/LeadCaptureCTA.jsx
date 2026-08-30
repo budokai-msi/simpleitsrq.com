@@ -3,6 +3,7 @@ import { Check, ArrowRight } from "lucide-react";
 import { csrfFetch } from "../lib/csrf";
 import { track } from "../lib/analytics";
 import { adChannelLabel } from "../lib/utm";
+import { useContent } from "../lib/useContent";
 
 export default function LeadCaptureCTA({
   title = "Review Your IT Setup in 15 Minutes",
@@ -10,6 +11,7 @@ export default function LeadCaptureCTA({
   endpoint = "/api/contact",
   source = "blog-cta",
 }) {
+  const { t } = useContent();
   const [form, setForm] = useState({ name: "", email: "" });
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -42,39 +44,39 @@ export default function LeadCaptureCTA({
   return (
     <aside className="lead-cta" aria-labelledby="lead-cta-title">
       <div className="lead-cta-body">
-        <span className="eyebrow">Free · No obligation</span>
-        <h3 id="lead-cta-title" className="lead-cta-title">{title}</h3>
-        <p className="lead-cta-sub">{subtitle}</p>
+        <span className="eyebrow">{t("leadcapture", "eyebrow", "Free · No obligation")}</span>
+        <h3 id="lead-cta-title" className="lead-cta-title">{t("leadcapture", "title", title)}</h3>
+        <p className="lead-cta-sub">{t("leadcapture", "subtitle", subtitle)}</p>
         <ul className="lead-cta-checks">
-          <li><Check size={14} color="#107C10" /> Local Sarasota/Bradenton IT engineer</li>
-          <li><Check size={14} color="#107C10" /> No contract required</li>
-          <li><Check size={14} color="#107C10" /> Clear next-step recommendations</li>
+          <li><Check size={14} color="#107C10" /> {t("leadcapture", "check_1", "Local Sarasota/Bradenton IT engineer")}</li>
+          <li><Check size={14} color="#107C10" /> {t("leadcapture", "check_2", "No contract required")}</li>
+          <li><Check size={14} color="#107C10" /> {t("leadcapture", "check_3", "Clear next-step recommendations")}</li>
         </ul>
       </div>
       <form className="lead-cta-form" onSubmit={submit} noValidate>
         {sent ? (
           <div className="lead-cta-success">
             <Check size={24} color="#107C10" />
-            <strong>Thanks — your request is in. We’ll follow up by email.</strong>
+            <strong>{t("leadcapture", "success", "Thanks — your request is in. We’ll follow up by email.")}</strong>
           </div>
         ) : (
           <>
             <label className="lead-cta-label">
-              First name
+              {t("leadcapture", "first_name", "First name")}
               <input
                 className="lead-cta-input"
-                placeholder="e.g. Sarah"
+                placeholder={t("leadcapture", "first_name_placeholder", "e.g. Sarah")}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
               />
             </label>
             <label className="lead-cta-label">
-              Work email
+              {t("leadcapture", "work_email", "Work email")}
               <input
                 className="lead-cta-input"
                 type="email"
-                placeholder="you@company.com"
+                placeholder={t("leadcapture", "work_email_placeholder", "you@company.com")}
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
@@ -82,7 +84,7 @@ export default function LeadCaptureCTA({
             </label>
             {error && <p className="lead-cta-error">{error}</p>}
             <button type="submit" className="btn btn-primary">
-              Request My Free Assessment <ArrowRight size={14} />
+              {t("leadcapture", "button", "Request My Free Assessment")} <ArrowRight size={14} />
             </button>
           </>
         )}

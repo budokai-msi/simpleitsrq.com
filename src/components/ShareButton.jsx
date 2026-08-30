@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Share2, Link as LinkIcon, Check } from "lucide-react";
 import { trackEvent } from "../lib/analytics";
+import { useContent } from "../lib/useContent";
 
 // Web Share API button with clipboard fallback. On mobile this opens the
 // system share sheet (iOS, Android, Mac Safari). On browsers without
@@ -11,6 +12,7 @@ import { trackEvent } from "../lib/analytics";
 // so the operator can see which mechanism is actually being used and
 // from which post.
 export default function ShareButton({ title, url, slug, className = "" }) {
+  const { t } = useContent();
   const [state, setState] = useState("idle"); // idle | copied | error
   const fullUrl = url || (typeof window !== "undefined" ? window.location.href : "");
   const fullTitle = title || (typeof document !== "undefined" ? document.title : "");
@@ -60,7 +62,7 @@ export default function ShareButton({ title, url, slug, className = "" }) {
       aria-label={state === "copied" ? "Link copied" : "Share this post"}
     >
       {state === "copied" ? (
-        <><Check size={14} /> Copied</>
+        <><Check size={14} /> {t("share", "copied", "Copied")}</>
       ) : (
         <>
           {/* Native share API gets the share icon; fallback browsers see
@@ -68,7 +70,7 @@ export default function ShareButton({ title, url, slug, className = "" }) {
           {typeof navigator !== "undefined" && typeof navigator.share === "function"
             ? <Share2 size={14} />
             : <LinkIcon size={14} />}
-          Share
+          {t("share", "label", "Share")}
         </>
       )}
     </button>

@@ -15,6 +15,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "../lib/Link";
 import { readConsent, writeConsent } from "../lib/consent.js";
+import { useContent } from "../lib/useContent";
 
 // Custom event the footer "Manage cookie preferences" link dispatches
 // to force the banner back into view, regardless of whether the user
@@ -23,6 +24,7 @@ import { readConsent, writeConsent } from "../lib/consent.js";
 export const REOPEN_CONSENT_EVENT = "sirq:reopen-consent";
 
 export default function CookieConsent() {
+  const { t } = useContent();
   // Initialize lazily so we read localStorage exactly once at mount without
   // triggering a cascading re-render.
   const [visible, setVisible] = useState(() => {
@@ -70,15 +72,14 @@ export default function CookieConsent() {
       aria-describedby="cookie-consent-body"
     >
       <div className="cookie-consent__body" id="cookie-consent-body">
-        <strong id="cookie-consent-title">Cookie settings</strong>
-        Essential cookies keep forms working. Analytics and marketing stay off
-        unless accepted. <Link to="/privacy">Privacy Policy</Link>. CA may{" "}
+        <strong id="cookie-consent-title">{t("cookie", "title", "Cookie settings")}</strong>
+        {t("cookie", "description", "Essential cookies keep forms working. Analytics and marketing stay off unless accepted.")} <Link to="/privacy">Privacy Policy</Link>. CA may{" "}
         <button
           type="button"
           className="cookie-consent__link-btn"
           onClick={rejectNonEssential}
         >
-          opt out
+          {t("cookie", "opt_out", "opt out")}
         </button>
         .
       </div>
@@ -88,14 +89,14 @@ export default function CookieConsent() {
           className="cookie-consent__btn"
           onClick={rejectNonEssential}
         >
-          Reject
+          {t("cookie", "decline", "Reject")}
         </button>
         <button
           type="button"
           className="cookie-consent__btn cookie-consent__btn--primary"
           onClick={acceptAll}
         >
-          Accept
+          {t("cookie", "accept", "Accept")}
         </button>
       </div>
     </div>

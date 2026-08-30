@@ -6,6 +6,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { findGlossaryEntry, GLOSSARY } from "../data/glossary";
 import AdUnit from "../components/AdSense";
 import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
+import { useContent } from "../lib/useContent";
 
 function buildDefinedTermSchema(entry) {
   // schema.org/DefinedTerm - Google sometimes surfaces this as the
@@ -27,6 +28,7 @@ function buildDefinedTermSchema(entry) {
 
 export default function GlossaryEntry() {
   const { slug } = useParams();
+  const { t } = useContent();
   const entry = useMemo(() => findGlossaryEntry(slug), [slug]);
 
 
@@ -66,15 +68,15 @@ export default function GlossaryEntry() {
           />
 
           <Link to="/glossary" className="blog-back">
-            <ArrowLeft size={14} /> Back to glossary
+            <ArrowLeft size={14} /> {t("glossaryentry", "back", "Back to glossary")}
           </Link>
 
-          <h1 className="blog-post-title">What is {entry.term}?</h1>
+          <h1 className="blog-post-title">{t("glossaryentry", "title", "What is {term}?").replace("{term}", entry.term)}</h1>
 
           {/* The featured-snippet candidate paragraph. Keep this above
               every other element so Google picks it up cleanly. */}
           <p className="blog-post-lede" style={{ fontSize: "1.15rem", lineHeight: 1.55 }}>
-            {entry.short}
+            {t("glossaryentry", "intro", entry.short)}
           </p>
 
           <AdUnit slot={ADSENSE_SLOTS.inArticle} format="auto" className="ad-in-article" />
@@ -95,7 +97,7 @@ export default function GlossaryEntry() {
               }}
             >
               <h3 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "1.05rem", marginTop: 0 }}>
-                <ShieldCheck size={18} color="#111827" /> Why it matters for Florida small business
+                <ShieldCheck size={18} color="#111827" /> {t("glossaryentry", "why_heading", "Why it matters for Florida small business")}
               </h3>
               <p style={{ margin: 0, lineHeight: 1.6 }}>{entry.why}</p>
             </aside>
@@ -113,7 +115,7 @@ export default function GlossaryEntry() {
               }}
             >
               <h3 style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "1.05rem", marginTop: 0 }}>
-                <Lightbulb size={18} color="#107C10" /> What to do
+                <Lightbulb size={18} color="#107C10" /> {t("glossaryentry", "action_heading", "What to do")}
               </h3>
               <p style={{ margin: 0, lineHeight: 1.6 }}>{entry.action}</p>
             </aside>
@@ -126,7 +128,7 @@ export default function GlossaryEntry() {
           {relatedEntries.length > 0 && (
             <section style={{ marginTop: 40, paddingTop: 32, borderTop: "1px solid var(--syn-border, #e5e7eb)" }}>
               <h2 className="title-2" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <BookOpen size={20} color="#111827" /> Related terms
+                <BookOpen size={20} color="#111827" /> {t("glossaryentry", "related_heading", "Related terms")}
               </h2>
               <div
                 style={{
@@ -145,7 +147,7 @@ export default function GlossaryEntry() {
                     <h3 className="glossary-card__term" style={{ fontSize: "1.05rem" }}>{rel.term}</h3>
                     <p className="glossary-card__short" style={{ fontSize: "0.9rem" }}>{rel.short}</p>
                     <span className="glossary-card__cta">
-                      Read more <ArrowRight size={14} />
+                      {t("glossaryentry", "read_more", "Read more")} <ArrowRight size={14} />
                     </span>
                   </Link>
                 ))}
