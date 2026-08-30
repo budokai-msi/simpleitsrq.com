@@ -38,8 +38,7 @@ const LazyLeadsInboxTab = lazy(() => import("../components/admin/LeadsInboxTab")
 const LazyVisitorsTab = lazy(() => import("../components/admin/VisitorsTab"));
 const LazyContentTab = lazy(() => import("../components/admin/ContentTab"));
 const LazyAffiliateTab = lazy(() => import("../components/admin/AffiliateTab"));
-const LazyLeadgenTab = lazy(() => import("../components/admin/LeadgenTab"));
-const LazyOpsecTab = lazy(() => import("../components/admin/OpsecTab"));
+import OpsecTab from "../components/admin/OpsecTab";
 const LazyAnalyticsTab = lazy(() => import("../components/admin/AnalyticsTab"));
 const LazyBlogHealthTab = lazy(() => import("../components/admin/BlogHealthTab"));
 const LazyCampaignBuilderTab = lazy(() => import("../components/admin/CampaignBuilderTab"));
@@ -50,9 +49,7 @@ const TABS = [
   ["visitors", "Visitors", Eye],
   ["content", "Content", BookOpen],
   ["affiliate", "Affiliate", DollarSign],
-  ["leadgen", "Leadgen", Target],
   ["analytics", "Analytics", BarChart3],
-  ["opsec", "OpSec", Shield],
   ["blog-health", "Blog Health", Activity],
   ["campaigns", "Campaigns", Send],
 ];
@@ -89,9 +86,8 @@ export default function AdminOps() {
     robots: "noindex, nofollow",
   });
 
-  const pathTab = window.location.pathname.includes("/opsec") ? "opsec" : window.location.pathname.includes("/leadgen") ? "leadgen" : "ops";
-  const initialTab = new URLSearchParams(window.location.search).get("tab") || pathTab;
-  const [tab, setTab] = useState(TABS.some(([key]) => key === initialTab) ? initialTab : pathTab);
+  const initialTab = new URLSearchParams(window.location.search).get("tab") || "ops";
+  const [tab, setTab] = useState(TABS.some(([key]) => key === initialTab) ? initialTab : "ops");
   const [data, setData] = useState({});
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
@@ -187,6 +183,10 @@ export default function AdminOps() {
     <main id="main" className="section admin-affiliates admin-ops">
       <div className="container">
         <AdminNav />
+        {window.location.pathname.includes("/opsec") ? (
+          <OpsecTab data={{ ...(data["opsec-data"] || {}), huntBrief: data["opsec-hunt-brief"] }} busy={busy} runAction={runAction} />
+        ) : (
+        <>
         <Breadcrumbs items={[
           { name: "Client Portal", url: "/portal" },
           { name: "Operations", url: "/portal/ops" },
@@ -265,13 +265,13 @@ export default function AdminOps() {
             {tab === "visitors" && <LazyVisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
             {tab === "content" && <LazyContentTab data={data["content-insights"]} error={errors["content-insights"]} drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
             {tab === "affiliate" && <LazyAffiliateTab data={data} errors={errors} busy={busy} runAction={runAction} />}
-            {tab === "leadgen" && <LazyLeadgenTab status={data["leadgen-status"]} />}
             {tab === "analytics" && <LazyAnalyticsTab data={data} errors={errors} busy={busy} runAction={runAction} />}
-            {tab === "opsec" && <LazyOpsecTab data={{ ...(data["opsec-data"] || {}), huntBrief: data["opsec-hunt-brief"] }} busy={busy} runAction={runAction} />}
             {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
             {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
           </Suspense>
         </section>
+        </>
+        )}
       </div>
     </main>
   );

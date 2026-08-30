@@ -116,11 +116,8 @@ import {
   handleOpsecHuntBrief,
   handleOpsecScan,
   handleOpsecDomainAdd,
-  handleOpsecDomainToggle,
   handleOpsecIocAdd,
-  handleOpsecIocToggle,
   handleOpsecNoteSave,
-  handleOpsecNoteDelete,
 } from "./_lib/portal/opsec.js";
 import {
   handleMatrixCapture,
@@ -198,11 +195,8 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "opsec-hunt-brief",
   "opsec-scan",
   "opsec-domain-add",
-  "opsec-domain-toggle",
   "opsec-ioc-add",
-  "opsec-ioc-toggle",
   "opsec-note-save",
-  "opsec-note-delete",
   // ops matrix — command canvas capture/retain
   "matrix-capture",
   "matrix-retain",
@@ -431,11 +425,8 @@ async function dispatchAuthed(request, method, url, action, session) {
     if (action === "opsec-hunt-brief"    && method === "GET")  return handleOpsecHuntBrief(session);
     if (action === "opsec-scan"          && method === "POST") return handleOpsecScan(session);
     if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
-    if (action === "opsec-domain-toggle" && method === "POST") return handleOpsecDomainToggle(session, request);
     if (action === "opsec-ioc-add"       && method === "POST") return handleOpsecIocAdd(session, request);
-    if (action === "opsec-ioc-toggle"    && method === "POST") return handleOpsecIocToggle(session, request);
     if (action === "opsec-note-save"     && method === "POST") return handleOpsecNoteSave(session, request);
-    if (action === "opsec-note-delete"   && method === "POST") return handleOpsecNoteDelete(session, request);
     if (action === "matrix-capture"      && method === "POST") return handleMatrixCapture(session);
     if (action === "matrix-retain"       && method === "GET")  return handleMatrixRetain(session, url);
     if (action === "analytics"           && method === "GET")  return handleAnalytics(session, url);

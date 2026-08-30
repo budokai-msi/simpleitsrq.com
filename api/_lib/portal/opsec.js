@@ -292,17 +292,6 @@ export async function handleOpsecDomainAdd(session, request) {
   return json(200, { ok: true, domain: rows[0] });
 }
 
-export async function handleOpsecDomainToggle(session, request) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-  const body = await request.json().catch(() => ({}));
-  const id = Number.parseInt(body.id, 10);
-  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
-  const isActive = body.is_active !== false;
-  await sql`UPDATE opsec_watched_domains SET is_active = ${isActive} WHERE id = ${id}`;
-  return json(200, { ok: true });
-}
-
 export async function handleOpsecIocAdd(session, request) {
   const gate = await requireAdmin(session);
   if (gate) return gate;
@@ -327,17 +316,6 @@ export async function handleOpsecIocAdd(session, request) {
     RETURNING id, ioc_type, value, source, severity, notes, first_seen_at, last_seen_at, is_active
   `;
   return json(200, { ok: true, ioc: rows[0] });
-}
-
-export async function handleOpsecIocToggle(session, request) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-  const body = await request.json().catch(() => ({}));
-  const id = Number.parseInt(body.id, 10);
-  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
-  const isActive = body.is_active !== false;
-  await sql`UPDATE opsec_iocs SET is_active = ${isActive}, last_seen_at = now() WHERE id = ${id}`;
-  return json(200, { ok: true });
 }
 
 export async function handleOpsecNoteSave(session, request) {
@@ -368,14 +346,4 @@ export async function handleOpsecNoteSave(session, request) {
     `;
   }
   return json(200, { ok: true, note: rows[0] });
-}
-
-export async function handleOpsecNoteDelete(session, request) {
-  const gate = await requireAdmin(session);
-  if (gate) return gate;
-  const body = await request.json().catch(() => ({}));
-  const id = Number.parseInt(body.id, 10);
-  if (!Number.isFinite(id) || id <= 0) return json(400, { ok: false, error: "invalid_id" });
-  await sql`DELETE FROM opsec_notes WHERE id = ${id}`;
-  return json(200, { ok: true });
 }
