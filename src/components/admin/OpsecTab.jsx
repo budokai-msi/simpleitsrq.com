@@ -7,6 +7,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { Metric, SignalPill, Table, fmtNumber, fmtTime } from "./shared";
+import { ZeroState } from "./ZeroState";
 
 export default function OpsecTab({ data, busy, runAction }) {
   const hunt = data?.huntBrief;
@@ -50,6 +51,17 @@ export default function OpsecTab({ data, busy, runAction }) {
           columns={["Domain", "Cert expires", "Days left", "Issuer", "Status"]}
           rows={certChecks}
           empty="No cert checks yet. Add watched domains and run a scan."
+          emptyNode={
+            <ZeroState
+              title="No security data yet"
+              description="Add watched domains and run a scan to start monitoring."
+              icon={Shield}
+              disclosures={[
+                "Security telemetry is collected automatically from threat feeds and scans.",
+                "Indicators and domains are reviewed by a human operator.",
+              ]}
+            />
+          }
           renderRow={(row) => (
             <tr key={`${row.domain}-${row.ts}`}>
               <td className="ops-mono">{row.domain}</td>
@@ -123,6 +135,17 @@ export default function OpsecTab({ data, busy, runAction }) {
           columns={["Domain", "Label", "Active", "Last scanned"]}
           rows={data?.domains || []}
           empty="No watched domains yet."
+          emptyNode={
+            <ZeroState
+              title="No security data yet"
+              description="Add watched domains and run a scan to start monitoring."
+              icon={Shield}
+              disclosures={[
+                "Security telemetry is collected automatically from threat feeds and scans.",
+                "Indicators and domains are reviewed by a human operator.",
+              ]}
+            />
+          }
           renderRow={(row) => (
             <tr key={row.id}>
               <td>{row.domain}</td>

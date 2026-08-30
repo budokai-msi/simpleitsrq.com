@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EmptyState, SignalPill, StatusChip, analyzeMicrosoftDocs, fmtNumber, postJson } from "./shared";
+import { ZeroState } from "./ZeroState";
 
 export default function LeadsInboxTab({ data, error, reload }) {
   const leads = data?.leads || [];
@@ -124,7 +125,17 @@ export default function LeadsInboxTab({ data, error, reload }) {
           Track inbound inquiries, send direct email replies via Resend (`contact@simpleitsrq.com`), generate client portal tickets with 1 click, and view AI Microsoft documentation suggestions.
         </p>
         {error ? <EmptyState>{error}</EmptyState> : null}
-        {!error && leads.length === 0 ? <EmptyState>No leads yet - form submissions appear here in real time.</EmptyState> : null}
+        {!error && leads.length === 0 ? (
+          <ZeroState
+            title="No leads yet"
+            description="Form submissions from your website appear here in real time."
+            icon={Inbox}
+            disclosures={[
+              "Leads are collected automatically from your contact and booking forms.",
+              "Verify each lead before replying — they may be automated or low-intent.",
+            ]}
+          />
+        ) : null}
 
         {leads.length ? (
           <div className="admin-leadgen-inbox-grid" style={{ marginTop: 16 }}>

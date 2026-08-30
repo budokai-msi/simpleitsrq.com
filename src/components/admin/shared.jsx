@@ -104,8 +104,8 @@ export function EmptyState({ children }) {
   );
 }
 
-export function Table({ columns, rows, empty, renderRow }) {
-  if (!rows?.length) return <EmptyState>{empty || "No records yet."}</EmptyState>;
+export function Table({ columns, rows, empty, emptyNode, renderRow }) {
+  if (!rows?.length) return emptyNode || <EmptyState>{empty || "No records yet."}</EmptyState>;
   return (
     <div className="ops-table-wrap">
       <table className="admin-aff-table ops-table">

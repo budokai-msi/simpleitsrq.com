@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Send } from "lucide-react";
 import { SignalPill, Table, fmtNumber, getJson, postJson } from "./shared";
+import { ZeroState } from "./ZeroState";
 
 // One-click campaign builder. Walks the operator through segment → message →
 // throttle → launch, then shows existing campaigns. Uses postJson directly
@@ -338,6 +340,17 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
           columns={["Name", "Status", "Sends", "Sent", "Opened", "Replied"]}
           rows={campaigns}
           empty="No campaigns yet."
+          emptyNode={
+            <ZeroState
+              title="No campaigns yet"
+              description="Build your first outreach campaign to start converting the lead pipeline."
+              icon={Send}
+              disclosures={[
+                "Campaign emails are sent to businesses that have not opted out.",
+                "Review the segment preview before launching to avoid duplicate outreach.",
+              ]}
+            />
+          }
           renderRow={(c) => (
             <tr key={c.id}>
               <td><strong>{c.name}</strong></td>
