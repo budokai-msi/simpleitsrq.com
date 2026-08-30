@@ -1,6 +1,7 @@
 import { Link } from "../lib/Link";
 import { ShieldCheck, Cloud, HardDrive, Lock, Briefcase, ArrowRight, Check } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
+import { useContent } from "../lib/useContent";
 
 // Vendor stack. Each entry explains what the vendor does, why we picked
 // them, and the client-facing benefit. These are the tools we deploy and
@@ -86,6 +87,7 @@ function StackCard({ vendor }) {
 }
 
 export default function Partners() {
+  const { t } = useContent();
   useSEO({
     title: "Our Vendor Stack - The Tools We Deploy and Recommend | Simple IT SRQ",
     description: "The IT and cybersecurity tools Simple IT SRQ installs and supports for Sarasota, Bradenton, and Venice businesses - Microsoft 365, Huntress, SentinelOne, Acronis, Intune, and Fortinet. Plain-English explanations of why each one is in our stack.",
@@ -101,13 +103,10 @@ export default function Partners() {
     <main id="main" className="partners-main">
       <section className="section partners-hero">
         <div className="container">
-          <span className="eyebrow">Our Vendor Stack</span>
-          <h1 className="display">The tools we deploy and recommend.</h1>
+          <span className="eyebrow">{t("partners", "hero_eyebrow", "Our Vendor Stack")}</span>
+          <h1 className="display">{t("partners", "hero_title", "The tools we deploy and recommend.")}</h1>
           <p className="lede">
-            Managed IT isn't one product - it's a deliberate stack of six or
-            seven vendors that each own one job. Here are the ones we run in
-            every engagement, why we picked them, and what each one actually
-            does for your business, auditor, and insurance carrier.
+            {t("partners", "hero_subtitle", "Managed IT isn't one product - it's a deliberate stack of six or seven vendors that each own one job. Here are the ones we run in every engagement, why we picked them, and what each one actually does for your business, auditor, and insurance carrier.")}
           </p>
           <div className="partners-hero-meta">
             <span><Check size={14} /> Honest about what we use - no affiliate-badge theater</span>
@@ -137,10 +136,10 @@ export default function Partners() {
           </p>
           <div className="partners-outro-ctas">
             <Link to="/book" className="btn btn-primary btn-lg">
-              Book a 30-Minute Call <ArrowRight size={14} />
+              {t("partners", "cta_book", "Book a 30-Minute Call")} <ArrowRight size={14} />
             </Link>
             <Link to="/tools" className="btn btn-secondary btn-lg">
-              See Recommended Tools
+              {t("partners", "cta_tools", "See Recommended Tools")}
             </Link>
           </div>
         </div>

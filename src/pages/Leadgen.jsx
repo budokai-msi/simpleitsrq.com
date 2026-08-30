@@ -11,6 +11,7 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { trackEvent } from "../lib/analytics.js";
 import { csrfFetch } from "../lib/csrf";
 import { useAuth } from "../lib/authContext.js";
+import { useContent } from "../lib/useContent";
 
 const LEADGEN_PROMO_CODE = "LAUNCH20";
 const LEADGEN_STRIPE_LINKS = {
@@ -384,6 +385,7 @@ function LeadgenMap({ rows, scan }) {
 
 function LeadgenScanApp() {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useContent();
   const currentPlan = String(user?.plan || "").toLowerCase();
   const canEnrichOne = Boolean(user?.isAdmin || ["growth", "pro", "lifetime"].includes(currentPlan));
   const canBulkEnrich = Boolean(user?.isAdmin || ["pro", "lifetime"].includes(currentPlan));
@@ -789,8 +791,8 @@ function LeadgenScanApp() {
         </div>
 
         <div className="leadgen-app-title">
-          <h2 className="title-2">Look up a ZIP, see who's there.</h2>
-          <p>Enter a ZIP code and industry, and we'll pull the local businesses, their websites, phones, and what's missing from their online presence. You pick who's worth contacting.</p>
+          <h2 className="title-2">{t("leadgen", "hero_title", "Look up a ZIP, see who's there.")}</h2>
+          <p>{t("leadgen", "hero_subtitle", "Enter a ZIP code and industry, and we'll pull the local businesses, their websites, phones, and what's missing from their online presence. You pick who's worth contacting.")}</p>
         </div>
 
         <nav className="leadgen-product-steps" aria-label="Leadgen workflow">
@@ -827,7 +829,7 @@ function LeadgenScanApp() {
               </select>
             </label>
             <button type="button" className="leadgen-join__btn btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
-              {busy ? "…" : <><Search size={15} aria-hidden="true" /> <span>Search</span></>}
+              {busy ? "…" : <><Search size={15} aria-hidden="true" /> <span>{t("leadgen", "cta_search", "Search")}</span></>}
             </button>
           </div>
           {zipSource === "geo" && validZip ? (

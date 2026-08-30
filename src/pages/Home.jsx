@@ -10,19 +10,21 @@ import { useTurnstile, TURNSTILE_SITE_KEY } from "../lib/useTurnstile";
 import { csrfFetch } from "../lib/csrf";
 import { trackEvent } from "../lib/analytics";
 import { adChannelLabel } from "../lib/utm";
+import { useContent } from "../lib/useContent";
 
 function Hero() {
+  const { t } = useContent();
   return (
     <section className="home-hero" aria-labelledby="hero-title">
       <div className="container home-hero__grid">
         <div className="home-hero__copy">
-          <div className="eyebrow" style={{ marginBottom: "1rem" }}>Local computer repair & business IT</div>
-          <h1 id="hero-title" className="display">Computer repair and business IT support that starts with the problem.</h1>
-          <p className="lede">Bring us a slow workstation, failing drive, Wi-Fi issue, Microsoft 365 problem, or a business that needs ongoing IT ownership. We diagnose what is happening, explain the options, and handle the work we can deliver well.</p>
+          <div className="eyebrow" style={{ marginBottom: "1rem" }}>{t("home", "hero_eyebrow", "Local computer repair & business IT")}</div>
+          <h1 id="hero-title" className="display">{t("home", "hero_title", "Computer repair and business IT support that starts with the problem.")}</h1>
+          <p className="lede">{t("home", "hero_subtitle", "Bring us a slow workstation, failing drive, Wi-Fi issue, Microsoft 365 problem, or a business that needs ongoing IT ownership. We diagnose what is happening, explain the options, and handle the work we can deliver well.")}</p>
           <div className="home-hero__actions">
-            <Link to="/services#computer-repair" className="btn btn-primary btn-lg">Get help now <ArrowRight size={16} /></Link>
-                        <Link to="/services#managed-it" className="btn btn-secondary btn-lg">See managed IT plans <ArrowRight size={16} /></Link>
-                        <Link to="/leadgen" className="btn btn-secondary btn-lg">Try the business scanner <ArrowRight size={16} /></Link>
+            <Link to="/services#computer-repair" className="btn btn-primary btn-lg">{t("home", "hero_cta_repair", "Get help now")} <ArrowRight size={16} /></Link>
+                        <Link to="/services#managed-it" className="btn btn-secondary btn-lg">{t("home", "hero_cta_managed", "See managed IT plans")} <ArrowRight size={16} /></Link>
+                        <Link to="/leadgen" className="btn btn-secondary btn-lg">{t("home", "hero_cta_leadgen", "Try the business scanner")} <ArrowRight size={16} /></Link>
           </div>
           <ul className="home-hero__proof" aria-label="Service area and focus">
                       <li><MapPin size={15} /> Sarasota & Bradenton</li>

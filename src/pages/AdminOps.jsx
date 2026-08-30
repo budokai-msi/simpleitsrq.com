@@ -8,6 +8,7 @@ import {
   FileText,
   Inbox,
   Lock,
+  Palette,
   RefreshCcw,
   Send,
   Shield,
@@ -41,6 +42,7 @@ import OpsecTab from "../components/admin/OpsecTab";
 const LazyBlogHealthTab = lazy(() => import("../components/admin/BlogHealthTab"));
 const LazyCampaignBuilderTab = lazy(() => import("../components/admin/CampaignBuilderTab"));
 const LazyContentEditorTab = lazy(() => import("../components/admin/ContentEditorTab"));
+const LazyDesignEditorTab = lazy(() => import("../components/admin/DesignEditorTab"));
 
 const TABS = [
   ["ops", "Ops", Activity],
@@ -48,6 +50,7 @@ const TABS = [
   ["blog-health", "Blog Health", Activity],
   ["campaigns", "Campaigns", Send],
   ["content-editor", "Content Editor", FileText],
+  ["design-editor", "Design Editor", Palette],
 ];
 
 const CORE_ACTIONS = [
@@ -64,6 +67,7 @@ const CORE_ACTIONS = [
   "affiliate-setup",
   "content-hygiene",
   "content-list",
+  "design-token-list",
 ];
 
 
@@ -309,6 +313,7 @@ function AdminOpsInner() {
                 {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
                 {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
                 {tab === "content-editor" && <LazyContentEditorTab data={data} busy={busy} runAction={runAction} />}
+                {tab === "design-editor" && <LazyDesignEditorTab data={data} busy={busy} runAction={runAction} />}
               </Suspense>
             </motion.div>
           </AnimatePresence>

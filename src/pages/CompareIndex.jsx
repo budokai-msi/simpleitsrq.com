@@ -3,8 +3,10 @@ import { ArrowRight, ShieldCheck, Wrench } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
 import { COMPARISONS } from "../data/comparisons";
 import { WHY_VS_LIST } from "../data/why-vs";
+import { useContent } from "../lib/useContent";
 
 export default function CompareIndex() {
+  const { t } = useContent();
   useSEO({
     title: "IT Tool & Vendor Comparisons for Florida Businesses | Simple IT SRQ",
     description:
@@ -21,10 +23,10 @@ export default function CompareIndex() {
     <main id="main" className="compare-index">
       <section className="section">
         <div className="container" style={{ maxWidth: 860 }}>
-          <span className="eyebrow">Defensible Comparisons</span>
-          <h1 className="display">Compare software tools & IT support models</h1>
+          <span className="eyebrow">{t("compare", "hero_eyebrow", "Defensible Comparisons")}</span>
+          <h1 className="display">{t("compare", "hero_title", "Compare software tools & IT support models")}</h1>
           <p className="lede">
-            Whether you are evaluating business software stack renewals or deciding between managed IT, internal hiring, and retail repair, we resolve the options for Sarasota and Bradenton businesses without marketing fluff.
+            {t("compare", "hero_subtitle", "Whether you are evaluating business software stack renewals or deciding between managed IT, internal hiring, and retail repair, we resolve the options for Sarasota and Bradenton businesses without marketing fluff.")}
           </p>
         </div>
       </section>
@@ -46,7 +48,7 @@ export default function CompareIndex() {
                 <h3 className="compare-index__card-title">{w.h1}</h3>
                 <p className="compare-index__card-sub">{w.subhead.split(". ")[0]}.</p>
                 <span className="compare-index__card-cta">
-                  Read comparison <ArrowRight size={14} />
+                  {t("compare", "cta_read_comparison", "Read comparison")} <ArrowRight size={14} />
                 </span>
               </Link>
             ))}
@@ -66,7 +68,7 @@ export default function CompareIndex() {
                 <h3 className="compare-index__card-title">{c.h1}</h3>
                 <p className="compare-index__card-sub">{c.subhead}</p>
                 <span className="compare-index__card-cta">
-                  Read tool breakdown <ArrowRight size={14} />
+                  {t("compare", "cta_read_tool", "Read tool breakdown")} <ArrowRight size={14} />
                 </span>
               </Link>
             ))}

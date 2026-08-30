@@ -20,6 +20,7 @@ import {
 import { cityList } from "./data/cities";
 import { initGlobalHaptics, selectionHaptic } from "./lib/haptics";
 import { ThemeContext, useTheme } from "./lib/theme";
+import { useDesignTokens } from "./lib/useDesignTokens";
 import { AuthProvider } from "./lib/auth.jsx";
 import { useAuth } from "./lib/authContext.js";
 import CookieConsent from "./components/CookieConsent.jsx";
@@ -480,6 +481,17 @@ function AnalyticsMount() {
   return null;
 }
 
+// Injects admin design-token overrides (CSS custom properties) onto <html>
+// so they cascade site-wide. Called once at the app root. Falls back to the
+// site's default tokens if the fetch fails, so it never breaks rendering.
+function DesignTokenInjector() {
+  const { apply } = useDesignTokens();
+  useEffect(() => {
+    apply();
+  }, [apply]);
+  return null;
+}
+
 function Layout({ children }) {
   const location = useLocation();
   const { user } = useAuth();
@@ -493,6 +505,7 @@ function Layout({ children }) {
   return (
     <>
       <a className="skip-link" href="#main">Skip to content</a>
+      <DesignTokenInjector />
       {!isInternalOps && <Navbar />}
       <ScrollToHash />
       {!isInternalOps && <VisitorTracker />}

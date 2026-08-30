@@ -10,6 +10,7 @@ import BlogSearch from "../components/BlogSearch";
 import EmptyState from "../components/EmptyState";
 import AdUnit from "../components/AdSense";
 import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
+import { useContent } from "../lib/useContent";
 
 const PAGE_SIZE = 12;
 const CATEGORIES = ["All", "Cybersecurity", "AI & Productivity", "Cloud", "Privacy", "Business Tech", "Industry News"];
@@ -28,6 +29,7 @@ function paginationItems(current, total) {
 }
 
 export default function BlogIndex() {
+  const { t } = useContent();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const initialPage = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
@@ -99,9 +101,9 @@ export default function BlogIndex() {
         <div className="container blog-hero__inner">
           <Breadcrumbs items={[{ name: "Blog", url: "/blog" }]} />
           <div className="blog-hero__copy">
-            <span className="eyebrow">Field notes & analysis</span>
-            <h1 className="display">Technology news is only useful when it changes what you do.</h1>
-            <p className="lede">We read the original source, link back to it, and add the practical IT context that is easy to miss in a headline. The goal is a useful answer: what happened, what it means, and whether you need to do anything about it.</p>
+            <span className="eyebrow">{t("blog", "hero_eyebrow", "Field notes & analysis")}</span>
+            <h1 className="display">{t("blog", "hero_title", "Technology news is only useful when it changes what you do.")}</h1>
+            <p className="lede">{t("blog", "hero_subtitle", "We read the original source, link back to it, and add the practical IT context that is easy to miss in a headline. The goal is a useful answer: what happened, what it means, and whether you need to do anything about it.")}</p>
           </div>
         </div>
       </section>
@@ -201,8 +203,8 @@ export default function BlogIndex() {
               <p>For computer repair, network problems, Microsoft 365 issues, or ongoing business IT support in Sarasota and Bradenton, tell us what is happening.</p>
             </div>
             <div className="blog-convert-cta__actions">
-              <Link to="/services" className="btn btn-primary btn-lg">See IT services <ArrowRight size={16} /></Link>
-              <Link to="/leadgen" className="btn btn-secondary btn-lg">Explore Leadgen <ArrowRight size={16} /></Link>
+              <Link to="/services" className="btn btn-primary btn-lg">{t("blog", "cta_services", "See IT services")} <ArrowRight size={16} /></Link>
+              <Link to="/leadgen" className="btn btn-secondary btn-lg">{t("blog", "cta_leadgen", "Explore Leadgen")} <ArrowRight size={16} /></Link>
             </div>
           </section>
         </div>

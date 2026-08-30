@@ -4,6 +4,7 @@ import { ShieldCheck, AlertTriangle, Lock, ArrowRight, Eye, EyeOff, Key } from "
 import { useSEO, SITE_URL } from "../lib/seo";
 import { resolveAffiliate } from "../data/affiliates";
 import { trackAffiliateClick } from "../lib/trackClick";
+import { useContent } from "../lib/useContent";
 
 // Resolve the amazon_search tokens once at module load so the render
 // path stays simple + the affiliate tag is baked into the href.
@@ -59,6 +60,7 @@ async function checkBreach(password) {
 }
 
 export default function PasswordCheck() {
+  const { t } = useContent();
   const [password, setPassword] = useState("");
   const [state, setState] = useState("idle"); // idle | checking | safe | pwned | error
   const [count, setCount] = useState(0);
@@ -106,10 +108,10 @@ export default function PasswordCheck() {
         <div className="hero-bg" aria-hidden="true" />
         <div className="container hero-stack-clean">
           <div className="hero-copy hero-copy-centered">
-            <span className="eyebrow"><ShieldCheck size={14} /> Free tool · No signup · No tracking</span>
-            <h1 className="display">Is your password <span className="brand-accent">in a breach?</span></h1>
+            <span className="eyebrow"><ShieldCheck size={14} /> {t("password-check", "hero_eyebrow", "Free tool · No signup · No tracking")}</span>
+            <h1 className="display">{t("password-check", "hero_title", "Is your password ")}<span className="brand-accent">{t("password-check", "hero_title_accent", "in a breach?")}</span></h1>
             <p className="lede">
-              Paste a password below. We'll check it against 800+ million known-breached passwords in under a second. <strong>Your password never leaves this browser</strong> - we use the same privacy-preserving k-anonymity technique 1Password Watchtower and Firefox Monitor use.
+              {t("password-check", "hero_subtitle", "Paste a password below. We'll check it against 800+ million known-breached passwords in under a second. Your password never leaves this browser - we use the same privacy-preserving k-anonymity technique 1Password Watchtower and Firefox Monitor use.")}
             </p>
           </div>
         </div>
@@ -150,7 +152,7 @@ export default function PasswordCheck() {
               className="btn btn-primary btn-lg pw-check-submit"
               disabled={!password || state === "checking"}
             >
-              {state === "checking" ? "Checking 800M+ leaked passwords…" : "Check it"}
+              {state === "checking" ? t("password-check", "cta_checking", "Checking 800M+ leaked passwords…") : t("password-check", "cta_check", "Check it")}
             </button>
             <p className="pw-check-privacy">
               <Lock size={13} />

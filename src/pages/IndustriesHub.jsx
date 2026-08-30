@@ -6,6 +6,7 @@ import {
 import { useSEO, SITE_URL } from "../lib/seo";
 import { industries, matchIndustryPattern } from "../data/industries";
 import { cities } from "../data/cities";
+import { useContent } from "../lib/useContent";
 
 // Lucide icon per industry - keeps the hub page visually scannable so
 // a visitor can find their vertical in 3 seconds without reading copy.
@@ -24,6 +25,7 @@ const ICONS = {
 const HUB_INTRO = `Florida small-business IT looks different from the national playbook. Hurricane season, snowbird traffic, FIPA + FTC Safeguards on top of HIPAA, a healthcare market the size of some entire states packed into Sarasota and Manatee counties - every industry we serve has its own version of "what works on the Gulf Coast." This page is the index: pick your industry, then drill into the city closest to your office.`;
 
 export default function IndustriesHub() {
+  const { t } = useContent();
   useSEO({
     title: "Industry IT Support for Florida SMBs | Simple IT SRQ",
     description:
@@ -43,12 +45,12 @@ export default function IndustriesHub() {
         <div className="container" style={{ maxWidth: 980 }}>
           <div className="section-head">
             <span className="eyebrow" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <Briefcase size={14} /> Industries we serve
+              <Briefcase size={14} /> {t("industries", "hero_eyebrow", "Industries we serve")}
             </span>
             <h1 id="industries-title" className="display">
-              IT support by industry - across the Florida Gulf Coast
+              {t("industries", "hero_title", "IT support by industry - across the Florida Gulf Coast")}
             </h1>
-            <p className="lede">{HUB_INTRO}</p>
+            <p className="lede">{t("industries", "hero_subtitle", HUB_INTRO)}</p>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 24, marginTop: 24 }}>
@@ -146,7 +148,7 @@ export default function IndustriesHub() {
               outline a fit on a free 30-minute call.
             </p>
             <Link to="/book" className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              Book a free consult <ArrowRight size={14} />
+              {t("industries", "cta_button", "Book a free consult")} <ArrowRight size={14} />
             </Link>
           </div>
         </div>

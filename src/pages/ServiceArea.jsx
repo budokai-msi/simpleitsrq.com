@@ -1,6 +1,7 @@
 import { Link } from "../lib/Link";
 import { MapPin, Phone, ArrowRight } from "lucide-react";
 import { useSEO, SITE_URL } from "../lib/seo";
+import { useContent } from "../lib/useContent";
 
 // Coverage cards. Coords are relative (0-100) inside the SVG viewBox so
 // nudging the map art later doesn't require recomputing pin positions.
@@ -156,6 +157,7 @@ function CoverageMap() {
 }
 
 export default function ServiceArea() {
+  const { t } = useContent();
   useSEO({
     title: "Sarasota, Bradenton & Venice IT Support | Simple IT SRQ",
     description: "Local IT support, computer repair, security cameras, and managed service plans across Sarasota County, Manatee County, Venice, and Lakewood Ranch.",
@@ -171,13 +173,10 @@ export default function ServiceArea() {
     <main id="main" className="service-area-main">
       <section className="section service-area-hero">
         <div className="container">
-          <span className="eyebrow">Coverage Area</span>
-          <h1 className="display">Field operations across Southwest Florida.</h1>
+          <span className="eyebrow">{t("service-area", "hero_eyebrow", "Coverage Area")}</span>
+          <h1 className="display">{t("service-area", "hero_title", "Field operations across Southwest Florida.")}</h1>
           <p className="lede">
-            On-site engineering coverage from Bradenton through Lakewood Ranch,
-            down to Sarasota, Venice, and Nokomis. One operations team across
-            the region - same engineers, same SLAs, same response times for
-            commercial offices, retail, residential, and seasonal condos.
+            {t("service-area", "hero_subtitle", "On-site engineering coverage from Bradenton through Lakewood Ranch, down to Sarasota, Venice, and Nokomis. One operations team across the region - same engineers, same SLAs, same response times for commercial offices, retail, residential, and seasonal condos.")}
           </p>
           <div className="service-area-meta">
             <span><MapPin size={14} /> 11 covered markets</span>
@@ -226,7 +225,7 @@ export default function ServiceArea() {
             an hour of Bradenton, there's a good chance we already serve a
             neighbor.
           </p>
-          <Link to="/book" className="btn btn-primary btn-lg">Book a Free Call</Link>
+          <Link to="/book" className="btn btn-primary btn-lg">{t("service-area", "cta_button", "Book a Free Call")}</Link>
         </div>
       </section>
     </main>

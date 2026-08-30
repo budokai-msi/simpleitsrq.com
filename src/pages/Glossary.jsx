@@ -4,9 +4,11 @@ import { useSEO, SITE_URL } from "../lib/seo";
 import { glossaryAlphabetical } from "../data/glossary";
 import AdUnit from "../components/AdSense";
 import { ADSENSE_SLOTS } from "../lib/adsenseSlots";
+import { useContent } from "../lib/useContent";
 
 export default function Glossary() {
   const entries = glossaryAlphabetical();
+  const { t } = useContent();
 
   useSEO({
     title: "Cybersecurity Glossary for Florida SMBs | Simple IT SRQ",
@@ -27,15 +29,13 @@ export default function Glossary() {
           <div className="section-head">
             <span className="eyebrow">
               <BookOpen size={14} style={{ display: "inline", marginRight: 6 }} />
-              Glossary
+              {t("glossary", "hero_eyebrow", "Glossary")}
             </span>
             <h1 className="display">
-              Cybersecurity &amp; compliance terms in plain English
+              {t("glossary", "hero_title", "Cybersecurity & compliance terms in plain English")}
             </h1>
             <p className="lede">
-              Every term Florida small-business owners hear from auditors,
-              insurance carriers, and IT vendors - defined in 30 seconds, with
-              the "why it matters" and "what to do" attached.
+              {t("glossary", "hero_subtitle", "Every term Florida small-business owners hear from auditors, insurance carriers, and IT vendors - defined in 30 seconds, with the \"why it matters\" and \"what to do\" attached.")}
             </p>
           </div>
 
@@ -69,7 +69,7 @@ export default function Glossary() {
               password cleanup, and practical documentation.
             </p>
             <Link to="/services" className="btn btn-primary">
-              See fixed-fee services <ArrowRight size={14} />
+              {t("glossary", "cta_button", "See fixed-fee services")} <ArrowRight size={14} />
             </Link>
           </div>
         </div>

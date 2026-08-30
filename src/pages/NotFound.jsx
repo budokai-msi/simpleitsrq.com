@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Link } from "../lib/Link";
 import { ArrowLeft, Search, BookOpen, Shield, MapPin, Calendar, Wrench, Calculator } from "lucide-react";
 import { useSEO } from "../lib/seo";
+import { useContent } from "../lib/useContent";
 
 // Curated destinations shown on the 404 page. Mirrors what's in the
 // primary nav + lead-magnet surfaces so a visitor who hits a bad URL
@@ -19,6 +20,7 @@ const SUGGESTIONS = [
 
 export default function NotFound() {
   const { pathname } = useLocation();
+  const { t } = useContent();
 
   useSEO({
     title: "Page not found | Simple IT SRQ",
@@ -64,9 +66,9 @@ export default function NotFound() {
             }}>
               <Search size={42} aria-hidden="true" />
             </div>
-            <span className="eyebrow">404 · Page not found</span>
+            <span className="eyebrow">{t("notfound", "eyebrow", "404 · Page not found")}</span>
             <h1 className="display" style={{ fontSize: "clamp(28px, 5vw, 44px)", marginTop: 8 }}>
-              That page doesn't exist
+              {t("notfound", "title", "That page doesn't exist")}
             </h1>
             <p className="lede" style={{ maxWidth: 560, margin: "12px auto 0" }}>
               You requested{" "}
@@ -77,10 +79,10 @@ export default function NotFound() {
             </p>
             <div className="hero-ctas" style={{ justifyContent: "center", marginTop: 24 }}>
               <Link to="/" className="btn btn-primary btn-lg">
-                <ArrowLeft size={16} /> Back to home
+                <ArrowLeft size={16} /> {t("notfound", "cta_home", "Back to home")}
               </Link>
               <Link to="/blog" className="btn btn-secondary btn-lg">
-                Read the blog
+                {t("notfound", "cta_blog", "Read the blog")}
               </Link>
             </div>
           </div>
