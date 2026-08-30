@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Activity,
@@ -309,16 +310,26 @@ function AdminOpsInner() {
         </nav>
 
         <section className="admin-leadgen-tab-body">
-          <Suspense fallback={<div className="ops-tab-loading">Loading…</div>}>
-            {tab === "ops" && <LazyOpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
-            {tab === "leads" && <LazyLeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
-            {tab === "visitors" && <LazyVisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
-            {tab === "content" && <LazyContentTab data={data["content-insights"]} error={errors["content-insights"]} drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
-            {tab === "affiliate" && <LazyAffiliateTab data={data} errors={errors} busy={busy} runAction={runAction} />}
-            {tab === "analytics" && <LazyAnalyticsTab data={data} errors={errors} busy={busy} runAction={runAction} />}
-            {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
-            {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
-          </Suspense>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              <Suspense fallback={<div className="ops-tab-loading">Loading…</div>}>
+                {tab === "ops" && <LazyOpsTab data={data} errors={errors} intel={intel} busy={busy} runAction={runAction} />}
+                {tab === "leads" && <LazyLeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
+                {tab === "visitors" && <LazyVisitorsTab data={data["behavior-insights"]} hotLeads={data["hot-leads"]} leadIntel={data["lead-intel"]} errors={errors} />}
+                {tab === "content" && <LazyContentTab data={data["content-insights"]} error={errors["content-insights"]} drafts={data.drafts?.drafts || []} errors={errors} busy={busy} runAction={runAction} />}
+                {tab === "affiliate" && <LazyAffiliateTab data={data} errors={errors} busy={busy} runAction={runAction} />}
+                {tab === "analytics" && <LazyAnalyticsTab data={data} errors={errors} busy={busy} runAction={runAction} />}
+                {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
+                {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
         </section>
         </>
         )}

@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import { motion, animate } from "framer-motion";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -7,271 +9,274 @@ import { Link } from "react-router-dom";
 import { Metric, SignalPill, Table, fmtMoney, fmtNumber, fmtTime, formatJobOutput, formatJobProgress } from "./shared";
 
 // ─────────────────────────────────────────────────────────────
-// Ops Matrix views — real-data operations overview composed from
-// the data already loaded by AdminOps (admin-status, ops-status,
-// opsec-data, drafts, affiliate-stats, adsense-health,
-// revenue-summary, leadgen-status). Rendered inline as additional
-// sections below the core OpsTab content.
+// CountUp — animates a number from its previous value to the new
+// target using framer-motion's `animate`. Used for revenue KPIs and
+// the "What needs your attention" counts so big numbers feel alive
+// without being noisy.
 // ─────────────────────────────────────────────────────────────
+function CountUp({ value, format = (n) => fmtNumber(n), duration = 0.8 }) {
+  const [display, setDisplay] = useState(0);
+  const fromRef = useRef(0);
+  useEffect(() => {
+    const controls = animate(fromRef.current, value, {
+      duration,
+      ease: "easeOut",
+      onUpdate: (v) => setDisplay(v),
+    });
+    fromRef.current = value;
+    return () => controls.stop();
+  }, [value, duration]);
+  return <>{format(display)}</>;
+}
 
-function MatrixPanel({ title, children, wide }) {
+// ─────────────────────────────────────────────────────────────
+// Panel — a motion.section that fades + slides up on mount. Each
+// panel takes a `delay` so sibling panels stagger in (~0.06s apart).
+// ─────────────────────────────────────────────────────────────
+function Panel({ children, delay = 0, wide = false }) {
   return (
-    <section className={`admin-aff-card ops-panel${wide ? " ops-panel--wide" : ""}`}>
-      <div className="ops-panel__head"><h2>{title}</h2></div>
-      <div className="ops-panel__body">{children}</div>
-    </section>
+    <motion.section
+      className={`admin-aff-card ops-panel${wide ? " ops-panel--wide" : ""}`}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, delay, ease: "easeOut" }}
+    >
+      {children}
+    </motion.section>
   );
 }
 
-function OverviewView({ data }) {
-  const admin = data["admin-status"];
-  const ops = data["ops-status"];
-  const opsec = data["opsec-data"];
-  const drafts = data.drafts?.drafts || [];
-  const affiliate = data["affiliate-stats"];
+// Motion-wrapped Link so the action buttons can lift on hover.
+const MotionLink = motion(Link);
+
+// ─────────────────────────────────────────────────────────────
+// "What needs your attention" — the primary panel. Derives a
+// prioritized list of concrete actions a human would take, each with
+// a status icon and a button. Data-driven, not a static list.
+// ─────────────────────────────────────────────────────────────
+function AttentionPanel({ data }) {
+  const leadsNew = Number(data["leads-inbox"]?.counts?.new || 0);
+  const blogFailures = Number(data["blog-engine-health"]?.consecutiveFailures || 0);
+  const unconfiguredAffiliate = (data["affiliate-setup"]?.programs || []).filter((p) => !p.configured).length;
+  const certIssues = (data["opsec-data"]?.certChecks || []).filter((c) => !c.ok).length;
+  const deliverable = Number(data["leadgen-status"]?.emails?.deliverable || 0);
+  const campaigns = data["leadgen-campaigns"]?.rows || [];
+  const duplicateGroups = (data["content-hygiene"]?.duplicateGroups || []).length;
+
+  const items = [];
+  if (leadsNew > 0) {
+    items.push({
+      state: "warn",
+      Icon: AlertTriangle,
+      color: "#b45309",
+      text: (
+        <>
+          <CountUp value={leadsNew} /> new lead{leadsNew === 1 ? "" : "s"} need{leadsNew === 1 ? "s" : ""} a reply
+        </>
+      ),
+      to: "/portal/ops?tab=leads",
+      label: "Open Leads",
+    });
+  }
+  if (blogFailures >= 2) {
+    items.push({
+      state: "bad",
+      Icon: XCircle,
+      color: "#dc2626",
+      text: (
+        <>
+          Blog auto-publish failed <CountUp value={blogFailures} /> days in a row
+        </>
+      ),
+      to: "/portal/ops?tab=blog-health",
+      label: "View Blog Health",
+    });
+  }
+  if (unconfiguredAffiliate > 0) {
+    items.push({
+      state: "warn",
+      Icon: AlertTriangle,
+      color: "#b45309",
+      text: (
+        <>
+          <CountUp value={unconfiguredAffiliate} /> affiliate program{unconfiguredAffiliate === 1 ? "" : "s"} unconfigured
+        </>
+      ),
+      to: "/portal/ops?tab=affiliate",
+      label: "Set up Affiliate",
+    });
+  }
+  if (certIssues > 0) {
+    items.push({
+      state: "bad",
+      Icon: XCircle,
+      color: "#dc2626",
+      text: (
+        <>
+          <CountUp value={certIssues} /> domain{certIssues === 1 ? "" : "s"} have cert issues
+        </>
+      ),
+      to: "/portal/opsec",
+      label: "View OpSec",
+    });
+  }
+  if (deliverable > 0 && campaigns.length === 0) {
+    items.push({
+      state: "warn",
+      Icon: AlertTriangle,
+      color: "#b45309",
+      text: (
+        <>
+          <CountUp value={deliverable} /> emails ready — launch your first campaign
+        </>
+      ),
+      to: "/portal/ops?tab=campaigns",
+      label: "Build Campaign",
+    });
+  }
+  if (duplicateGroups > 0) {
+    items.push({
+      state: "warn",
+      Icon: AlertTriangle,
+      color: "#b45309",
+      text: (
+        <>
+          <CountUp value={duplicateGroups} /> duplicate-slug post{duplicateGroups === 1 ? "" : "s"} detected
+        </>
+      ),
+      to: "/portal/ops?tab=content",
+      label: "View Content",
+    });
+  }
+
+  return (
+    <Panel wide>
+      <div className="ops-panel__head">
+        <h2>What needs your attention</h2>
+        <SignalPill state={items.length ? "warn" : "good"}>{items.length ? `${items.length} action${items.length === 1 ? "" : "s"}` : "all clear"}</SignalPill>
+      </div>
+      {items.length === 0 ? (
+        <div className="ops-attention-row" style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface-2)" }}>
+          <CheckCircle2 size={18} style={{ color: "#059669", flexShrink: 0 }} />
+          <span style={{ flex: 1, color: "var(--text-1)", fontSize: 14 }}>All clear — nothing needs your attention right now.</span>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {items.map((item, i) => (
+            <motion.div
+              key={i}
+              className="ops-attention-row"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.18, delay: 0.1 + i * 0.05, ease: "easeOut" }}
+              style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface-2)" }}
+            >
+              <item.Icon size={18} style={{ color: item.color, flexShrink: 0 }} />
+              <span style={{ flex: 1, color: "var(--text-1)", fontSize: 14 }}>{item.text}</span>
+              <MotionLink
+                to={item.to}
+                className="btn btn-primary btn-sm"
+                whileHover={{ y: -1 }}
+                transition={{ duration: 0.15 }}
+                style={{ flexShrink: 0 }}
+              >
+                {item.label}
+              </MotionLink>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </Panel>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Revenue — the 3 revenue KPIs, count-up animated. If there is no
+// revenue yet, point the operator at the campaign builder.
+// ─────────────────────────────────────────────────────────────
+function RevenuePanel({ data }) {
   const revenue = data["revenue-summary"];
-  const counts = admin?.counts || {};
-  const env = admin?.env || {};
-  const envSet = Object.entries(env).filter(([, v]) => v).length;
-  const envTotal = Object.keys(env).length;
+  const configured = !!revenue?.configured;
+  const paidTotal = Number(revenue?.paid_total_cents || 0);
+  const mrr = Number(revenue?.mrr_cents || 0);
+  const paidCount = Number(revenue?.paid_count || 0);
+  const revenueZero = configured && !paidTotal && !mrr;
 
   return (
-    <div className="ops-grid">
-      <MatrixPanel title="Operations" wide>
-        <div className="ops-metric-grid">
-          <Metric label="Lead businesses" value={fmtNumber(counts.lead_businesses?.n)} hint={`${fmtNumber(counts.lead_businesses?.active)} active`} />
-          <Metric label="Email contacts" value={fmtNumber(counts.lead_emails?.n)} hint={`${fmtNumber(counts.lead_emails?.deliverable)} deliverable`} />
-          <Metric label="Security events" value={fmtNumber(counts.security_events?.n)} />
-          <Metric label="Engagement events" value={fmtNumber(counts.engagement_events?.n)} />
-          <Metric label="Draft posts" value={fmtNumber(drafts.length)} />
-          <Metric label="MRR" value={revenue?.configured ? `$${fmtNumber(revenue.mrr_cents / 100)}` : "—"} />
-        </div>
-      </MatrixPanel>
-      <MatrixPanel title="OpSec posture">
-        <div className="ops-metric-grid">
-          <Metric label="Threat feeds" value={fmtNumber(opsec?.threatTotal)} />
-          <Metric label="Active IOCs" value={fmtNumber(opsec?.iocs?.filter(i => i.is_active)?.length)} />
-          <Metric label="Watched domains" value={fmtNumber(opsec?.domains?.length)} />
-          <Metric label="Env secrets set" value={`${envSet}/${envTotal}`} />
-        </div>
-      </MatrixPanel>
-      <MatrixPanel title="Pipeline & functions">
-        <div className="ops-metric-grid">
-          <Metric label="Affiliate clicks" value={fmtNumber(affiliate?.clicks)} />
-          <Metric label="Affiliate revenue" value={affiliate?.revenue ? `$${fmtNumber(affiliate.revenue)}` : "—"} />
-          <Metric label="Portal actions" value={fmtNumber(ops?.actions?.length)} />
-        </div>
-      </MatrixPanel>
-    </div>
-  );
-}
-
-function MatrixView({ data }) {
-  const admin = data["admin-status"];
-  const opsec = data["opsec-data"];
-  const drafts = data.drafts?.drafts || [];
-  const counts = admin?.counts || {};
-
-  const rows = [
-    { domain: "Operations", cells: [fmtNumber(counts.lead_businesses?.n), fmtNumber(counts.lead_emails?.n), fmtNumber(counts.security_events?.n), fmtNumber(drafts.length)] },
-    { domain: "OpSec", cells: [fmtNumber(opsec?.threatTotal), fmtNumber(opsec?.iocs?.length), fmtNumber(opsec?.domains?.length), fmtNumber(opsec?.certChecks?.length)] },
-    { domain: "Content", cells: [fmtNumber(drafts.filter(d => d.status === "published")?.length), fmtNumber(drafts.filter(d => d.status === "draft")?.length), fmtNumber(drafts.filter(d => d.status === "rejected")?.length), fmtNumber(drafts.length)] },
-  ];
-  const cols = ["Leads", "Emails", "Events", "Drafts"];
-
-  return (
-    <MatrixPanel title="Cross-tabulated matrix — domain × metric" wide>
-      <div className="ops-table-wrap">
-        <table className="admin-aff-table ops-table">
-          <thead>
-            <tr><th>Domain</th>{cols.map(c => <th key={c}>{c}</th>)}</tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={i}>
-                <td className="ops-mono">{r.domain}</td>
-                {r.cells.map((c, j) => <td key={j} className="ops-mono">{c}</td>)}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <Panel>
+      <div className="ops-panel__head"><h2>Revenue</h2></div>
+      <div className="ops-metric-grid">
+        <Metric label="30-day Stripe" value={configured ? <CountUp value={paidTotal} format={fmtMoney} /> : "Not configured"} />
+        <Metric label="MRR" value={configured ? <CountUp value={mrr} format={fmtMoney} /> : "-"} />
+        <Metric label="Paid invoices" value={configured ? <CountUp value={paidCount} /> : "-"} />
       </div>
-      <p className="ops-panel__copy">Each cell = intersection of a domain and a metric.</p>
-    </MatrixPanel>
+      {revenueZero ? (
+        <p className="ops-notice">No revenue yet — launch a campaign to start converting the 2,553-email pipeline.</p>
+      ) : null}
+    </Panel>
   );
 }
 
-function TimelineView({ data }) {
-  const events = [];
-  const drafts = data.drafts?.drafts || [];
-  const opsec = data["opsec-data"];
-
-  for (const d of drafts) {
-    if (d.updated_at) events.push({ ts: d.updated_at, kind: "draft", label: `Draft ${d.status}: ${d.title || d.slug}`, detail: d.status });
-  }
-  for (const ioc of opsec?.iocs || []) {
-    if (ioc.last_seen_at) events.push({ ts: ioc.last_seen_at, kind: "ioc", label: `IOC seen: ${ioc.value}`, detail: `${ioc.ioc_type} · ${ioc.severity}` });
-  }
-  for (const c of opsec?.certChecks || []) {
-    if (c.ts) events.push({ ts: c.ts, kind: "cert", label: `Cert check: ${c.domain}`, detail: c.ok ? "ok" : "alert" });
-  }
-  events.sort((a, b) => new Date(b.ts) - new Date(a.ts));
+// ─────────────────────────────────────────────────────────────
+// Recent jobs — real operational data. Failed jobs sort to the top
+// and are highlighted in red so the operator sees what broke first.
+// ─────────────────────────────────────────────────────────────
+function RecentJobsPanel({ data, errors }) {
+  const jobs = [...(data["admin-status"]?.recent_jobs || [])].sort((a, b) => {
+    const af = a.status === "failed" ? 0 : 1;
+    const bf = b.status === "failed" ? 0 : 1;
+    if (af !== bf) return af - bf;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
 
   return (
-    <MatrixPanel title="Chronological event stream" wide>
-      {!events.length && <p className="ops-panel__copy">No recent events.</p>}
-      <div className="ops-timeline">
-        {events.slice(0, 20).map((e, i) => (
-          <div className="ops-timeline__item" key={i}>
-            <span className={`ops-timeline__dot is-${e.kind}`} />
-            <div className="ops-timeline__body">
-              <div className="ops-timeline__label">{e.label}</div>
-              <div className="ops-timeline__detail">{e.detail}</div>
-            </div>
-            <span className="ops-timeline__ts">{fmtTime(e.ts)}</span>
-          </div>
-        ))}
+    <Panel wide>
+      <div className="ops-panel__head">
+        <h2>Recent jobs</h2>
+        <SignalPill state={errors["admin-status"] ? "bad" : "good"}>{errors["admin-status"] || "admin-status"}</SignalPill>
       </div>
-    </MatrixPanel>
+      <Table
+        columns={["ID", "Kind", "Status", "Progress", "Created", "Output"]}
+        rows={jobs}
+        empty="No leadgen jobs have run yet."
+        renderRow={(row) => (
+          <tr key={row.id || row.error} style={row.status === "failed" ? { background: "color-mix(in srgb, #dc2626 6%, transparent)" } : undefined}>
+            <td>{row.id || "-"}</td>
+            <td>{row.kind || "-"}</td>
+            <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "done" ? "good" : "neutral"}>{row.status || "-"}</SignalPill></td>
+            <td>{formatJobProgress(row)}</td>
+            <td>{fmtTime(row.created_at)}</td>
+            <td>{formatJobOutput(row)}</td>
+          </tr>
+        )}
+      />
+    </Panel>
   );
 }
 
-function OpSecView({ data }) {
-  const opsec = data["opsec-data"];
-  const admin = data["admin-status"];
-  const env = admin?.env || {};
-  const envRows = Object.entries(env).map(([k, v]) => ({ name: k, present: !!v }));
+// ─────────────────────────────────────────────────────────────
+// Quick actions — the operator's one-click command row.
+// ─────────────────────────────────────────────────────────────
+function QuickActionsPanel({ busy, runAction }) {
   return (
-    <div className="ops-grid">
-      <MatrixPanel title="Secret exposure surface" wide>
-        <Table
-          columns={["Secret", "Status"]}
-          rows={envRows}
-          empty="No env secrets probed."
-          renderRow={(row) => (
-            <tr key={row.name}>
-              <td className="ops-mono">{row.name}</td>
-              <td><SignalPill state={row.present ? "good" : "bad"}>{row.present ? "SET" : "MISSING"}</SignalPill></td>
-            </tr>
-          )}
-        />
-        <p className="ops-panel__copy">Presence only — values never leave the host.</p>
-      </MatrixPanel>
-      <MatrixPanel title="Threat posture">
-        <div className="ops-metric-grid">
-          <Metric label="Threat feeds" value={fmtNumber(opsec?.threatTotal)} />
-          <Metric label="Active IOCs" value={fmtNumber(opsec?.iocs?.filter(i => i.is_active)?.length)} />
-          <Metric label="Watched domains" value={fmtNumber(opsec?.domains?.length)} />
-          <Metric label="Cert checks" value={fmtNumber(opsec?.certChecks?.length)} />
-        </div>
-      </MatrixPanel>
-    </div>
+    <Panel>
+      <div className="ops-panel__head"><h2>Quick actions</h2></div>
+      <div className="ops-button-stack">
+        <button className="btn btn-secondary btn-sm" disabled={busy === "run-audit-migration"} onClick={() => runAction("run-audit-migration", {}, "Audit/ops migrations checked.")}>Run migrations</button>
+        <button className="btn btn-secondary btn-sm" disabled={busy === "osint-refresh"} onClick={() => runAction("osint-refresh", {}, "OSINT feeds refreshed.")}>Refresh OSINT</button>
+        <Link className="btn btn-primary btn-sm" to="/portal/leadgen">Open Leadgen</Link>
+      </div>
+    </Panel>
   );
 }
 
 export default function OpsTab({ data, errors, intel, busy, runAction }) {
-  const admin = data["admin-status"];
-  const counts = admin?.counts || {};
-  const revenue = data["revenue-summary"];
-  const ops = data["ops-status"];
   return (
-    <>
-      <section className="ops-graph">
-        <div className="ops-graph__main">
-          <h2>Operating graph</h2>
-          <p>Sources feed functions. Functions create outcomes. Anything weak shows up here before it turns into wasted traffic.</p>
-        </div>
-        <div className="ops-graph__rail" aria-label="Data flow">
-          {["Traffic", "HN drafts", "OSM leads", "Affiliate clicks", "Ad beacons", "Threat feeds"].map((item) => (
-            <span key={item}>{item}</span>
-          ))}
-        </div>
-      </section>
-
-      <div className="ops-status-grid" style={{ marginBottom: 32 }}>
-        {intel.checks.map((check) => (
-          <article className="ops-status-card" key={check.label}>
-            {check.state === "good" ? <CheckCircle2 size={18} /> : check.state === "bad" ? <XCircle size={18} /> : <AlertTriangle size={18} />}
-            <div>
-              <strong>{check.label}</strong>
-              <p>{check.detail}</p>
-            </div>
-            <SignalPill state={check.state}>{check.state}</SignalPill>
-          </article>
-        ))}
-      </div>
-
-      <div className="ops-grid">
-      <section className="admin-aff-card ops-panel ops-panel--wide">
-        <div className="ops-panel__head">
-          <h2>Next actions</h2>
-          <SignalPill state="neutral">computed</SignalPill>
-        </div>
-        <ol className="ops-action-list">
-          {intel.actions.map((action) => <li key={action}>{action}</li>)}
-        </ol>
-      </section>
-
-      <section className="admin-aff-card ops-panel">
-        <div className="ops-panel__head"><h2>Revenue</h2></div>
-        <div className="ops-metric-grid">
-          <Metric label="30-day Stripe" value={revenue?.configured ? fmtMoney(revenue.paid_total_cents) : "Not configured"} />
-          <Metric label="MRR" value={revenue?.configured ? fmtMoney(revenue.mrr_cents) : "-"} />
-          <Metric label="Paid invoices" value={revenue?.configured ? fmtNumber(revenue.paid_count) : "-"} />
-        </div>
-      </section>
-
-      <section className="admin-aff-card ops-panel">
-        <div className="ops-panel__head"><h2>Database pulse</h2></div>
-        <div className="ops-metric-grid">
-          <Metric label="Lead businesses" value={fmtNumber(counts.lead_businesses?.n)} hint={`${fmtNumber(counts.lead_businesses?.active)} active`} />
-          <Metric label="Email contacts" value={fmtNumber(counts.lead_emails?.n)} hint={`${fmtNumber(counts.lead_emails?.deliverable)} deliverable`} />
-          <Metric label="Security events" value={fmtNumber(counts.security_events?.n)} />
-          <Metric label="Engagement events" value={fmtNumber(counts.engagement_events?.n)} />
-        </div>
-      </section>
-
-      <section className="admin-aff-card ops-panel">
-        <div className="ops-panel__head"><h2>Functions</h2></div>
-        <div className="ops-button-stack">
-          <button className="btn btn-secondary btn-sm" disabled={busy === "run-audit-migration"} onClick={() => runAction("run-audit-migration", {}, "Audit/ops migrations checked.")}>Run migrations</button>
-          <button className="btn btn-secondary btn-sm" disabled={busy === "osint-refresh"} onClick={() => runAction("osint-refresh", {}, "OSINT feeds refreshed.")}>Refresh OSINT</button>
-          <Link className="btn btn-primary btn-sm" to="/portal/leadgen">Open Leadgen</Link>
-        </div>
-      </section>
-
-      <section className="admin-aff-card ops-panel ops-panel--wide">
-        <div className="ops-panel__head"><h2>Recent jobs</h2><SignalPill state={errors["admin-status"] ? "bad" : "good"}>{errors["admin-status"] || "admin-status"}</SignalPill></div>
-        <Table
-          columns={["ID", "Kind", "Status", "Progress", "Created", "Output"]}
-          rows={admin?.recent_jobs || []}
-          empty="No leadgen jobs have run yet."
-          renderRow={(row) => (
-            <tr key={row.id || row.error}>
-              <td>{row.id || "-"}</td>
-              <td>{row.kind || "-"}</td>
-              <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "done" ? "good" : "neutral"}>{row.status || "-"}</SignalPill></td>
-              <td>{formatJobProgress(row)}</td>
-              <td>{fmtTime(row.created_at)}</td>
-              <td>{formatJobOutput(row)}</td>
-            </tr>
-          )}
-        />
-      </section>
-
-      <section className="admin-aff-card ops-panel ops-panel--wide">
-        <div className="ops-panel__head"><h2>Ops status</h2></div>
-        <pre className="ops-pre">{JSON.stringify({ migrations: ops?.migrations, osint: ops?.osint, errors }, null, 2)}</pre>
-      </section>
+    <div className="ops-grid">
+      <AttentionPanel data={data} />
+      <RevenuePanel data={data} />
+      <QuickActionsPanel busy={busy} runAction={runAction} />
+      <RecentJobsPanel data={data} errors={errors} />
     </div>
-
-    <div className="ops-matrix-sections">
-      <OverviewView data={data} />
-      <MatrixView data={data} />
-      <TimelineView data={data} />
-      <OpSecView data={data} />
-    </div>
-    </>
   );
 }
-
