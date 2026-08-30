@@ -365,12 +365,19 @@ export async function handleGenerateBlogDraft(session) {
   ];
 
   const pick = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-  const timestamp = Date.now().toString().slice(-4);
-  const slug = `${pick.slug}-${timestamp}`;
+
+  // Slug collision guard: if a post with this base slug already exists, skip
+  // instead of appending a timestamp suffix (which silently creates a
+  // duplicate-slug post). The operator can pick a different topic or reject
+  // the existing draft.
+  const exists = await sql`SELECT 1 FROM draft_posts WHERE slug = ${pick.slug} LIMIT 1`;
+  if (exists.length) {
+    return json(409, { ok: false, error: "already_exists", slug: pick.slug, message: "This topic is already covered by a post with this slug." });
+  }
 
   const row = await sql`
     INSERT INTO draft_posts (title, slug, category, excerpt, body, meta_desc, model, status)
-    VALUES (${pick.title}, ${slug}, ${pick.category}, ${pick.excerpt}, ${pick.body}, ${pick.metaDescription}, ${'gemma2:9b'}, ${'draft'})
+    VALUES (${pick.title}, ${pick.slug}, ${pick.category}, ${pick.excerpt}, ${pick.body}, ${pick.metaDescription}, ${'gemma2:9b'}, ${'draft'})
     RETURNING id, title, slug, status
   `;
 
@@ -625,4 +632,131 @@ export async function handleGithubHealth(session) {
 
   result.ok = Boolean(result.tokenSet && result.user?.login && result.fileAccess?.ok === true);
   return json(200, result);
+}
+
+// ---------- blog engine health & recovery (admin only) ----------
+// Observability for the daily auto-publish cron. Reads blog_cron_runs (the
+// table created by migration 023) so the dashboard can see a week of
+// qwen_generation_failed / source-extraction failures instead of being blind
+// to them. Also reports draft/published counts and the last successful
+// publish so the operator can judge whether the engine is healthy.
+export async function handleBlogEngineHealth(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const runs = await sql`
+    SELECT id, run_date, status, error_code, error_detail, source_url, retried_at, created_at
+    FROM blog_cron_runs
+    ORDER BY run_date DESC, id DESC
+  `.catch(() => []);
+
+  const lastRuns = runs.slice(0, 14);
+
+  // Consecutive failed/partial runs ending at the most recent run_date. Walk
+  // back from the newest run and stop at the first 'ok'.
+  let consecutiveFailures = 0;
+  for (const r of runs) {
+    if (r.status === "ok") break;
+    consecutiveFailures += 1;
+  }
+
+  const lastOkRow = runs.find((r) => r.status === "ok") || null;
+  const lastOk = lastOkRow ? { run_date: lastOkRow.run_date, created_at: lastOkRow.created_at } : null;
+
+  const [draftsPending, publishedCount, lastPublishRow] = await Promise.all([
+    sql`SELECT count(*)::int AS n FROM draft_posts WHERE status = 'draft'`.catch(() => [{ n: 0 }]),
+    sql`SELECT count(*)::int AS n FROM draft_posts WHERE status = 'published'`.catch(() => [{ n: 0 }]),
+    sql`
+      SELECT title, slug, published_at, ts
+      FROM draft_posts
+      WHERE status = 'published'
+      ORDER BY COALESCE(published_at, ts) DESC
+      LIMIT 1
+    `.catch(() => []),
+  ]);
+
+  const lastPublish = lastPublishRow[0]
+    ? {
+        title: lastPublishRow[0].title,
+        slug: lastPublishRow[0].slug,
+        published_at: lastPublishRow[0].published_at || lastPublishRow[0].ts,
+      }
+    : null;
+
+  return json(200, {
+    ok: true,
+    lastRuns,
+    consecutiveFailures,
+    lastOk,
+    draftsPending: draftsPending[0]?.n || 0,
+    publishedCount: publishedCount[0]?.n || 0,
+    lastPublish,
+  });
+}
+
+// POST — lightweight "acknowledge/retry" marker for failed cron runs. The
+// actual regeneration is out of scope; this clears the failure state and
+// signals operator intent. Idempotent: re-running just re-stamps retried_at.
+//   { source_url? }  → mark that run retried
+//   {}               → mark ALL of today's failed/partial runs retried
+export async function handleBlogRetry(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  let body;
+  try { body = await request.json(); } catch { body = {}; }
+  const sourceUrl = String(body?.source_url || "").trim();
+
+  if (sourceUrl) {
+    await sql`
+      UPDATE blog_cron_runs
+      SET retried_at = now()
+      WHERE source_url = ${sourceUrl}
+    `;
+    return json(200, { ok: true, retried: sourceUrl });
+  }
+
+  await sql`
+    UPDATE blog_cron_runs
+    SET retried_at = now()
+    WHERE run_date = CURRENT_DATE AND status IN ('failed', 'partial')
+  `;
+  return json(200, { ok: true, retried: "all" });
+}
+
+// ---------- content hygiene (admin only) ----------
+// Finds duplicate-slug posts in draft_posts. Groups by the base slug with any
+// trailing `-\d{4}` suffix stripped, and returns groups with more than one
+// row so the operator can spot collisions (e.g. a base slug plus a
+// timestamp-suffixed duplicate).
+export async function handleContentHygiene(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const rows = await sql`
+    SELECT id, slug, status, ts
+    FROM draft_posts
+    ORDER BY ts DESC
+  `.catch(() => []);
+
+  const groups = new Map();
+  for (const r of rows) {
+    const baseSlug = String(r.slug || "").replace(/-\d{4}$/, "");
+    if (!baseSlug) continue;
+    if (!groups.has(baseSlug)) groups.set(baseSlug, []);
+    groups.get(baseSlug).push({
+      id: r.id,
+      slug: r.slug,
+      status: r.status,
+      created_at: r.ts,
+    });
+  }
+
+  const duplicateGroups = [];
+  for (const [baseSlug, posts] of groups.entries()) {
+    if (posts.length > 1) duplicateGroups.push({ baseSlug, posts });
+  }
+  duplicateGroups.sort((a, b) => b.posts.length - a.posts.length);
+
+  return json(200, { ok: true, duplicateGroups });
 }

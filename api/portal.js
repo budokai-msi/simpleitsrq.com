@@ -73,6 +73,9 @@ import {
   handleNewsletterCount,
   handleNewsletterSend,
   handleGithubHealth,
+  handleBlogEngineHealth,
+  handleBlogRetry,
+  handleContentHygiene,
 } from "./_lib/portal/content.js";
 import {
   handleRevenueSignals,
@@ -130,6 +133,7 @@ import {
   handleAffiliateSync,
   handleAffiliateStats,
   handleAffiliateIngest,
+  handleAffiliateSetup,
 } from "./_lib/portal/affiliate.js";
 import {
   handleHotLeads,
@@ -208,6 +212,13 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "affiliate-networks",
   "affiliate-sync",
   "affiliate-ingest",
+  // blog engine health & recovery
+  "blog-engine-health",
+  "blog-retry",
+  // affiliate setup / link coverage
+  "affiliate-setup",
+  // content hygiene (duplicate-slug detection)
+  "content-hygiene",
 ]);
 
 function verifyAdminToken(request) {
@@ -376,6 +387,9 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "send-invoice"    && method === "POST")  return handleSendInvoice(session, request);
   if (action === "newsletter-count" && method === "GET")  return handleNewsletterCount(session);
   if (action === "newsletter-send"  && method === "POST") return handleNewsletterSend(session, request);
+  if (action === "blog-engine-health" && method === "GET")  return handleBlogEngineHealth(session);
+  if (action === "blog-retry"         && method === "POST") return handleBlogRetry(session, request);
+  if (action === "content-hygiene"    && method === "GET")  return handleContentHygiene(session);
 
   // Lead generation (admin)
   if (action === "leadgen-status"           && method === "GET")  return handleLeadgenStatus(session);
@@ -428,6 +442,7 @@ async function dispatchAuthed(request, method, url, action, session) {
     if (action === "affiliate-networks"       && method === "GET")  return handleAffiliateNetworks(session);
     if (action === "affiliate-sync"           && method === "POST") return handleAffiliateSync(session, request);
     if (action === "affiliate-ingest"         && method === "POST") return handleAffiliateIngest(session);
+    if (action === "affiliate-setup"          && method === "GET")  return handleAffiliateSetup(session);
 
     return json(404, { ok: false, error: "unknown_action" });
 }

@@ -1,10 +1,25 @@
+import { useEffect, useState } from "react";
 import {
   FileText,
 } from "lucide-react";
-import { EmptyState, SignalPill, Table, fmtTime } from "./shared";
+import { EmptyState, SignalPill, Table, fmtTime, getJson } from "./shared";
 
 export default function DraftsTab({ drafts, errors, busy, runAction }) {
   const pending = drafts.filter((d) => d.status === "draft");
+
+  // Content hygiene: duplicate-slug detection. Fetched on mount (GET action).
+  const [hygiene, setHygiene] = useState(null);
+  const [hygieneError, setHygieneError] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    getJson("content-hygiene")
+      .then((res) => { if (alive) setHygiene(res); })
+      .catch((e) => { if (alive) setHygieneError(String(e.message || e)); });
+    return () => { alive = false; };
+  }, []);
+
+  const duplicateGroups = hygiene?.duplicateGroups || [];
+
   return (
     <div className="ops-grid">
       <section className="admin-aff-card ops-panel ops-panel--wide">
@@ -48,7 +63,42 @@ export default function DraftsTab({ drafts, errors, busy, runAction }) {
           )}
         />
       </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head">
+          <h2>Content hygiene</h2>
+          <SignalPill state={duplicateGroups.length ? "bad" : "good"}>{duplicateGroups.length} duplicate groups</SignalPill>
+        </div>
+        <p className="ops-panel__copy">
+          Posts whose slugs collide after stripping a trailing <span className="ops-mono">-NNNN</span> suffix. Duplicate slugs
+          hurt SEO and confuse the publish pipeline — reject or rename the extras.
+        </p>
+        {hygieneError ? <EmptyState>{hygieneError}</EmptyState> : null}
+        {!hygieneError && duplicateGroups.length === 0 ? <EmptyState>No duplicate-slug groups found.</EmptyState> : null}
+        {duplicateGroups.length ? (
+          <div className="ops-table-wrap">
+            <table className="admin-aff-table ops-table">
+              <thead>
+                <tr><th>Base slug</th><th>Colliding slugs</th></tr>
+              </thead>
+              <tbody>
+                {duplicateGroups.map((g) => (
+                  <tr key={g.baseSlug}>
+                    <td className="ops-mono">{g.baseSlug}</td>
+                    <td>
+                      {g.posts.map((p) => (
+                        <div key={p.id} className="admin-aff-slug">
+                          {p.slug} <SignalPill state={p.status === "published" ? "good" : p.status === "rejected" ? "bad" : "warn"}>{p.status}</SignalPill>
+                        </div>
+                      ))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }
-

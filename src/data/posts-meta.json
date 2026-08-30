@@ -1,5 +1,21 @@
 [
   {
+    "slug": "server-maintenance-sarasota-guide",
+    "title": "Server Maintenance in Sarasota: When to Fix Your Hardware and When to Say Goodbye",
+    "date": "2026-08-30",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "local-it",
+      "sarasota",
+      "bradenton",
+      "managed-it"
+    ],
+    "excerpt": "Is your server a ticking time bomb? Learn when to invest in maintenance and when it is time to move your Sarasota business to the cloud or new hardware.",
+    "metaDescription": "Expert advice on server maintenance in Sarasota. Learn when to repair your office server and when to replace it to avoid downtime in the Florida heat.",
+    "heroAlt": "A local business technology note about Server Maintenance in Sarasota: When to Fix Your Hardware and When to Say Goodbye."
+  },
+  {
     "slug": "cybersecurity-for-small-business-sarasota",
     "title": "Cybersecurity for Small Business in Sarasota: Where to Start",
     "date": "2026-08-29",

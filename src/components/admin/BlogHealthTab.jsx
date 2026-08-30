@@ -1,0 +1,96 @@
+import { Metric, SignalPill, Table, fmtNumber, fmtTime } from "./shared";
+
+// Blog engine health & recovery. Reads data["blog-engine-health"] (loaded via
+// CORE_ACTIONS) and lets the operator acknowledge/retry failed auto-publish
+// cron runs. The actual regeneration is out of scope — this surfaces the
+// failure state and clears it.
+export default function BlogHealthTab({ data, busy, runAction }) {
+  const health = data["blog-engine-health"] || {};
+  const lastRuns = health.lastRuns || [];
+  const consecutiveFailures = Number(health.consecutiveFailures || 0);
+  const lastOk = health.lastOk;
+  const lastError = lastRuns.find((r) => r.status !== "ok")?.error_code || null;
+
+  let banner = null;
+  if (consecutiveFailures >= 2) {
+    banner = (
+      <div
+        style={{
+          background: "rgba(239, 68, 68, 0.12)",
+          border: "1px solid rgba(239, 68, 68, 0.4)",
+          color: "#ef4444",
+          borderRadius: 10,
+          padding: "12px 16px",
+          fontSize: 14,
+          fontWeight: 600,
+          marginBottom: 16,
+        }}
+      >
+        Auto-publish has failed {consecutiveFailures} days in a row. Last error: {lastError || "unknown"}
+      </div>
+    );
+  } else if (lastOk) {
+    banner = (
+      <div
+        style={{
+          background: "rgba(16, 185, 129, 0.12)",
+          border: "1px solid rgba(16, 185, 129, 0.4)",
+          color: "#10b981",
+          borderRadius: 10,
+          padding: "12px 16px",
+          fontSize: 14,
+          fontWeight: 600,
+          marginBottom: 16,
+        }}
+      >
+        Last publish OK ({fmtTime(lastOk.created_at)})
+      </div>
+    );
+  }
+
+  return (
+    <div className="ops-grid">
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2>Blog engine health</h2>
+          <button
+            className="btn btn-primary btn-sm"
+            type="button"
+            disabled={busy === "blog-retry"}
+            onClick={() => runAction("blog-retry", {}, "Retry queued.")}
+          >
+            Retry failed runs
+          </button>
+        </div>
+        {banner}
+        <div className="ops-metric-grid">
+          <Metric label="Drafts pending" value={fmtNumber(health.draftsPending)} />
+          <Metric label="Published" value={fmtNumber(health.publishedCount)} />
+          <Metric
+            label="Consecutive failures"
+            value={fmtNumber(consecutiveFailures)}
+            state={consecutiveFailures >= 2 ? "bad" : "good"}
+          />
+        </div>
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Recent cron runs</h2></div>
+        <Table
+          columns={["Date", "Status", "Error code", "Source URL", "Retried"]}
+          rows={lastRuns}
+          empty="No cron runs recorded yet."
+          renderRow={(r) => (
+            <tr key={r.id}>
+              <td>{r.run_date}</td>
+              <td><SignalPill state={r.status === "ok" ? "good" : "bad"}>{r.status}</SignalPill></td>
+              <td>{r.error_code || "-"}</td>
+              <td className="admin-aff-slug">{r.source_url || "-"}</td>
+              <td>{r.retried_at ? fmtTime(r.retried_at) : "-"}</td>
+            </tr>
+          )}
+        />
+      </section>
+    </div>
+  );
+}

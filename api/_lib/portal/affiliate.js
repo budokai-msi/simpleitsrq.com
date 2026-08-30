@@ -7,9 +7,77 @@
 // to today. Every query below uses those real columns — there is no
 // product_id / network_code / clicked_at on the live table.
 
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
 import { sql } from "../db.js";
 import { json } from "../http.js";
 import { ingestAffiliateProducts } from "../affiliate-ingest.js";
+import { requireAdmin } from "./shared.js";
+
+// The 9 affiliate programs the site can monetize, each backed by a VITE_*
+// env var that must be set in Vercel for the link builder to emit a real
+// tracking tag/ref. `configured` reflects whether the env var is present.
+const AFFILIATE_PROGRAMS = [
+  { code: "amazon",     name: "Amazon Associates", envVar: "VITE_AFF_AMAZON_TAG" },
+  { code: "gusto",      name: "Gusto",             envVar: "VITE_AFF_GUSTO_REF" },
+  { code: "1password",  name: "1Password",         envVar: "VITE_AFF_1PASSWORD_REF" },
+  { code: "honeybook",  name: "HoneyBook",         envVar: "VITE_AFF_HONEYBOOK_REF" },
+  { code: "acronis",    name: "Acronis",           envVar: "VITE_AFF_ACRONIS_REF" },
+  { code: "ubiquiti",   name: "Ubiquiti",          envVar: "VITE_AFF_UBNT_REF" },
+  { code: "reolink",    name: "Reolink",           envVar: "VITE_AFF_REOLINK_REF" },
+  { code: "bh",         name: "B&H Photo",         envVar: "VITE_AFF_BH_REF" },
+  { code: "backblaze",  name: "Backblaze",         envVar: "VITE_AFF_BACKBLAZE_REF" },
+];
+
+// Token prefixes (as they appear in content/posts/*.mdx) that map to each
+// program. A post counts as "linked" for a program if it contains any of
+// these tokens. `[[yubikey]]` is an Amazon product, so it counts toward
+// amazon coverage.
+const PROGRAM_TOKENS = {
+  amazon:    ["[[amazon:", "[[amazon_search:", "[[yubikey"],
+  gusto:     ["[[gusto"],
+  "1password": ["[[1password:"],
+  honeybook: ["[[honeybook"],
+  acronis:   ["[[acronis"],
+  ubiquiti:  ["[[ubnt-"],
+  reolink:   ["[[reolink-"],
+  bh:        ["[[bh:"],
+  backblaze: ["[[backblaze"],
+};
+
+/**
+ * GET /api/portal?action=affiliate-setup
+ * Returns the 9 affiliate programs with their configured status (env var
+ * present or not) plus per-program link coverage across content/posts/*.mdx.
+ */
+export async function handleAffiliateSetup(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const programs = AFFILIATE_PROGRAMS.map((p) => ({
+    code: p.code,
+    name: p.name,
+    envVar: p.envVar,
+    configured: !!process.env[p.envVar],
+  }));
+
+  const linkCoverage = AFFILIATE_PROGRAMS.map((p) => ({ code: p.code, postsLinked: 0 }));
+  const postsDir = path.join(process.cwd(), "content", "posts");
+  try {
+    const files = (await readdir(postsDir)).filter((f) => f.endsWith(".mdx"));
+    for (const file of files) {
+      const content = await readFile(path.join(postsDir, file), "utf8");
+      for (const prog of linkCoverage) {
+        const tokens = PROGRAM_TOKENS[prog.code] || [];
+        if (tokens.some((t) => content.includes(t))) prog.postsLinked += 1;
+      }
+    }
+  } catch {
+    // Directory doesn't exist (or is unreadable) — return empty coverage.
+  }
+
+  return json(200, { ok: true, programs, linkCoverage });
+}
 
 /**
  * GET /api/portal?action=affiliate-dashboard-summary

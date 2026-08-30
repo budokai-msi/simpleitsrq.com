@@ -11,6 +11,8 @@ import {
   Inbox,
   Lock,
   RefreshCcw,
+  Send,
+  Settings,
   Shield,
   Target,
   Ticket,
@@ -47,6 +49,9 @@ const LazyAdsenseTab = lazy(() => import("../components/admin/AdsenseTab"));
 const LazyOpsecTab = lazy(() => import("../components/admin/OpsecTab"));
 const LazyOpsMatrixTab = lazy(() => import("../components/admin/OpsMatrixTab"));
 const LazyAnalyticsTab = lazy(() => import("../components/admin/AnalyticsTab"));
+const LazyBlogHealthTab = lazy(() => import("../components/admin/BlogHealthTab"));
+const LazyCampaignBuilderTab = lazy(() => import("../components/admin/CampaignBuilderTab"));
+const LazyAffiliateSetupTab = lazy(() => import("../components/admin/AffiliateSetupTab"));
 
 const TABS = [
   ["ops", "Ops", Activity],
@@ -61,6 +66,9 @@ const TABS = [
   ["analytics", "Analytics", BarChart3],
   ["opsec", "OpSec", Shield],
   ["matrix", "Matrix", Grid3X3],
+  ["blog-health", "Blog Health", Activity],
+  ["campaigns", "Campaigns", Send],
+  ["affiliate-setup", "Affiliate Setup", Settings],
 ];
 
 const CORE_ACTIONS = [
@@ -82,6 +90,9 @@ const CORE_ACTIONS = [
   "opsec-data",
   "opsec-hunt-brief",
   "analytics",
+  "blog-engine-health",
+  "leadgen-campaigns",
+  "affiliate-setup",
 ];
 
 
@@ -276,6 +287,9 @@ export default function AdminOps() {
             {tab === "analytics" && <LazyAnalyticsTab data={data} errors={errors} busy={busy} runAction={runAction} />}
             {tab === "opsec" && <LazyOpsecTab data={{ ...(data["opsec-data"] || {}), huntBrief: data["opsec-hunt-brief"] }} busy={busy} runAction={runAction} />}
             {tab === "matrix" && <LazyOpsMatrixTab data={data} busy={busy} runAction={runAction} />}
+            {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
+            {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
+            {tab === "affiliate-setup" && <LazyAffiliateSetupTab data={data} />}
           </Suspense>
         </section>
       </div>

@@ -52,7 +52,7 @@ export async function handleAdminStatus(session) {
     users, tickets, sec, eng, threats,
   ] = await Promise.all([
     safe("lead_businesses",      sql`SELECT count(*)::int AS n, count(*) FILTER (WHERE status='active')::int AS active FROM lead_businesses`),
-    safe("lead_emails",          sql`SELECT count(*)::int AS n, count(*) FILTER (WHERE status='deliverable')::int AS deliverable FROM lead_emails`),
+    safe("lead_emails",          sql`SELECT count(*)::int AS n, count(*) FILTER (WHERE opted_out_at IS NULL AND bounced_at IS NULL)::int AS deliverable FROM lead_emails`),
     safe("lead_campaigns",       sql`SELECT count(*)::int AS n FROM lead_campaigns`),
     safe("lead_campaign_sends",  sql`SELECT count(*)::int AS n FROM lead_campaign_sends`),
     safe("lead_crawl_jobs",      sql`SELECT count(*)::int AS n,
@@ -78,9 +78,9 @@ export async function handleAdminStatus(session) {
   `.catch((e) => [{ error: String(e.message || e) }]);
 
   const recentSecurity = await sql`
-    SELECT id, event_type, detail, ip, ts
+    SELECT id, kind, detail, ip, ts
     FROM security_events
-    WHERE event_type LIKE '%error%' OR event_type LIKE '%fail%' OR event_type LIKE '%blocked%'
+    WHERE kind LIKE '%error%' OR kind LIKE '%fail%' OR kind LIKE '%blocked%'
     ORDER BY id DESC
     LIMIT 25
   `.catch((e) => [{ error: String(e.message || e) }]);
