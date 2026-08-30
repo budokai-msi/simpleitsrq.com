@@ -1567,6 +1567,136 @@ export async function handleLeadgenDeliverability(session) {
   });
 }
 
+// GET — fuzzy dedup scan. READ-ONLY.
+//
+// Finds candidate duplicate pairs BEFORE the first campaign launches so we
+// never email the same company twice. To avoid wrongly merging chain-store
+// branches (multiple 7-Eleven / Dollar Tree / Subway legitimately exist in
+// the same zip), a pair is only a candidate when BOTH hold:
+//   1. name similarity > 0.85 (pg_trgm), AND
+//   2. a strong secondary match on at least one of normalized phone,
+//      normalized website, or normalized address (same zip).
+// This handler only SELECTs — it never writes. The operator reviews the
+// returned pairs and confirms which to merge via handleLeadgenDedupApply.
+export async function handleLeadgenDedupScan(session) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+
+  const rows = await sql`
+    SELECT a.id AS a_id, a.name AS a_name,
+           b.id AS b_id, b.name AS b_name,
+           a.zip AS zip,
+           similarity(lower(a.name), lower(b.name))::numeric(5,4) AS similarity,
+           CASE
+             WHEN a.phone IS NOT NULL AND b.phone IS NOT NULL
+                  AND right(regexp_replace(a.phone, '\\D', '', 'g'), 10) =
+                      right(regexp_replace(b.phone, '\\D', '', 'g'), 10)
+                  AND right(regexp_replace(a.phone, '\\D', '', 'g'), 10) <> ''
+               THEN 'phone'
+             WHEN a.website IS NOT NULL AND b.website IS NOT NULL
+                  AND lower(regexp_replace(regexp_replace(a.website, '^https?://(www\\.)?', '', 'i'), '/+$', '')) =
+                      lower(regexp_replace(regexp_replace(b.website, '^https?://(www\\.)?', '', 'i'), '/+$', ''))
+                  AND lower(regexp_replace(regexp_replace(a.website, '^https?://(www\\.)?', '', 'i'), '/+$', '')) <> ''
+               THEN 'website'
+             WHEN a.address IS NOT NULL AND b.address IS NOT NULL
+                  AND lower(regexp_replace(a.address, '\\s+', ' ', 'g')) =
+                      lower(regexp_replace(b.address, '\\s+', ' ', 'g'))
+                  AND lower(regexp_replace(a.address, '\\s+', ' ', 'g')) <> ''
+               THEN 'address'
+             ELSE NULL
+           END AS matched_on
+    FROM lead_businesses a
+    JOIN lead_businesses b ON b.id > a.id
+    WHERE a.status = 'active'
+      AND b.status = 'active'
+      AND a.zip = b.zip
+      AND a.zip IS NOT NULL
+      AND similarity(lower(a.name), lower(b.name)) > 0.85
+      AND (
+        (a.phone IS NOT NULL AND b.phone IS NOT NULL
+         AND right(regexp_replace(a.phone, '\\D', '', 'g'), 10) =
+             right(regexp_replace(b.phone, '\\D', '', 'g'), 10)
+         AND right(regexp_replace(a.phone, '\\D', '', 'g'), 10) <> '')
+        OR
+        (a.website IS NOT NULL AND b.website IS NOT NULL
+         AND lower(regexp_replace(regexp_replace(a.website, '^https?://(www\\.)?', '', 'i'), '/+$', '')) =
+             lower(regexp_replace(regexp_replace(b.website, '^https?://(www\\.)?', '', 'i'), '/+$', ''))
+         AND lower(regexp_replace(regexp_replace(a.website, '^https?://(www\\.)?', '', 'i'), '/+$', '')) <> '')
+        OR
+        (a.address IS NOT NULL AND b.address IS NOT NULL
+         AND lower(regexp_replace(a.address, '\\s+', ' ', 'g')) =
+             lower(regexp_replace(b.address, '\\s+', ' ', 'g'))
+         AND lower(regexp_replace(a.address, '\\s+', ' ', 'g')) <> '')
+      )
+    ORDER BY similarity DESC, a.id, b.id
+  `;
+
+  const pairs = rows.map((r) => ({
+    a_id: r.a_id,
+    a_name: r.a_name,
+    b_id: r.b_id,
+    b_name: r.b_name,
+    zip: r.zip,
+    similarity: Number(r.similarity),
+    matched_on: r.matched_on,
+  }));
+
+  return json(200, { ok: true, pairs, count: pairs.length });
+}
+
+// POST { pairs: [{ canonical_id, duplicate_id, matched_on }] }
+//
+// The ONLY dedup action that writes. The operator reviews the scan output
+// and explicitly confirms which pairs to merge — never automatic. For each
+// confirmed pair it records the merge in lead_duplicate_groups and marks the
+// duplicate business status='rejected' (so the email crawler won't target
+// it) with a note pointing at the canonical row. It never deletes a row.
+export async function handleLeadgenDedupApply(session, request) {
+  const gate = await requireAdmin(session);
+  if (gate) return gate;
+  let body;
+  try { body = await request.json(); } catch { return json(400, { ok: false, error: "invalid_json" }); }
+  const pairs = Array.isArray(body?.pairs) ? body.pairs : [];
+  if (!pairs.length) return json(400, { ok: false, error: "missing_pairs" });
+
+  let applied = 0;
+  for (const p of pairs) {
+    const canonicalId = Number(p?.canonical_id);
+    const duplicateId = Number(p?.duplicate_id);
+    const matchedOn = String(p?.matched_on || "");
+    if (!Number.isInteger(canonicalId) || !Number.isInteger(duplicateId)) continue;
+    if (canonicalId === duplicateId) continue;
+    if (!["phone", "website", "address"].includes(matchedOn)) continue;
+
+    // lead_duplicate_groups.similarity is NOT NULL, so recompute it for the
+    // confirmed pair rather than trusting a client-supplied value.
+    const simRows = await sql`
+      SELECT similarity(lower(a.name), lower(b.name))::numeric(5,4) AS sim
+      FROM lead_businesses a, lead_businesses b
+      WHERE a.id = ${canonicalId} AND b.id = ${duplicateId}
+    `;
+    const sim = simRows[0]?.sim ?? 0;
+
+    await sql`
+      INSERT INTO lead_duplicate_groups (canonical_id, duplicate_id, similarity, matched_on)
+      VALUES (${canonicalId}, ${duplicateId}, ${sim}, ${matchedOn})
+      ON CONFLICT (canonical_id, duplicate_id) DO NOTHING
+    `;
+
+    // Mark the duplicate rejected (never delete) so the email crawler skips it.
+    await sql`
+      UPDATE lead_businesses
+      SET status = 'rejected',
+          notes = COALESCE(notes, '') || ' [dedup: merged into #' || ${canonicalId} || ']',
+          updated_at = now()
+      WHERE id = ${duplicateId}
+    `;
+    applied += 1;
+  }
+
+  return json(200, { ok: true, applied });
+}
+
 // Drains the lead_crawl_jobs queue inline so admin clicks (Discover,
 // Crawl emails) feel synchronous instead of waiting on the daily cron.
 // Bounded by the worker's own LEADGEN_TIME_BUDGET_MS / max-jobs guards;

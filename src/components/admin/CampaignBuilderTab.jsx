@@ -29,6 +29,14 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState(null);
 
+  // Duplicate detection (fuzzy dedup pass). Scan is read-only; the operator
+  // reviews the candidate pairs and explicitly confirms which to merge.
+  const [dedupPairs, setDedupPairs] = useState(null);
+  const [dedupBusy, setDedupBusy] = useState(false);
+  const [dedupError, setDedupError] = useState(null);
+  const [dedupResult, setDedupResult] = useState(null);
+  const [dedupSelected, setDedupSelected] = useState({});
+
   useEffect(() => {
     if (!data["leadgen-campaigns"]) {
       getJson("leadgen-campaigns")
@@ -114,6 +122,52 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
       await postJson("leadgen-campaign-start", { id });
     } catch (e) {
       setLocalError(String(e.message || e));
+    }
+  };
+
+  const scanDuplicates = async () => {
+    setDedupBusy(true);
+    setDedupError(null);
+    setDedupResult(null);
+    try {
+      const res = await getJson("leadgen-dedup-scan");
+      const pairs = res.pairs || [];
+      setDedupPairs(pairs);
+      // Default every pair to selected for the merge.
+      const sel = {};
+      pairs.forEach((p) => { sel[`${p.a_id}:${p.b_id}`] = true; });
+      setDedupSelected(sel);
+    } catch (e) {
+      setDedupError(String(e.message || e));
+    } finally {
+      setDedupBusy(false);
+    }
+  };
+
+  const toggleDedupPair = (key) => {
+    setDedupSelected((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const mergeDuplicates = async () => {
+    setDedupBusy(true);
+    setDedupError(null);
+    setDedupResult(null);
+    try {
+      const pairs = (dedupPairs || [])
+        .filter((p) => dedupSelected[`${p.a_id}:${p.b_id}`])
+        .map((p) => ({ canonical_id: p.a_id, duplicate_id: p.b_id, matched_on: p.matched_on }));
+      if (!pairs.length) {
+        setDedupError("No pairs selected to merge.");
+        return;
+      }
+      const res = await postJson("leadgen-dedup-apply", { pairs });
+      setDedupResult(res);
+      // Refresh the scan so merged pairs drop out of the candidate list.
+      await scanDuplicates();
+    } catch (e) {
+      setDedupError(String(e.message || e));
+    } finally {
+      setDedupBusy(false);
     }
   };
 
@@ -331,6 +385,69 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
                 </tr>
               )}
             />
+          </div>
+        ) : null}
+      </section>
+
+      <section className="admin-aff-card ops-panel ops-panel--wide">
+        <div className="ops-panel__head"><h2>Duplicate detection</h2></div>
+        <p className="ops-panel__copy">
+          Finds likely duplicate businesses before the first campaign launches so we never email the
+          same company twice. A pair is only flagged when the names are similar AND they share a
+          matching phone, website, or address — so chain-store branches in the same zip are not merged.
+          Review the candidates and confirm which to merge; duplicates are marked rejected, never deleted.
+        </p>
+        <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+          <button className="btn btn-primary btn-sm" type="button" disabled={dedupBusy} onClick={scanDuplicates}>
+            {dedupBusy ? "Scanning…" : "Scan for duplicates"}
+          </button>
+          <button
+            className="btn btn-secondary btn-sm"
+            type="button"
+            disabled={dedupBusy || !dedupPairs?.length}
+            onClick={mergeDuplicates}
+          >
+            Merge selected
+          </button>
+        </div>
+        {dedupError ? <div className="ops-notice" style={{ marginTop: 12 }}>{dedupError}</div> : null}
+        {dedupResult ? (
+          <div className="ops-notice" style={{ marginTop: 12 }}>
+            Merged {fmtNumber(dedupResult.applied)} duplicate pair(s).
+          </div>
+        ) : null}
+        {dedupPairs ? (
+          <div style={{ marginTop: 12 }}>
+            <p style={{ fontSize: 14, marginBottom: 12 }}>
+              <strong>{fmtNumber(dedupPairs.length)}</strong> candidate duplicate pair(s) found.
+            </p>
+            {dedupPairs.length ? (
+              <Table
+                columns={["", "Business A", "Business B", "Zip", "Similarity", "Matched on"]}
+                rows={dedupPairs}
+                empty="No duplicate candidates found."
+                renderRow={(p) => {
+                  const key = `${p.a_id}:${p.b_id}`;
+                  return (
+                    <tr key={key}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={!!dedupSelected[key]}
+                          onChange={() => toggleDedupPair(key)}
+                          aria-label={`Include ${p.a_name} / ${p.b_name} in merge`}
+                        />
+                      </td>
+                      <td><strong>{p.a_name}</strong></td>
+                      <td><strong>{p.b_name}</strong></td>
+                      <td>{p.zip}</td>
+                      <td>{Number(p.similarity).toFixed(4)}</td>
+                      <td><SignalPill state="warn">{p.matched_on}</SignalPill></td>
+                    </tr>
+                  );
+                }}
+              />
+            ) : null}
           </div>
         ) : null}
       </section>
