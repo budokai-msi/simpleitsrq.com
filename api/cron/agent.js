@@ -287,6 +287,24 @@ async function logBlogOutcome(outcome) {
             ${outcome.error || outcome.reason || (outcome.generated ? 'generated' : 'unknown')},
             ${JSON.stringify(outcome)}::jsonb)
   `.catch(() => {});
+
+  // Also record the run into blog_cron_runs so the admin "Blog Health" tab
+  // can see the blog engine's daily success/failure. Best-effort — a failure
+  // to write here must never break the blog pipeline.
+  const status = outcome.generated === true || (!outcome.error && !outcome.reason)
+    ? 'ok'
+    : 'failed';
+  const errorCode = outcome.error || outcome.reason || null;
+  const errorDetail = outcome.detail || outcome.source || null;
+  const sourceUrl = outcome.source || outcome.url || null;
+  await sql`
+    INSERT INTO blog_cron_runs (run_date, status, error_code, error_detail, source_url)
+    VALUES (CURRENT_DATE, ${status}, ${errorCode}, ${errorDetail}, ${sourceUrl})
+    ON CONFLICT (run_date, source_url) DO UPDATE SET
+      status = EXCLUDED.status,
+      error_code = EXCLUDED.error_code,
+      error_detail = EXCLUDED.error_detail
+  `.catch(() => {});
 }
 
 async function generateBlogDraft(options = {}) {
