@@ -6,7 +6,7 @@ import { loadContactProfile, saveContactProfile } from "../lib/contactProfile";
 import { useContent } from "../lib/useContent";
 
 export default function Newsletter() {
-  const { t } = useContent();
+  const { t, ts } = useContent();
   const [email, setEmail] = useState(() => loadContactProfile()?.email || "");
   const [state, setState] = useState("idle"); // idle | submitting | done | error
   const [err, setErr] = useState("");
@@ -61,7 +61,7 @@ export default function Newsletter() {
           <form className="newsletter-form" onSubmit={submit} noValidate>
             <input
               type="email"
-              placeholder={t("newsletter", "placeholder", "you@yourcompany.com")}
+              placeholder={ts("newsletter", "placeholder", "you@yourcompany.com")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

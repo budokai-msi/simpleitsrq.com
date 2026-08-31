@@ -89,27 +89,38 @@ export function useContent() {
   const t = useCallback(
     (page, key, fallback) => {
       const current = overrides?.[page]?.[key] ?? fallback;
-      // The 23+ wired pages all use `t()` as JSX children, so rendering a
-      // React element here is safe. Non-admin users always get the string.
-      if (isAdminEditor) {
-        return React.createElement(EditableText, {
-          page,
-          // React reserves `key` and won't forward it to props, so we ALSO
-          // carry the string key through the non-reserved `refKey` prop.
-          // `key` is still set for correct reconciliation across re-renders.
-          key,
-          refKey: key,
-          fallback,
-          value: current,
-          onSave: (p, k, v) => setManifestOverride(p, k, v),
-        });
-      }
-      return current;
+      // Non-admin users always get the plain string.
+      if (!isAdminEditor) return current;
+      // Strings that contain a {placeholder} template are assembled at the
+      // call site (e.g. `t("industry","eyebrow","{industry} · {city}")` is
+      // chained with .replace(...)). Returning a React element there breaks
+      // rendering ("...replace is not a function"), so render these as plain
+      // text — they're dynamic and not cleanly inline-editable anyway.
+      if (/\{[^}]+\}/.test(String(current))) return current;
+      return React.createElement(EditableText, {
+        page,
+        // React reserves `key` and won't forward it to props, so we ALSO
+        // carry the string key through the non-reserved `refKey` prop.
+        // `key` is still set for correct reconciliation across re-renders.
+        key,
+        refKey: key,
+        fallback,
+        value: current,
+        onSave: (p, k, v) => setManifestOverride(p, k, v),
+      });
     },
     [overrides, isAdminEditor],
   );
 
-  return { t, overrides, refresh };
+  // String-only variant of `t()` for use inside HTML attributes (placeholder,
+  // aria-label, title, alt, etc.) where a React element would be invalid.
+  // Returns the override or fallback, never a component.
+  const ts = useCallback(
+    (page, key, fallback) => overrides?.[page]?.[key] ?? fallback,
+    [overrides],
+  );
+
+  return { t, ts, overrides, refresh };
 }
 
 // Update the module-level override cache so other components on the page

@@ -11,7 +11,7 @@ export default function LeadCaptureCTA({
   endpoint = "/api/contact",
   source = "blog-cta",
 }) {
-  const { t } = useContent();
+  const { t, ts } = useContent();
   const [form, setForm] = useState({ name: "", email: "" });
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
@@ -65,7 +65,7 @@ export default function LeadCaptureCTA({
               {t("leadcapture", "first_name", "First name")}
               <input
                 className="lead-cta-input"
-                placeholder={t("leadcapture", "first_name_placeholder", "e.g. Sarah")}
+                placeholder={ts("leadcapture", "first_name_placeholder", "e.g. Sarah")}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
@@ -76,7 +76,7 @@ export default function LeadCaptureCTA({
               <input
                 className="lead-cta-input"
                 type="email"
-                placeholder={t("leadcapture", "work_email_placeholder", "you@company.com")}
+                placeholder={ts("leadcapture", "work_email_placeholder", "you@company.com")}
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required

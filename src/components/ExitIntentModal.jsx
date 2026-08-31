@@ -68,7 +68,7 @@ const CHOICES = {
 };
 
 export default function ExitIntentModal() {
-  const { t } = useContent();
+  const { t, ts } = useContent();
   const [open, setOpen] = useState(false);
   const [choice, setChoice] = useState(null); // null | "compliance"
   const [email, setEmail] = useState(() => loadContactProfile()?.email || "");
@@ -301,7 +301,7 @@ export default function ExitIntentModal() {
                 className="exit-intent-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("exitintent", "email_placeholder", "you@company.com")}
+                placeholder={ts("exitintent", "email_placeholder", "you@company.com")}
                 autoComplete="email"
                 required
               />

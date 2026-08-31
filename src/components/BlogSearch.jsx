@@ -48,7 +48,7 @@ function scoreEntry(entry, terms) {
 }
 
 export default function BlogSearch({ posts, onFilter, initialQuery = "", onQueryChange }) {
-  const { t } = useContent();
+  const { t, ts } = useContent();
   const [query, setQuery] = useState(initialQuery);
   const [committed, setCommitted] = useState(initialQuery);
   const index = useMemo(() => buildSearchIndex(posts), [posts]);
@@ -127,7 +127,7 @@ export default function BlogSearch({ posts, onFilter, initialQuery = "", onQuery
           aria-label="Search blog posts"
           aria-describedby="blog-search-status"
           className="blog-search-input"
-          placeholder={t("blogsearch", "placeholder", "Search by title, topic, or tag…")}
+          placeholder={ts("blogsearch", "placeholder", "Search by title, topic, or tag…")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           autoComplete="off"

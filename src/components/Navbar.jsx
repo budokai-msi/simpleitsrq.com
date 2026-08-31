@@ -51,7 +51,7 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const { user, loading } = useAuth();
-  const { t } = useContent();
+  const { t, ts } = useContent();
 
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 8); }
@@ -176,7 +176,7 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
               <LogIn size={14} /><span>{t("nav", "signin", "Sign in")}</span>
             </Link>
           ))}
-          <button ref={menuButtonRef} className="menu-btn" type="button" onClick={() => setOpen(!open)} aria-label={open ? t("nav", "close_menu", "Close menu") : t("nav", "open_menu", "Open menu")} aria-expanded={open}>
+          <button ref={menuButtonRef} className="menu-btn" type="button" onClick={() => setOpen(!open)} aria-label={open ? ts("nav", "close_menu", "Close menu") : ts("nav", "open_menu", "Open menu")} aria-expanded={open}>
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>

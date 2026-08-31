@@ -3,14 +3,14 @@ import { ChevronRight, Home } from "lucide-react";
 import { useContent } from "../lib/useContent";
 
 export default function Breadcrumbs({ items }) {
-  const { t } = useContent();
+  const { t, ts } = useContent();
   if (!items || items.length === 0) return null;
 
   return (
     <nav aria-label="Breadcrumb" className="breadcrumbs">
       <ol className="breadcrumb-list">
         <li className="breadcrumb-item">
-          <Link to="/" aria-label={t("breadcrumbs", "home", "Home")}>
+          <Link to="/" aria-label={ts("breadcrumbs", "home", "Home")}>
             <Home size={14} />
           </Link>
         </li>
