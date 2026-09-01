@@ -65,6 +65,52 @@ function setStoredZipPref(state) {
   try { window.localStorage.setItem("leadgen.zipPref", state); } catch {}
 }
 
+// Detect the browser's actual geolocation permission state via the Permissions
+// API. Returns "granted" | "denied" | "prompt" | "unsupported". This is the
+// key to the "Try location again" problem: once a user denies geolocation, the
+// browser will NOT re-prompt (permission is sticky). So we must detect the
+// sticky "denied" state and guide the user to re-enable it in browser settings
+// instead of silently calling getCurrentPosition (which just fires the error
+// callback with code 1 and shows no prompt).
+async function queryGeoPermission() {
+  try {
+    if (typeof navigator === "undefined" || !navigator.permissions?.query) return "unsupported";
+    const status = await navigator.permissions.query({ name: "geolocation" });
+    return status.state; // "granted" | "denied" | "prompt"
+  } catch {
+    return "unsupported";
+  }
+}
+
+// Human, per-platform instructions for re-enabling geolocation after a sticky
+// denial. The browser will not re-prompt on its own, so we tell the user where
+// to flip it back on. Detected from the user agent.
+function geoDeniedHelp() {
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+  if (/iPhone|iPad|iPod/i.test(ua)) {
+    return "On iPhone/iPad: Settings → Privacy & Security → Location Services → turn on, then allow Simple IT SRQ. Then reload this page.";
+  }
+  if (/Android/i.test(ua)) {
+    return "On Android: Settings → Apps → Simple IT SRQ → Permissions → Location → Allow. Then reload this page.";
+  }
+  if (/Edg\//i.test(ua)) {
+    return "In Edge: click the lock icon in the address bar → Site permissions → Location → Allow. Then reload this page.";
+  }
+  if (/Firefox\//i.test(ua)) {
+    return "In Firefox: click the shield/lock icon in the address bar → Permissions → Location → Allow. Then reload this page.";
+  }
+  if (/Chrome\//i.test(ua) || /Chromium/i.test(ua)) {
+    return "In Chrome: click the lock icon in the address bar → Site settings → Location → Allow. Then reload this page.";
+  }
+  if (/Safari\//i.test(ua)) {
+    return "In Safari: Safari → Settings → Websites → Location → Allow for this site. Then reload this page.";
+  }
+  if (/Linux/i.test(ua)) {
+    return "On Linux: check your browser's site-permissions settings (address-bar lock icon) and your desktop's location service, then reload this page.";
+  }
+  return "Allow location for this site in your browser's site-permissions settings, then reload this page.";
+}
+
 function stripeSafeParam(value, fallback = "leadgen") {
   const safe = String(value ?? "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 80);
   return safe || fallback;
@@ -390,6 +436,7 @@ function LeadgenScanApp() {
   const [zip, setZip] = useState("");
   const [zipSource, setZipSource] = useState(null); // "geo" | "manual" | null
   const [geoState, setGeoState] = useState("idle"); // idle | asking | granted | denied | unavailable | error
+  const [geoHelp, setGeoHelp] = useState(""); // per-platform re-enable instructions when denied
   const [niche, setNiche] = useState("All");
   const [scan, setScan] = useState(null);
   const [review, setReview] = useState({});
@@ -473,11 +520,22 @@ function LeadgenScanApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const requestGeolocation = () => {
+  const requestGeolocation = async () => {
     if (typeof window === "undefined" || !("geolocation" in navigator)) {
       setGeoState("unavailable");
       return;
     }
+    // Check the real permission state first. If the browser has a sticky
+    // "denied" for this site, getCurrentPosition will NOT re-prompt — it just
+    // fires the error callback. So detect it and show per-platform help.
+    const perm = await queryGeoPermission();
+    if (perm === "denied") {
+      setGeoState("denied");
+      setStoredZipPref("denied");
+      setGeoHelp(geoDeniedHelp());
+      return;
+    }
+    setGeoHelp("");
     setGeoState("asking");
     const ac = new AbortController();
     navigator.geolocation.getCurrentPosition(
@@ -498,7 +556,7 @@ function LeadgenScanApp() {
         }
       },
       (err) => {
-        if (err?.code === 1) { setGeoState("denied"); setStoredZipPref("denied"); }
+        if (err?.code === 1) { setGeoState("denied"); setStoredZipPref("denied"); setGeoHelp(geoDeniedHelp()); }
         else if (err?.code === 2) { setGeoState("unavailable"); setStoredZipPref("unavailable"); }
         else { setGeoState("error"); }
       },
@@ -844,6 +902,11 @@ function LeadgenScanApp() {
               <button type="button" className="link-btn" onClick={requestGeolocation}>
                 <MapPin size={13} aria-hidden="true" /> {geoState === "denied" ? "Try location again" : "Use my location"}
               </button>
+            </p>
+          ) : null}
+          {geoHelp ? (
+            <p className="leadgen-zip-source" role="status" style={{ maxWidth: 420, lineHeight: 1.5 }}>
+              {geoHelp}
             </p>
           ) : null}
           {validZip ? (
