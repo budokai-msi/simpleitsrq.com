@@ -1,0 +1,80 @@
+---
+slug: "unpatched-exchange-servers-small-business"
+title: "Unpatched Exchange Servers Still Risk Business Email"
+metaDescription: "Nearly 22,000 unpatched Exchange servers are exposed online. Bradenton and Sarasota small businesses should patch or retire on-prem email servers now."
+date: "2026-09-01"
+author: "Simple IT SRQ Team"
+category: "Cybersecurity"
+tags:
+  - "microsoft-exchange"
+  - "email-security"
+  - "patch-management"
+  - "small-business"
+  - "sarasota"
+excerpt: "Security researchers just counted nearly 22,000 Microsoft Exchange servers still exposed to a mailbox-hijack flaw. If your office still runs email in a closet, this is the week to check it."
+heroAlt: "A small-office server rack and mailbox monitor representing unpatched Microsoft Exchange email risk."
+---
+
+If your company still runs Microsoft Exchange on a box in the back office, this is not a “wait until Friday” item. Researchers now say nearly **22,000 unpatched Exchange servers** are sitting on the public internet with a mailbox-hijack flaw that Microsoft already fixed in August.
+
+That number matters for a small business in Bradenton or Sarasota because email is still how invoices go out, closings get scheduled, and payroll questions get answered. When someone can read every mailbox, they do not need ransomware to hurt you. They can quietly watch a deal, change a wire instruction, or impersonate the owner.
+
+## What happened
+
+On September 1, 2026, [BleepingComputer reported](https://www.bleepingcomputer.com/news/security/nearly-22-000-microsoft-exchange-servers-vulnerable-to-hijack-attacks/) that almost 22,000 internet-facing Exchange servers remain unpatched against **CVE-2026-62911**. The bug is an authentication bypass that can let an attacker take over every mailbox on the server. They can send mail as your staff, read incoming messages, and download attachments.
+
+The flaw affects Exchange Server 2016, Exchange Server 2019, and Exchange Server Subscription Edition. Microsoft shipped a fix in the August 2026 Patch Tuesday cycle. The Netherlands National Cyber Security Centre later warned that exploit code is already circulating. Shadowserver’s scan put most of the exposed servers in the United States and Germany.
+
+This is not a brand-new story for Exchange. CISA has added **20 Exchange vulnerabilities** to its Known Exploited Vulnerabilities catalog since late 2021, and 14 of those have been tied to ransomware. A separate Exchange bug patched in June was already being used against Outlook Web Access users.
+
+Two more dates should be on your calendar. Exchange 2016 and 2019 reached end of support last fall. Microsoft’s Extended Security Updates program for those versions **ends in October 2026**. After that, even paying extra does not keep the product current.
+
+If you have already moved to Microsoft 365 / Exchange Online, this specific internet-scan number may not describe *your* mailboxes. It still describes a risk we see locally: a leftover on-prem server that nobody wants to shut off because “it still works.”
+
+## How it affects your business
+
+Most Gulf Coast offices do not think of themselves as running a “mail server farm.” They think of a beige tower that has been humming since 2018, a public IP that was opened so someone could check Outlook from home, and a vendor who left two years ago.
+
+That combination is exactly what attackers look for.
+
+Here is what a successful mailbox hijack looks like in a real small business, not in a white paper:
+
+- The attacker reads mail for a week and learns who approves payments.
+- They send a “updated invoice” from a real address your vendor already trusts.
+- They create a hidden forwarding rule so copies of bank and legal mail leave the building.
+- Staff keep working. Nothing looks broken until money or a client file is gone.
+
+For a medical or legal practice, the blast radius is bigger than one embarrassing email. Patient and client records often travel as attachments. A hijacked mailbox can become a data-privacy incident, not just an IT headache.
+
+There is also a hybrid trap. Some firms kept a local Exchange box “just in case” after they bought Microsoft 365. An old server that still talks to the cloud can become a back door into the new tenant. If you are not sure whether that old box is still reachable from the internet, assume it is until someone proves otherwise.
+
+CISA’s guidance for Exchange Online is useful even if you already live in the cloud: turn off automatic forwarding to outside domains, lock down who can create mailbox rules, and treat email as a business system rather than a free utility. Their [Exchange Online baseline](https://www.cisa.gov/resources-tools/services/m365-exchange-online) is written for government, but the same controls stop the wire-fraud pattern we see in local offices.
+
+## What to do
+
+You do not need a war room. You need a short, honest inventory and a decision.
+
+**1. Find out what you actually run.**  
+Ask one question: does our email live only in Microsoft 365, or is there still an Exchange server on site or at a colocation cage? If nobody can answer in five minutes, that is the first problem.
+
+**2. If the server is on the internet, pull it back.**  
+Outlook Web Access and remote Outlook should not be hanging off a home-style router with port 443 forwarded to a 2016 box. VPN or a modern cloud mailbox is the safer path. The Dutch advisory was blunt: if you are still on 2016 or 2019, keep the server internal and plan a replacement.
+
+**3. Patch now if you must keep it.**  
+Apply the August 2026 Exchange security updates, including the fix for CVE-2026-62911. Then confirm the build number. “Windows Update said it ran” is not the same as “Exchange is patched.”
+
+**4. Hunt for quiet abuse.**  
+Look for new inbox rules, unexpected forwarding, odd send-as activity, and mailboxes that log in from places your team never works. Reset admin passwords. Turn on MFA everywhere, including the old admin account that only one person remembers.
+
+**5. Set a retirement date.**  
+October 2026 is not a marketing slogan. When paid extended updates stop, every new Exchange bug is your problem alone. For most small businesses here, the clean move is Microsoft 365 with a hardened tenant, not another five years of a closet server.
+
+If you want a second pair of eyes on the tenant itself, our [Microsoft 365 security hardening guide](/blog/microsoft-365-security-hardening-sarasota) covers forwarding blocks, MFA, and the settings that stop a stolen mailbox from becoming silent wire fraud.
+
+Email is still the front door of a small business. Leaving an unpatched Exchange server on the public internet is like leaving that door unlocked overnight.
+
+If you are not sure whether that old server is still reachable, [book a call](https://simpleitsrq.com/book). We can check patch level, internet exposure, and a move-off plan for offices in Sarasota and Bradenton.
+
+---
+
+**Source:** Reporting summarized from [BleepingComputer](https://www.bleepingcomputer.com/news/security/nearly-22-000-microsoft-exchange-servers-vulnerable-to-hijack-attacks/) (September 1, 2026). No qualifying Hacker News story (score ≥ 100, last 48 hours) matched this topic today.
