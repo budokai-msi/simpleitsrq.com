@@ -520,21 +520,18 @@ function LeadgenScanApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const requestGeolocation = async () => {
+  const requestGeolocation = () => {
     if (typeof window === "undefined" || !("geolocation" in navigator)) {
       setGeoState("unavailable");
       return;
     }
-    // Check the real permission state first. If the browser has a sticky
-    // "denied" for this site, getCurrentPosition will NOT re-prompt — it just
-    // fires the error callback. So detect it and show per-platform help.
-    const perm = await queryGeoPermission();
-    if (perm === "denied") {
-      setGeoState("denied");
-      setStoredZipPref("denied");
-      setGeoHelp(geoDeniedHelp());
-      return;
-    }
+    // IMPORTANT: call getCurrentPosition synchronously within the click
+    // gesture. Geolocation requires "transient user activation" — awaiting
+    // anything before this (e.g. the Permissions API) consumes that gesture,
+    // so the browser silently skips the prompt and "Try location again"
+    // appears to do nothing. The prompt itself triggers on first use; if the
+    // browser already has a sticky denial it fires the error callback
+    // (code 1) below, which shows the per-platform re-enable help instead.
     setGeoHelp("");
     setGeoState("asking");
     const ac = new AbortController();
