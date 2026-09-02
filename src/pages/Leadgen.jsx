@@ -437,6 +437,8 @@ function LeadgenScanApp() {
   const [zipSource, setZipSource] = useState(null); // "geo" | "manual" | null
   const [geoState, setGeoState] = useState("idle"); // idle | asking | granted | denied | unavailable | error
   const [geoHelp, setGeoHelp] = useState(""); // per-platform re-enable instructions when denied
+  const [geoHelpOpen, setGeoHelpOpen] = useState(false); // DaisyUI-style modal open state
+  const geoDialogRef = useRef(null);
   const [niche, setNiche] = useState("All");
   const [scan, setScan] = useState(null);
   const [review, setReview] = useState({});
@@ -553,13 +555,23 @@ function LeadgenScanApp() {
         }
       },
       (err) => {
-        if (err?.code === 1) { setGeoState("denied"); setStoredZipPref("denied"); setGeoHelp(geoDeniedHelp()); }
+        if (err?.code === 1) { setGeoState("denied"); setStoredZipPref("denied"); setGeoHelp(geoDeniedHelp()); setGeoHelpOpen(true); }
         else if (err?.code === 2) { setGeoState("unavailable"); setStoredZipPref("unavailable"); }
         else { setGeoState("error"); }
       },
       { enableHighAccuracy: false, maximumAge: 60_000, timeout: 8000 },
     );
   };
+
+  // Open/close the native <dialog> when geoHelpOpen flips. Native <dialog>
+  // handles scroll-lock, backdrop, focus return, and Escape closing.
+  useEffect(() => {
+    const el = geoDialogRef.current;
+    if (!el) return;
+    if (geoHelpOpen && !el.open) el.showModal();
+    else if (!geoHelpOpen && el.open) el.close();
+  }, [geoHelpOpen]);
+
   const rows = scan?.rows || [];
   const bestEmail = (row) => row.email || row.emails?.[0]?.email || extractedEmails[row.website] || "";
 
@@ -836,6 +848,7 @@ function LeadgenScanApp() {
   ];
 
   return (
+    <>
     <section className="leadgen-app-shell" aria-label="Leadgen local market scanner">
       <div className="leadgen-app-panel leadgen-app-panel--control">
         <div className="leadgen-app-topline">
@@ -902,8 +915,10 @@ function LeadgenScanApp() {
             </p>
           ) : null}
           {geoHelp ? (
-            <p className="leadgen-zip-source" role="status" style={{ maxWidth: 420, lineHeight: 1.5 }}>
-              {geoHelp}
+            <p className="leadgen-zip-source">
+              <button type="button" className="link-btn" onClick={() => setGeoHelpOpen(true)}>
+                <MapPin size={13} aria-hidden="true" /> How to allow location
+              </button>
             </p>
           ) : null}
           {validZip ? (
@@ -1214,6 +1229,30 @@ function LeadgenScanApp() {
         ) : null}
       </div>
     </section>
+    <dialog
+      ref={geoDialogRef}
+      className="leadgen-geo-modal"
+      aria-labelledby="geo-help-title"
+      onClose={() => setGeoHelpOpen(false)}
+    >
+      <div className="leadgen-geo-modal-inner">
+        <div className="leadgen-geo-modal-head">
+          <div className="leadgen-geo-modal-icon"><MapPin size={20} aria-hidden="true" /></div>
+          <div>
+            <h3 id="geo-help-title">Allow location to auto-fill your ZIP</h3>
+            <p>Your browser blocked location for this site. Here's how to turn it back on:</p>
+          </div>
+          <button type="button" className="leadgen-geo-modal-close" aria-label="Close" onClick={() => setGeoHelpOpen(false)}>×</button>
+        </div>
+        <div className="leadgen-geo-modal-body">
+          <p className="leadgen-geo-modal-steps">{geoHelp}</p>
+        </div>
+        <div className="leadgen-geo-modal-actions">
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setGeoHelpOpen(false)}>Got it</button>
+        </div>
+      </div>
+    </dialog>
+    </>
   );
 }
 
