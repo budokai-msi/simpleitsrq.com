@@ -3251,3 +3251,131 @@ html[data-theme="dark"] .leadgen-prospect-card.is-selected::after {
 [data-theme="dark"] .ops-tabs .admin-leadgen-tab[data-tip]::before {
   border-bottom-color: var(--surface-2, #1f2937);
 }
+
+/* ── OpsTab: DaisyUI-style brand dropdown ───────────────────── */
+.ops-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.ops-dropdown__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-1, #111827);
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.ops-dropdown__trigger:hover {
+  border-color: color-mix(in srgb, var(--aura-accent, #0F6CBD) 55%, var(--border, #d1d5db));
+}
+.ops-dropdown__trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--aura-accent, #0F6CBD) 20%, transparent);
+}
+.ops-dropdown__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.55;
+}
+.ops-dropdown__value {
+  font-weight: 700;
+}
+.ops-dropdown__chevron {
+  opacity: 0.6;
+  transition: transform 140ms ease;
+}
+.ops-dropdown__chevron.is-open {
+  transform: rotate(180deg);
+}
+.ops-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 180px;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
+  z-index: 40;
+}
+.ops-dropdown__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-1, #111827);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+.ops-dropdown__item:hover {
+  background: color-mix(in srgb, var(--aura-accent, #0F6CBD) 8%, transparent);
+}
+.ops-dropdown__item.is-selected {
+  color: var(--aura-accent, #0F6CBD);
+  font-weight: 700;
+}
+.ops-dropdown__check {
+  color: var(--aura-accent, #0F6CBD);
+}
+[data-theme="dark"] .ops-dropdown__menu {
+  background: var(--surface-2, #1f2937);
+  border-color: var(--border, #374151);
+}
+
+/* ── OpsTab: job summary chips ──────────────────────────────── */
+.ops-job-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1, #111827);
+  background: var(--surface-2, #f8fafc);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 999px;
+}
+.ops-job-chip--good { color: #059669; border-color: color-mix(in srgb, #059669 40%, var(--border)); }
+.ops-job-chip--bad  { color: #dc2626; border-color: color-mix(in srgb, #dc2626 40%, var(--border)); }
+.ops-job-chip--warn { color: #b45309; border-color: color-mix(in srgb, #b45309 40%, var(--border)); }
+
+/* ── OpsTab: kind badge ────────────────────────────────────── */
+.ops-kind-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--aura-accent, #0F6CBD);
+  background: color-mix(in srgb, var(--aura-accent, #0F6CBD) 10%, transparent);
+  border-radius: 6px;
+}
+
+/* ── OpsTab: attention group headers ────────────────────────── */
+.ops-attention-group__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
