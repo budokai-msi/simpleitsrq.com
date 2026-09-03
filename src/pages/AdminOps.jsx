@@ -43,11 +43,11 @@ const LazyCampaignBuilderTab = lazy(() => import("../components/admin/CampaignBu
 const LazyProductFinderTab = lazy(() => import("../components/admin/ProductFinderTab"));
 
 const TABS = [
-  ["ops", "Ops", Activity],
-  ["leads", "Leads", Inbox],
-  ["blog-health", "Blog Health", Activity],
-  ["campaigns", "Campaigns", Send],
-  ["products", "Product Finder", Package],
+  ["ops", "Ops", Activity, "Revenue, attention list, and system health"],
+  ["leads", "Leads", Inbox, "New inquiries and replies"],
+  ["blog-health", "Blog Health", Activity, "Auto-publish runs and failures"],
+  ["campaigns", "Campaigns", Send, "Build and launch leadgen campaigns"],
+  ["products", "Product Finder", Package, "What to sell and to whom"],
 ];
 
 const CORE_ACTIONS = [
@@ -281,12 +281,14 @@ function AdminOpsInner() {
         </div>
 
         <nav className="admin-leadgen-tabs ops-tabs" aria-label="Admin ops sections">
-          {TABS.map(([key, label, Icon]) => (
+          {TABS.map(([key, label, Icon, hint]) => (
             <button
               key={key}
               className={`admin-leadgen-tab${tab === key ? " is-active" : ""}`}
               type="button"
               onClick={() => setTab(key)}
+              data-tip={hint}
+              aria-label={hint}
             >
               <Icon size={14} /> {label}
             </button>
