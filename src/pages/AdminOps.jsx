@@ -7,6 +7,7 @@ import {
   DollarSign,
   Inbox,
   Lock,
+  Package,
   RefreshCcw,
   Send,
   Shield,
@@ -39,12 +40,14 @@ const LazyLeadsInboxTab = lazy(() => import("../components/admin/LeadsInboxTab")
 import OpsecTab from "../components/admin/OpsecTab";
 const LazyBlogHealthTab = lazy(() => import("../components/admin/BlogHealthTab"));
 const LazyCampaignBuilderTab = lazy(() => import("../components/admin/CampaignBuilderTab"));
+const LazyProductFinderTab = lazy(() => import("../components/admin/ProductFinderTab"));
 
 const TABS = [
   ["ops", "Ops", Activity],
   ["leads", "Leads", Inbox],
   ["blog-health", "Blog Health", Activity],
   ["campaigns", "Campaigns", Send],
+  ["products", "Product Finder", Package],
 ];
 
 const CORE_ACTIONS = [
@@ -304,6 +307,7 @@ function AdminOpsInner() {
                 {tab === "leads" && <LazyLeadsInboxTab data={data["leads-inbox"]} error={errors["leads-inbox"]} reload={load} />}
                 {tab === "blog-health" && <LazyBlogHealthTab data={data} busy={busy} runAction={runAction} />}
                 {tab === "campaigns" && <LazyCampaignBuilderTab data={data} busy={busy} runAction={runAction} />}
+                {tab === "products" && <LazyProductFinderTab />}
               </Suspense>
             </motion.div>
           </AnimatePresence>

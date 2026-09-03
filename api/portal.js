@@ -145,6 +145,7 @@ import {
   handleSendLeadEmail,
   handleCreateLeadTicket,
 } from "./_lib/portal/leads.js";
+import { handleProductFinder } from "./_lib/portal/products.js";
 
 // Vercel function config: lead-gen Discover + Crawl run their workers
 // inline (Overpass + outbound HTTP fetches), so we need the higher
@@ -222,6 +223,8 @@ const ADMIN_TOKEN_ACTIONS = new Set([
   "affiliate-setup",
   // content hygiene (duplicate-slug detection)
   "content-hygiene",
+  // product finder — read-only revenue planning
+  "product-finder",
 ]);
 
 function verifyAdminToken(request) {
@@ -448,6 +451,9 @@ async function dispatchAuthed(request, method, url, action, session) {
     if (action === "affiliate-sync"           && method === "POST") return handleAffiliateSync(session, request);
     if (action === "affiliate-ingest"         && method === "POST") return handleAffiliateIngest(session);
     if (action === "affiliate-setup"          && method === "GET")  return handleAffiliateSetup(session);
+
+    // Product Finder — read-only revenue planning (admin only)
+    if (action === "product-finder"           && method === "GET")  return handleProductFinder(session);
 
     return json(404, { ok: false, error: "unknown_action" });
 }
