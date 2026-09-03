@@ -4,6 +4,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateLocalDraft } from './local-publisher.mjs';
 import { fetchTrends } from './trends/fetch-trends.mjs';
+import { neon } from '@neondatabase/serverless';
 
 // Daily cron daemon. Fires once per day at the configured hour (default 11:00).
 // Uses the write→critique→revise pipeline in local-publisher.mjs.
@@ -44,6 +45,38 @@ const REASON_EXIT = {
   publish_failed: 5,
 };
 
+// Neon client for the blog_cron_runs observability row. The daemon runs with
+// --env-file=.env.local so DATABASE_URL is present. Guarded so an empty URL
+// (e.g. a bare `node scripts/local-cron-daemon.mjs` without the env file)
+// disables the write instead of crashing the daemon at import time.
+const cronSql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+
+// Write a row to blog_cron_runs so the admin "Blog Health" tab reflects the
+// REAL daily local-daemon run (the Vercel /api/cron/agent is redundant and
+// always fails with qwen_generation_failed). Same schema as api/cron/agent.js:
+// run_date, status, error_code, error_detail, source_url. Best-effort — a
+// failure to write here must never break the publish pipeline or change the
+// exit code. ON CONFLICT (run_date, source_url) keeps one row per day.
+async function writeCronRun(record) {
+  if (!cronSql) return;
+  const status = record.ok ? 'ok' : 'failed';
+  const errorCode = record.ok ? null : (record.reason || 'fatal');
+  const errorDetail = record.error || null;
+  const sourceUrl = record.slug || 'local-daemon';
+  try {
+    await cronSql`
+      INSERT INTO blog_cron_runs (run_date, status, error_code, error_detail, source_url)
+      VALUES (CURRENT_DATE, ${status}, ${errorCode}, ${errorDetail}, ${sourceUrl})
+      ON CONFLICT (run_date, source_url) DO UPDATE SET
+        status = EXCLUDED.status,
+        error_code = EXCLUDED.error_code,
+        error_detail = EXCLUDED.error_detail
+    `;
+  } catch (err) {
+    console.error('[cron] Could not write blog_cron_runs row:', err.message);
+  }
+}
+
 function writeHeartbeat(result, errorMsg) {
   const record = errorMsg
     ? { ts: new Date().toISOString(), ok: false, reason: 'fatal', error: errorMsg, slug: null, slop: null, ms: 0 }
@@ -75,11 +108,13 @@ async function runOnce() {
     const result = await generateLocalDraft();
     result.ms = Date.now() - t0;
     const record = writeHeartbeat(result);
+    await writeCronRun(record);
     console.log(`[cron] Run finished in ${result.ms}ms: ${JSON.stringify(result)}`);
     return { result, exitCode: record.ok ? 0 : (REASON_EXIT[record.reason] || 1) };
   } catch (err) {
     console.error('[cron] Fatal execution error:', err);
-    writeHeartbeat(null, err?.message || String(err));
+    const record = writeHeartbeat(null, err?.message || String(err));
+    await writeCronRun(record);
     return { result: { ok: false, reason: 'fatal' }, exitCode: 1 };
   }
 }
