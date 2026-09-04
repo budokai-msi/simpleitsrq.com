@@ -909,12 +909,18 @@ function LeadgenScanApp() {
           ) : null}
           {zipSource !== "geo" && (geoState === "denied" || geoState === "unavailable" || geoState === "error") && !zip ? (
             <p className="leadgen-zip-source">
-              <button type="button" className="link-btn" onClick={requestGeolocation}>
-                <MapPin size={13} aria-hidden="true" /> {geoState === "denied" ? "Try location again" : "Use my location"}
-              </button>
+              {geoState === "denied" ? (
+                <button type="button" className="link-btn" onClick={() => setGeoHelpOpen(true)}>
+                  <MapPin size={13} aria-hidden="true" /> How to allow location
+                </button>
+              ) : (
+                <button type="button" className="link-btn" onClick={requestGeolocation}>
+                  <MapPin size={13} aria-hidden="true" /> Use my location
+                </button>
+              )}
             </p>
           ) : null}
-          {geoHelp ? (
+          {geoHelp && geoState !== "denied" ? (
             <p className="leadgen-zip-source">
               <button type="button" className="link-btn" onClick={() => setGeoHelpOpen(true)}>
                 <MapPin size={13} aria-hidden="true" /> How to allow location
