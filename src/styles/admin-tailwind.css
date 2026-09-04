@@ -1,0 +1,23 @@
+/* Admin-only Tailwind v4 + daisyUI 5 entry.
+ *
+ * SECURITY: do NOT import this globally. It is imported ONLY in the admin
+ * surface (AdminOps.jsx). It deliberately SKIPS Tailwind's preflight reset so
+ * it cannot wipe the existing hand-rolled site CSS (leadgen.css, index.css,
+ * aura-system.css). It only ADDS daisyUI component + utility classes.
+ *
+ * Tailwind v4 disables preflight when you import theme + utilities without
+ * the base layer. daisyUI 5 is a pure CSS plugin layered on top.
+ */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+@plugin "daisyui" {
+  themes: light --default, dark;
+  /* Keep the site's brand accent as the primary daisyUI color. */
+  color-scheme: light dark;
+  logs: false;
+}
+
+/* Brand-finetune daisyUI tokens to #0F6CBD accent. */
+@theme {
+  --color-primary: #0f6cbd;
+}
