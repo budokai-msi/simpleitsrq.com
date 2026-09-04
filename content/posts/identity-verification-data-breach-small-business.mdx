@@ -1,0 +1,71 @@
+---
+slug: "identity-verification-data-breach-small-business"
+title: "ID Scan Breach Puts 153M Licenses on Sale"
+metaDescription: "An identity verification data breach put 153 million driver licenses up for sale. What Bradenton and Sarasota small businesses should do this week."
+date: "2026-09-04"
+author: "Simple IT SRQ Team"
+category: "Cybersecurity"
+tags:
+  - identity-verification
+  - data-breach
+  - data-privacy
+  - small-business
+  - vendor-risk
+excerpt: "Hackers sold a live feed of scanned driver licenses for more than a year. If you scan IDs at the counter, this is a vendor-risk problem, not just a headline."
+heroAlt: "Driver license on a counter next to a tablet used for identity checks in a small shop."
+image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1600&q=80"
+---
+
+This week an **identity verification data breach** moved from rumor to a live product. A dark-web service sold scans of more than 153 million driver licenses from the United States and Canada. The FBI's New Orleans office opened an inquiry. The data kept growing by hundreds of thousands of records a day until the storefront vanished.
+
+That matters now because identity checks are no longer just an airport or bank problem. Rental desks, retailers, delivery counters, clinics, and age-gated shops scan licenses every day. Many of those scans flow to a third-party vendor. If that vendor is leaky, your customer's face, address, license number, and date of birth can sit in a catalog with a price tag. For a small business in Sarasota or Bradenton, the lesson is not "never check an ID." It is "know who keeps the copy."
+
+## What happened
+
+Brian Krebs reported that a new identity-theft service, advertised as Nexus, offered digital scans of more than 153 million driver licenses plus millions of other ID cards and travel documents. Sellers claimed they had been pulling fresh records for more than a year from a major identity-verification company used by Fortune 500 brands.
+
+Krebs matched timestamps on sample licenses to real trips. Several people who found their own cards in the catalog had handed a license to Hertz. Others had scanned an ID at a cannabis dispensary. The pattern pointed to IDScan.net, a Louisiana firm whose public materials list customers such as Hertz, Target, FedEx, and a large network of dispensaries. The company says it handles tens of millions of checks a month across tens of thousands of locations. Infrared and ultraviolet scans of the same card appeared in some records, which matches how those readers work.
+
+IDScan told Krebs it was investigating. It did not publish a full incident statement in the first wave of coverage. The FBI confirmed it had opened a case. Shortly after the story ran, the Nexus site went offline. That does not put the copies back in the bottle. Once front-and-back license images circulate, they can be reused to open credit, reset bank controls, or impersonate a customer at another counter.
+
+This is not an isolated scare. Age-check and ID-scan vendors have leaked before. Trust-center language and a pile of compliance logos did not stop a year-long siphon. Nobody inside the company appears to have noticed the live feed.
+
+## How it affects your business
+
+You may never have signed a contract with IDScan. Your staff still hand licenses to vendors who do. A front-desk scan at a rental counter, a hotel, a pharmacy, or a shipping store can create a file you do not control. If that file walks, your customer will still associate the visit with your shop.
+
+There is a second, more local risk. Plenty of Gulf Coast businesses scan IDs themselves: auto dealers, medical offices, cannabis retailers, night spots, property managers, and anyone who has to prove age or identity. The scanner on the counter is often a hosted service. The image does not stay in the device. It goes to a cloud queue so the vendor can score the hologram and log the visit. That queue is the prize.
+
+Stolen license images are useful in ways a leaked email is not. Banks and lenders still treat a driver license as proof of identity. Attackers use a real scan to convince a call-center agent to drop multi-factor prompts or add a new device. AI face-matching makes it harder for someone who needs to disappear, including people leaving a violent home. Even a modest office list, mixed with a vendor dump, becomes targeted phishing: "We need to re-verify the ID you showed on Tuesday."
+
+Florida businesses that collect personal information also have notice duties when a vendor leak touches their customers. Waiting for the scanner company to write a blog post is not a plan. If you cannot answer three questions — what was scanned, where the copy lives, and who can export it — you are already behind.
+
+CISA's [cybersecurity guidance for small and medium businesses](https://www.cisa.gov/cybersecurity-best-practices-small-and-medium-businesses) is blunt on this point: know your vendors, limit what they keep, and require strong sign-in on anything that can pull a customer file.
+
+## What to do
+
+You do not need a new scanner this week. You need a short vendor inventory and a few locks.
+
+**1. List every place an ID is copied.** Front desk, shipping counter, HR onboarding, patient intake, age check at the door, remote "upload your license" forms. Include tools your landlord, POS vendor, or background-check firm runs for you.
+
+**2. Ask the vendor four questions in writing.** Do you store the image after the check passes? For how long? Who can export a batch? Have you had an incident in the last two years? If the answer is a marketing PDF and no retention number, treat storage as "yes, indefinitely."
+
+**3. Prefer a pass/fail over a souvenir.** Many products can confirm the card is valid and of age without keeping a high-resolution front-and-back archive. If the law or your insurer requires a copy, encrypt it, lock export to two people, and set an automatic delete date.
+
+**4. Stop collecting IDs you do not need.** A newsletter signup does not need a driver license. Neither does a Wi-Fi code. Extra scans are extra liability.
+
+**5. Assume some customers are already in this dump.** Watch for account-takeover tickets and "we need a new copy of your ID" emails that quote real visit dates. Tell staff that a license photo is not a password reset. Confirm changes out of band.
+
+**6. Freeze and monitor where it helps.** Owners and staff who rent cars, fly, or work in regulated shops should consider a credit freeze and a fraud alert. Have I Been Pwned will not list every license scan, so do not treat a clean search as a clean bill of health.
+
+**7. Put vendor risk on the calendar.** Once a quarter, review who can export customer files from scanners, CRMs, and cloud drives. Last year's contractor should not still have the admin login.
+
+If this list feels like more than the front desk can own between customers, that is a staffing signal, not a character flaw. Most offices already pay for the tools. They do not have anyone assigned to ask how long an ID image lives.
+
+Our [cybersecurity starting guide for small businesses in Sarasota](/blog/cybersecurity-for-small-business-sarasota) covers the same basics we use on-site: multi-factor sign-in, a password manager, and a backup you have actually restored. If you want a second set of eyes on the scanners and cloud apps that hold customer identity data, [contact us](/contact) and bring the vendor list from step one.
+
+The identity verification data breach will leave the headlines. The images will not. Treat this week as the moment you decided a license scan is not a casual souvenir.
+
+---
+
+*Source: discussed on [Hacker News](https://news.ycombinator.com/item?id=49561320). Original reporting: [Hackers Had A Live Feed Of Every ID This Verification Company Scanned. For Over A Year.](https://www.techdirt.com/2026/09/03/hackers-had-a-live-feed-of-every-id-this-verification-company-scanned-for-over-a-year/) Additional reporting by [Krebs on Security](https://krebsonsecurity.com/2026/09/fbi-probes-service-selling-153m-drivers-licenses/).*
