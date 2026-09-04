@@ -107,6 +107,7 @@ export default function IndustriesHub() {
                             <Link
                               key={cityKey}
                               to={`/${industry.slug}-${cityKey}`}
+                              className="chip"
                               style={{
                                 padding: "6px 12px", borderRadius: 8,
                                 background: "rgba(17, 24, 39, 0.08)",

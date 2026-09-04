@@ -334,7 +334,7 @@ export default function Stack() {
           >
             {STACK.map((cat) => (
               <li key={cat.id}>
-                <a href={`#${cat.id}`} style={{ color: "#111827", textDecoration: "none" }}>
+                <a href={`#${cat.id}`} className="blog-filter" style={{ color: "#111827", textDecoration: "none" }}>
                   {cat.title}
                 </a>
               </li>

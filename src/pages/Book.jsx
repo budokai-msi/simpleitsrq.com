@@ -292,6 +292,7 @@ function ConsultationForm() {
         {error && (
           <div
             role="alert"
+            className="form-banner-error"
             style={{
               padding: "12px 14px",
               borderRadius: 8,
