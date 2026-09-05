@@ -265,11 +265,11 @@ export default function IndustryLanding() {
       <section className="section">
         <div className="container" style={{ maxWidth: 880 }}>
           <h2 className="title-1">Frequently asked - {industry.displayName.toLowerCase()}</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 16 }}>
+          <div className="flex flex-col gap-3 mt-4">
             {industry.faqs.map((f, i) => (
-              <details key={i} style={{ padding: "14px 18px", borderRadius: 10, background: "var(--syn-surface-2, #fff)", border: "1px solid var(--syn-border, #e5e7eb)" }}>
-                <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: "1rem" }}>{f.q}</summary>
-                <p style={{ margin: "10px 0 0", lineHeight: 1.6, color: "var(--syn-text-muted, #4b5563)" }}>{f.a}</p>
+              <details key={i} className="collapse collapse-arrow bg-base-100 border border-base-300">
+                <summary className="collapse-title font-semibold">{f.q}</summary>
+                <div className="collapse-content"><p className="text-sm text-base-content/70 leading-relaxed">{f.a}</p></div>
               </details>
             ))}
           </div>

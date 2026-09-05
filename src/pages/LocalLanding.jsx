@@ -379,11 +379,11 @@ export default function LocalLanding() {
             <span className="eyebrow">FAQ</span>
             <h2 className="title-1">Frequently asked questions</h2>
           </div>
-          <div className="faq-list">
+          <div className="flex flex-col gap-3 max-w-[820px] mx-auto">
             {city.faqs.map((f) => (
-              <details key={f.q} className="faq-item">
-                <summary>{f.q}</summary>
-                <p>{f.a}</p>
+              <details key={f.q} className="collapse collapse-arrow bg-base-100 border border-base-300">
+                <summary className="collapse-title font-semibold text-base-content">{f.q}</summary>
+                <div className="collapse-content"><p className="text-sm text-base-content/70 leading-relaxed">{f.a}</p></div>
               </details>
             ))}
           </div>
