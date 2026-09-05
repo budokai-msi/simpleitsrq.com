@@ -564,21 +564,29 @@ html[data-theme="light"] .leadgen-product-upgrade {
 }
 .leadgen-join__dd.is-open .leadgen-join__dd-chevron { transform: rotate(180deg); }
 .leadgen-join__dd-menu {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  min-width: 100%;
+  /* position: fixed — positioned from the toggle's viewport rect in JS,
+     and portaled to <body>. Two reasons:
+     1. Native absolute positioning gets clipped by any overflow:hidden
+        ancestor (.leadgen-scan-card needs overflow:hidden for its gradient
+        border-ring; .leadgen-public uses overflow-x:clip).
+     2. The portal escapes the .page-transition ancestor, whose (even
+        identity) transform would otherwise become the containing block for
+        position:fixed and shift the viewport coordinates sideways.
+     Because it portals to body, it uses the ROOT theme tokens (--surface,
+     --text-1, --border, --surface-2) that live on :root — the .leadgen-*
+     --lg-* tokens are scoped to .leadgen-public and are not in scope here. */
+  position: fixed;
+  min-width: 220px;
   max-height: 280px;
   overflow-y: auto;
-  z-index: 60;
+  z-index: 1000;
   padding: 5px;
   list-style: none;
-  border: 1px solid var(--lg-border-soft);
+  border: 1px solid var(--border, #262B33);
   border-radius: 12px;
-  background: var(--lg-panel);
-  color: var(--lg-text);
-  box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  background: var(--surface, #14171C);
+  color: var(--text-1, #F4F5F7);
+  box-shadow: 0 12px 32px rgba(0,0,0,.5);
 }
 .leadgen-join__dd-item {
   display: block;
@@ -587,25 +595,16 @@ html[data-theme="light"] .leadgen-product-upgrade {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--lg-text);
+  color: var(--text-1, #F4F5F7);
   font: inherit;
   font-size: .88rem;
   text-align: left;
   cursor: pointer;
 }
 .leadgen-join__dd-item:hover,
-.leadgen-join__dd-item:focus-visible { background: var(--lg-panel-soft); outline: none; }
-.leadgen-join__dd-item.is-selected { color: var(--lg-blue); font-weight: 600; }
-.leadgen-join__dd-item.is-selected:hover { background: var(--lg-panel-soft); }
-[data-theme="dark"] .leadgen-join__dd-menu {
-  background: var(--lg-panel);
-  border-color: var(--lg-border-soft);
-  box-shadow: 0 12px 32px rgba(0,0,0,.5);
-}
-[data-theme="dark"] .leadgen-join__dd-item { color: var(--lg-text); }
-[data-theme="dark"] .leadgen-join__dd-item:hover,
-[data-theme="dark"] .leadgen-join__dd-item:focus-visible { background: var(--lg-panel-soft); }
-[data-theme="dark"] .leadgen-join__dd-item.is-selected { color: var(--lg-blue); }
+.leadgen-join__dd-item:focus-visible { background: var(--surface-2, #1C1F26); outline: none; }
+.leadgen-join__dd-item.is-selected { color: var(--brand, #0F6CBD); font-weight: 600; }
+.leadgen-join__dd-item.is-selected:hover { background: var(--surface-2, #1C1F26); }
 
 /* Mobile: stack the join so each control gets full width. */
 @media (max-width: 640px) {

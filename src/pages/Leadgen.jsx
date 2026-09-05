@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "leaflet/dist/leaflet.css";
 // Leadgen CSS is imported eagerly in main.jsx so the whole stylesheet ships
 // in a single bundle that is always linked from index.html. Importing here
@@ -442,6 +443,7 @@ function LeadgenScanApp() {
   const [niche, setNiche] = useState("All");
   const [nicheOpen, setNicheOpen] = useState(false); // Industry dropdown menu open state
   const nicheDdRef = useRef(null);
+  const nicheMenuRef = useRef(null);
   const [scan, setScan] = useState(null);
   const [review, setReview] = useState({});
   const [busy, setBusy] = useState(false);
@@ -669,7 +671,9 @@ function LeadgenScanApp() {
   useEffect(() => {
     if (!nicheOpen) return;
     const onDoc = (event) => {
-      if (nicheDdRef.current && !nicheDdRef.current.contains(event.target)) setNicheOpen(false);
+      const inToggle = nicheDdRef.current && nicheDdRef.current.contains(event.target);
+      const inMenu = nicheMenuRef.current && nicheMenuRef.current.contains(event.target);
+      if (!inToggle && !inMenu) setNicheOpen(false);
     };
     const onEsc = (event) => {
       if (event.key === "Escape") setNicheOpen(false);
@@ -679,6 +683,35 @@ function LeadgenScanApp() {
     return () => {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onEsc);
+    };
+  }, [nicheOpen]);
+
+  // Position the (portal-rendered) Industry menu under the toggle, and keep
+  // it anchored on scroll/resize. The menu is portaled to document.body so
+  // position:fixed positions against the true viewport (a transformed
+  // ancestor — .page-transition — would otherwise become its containing
+  // block and shift the coordinates).
+  useEffect(() => {
+    if (!nicheOpen) return;
+    const toggle = nicheDdRef.current && nicheDdRef.current.querySelector(".leadgen-join__dd-toggle");
+    const menu = nicheMenuRef.current;
+    if (!toggle || !menu) return;
+    const position = () => {
+      const r = toggle.getBoundingClientRect();
+      const mh = menu.offsetHeight || 280;
+      const vh = window.innerHeight;
+      let top = r.bottom + 6;
+      if (top + mh > vh - 8 && r.bottom - mh - 6 > 8) top = r.top - mh - 6; // flip up if it would overflow
+      menu.style.top = `${top}px`;
+      menu.style.left = `${Math.min(r.left, window.innerWidth - menu.offsetWidth - 8)}px`;
+      menu.style.maxHeight = `${Math.max(160, vh - top - 12)}px`;
+    };
+    position();
+    window.addEventListener("scroll", position, true);
+    window.addEventListener("resize", position);
+    return () => {
+      window.removeEventListener("scroll", position, true);
+      window.removeEventListener("resize", position);
     };
   }, [nicheOpen]);
 
@@ -919,23 +952,26 @@ function LeadgenScanApp() {
                 <span>{niche}</span>
                 <ChevronDown size={14} className="leadgen-join__dd-chevron" aria-hidden="true" />
               </button>
-              {nicheOpen ? (
-                <ul className="leadgen-join__dd-menu" role="listbox" aria-label="Industry">
-                  {PUBLIC_NICHES.map((option) => (
-                    <li key={option}>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={option === niche}
-                        className={`leadgen-join__dd-item${option === niche ? " is-selected" : ""}`}
-                        onClick={() => { setNiche(option); setNicheOpen(false); }}
-                      >
-                        {option}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+              {nicheOpen
+                ? createPortal(
+                    <ul ref={nicheMenuRef} className="leadgen-join__dd-menu" role="listbox" aria-label="Industry">
+                      {PUBLIC_NICHES.map((option) => (
+                        <li key={option}>
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={option === niche}
+                            className={`leadgen-join__dd-item${option === niche ? " is-selected" : ""}`}
+                            onClick={() => { setNiche(option); setNicheOpen(false); }}
+                          >
+                            {option}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>,
+                    document.body
+                  )
+                : null}
             </div>
             <button type="button" className="leadgen-join__btn btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
               {busy ? "…" : <><Search size={15} aria-hidden="true" /> <span>Search</span></>}
