@@ -451,7 +451,9 @@ function freshnessLabel(value) {
 
 function StatusChip({ status }) {
   const label = status || "unknown";
-  return <span className={`leadgen-status-chip leadgen-status-chip--${statusTone(label)}`}>{label}</span>;
+  const tone = statusTone(label);
+  const cls = tone === "good" ? "badge-success" : tone === "wait" ? "badge-warning" : tone === "bad" ? "badge-error" : "badge-ghost";
+  return <span className={`badge badge-sm ${cls}`}>{label}</span>;
 }
 // ---------- main ----------
 
@@ -581,7 +583,7 @@ export default function LeadgenDashboard() {
   const discoveryFreshness = freshnessLabel(lastDiscoveryJob?.finished_at || lastDiscoveryJob?.created_at);
   const emailFreshness = freshnessLabel(lastEmailJob?.finished_at || lastEmailJob?.created_at);
   const pipelineState = netNewBusinesses24h + netNewEmails24h > 0 ? "fresh leads added today" : "lead database ready";
-  const healthClass = netNewBusinesses24h + netNewEmails24h > 0 ? "leadgen-status-chip--productive" : "leadgen-status-chip--no_signal";
+  const healthClass = netNewBusinesses24h + netNewEmails24h > 0 ? "badge-success" : "badge-warning";
 
   return (
     <section className="section admin-affiliates admin-leadgen">
@@ -602,7 +604,7 @@ export default function LeadgenDashboard() {
               </p>
             </div>
             <div className="leadgen-admin-hero__actions">
-              <span className="leadgen-powered-pill">Customer workspace</span>
+              <span className="badge badge-ghost">Customer workspace</span>
               <Link to="/leadgen" className="btn btn-secondary btn-sm" target="_blank" rel="noopener noreferrer">
                 View product page
               </Link>
@@ -672,7 +674,7 @@ export default function LeadgenDashboard() {
           <Stat accent="amber" label="Replied" value={status?.sends?.replied?.toLocaleString?.() ?? status?.sends?.replied} />
         </div>
         <div className="leadgen-workspace-status" role="status" aria-live="polite">
-          <span className={`leadgen-status-chip ${healthClass}`}>{pipelineState}</span>
+          <span className={`badge ${healthClass}`}>{pipelineState}</span>
           <span>Market scan {discoveryFreshness}</span>
           <span>Email crawl {emailFreshness}</span>
         </div>
@@ -932,7 +934,7 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
                 <MapPinned size={14} aria-hidden="true" />
                 Open map + filters
               </button>
-              <span className="leadgen-powered-pill">{queuedJobs} queued jobs</span>
+              <span className="badge badge-ghost">{queuedJobs} queued jobs</span>
             </div>
           </div>
           <h2>Start with map + zip, then move leads to outreach.</h2>
@@ -1135,7 +1137,7 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
       </section>
 
       <div className="leadgen-command-grid">
-        <section className="admin-aff-card leadgen-data-board">
+        <section className="card card-border bg-base-100 p-4">
           <div className="admin-leadgen-section-head">
             <div>
               <h2 className="title-2">Ready segments</h2>
@@ -1157,7 +1159,7 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
           )) : <p className="admin-leadgen-empty">No ready segments yet. Run discovery and email crawling first.</p>}
         </section>
 
-        <section className="admin-aff-card leadgen-data-board">
+        <section className="card card-border bg-base-100 p-4">
           <div className="admin-leadgen-section-head">
             <div>
               <h2 className="title-2">Review queue</h2>
@@ -1181,7 +1183,7 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
           </div>
         </section>
 
-        <section className="admin-aff-card leadgen-data-board">
+        <section className="card card-border bg-base-100 p-4">
           <div className="admin-leadgen-section-head">
             <div>
               <h2 className="title-2">Campaign queue</h2>
@@ -1204,7 +1206,7 @@ function CommandTab({ status, opsStatus, runtimeHealth, onSelectTab, onStatusCha
           )) : <p className="admin-leadgen-empty">No campaigns yet. Build one from the Email tab after a segment is ready.</p>}
         </section>
 
-        <section className="admin-aff-card leadgen-data-board">
+        <section className="card card-border bg-base-100 p-4">
           <div className="admin-leadgen-section-head">
             <div>
               <h2 className="title-2">Worker jobs</h2>
@@ -1274,10 +1276,10 @@ function InsightsTab() {
 
       <div className="admin-leadgen-insights-grid">
         {/* Geography */}
-        <div className="admin-aff-card">
+        <div className="card card-border bg-base-100 p-4">
           <h3 className="title-3" style={{ margin: "0 0 12px" }}>Top zip codes</h3>
           {geography?.length ? (
-            <table className="admin-aff-table">
+            <table className="table table-zebra">
               <thead><tr><th>Zip</th><th>City</th><th style={{ textAlign: "right" }}>Businesses</th><th style={{ textAlign: "right" }}>With email</th></tr></thead>
               <tbody>
                 {geography.map((g) => (
@@ -1294,10 +1296,10 @@ function InsightsTab() {
         </div>
 
         {/* Industries */}
-        <div className="admin-aff-card">
+        <div className="card card-border bg-base-100 p-4">
           <h3 className="title-3" style={{ margin: "0 0 12px" }}>Industry breakdown</h3>
           {industries?.length ? (
-            <table className="admin-aff-table">
+            <table className="table table-zebra">
               <thead><tr><th>Industry</th><th style={{ textAlign: "right" }}>Businesses</th><th style={{ textAlign: "right" }}>% of total</th></tr></thead>
               <tbody>
                 {industries.map((ind) => (
@@ -1313,10 +1315,10 @@ function InsightsTab() {
         </div>
 
         {/* Email health */}
-        <div className="admin-aff-card">
+        <div className="card card-border bg-base-100 p-4">
           <h3 className="title-3" style={{ margin: "0 0 12px" }}>Email health by industry</h3>
           {emailHealth?.length ? (
-            <table className="admin-aff-table">
+            <table className="table table-zebra">
               <thead><tr><th>Industry</th><th style={{ textAlign: "right" }}>Emails</th><th style={{ textAlign: "right" }}>Deliverable</th><th style={{ textAlign: "right" }}>Rate</th></tr></thead>
               <tbody>
                 {emailHealth.map((h) => (
@@ -1333,10 +1335,10 @@ function InsightsTab() {
         </div>
 
         {/* Discovery velocity */}
-        <div className="admin-aff-card">
+        <div className="card card-border bg-base-100 p-4">
           <h3 className="title-3" style={{ margin: "0 0 12px" }}>Discovery velocity</h3>
           {discoveryVelocity?.length ? (
-            <table className="admin-aff-table">
+            <table className="table table-zebra">
               <thead><tr><th>Period</th><th style={{ textAlign: "right" }}>Discovered</th><th style={{ textAlign: "right" }}>With email</th></tr></thead>
               <tbody>
                 {discoveryVelocity.map((d) => (
@@ -1352,10 +1354,10 @@ function InsightsTab() {
         </div>
 
         {/* Campaign stats */}
-        <div className="admin-aff-card">
+        <div className="card card-border bg-base-100 p-4">
           <h3 className="title-3" style={{ margin: "0 0 12px" }}>Campaign performance</h3>
           {campaignStats?.length ? (
-            <table className="admin-aff-table">
+            <table className="table table-zebra">
               <thead><tr><th>Campaign</th><th style={{ textAlign: "right" }}>Sent</th><th style={{ textAlign: "right" }}>Open</th><th style={{ textAlign: "right" }}>Reply</th></tr></thead>
               <tbody>
                 {campaignStats.map((c) => (
@@ -1372,10 +1374,10 @@ function InsightsTab() {
         </div>
 
         {/* Top segments */}
-        <div className="admin-aff-card">
+        <div className="card card-border bg-base-100 p-4">
           <h3 className="title-3" style={{ margin: "0 0 12px" }}>Top segments (zip + industry)</h3>
           {topSegments?.length ? (
-            <table className="admin-aff-table">
+            <table className="table table-zebra">
               <thead><tr><th>Segment</th><th style={{ textAlign: "right" }}>Businesses</th><th style={{ textAlign: "right" }}>With email</th></tr></thead>
               <tbody>
                 {topSegments.map((s) => (
@@ -1803,7 +1805,7 @@ function DiscoverTab({ onStatusChange }) {
           </p>
         </div>
         <div className="leadgen-filter-presets" aria-label="Lead list presets">
-          {previewMode ? <span className="leadgen-status-chip">Preview</span> : null}
+          {previewMode ? <span className="badge badge-ghost">Preview</span> : null}
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("all")}>All in zip</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("ready")}>Ready contacts</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => applyListPreset("needs_email")}>Needs email crawl</button>
@@ -1973,8 +1975,8 @@ function DiscoverTab({ onStatusChange }) {
         </div>
       </div>
 
-      <div className="admin-aff-card">
-        <table className="admin-aff-table">
+      <div className="card card-border bg-base-100 p-4">
+        <table className="table table-zebra">
           <thead>
             <tr>
               <th>Name</th>
@@ -2211,7 +2213,7 @@ function LeadgenMap({ rows, total, busy }) {
   }, [geocodedRows]);
 
   return (
-    <section className="admin-aff-card leadgen-map-card" aria-label="Map of discovered businesses">
+    <section className="card card-border bg-base-100 p-4" aria-label="Map of discovered businesses">
       <div className="admin-leadgen-section-head">
         <div>
           <h3>Discovery map</h3>
@@ -2219,7 +2221,7 @@ function LeadgenMap({ rows, total, busy }) {
             Pins show the public-source businesses in the current filtered page before email crawling or outreach.
           </p>
         </div>
-        <span className="leadgen-powered-pill">{geocodedRows.length} mapped / {total} matches</span>
+        <span className="badge badge-ghost">{geocodedRows.length} mapped / {total} matches</span>
       </div>
       <div className="leadgen-map-shell">
         <div ref={containerRef} className="leadgen-map" />
@@ -2638,8 +2640,8 @@ function CampaignsTab({ seed, onSeedApplied }) {
         </button>
       </div>
 
-      <div className="admin-aff-card">
-        <table className="admin-aff-table">
+      <div className="card card-border bg-base-100 p-4">
+        <table className="table table-zebra">
           <thead>
             <tr>
               <th>Name</th>
@@ -2665,7 +2667,7 @@ function CampaignsTab({ seed, onSeedApplied }) {
                 <td className="admin-leadgen-muted">
                   {c.status}
                   <div>
-                    <span className={`leadgen-status-chip ${readiness.isReady ? "leadgen-status-chip--good" : "leadgen-status-chip--bad"}`}>
+                    <span className={`badge ${readiness.isReady ? "badge-success" : "badge-error"}`}>
                       checklist {readiness.score}/6
                     </span>
                   </div>
@@ -3082,8 +3084,8 @@ function JobsTab({ recent, onSelectTab }) {
         </div>
       ) : null}
       {err ? <p className="admin-leadgen-err">{err}</p> : null}
-      <div className="admin-aff-card admin-aff-card--jobs-table">
-        <table className="admin-aff-table">
+      <div className="card card-border bg-base-100 p-4">
+        <table className="table table-zebra">
           <thead>
             <tr>
               <th>#</th>
@@ -3104,7 +3106,7 @@ function JobsTab({ recent, onSelectTab }) {
                 <td>{kindLabel(j.kind)}</td>
                 <td>
                   <StatusChip status={j.status} />
-                  <span className={`leadgen-status-chip leadgen-status-chip--${classifyJob(j)}`}>
+                  <span className={`badge ${classifyJob(j) === "failed" ? "badge-error" : classifyJob(j) === "productive" ? "badge-success" : "badge-ghost"}`}>
                     {classifyJob(j).replace("_", " ")}
                   </span>
                 </td>

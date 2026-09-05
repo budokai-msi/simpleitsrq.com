@@ -1,8 +1,8 @@
 // Polished zero-state + human-review disclosure system for AdminOps tabs.
 // Replaces the flat "No records yet" + triangle empty state with a considered,
 // product-grade empty state that carries its own human-review disclosures.
-// Self-contained: uses only existing CSS classes (admin-aff-card, ops-panel,
-// ops-panel__copy, SignalPill) plus inline styles for the icon circle. No new
+// Self-contained: uses only existing CSS classes (card, ops-panel__copy,
+// SignalPill) plus inline styles for the icon circle. No new
 // CSS, no new dependencies (lucide-react is already present).
 import { Info, Inbox } from "lucide-react";
 import { SignalPill } from "./shared";
