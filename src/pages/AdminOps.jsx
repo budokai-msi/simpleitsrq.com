@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import "../styles/admin-tailwind.css"; // daisyUI 5 (preflight-free), admin-only
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
