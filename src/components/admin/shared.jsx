@@ -250,7 +250,7 @@ export function HotLeadsPanel({ hotLeads, error }) {
         Recent visitors scored by how likely they are to become an IT client - local geo,
         high-intent pages (services, booking, leadgen, contact, city pages), time on site, and depth.
       </p>
-      {error ? <EmptyState>{error}</EmptyState> : null}
+      {error ? <div className="alert alert-error" role="alert"><span>{error}</span></div> : null}
       {!error && leads.length === 0 ? <EmptyState>No ranked sessions yet - leads appear here as visitors engage.</EmptyState> : null}
       {leads.length > 0 ? (
         <div className="hotlead-grid">
@@ -318,7 +318,7 @@ export function LeadIntelPanels({ leadIntel, error }) {
     <>
       <section className="card card-border bg-base-100 p-4">
         <div className="ops-panel__head"><h2>Conversion funnel</h2><SignalPill state={funnel.sessions ? "good" : "neutral"}>14 days</SignalPill></div>
-        {error ? <EmptyState>{error}</EmptyState> : null}
+        {error ? <div className="alert alert-error" role="alert"><span>{error}</span></div> : null}
         <FunnelBar label="Visitors (sessions)" value={funnel.sessions} pct={100} />
         <FunnelBar label="Engaged" value={funnel.engaged} pct={funnel.engaged_pct} />
         <FunnelBar label="High-intent pages" value={funnel.high_intent} pct={funnel.high_intent_pct} />
@@ -327,7 +327,7 @@ export function LeadIntelPanels({ leadIntel, error }) {
 
       <section className="card card-border bg-base-100 p-4">
         <div className="ops-panel__head"><h2>Traffic sources</h2><SignalPill state={sources.length ? "good" : "neutral"}>14 days</SignalPill></div>
-        {error ? <EmptyState>{error}</EmptyState> : null}
+        {error ? <div className="alert alert-error" role="alert"><span>{error}</span></div> : null}
         {!error && sources.length === 0 ? <EmptyState>No source data yet.</EmptyState> : null}
         {sources.length ? (
           <div className="overflow-x-auto">
@@ -345,7 +345,7 @@ export function LeadIntelPanels({ leadIntel, error }) {
 
       <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Returning visitors</h2><SignalPill state={returning.length ? "good" : "neutral"}>{fmtNumber(returning.length)} watching · 30d</SignalPill></div>
-        {error ? <EmptyState>{error}</EmptyState> : null}
+        {error ? <div className="alert alert-error" role="alert"><span>{error}</span></div> : null}
         {!error && returning.length === 0 ? <EmptyState>No repeat visitors yet - they show up here after a second visit.</EmptyState> : null}
         {returning.length ? (
           <div className="overflow-x-auto">

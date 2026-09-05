@@ -141,6 +141,22 @@ export default function ProductFinderTab() {
         </button>
       </div>
 
+      {loading ? (
+        <div className="card card-border bg-base-100 col-span-full p-4" style={{ gridColumn: "1 / -1" }}>
+          <div className="skeleton h-4 w-40 mb-4" />
+          <div className="skeleton h-4 w-full mb-2" />
+          <div className="skeleton h-4 w-3/4 mb-2" />
+          <div className="skeleton h-4 w-1/2" />
+        </div>
+      ) : null}
+
+      {error ? (
+        <div className="alert alert-error col-span-full" role="alert">
+          <span>{error}</span>
+          <button type="button" className="btn btn-sm" onClick={load}>Retry</button>
+        </div>
+      ) : null}
+
       <div className="stats stats-vertical sm:stats-horizontal" style={{ gridColumn: "1 / -1" }}>
         <Metric label="Active businesses" value={fmtNumber(totalBusinesses)} hint="in matched segments" />
         <Metric label="Sellable products" value={fmtNumber(products.length)} hint="affiliate catalog" />
@@ -155,7 +171,7 @@ export default function ProductFinderTab() {
         <p className="ops-panel__copy">
           Where the demand is: active businesses in the lead database grouped by industry. The bar shows each segment's share of the largest segment.
         </p>
-        {error ? <EmptyState>{error}</EmptyState> : null}
+        {error ? <div className="alert alert-error" role="alert"><span>{error}</span></div> : null}
         {!error && segments.length === 0 ? <EmptyState>No active business segments found yet.</EmptyState> : null}
         {segments.length ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -186,7 +202,7 @@ export default function ProductFinderTab() {
         <p className="ops-panel__copy">
           Sellable affiliate products ranked by estimated potential commission: matching local businesses × commission rate. Products with no segment match show their commission rate only.
         </p>
-        {error ? <EmptyState>{error}</EmptyState> : null}
+        {error ? <div className="alert alert-error" role="alert"><span>{error}</span></div> : null}
         {!error && productRows.length === 0 ? <EmptyState>No sellable products synced yet.</EmptyState> : null}
         {productRows.length ? (
           <Table
@@ -224,7 +240,7 @@ export default function ProductFinderTab() {
         <p className="ops-panel__copy">
           Top demand signals from the trends feed — keywords people are searching right now, with their score and volume.
         </p>
-        {error ? <EmptyState>{error}</EmptyState> : null}
+        {error ? <div className="alert alert-error" role="alert"><span>{error}</span></div> : null}
         {!error && trends.length === 0 ? <EmptyState>No trend signals collected yet.</EmptyState> : null}
         {trends.length ? (
           <Table

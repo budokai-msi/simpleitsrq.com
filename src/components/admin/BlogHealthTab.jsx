@@ -16,36 +16,14 @@ export default function BlogHealthTab({ data, busy, runAction }) {
   let banner = null;
   if (consecutiveFailures >= 2) {
     banner = (
-      <div
-        style={{
-          background: "rgba(239, 68, 68, 0.12)",
-          border: "1px solid rgba(239, 68, 68, 0.4)",
-          color: "#ef4444",
-          borderRadius: 10,
-          padding: "12px 16px",
-          fontSize: 14,
-          fontWeight: 600,
-          marginBottom: 16,
-        }}
-      >
-        Auto-publish has failed {consecutiveFailures} days in a row. Last error: {lastError || "unknown"}
+      <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+        <span>Auto-publish has failed {consecutiveFailures} days in a row. Last error: {lastError || "unknown"}</span>
       </div>
     );
   } else if (lastOk) {
     banner = (
-      <div
-        style={{
-          background: "rgba(16, 185, 129, 0.12)",
-          border: "1px solid rgba(16, 185, 129, 0.4)",
-          color: "#10b981",
-          borderRadius: 10,
-          padding: "12px 16px",
-          fontSize: 14,
-          fontWeight: 600,
-          marginBottom: 16,
-        }}
-      >
-        Last publish OK ({fmtTime(lastOk.created_at)})
+      <div className="alert alert-success" role="status" style={{ marginBottom: 16 }}>
+        <span>Last publish OK ({fmtTime(lastOk.created_at)})</span>
       </div>
     );
   }

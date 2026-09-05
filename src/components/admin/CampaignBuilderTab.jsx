@@ -193,7 +193,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
           ))}
         </div>
 
-        {localError ? <div className="ops-notice">{localError}</div> : null}
+        {localError ? <div className="alert alert-error" role="alert"><span>{localError}</span></div> : null}
 
         {step === 1 && (
           <div>
@@ -226,7 +226,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
               </button>
               <button className="btn btn-primary btn-sm" type="button" onClick={() => setStep(2)}>Next</button>
             </div>
-            {previewError ? <div className="ops-notice" style={{ marginTop: 12 }}>{previewError}</div> : null}
+            {previewError ? <div className="alert alert-error" role="alert" style={{ marginTop: 12 }}><span>{previewError}</span><button type="button" className="btn btn-sm" onClick={previewSegment}>Retry</button></div> : null}
             {preview ? (
               <div style={{ marginTop: 12 }}>
                 <p style={{ fontSize: 14 }}>
@@ -335,7 +335,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
 
       <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Existing campaigns</h2></div>
-        {campaignsError ? <div className="ops-notice">{campaignsError}</div> : null}
+        {campaignsError ? <div className="alert alert-error" role="alert"><span>{campaignsError}</span><button type="button" className="btn btn-sm" onClick={() => { setCampaignsError(null); getJson("leadgen-campaigns").then((res) => setCampaigns(res.rows || [])).catch((e) => setCampaignsError(String(e.message || e))); }}>Retry</button></div> : null}
         <Table
           columns={["Name", "Status", "Sends", "Sent", "Opened", "Replied"]}
           rows={campaigns}
@@ -366,7 +366,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
 
       <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Deliverability</h2></div>
-        {deliverabilityError ? <div className="ops-notice">{deliverabilityError}</div> : null}
+        {deliverabilityError ? <div className="alert alert-error" role="alert"><span>{deliverabilityError}</span><button type="button" className="btn btn-sm" onClick={() => { setDeliverabilityError(null); getJson("leadgen-deliverability").then(setDeliverability).catch((e) => setDeliverabilityError(String(e.message || e))); }}>Retry</button></div> : null}
         {deliverability ? (
           <div>
             <p style={{ fontSize: 14, marginBottom: 12 }}>
@@ -423,7 +423,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
             Merge selected
           </button>
         </div>
-        {dedupError ? <div className="ops-notice" style={{ marginTop: 12 }}>{dedupError}</div> : null}
+        {dedupError ? <div className="alert alert-error" role="alert" style={{ marginTop: 12 }}><span>{dedupError}</span></div> : null}
         {dedupResult ? (
           <div className="ops-notice" style={{ marginTop: 12 }}>
             Merged {fmtNumber(dedupResult.applied)} duplicate pair(s).

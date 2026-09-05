@@ -124,7 +124,12 @@ export default function LeadsInboxTab({ data, error, reload }) {
         <p className="ops-panel__copy">
           Track inbound inquiries, send direct email replies via Resend (`contact@simpleitsrq.com`), generate client portal tickets with 1 click, and view AI Microsoft documentation suggestions.
         </p>
-        {error ? <EmptyState>{error}</EmptyState> : null}
+        {error ? (
+          <div className="alert alert-error" role="alert">
+            <span>{error}</span>
+            <button type="button" className="btn btn-sm" onClick={reload}>Retry</button>
+          </div>
+        ) : null}
         {!error && leads.length === 0 ? (
           <ZeroState
             title="No leads yet"

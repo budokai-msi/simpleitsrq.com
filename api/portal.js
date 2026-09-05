@@ -248,7 +248,11 @@ function adminTokenSession() {
       id: 0,
       email: process.env.ADMIN_EMAIL || "admin@simpleitsrq.com",
       name: "Admin (token)",
-      is_admin: true,
+      // Match the real session shape (camelCase `isAdmin`, set by
+      // getSession via isAdminEmail). The old snake_case `is_admin`
+      // was silently ignored by the ownerSession check, which only
+      // worked because of the __viaToken marker below.
+      isAdmin: true,
     },
     __isAdmin: true,
     __viaToken: true,
@@ -335,8 +339,18 @@ async function dispatch(request, method) {
 // the admin-token path and the cookie-session path share one routing
 // table. Anything reachable without auth must remain in dispatch()
 // above the auth gates.
+//
+// The client and admin surfaces are deliberately SEPARATE routers. A
+// customer session can only ever reach CLIENT_ACTIONS; the entire
+// admin surface lives behind the ownerSession gate in
+// dispatchAdmin(). This makes the boundary structural (which router
+// you're in) rather than a single boolean in a shared table.
 async function dispatchAuthed(request, method, url, action, session) {
   const ownerSession = session?.__viaToken === true || session?.user?.isAdmin === true;
+
+  // ── Client portal (any authenticated user) ─────────────────────
+  // These are the only actions a customer session can reach. No admin
+  // surface lives here.
   if (action === "me"              && method === "GET")   return handleMeGet(session);
   if (action === "me"              && method === "PATCH") return handleMePatch(session, request);
   if (action === "export-data"     && method === "GET")   return handleExportData(session);
@@ -349,8 +363,18 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "ticket-appointment"        && method === "POST") return ownerSession ? handleTicketAppointment(session, request) : json(403, { ok: false, error: "forbidden" });
   if (action === "ticket-appointment-cancel" && method === "POST") return ownerSession ? handleTicketAppointmentCancel(session, request) : json(403, { ok: false, error: "forbidden" });
   if (action === "invoices"        && method === "GET")   return handleInvoices(session);
-  // Everything below this boundary is internal/admin. Fail closed before any handler runs.
+
+  // ── Admin surface ───────────────────────────────────────────────
+  // Everything below is internal/admin. Fail closed before any handler
+  // runs: a non-owner session never reaches dispatchAdmin().
   if (!ownerSession) return json(403, { ok: false, error: "forbidden" });
+  return dispatchAdmin(request, method, url, action, session);
+}
+
+// Admin-only router. Only reachable when ownerSession is true (admin
+// cookie session or admin API token). A customer session can never
+// reach this function.
+async function dispatchAdmin(request, method, url, action, session) {
   if (action === "visitors"        && method === "GET")   return handleVisitors(session);
   if (action === "investigate-ip"   && method === "GET")   return handleInvestigateIp(session, url);
   if (action === "investigate"      && method === "GET")   return handleInvestigateIp(session, url);
@@ -431,31 +455,31 @@ async function dispatchAuthed(request, method, url, action, session) {
   if (action === "admin-status"             && method === "GET")  return handleAdminStatus(session);
 
   // Internal OpSec data/actions. All admin-only; mutations write through
-    // the same admin-token allowlist.
-    if (action === "opsec-data"          && method === "GET")  return handleOpsecData(session);
-    if (action === "opsec-hunt-brief"    && method === "GET")  return handleOpsecHuntBrief(session);
-    if (action === "opsec-scan"          && method === "POST") return handleOpsecScan(session);
-    if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
-    if (action === "opsec-ioc-add"       && method === "POST") return handleOpsecIocAdd(session, request);
-    if (action === "opsec-note-save"     && method === "POST") return handleOpsecNoteSave(session, request);
-    if (action === "matrix-capture"      && method === "POST") return handleMatrixCapture(session);
-    if (action === "matrix-retain"       && method === "GET")  return handleMatrixRetain(session, url);
-    if (action === "analytics"           && method === "GET")  return handleAnalytics(session, url);
+  // the same admin-token allowlist.
+  if (action === "opsec-data"          && method === "GET")  return handleOpsecData(session);
+  if (action === "opsec-hunt-brief"    && method === "GET")  return handleOpsecHuntBrief(session);
+  if (action === "opsec-scan"          && method === "POST") return handleOpsecScan(session);
+  if (action === "opsec-domain-add"    && method === "POST") return handleOpsecDomainAdd(session, request);
+  if (action === "opsec-ioc-add"       && method === "POST") return handleOpsecIocAdd(session, request);
+  if (action === "opsec-note-save"     && method === "POST") return handleOpsecNoteSave(session, request);
+  if (action === "matrix-capture"      && method === "POST") return handleMatrixCapture(session);
+  if (action === "matrix-retain"       && method === "GET")  return handleMatrixRetain(session, url);
+  if (action === "analytics"           && method === "GET")  return handleAnalytics(session, url);
 
-    // Affiliate Dashboard actions. All admin-only; read + sync via admin token.
-    if (action === "affiliate-dashboard-summary" && method === "GET") return handleAffiliateDashboardSummary();
-    if (action === "trends"                   && method === "GET")  return handleTrends(session, url);
-    if (action === "affiliate-products"       && method === "GET")  return handleAffiliateProducts(session, url);
-    if (action === "affiliate-stats"          && method === "GET")  return handleAffiliateStats(session, url);
-    if (action === "affiliate-networks"       && method === "GET")  return handleAffiliateNetworks();
-    if (action === "affiliate-sync"           && method === "POST") return handleAffiliateSync(session, request);
-    if (action === "affiliate-ingest"         && method === "POST") return handleAffiliateIngest();
-    if (action === "affiliate-setup"          && method === "GET")  return handleAffiliateSetup(session);
+  // Affiliate Dashboard actions. All admin-only; read + sync via admin token.
+  if (action === "affiliate-dashboard-summary" && method === "GET") return handleAffiliateDashboardSummary();
+  if (action === "trends"                   && method === "GET")  return handleTrends(session, url);
+  if (action === "affiliate-products"       && method === "GET")  return handleAffiliateProducts(session, url);
+  if (action === "affiliate-stats"          && method === "GET")  return handleAffiliateStats(session, url);
+  if (action === "affiliate-networks"       && method === "GET")  return handleAffiliateNetworks();
+  if (action === "affiliate-sync"           && method === "POST") return handleAffiliateSync(session, request);
+  if (action === "affiliate-ingest"         && method === "POST") return handleAffiliateIngest();
+  if (action === "affiliate-setup"          && method === "GET")  return handleAffiliateSetup(session);
 
-    // Product Finder — read-only revenue planning (admin only)
-    if (action === "product-finder"           && method === "GET")  return handleProductFinder(session);
+  // Product Finder — read-only revenue planning (admin only)
+  if (action === "product-finder"           && method === "GET")  return handleProductFinder(session);
 
-    return json(404, { ok: false, error: "unknown_action" });
+  return json(404, { ok: false, error: "unknown_action" });
 }
 
 export async function GET(request)   { return dispatch(request, "GET"); }
