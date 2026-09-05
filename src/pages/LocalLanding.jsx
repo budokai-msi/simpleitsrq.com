@@ -273,24 +273,28 @@ export default function LocalLanding() {
           </div>
           <div className="solution-grid">
             {SERVICES.map(({ Icon, title, desc }) => (
-              <article key={title} className="solution-card">
-                <div className="solution-card-head">
-                  <span className="solution-card-icon"><Icon size={18} /></span>
-                  <h3 className="solution-card-title">{title}</h3>
+              <article key={title} className="card card-border bg-base-100">
+                <div className="card-body">
+                  <div className="card-title">
+                    <span className="grid place-items-center w-9 h-9 rounded-lg bg-primary/10 text-primary"><Icon size={18} /></span>
+                    <h3 className="text-base">{title}</h3>
+                  </div>
+                  <p className="text-sm text-base-content/70">{desc}</p>
                 </div>
-                <p className="solution-card-desc">{desc}</p>
               </article>
             ))}
           </div>
-          <div className="local-leadgen-cta">
-            <div>
-              <span className="eyebrow">Leadgen — our local prospect research tool</span>
-              <h3 className="title-2">Find new {city.city} businesses, ZIP by ZIP.</h3>
-              <p className="section-sub">
-                Building your own list? Leadgen scans public business records by ZIP code and industry, surfaces which prospects are worth contacting, and lets you export the ones you choose.
-              </p>
+          <div className="card card-border bg-base-100 mt-7">
+            <div className="card-body md:flex-row md:items-center md:justify-between md:gap-6">
+              <div className="flex-1 min-w-0">
+                <span className="eyebrow">Leadgen — our local prospect research tool</span>
+                <h3 className="text-xl font-semibold my-1.5">Find new {city.city} businesses, ZIP by ZIP.</h3>
+                <p className="text-sm text-base-content/70 leading-relaxed">
+                  Building your own list? Leadgen scans public business records by ZIP code and industry, surfaces which prospects are worth contacting, and lets you export the ones you choose.
+                </p>
+              </div>
+              <Link to="/leadgen" className="btn btn-primary btn-lg shrink-0">Scan a ZIP code free <ArrowRight size={16} /></Link>
             </div>
-            <Link to="/leadgen" className="btn btn-primary btn-lg">Scan a ZIP code free <ArrowRight size={16} /></Link>
           </div>
         </div>
       </section>
@@ -307,9 +311,11 @@ export default function LocalLanding() {
             </div>
             <div className="local-patterns-grid">
               {city.localPatterns.map((p) => (
-                <article key={p.title} className="local-pattern-card">
-                  <h3>{p.title}</h3>
-                  <p>{p.body}</p>
+                <article key={p.title} className="card card-border bg-base-100 border-l-4 border-l-primary">
+                  <div className="card-body">
+                    <h3 className="text-sm font-bold text-primary tracking-tight">{p.title}</h3>
+                    <p className="text-sm text-base-content/80 leading-relaxed">{p.body}</p>
+                  </div>
                 </article>
               ))}
             </div>
@@ -392,50 +398,52 @@ export default function LocalLanding() {
 
       <section className="section" id="local-contact">
         <div className="container">
-          <div className="lead-capture lead-capture-wide">
-            <div>
-              <span className="eyebrow">Free IT audit</span>
-              <h2 className="title-2">Get a free 15-minute IT assessment for your {city.city} business</h2>
-              <p>Tell us a little about your team and we'll schedule a no-pressure call with a local engineer. No sales pitch - just a clear read on your risk, your Microsoft 365, and what good would look like.</p>
-              <ul className="feature-list">
-                <li><Check size={16} color="#111827" /> Local Sarasota/Bradenton engineer</li>
-                <li><Check size={16} color="#111827" /> No long-term contract required</li>
-                <li><Check size={16} color="#111827" /> Works with your current team or replaces it</li>
-              </ul>
+          <div className="card card-border bg-base-100 lead-capture-wide">
+            <div className="card-body md:grid md:grid-cols-[1.1fr_1fr] md:gap-10">
+              <div>
+                <span className="eyebrow">Free IT audit</span>
+                <h2 className="text-2xl font-semibold my-2">Get a free 15-minute IT assessment for your {city.city} business</h2>
+                <p className="text-sm text-base-content/70 leading-relaxed">Tell us a little about your team and we'll schedule a no-pressure call with a local engineer. No sales pitch - just a clear read on your risk, your Microsoft 365, and what good would look like.</p>
+                <ul className="flex flex-col gap-1.5 mt-6 text-sm">
+                  <li className="flex items-center gap-2"><Check size={16} className="text-base-content" /> Local Sarasota/Bradenton engineer</li>
+                  <li className="flex items-center gap-2"><Check size={16} className="text-base-content" /> No long-term contract required</li>
+                  <li className="flex items-center gap-2"><Check size={16} className="text-base-content" /> Works with your current team or replaces it</li>
+                </ul>
+              </div>
+              <form className="flex flex-col gap-3.5" onSubmit={submit} noValidate>
+                {sent ? (
+                  <div className="text-center py-10">
+                    <Check size={28} className="text-success mx-auto" />
+                    <h3 className="text-lg font-semibold mt-3 mb-1.5">Thanks - we'll be in touch.</h3>
+                    <p className="text-sm text-base-content/70">A local engineer will reach out within one business day.</p>
+                  </div>
+                ) : (
+                  <>
+                    <label className="flex flex-col gap-1.5 text-sm font-medium text-base-content">Name
+                      <input className="input input-bordered w-full" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                    </label>
+                    <label className="flex flex-col gap-1.5 text-sm font-medium text-base-content">Work email
+                      <input className="input input-bordered w-full" required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                    </label>
+                    <label className="flex flex-col gap-1.5 text-sm font-medium text-base-content">Company
+                      <input className="input input-bordered w-full" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+                    </label>
+                    <label className="flex flex-col gap-1.5 text-sm font-medium text-base-content">How can we help?
+                      <textarea className="textarea textarea-bordered w-full" rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+                    </label>
+                    <button type="submit" className="btn btn-primary btn-lg" disabled={status === "sending"}>
+                      {status === "sending" ? "Sending…" : <>Request my audit <ArrowRight size={16} /></>}
+                    </button>
+                    {status === "error" && (
+                      <p role="alert" className="mt-2.5 text-sm text-error">
+                        Something went wrong sending that. Please email{" "}
+                        <a href="mailto:hello@simpleitsrq.com">hello@simpleitsrq.com</a> and we'll get right back to you.
+                      </p>
+                    )}
+                  </>
+                )}
+              </form>
             </div>
-            <form className="lead-capture-form" onSubmit={submit} noValidate>
-              {sent ? (
-                <div className="lead-capture-success">
-                  <Check size={28} color="#107C10" />
-                  <h3>Thanks - we'll be in touch.</h3>
-                  <p>A local engineer will reach out within one business day.</p>
-                </div>
-              ) : (
-                <>
-                  <label>Name
-                    <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                  </label>
-                  <label>Work email
-                    <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-                  </label>
-                  <label>Company
-                    <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
-                  </label>
-                  <label>How can we help?
-                    <textarea rows={3} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
-                  </label>
-                  <button type="submit" className="btn btn-primary btn-lg" disabled={status === "sending"}>
-                    {status === "sending" ? "Sending…" : <>Request my audit <ArrowRight size={16} /></>}
-                  </button>
-                  {status === "error" && (
-                    <p role="alert" style={{ marginTop: 10, fontSize: 14, color: "#B42318" }}>
-                      Something went wrong sending that. Please email{" "}
-                      <a href="mailto:hello@simpleitsrq.com">hello@simpleitsrq.com</a> and we'll get right back to you.
-                    </p>
-                  )}
-                </>
-              )}
-            </form>
           </div>
         </div>
       </section>

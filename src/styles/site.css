@@ -9593,22 +9593,6 @@ main, #main {
 /* Cross-promote Leadgen (the site's only product) from city landing pages —
    gives Google a crawl path from the high-intent local pages to /leadgen and
    funnels local-visiting users to the research tool. */
-.local-leadgen-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  margin-top: 28px;
-  padding: 24px;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-lg);
-}
-.local-leadgen-cta > div { flex: 1 1 360px; min-width: 0; }
-.local-leadgen-cta .title-2 { margin: 6px 0 10px; }
-.local-leadgen-cta .btn { flex: 0 0 auto; white-space: nowrap; }
-
 .solution-card {
   display: flex;
   flex-direction: column;
@@ -9696,53 +9680,6 @@ main, #main {
   padding: 10px 0;
 }
 
-/* Lead capture card (used on local pages, wide variant) */
-.lead-capture {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 40px;
-  align-items: start;
-  background: var(--surface, #fff);
-  border: 1px solid var(--border, #e1e1e1);
-  border-radius: 12px;
-  padding: 40px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-}
-.lead-capture-wide { max-width: 1100px; margin: 0 auto; }
-.lead-capture h2 { margin: 8px 0 12px; }
-.lead-capture-form {
-  display: grid;
-  gap: 14px;
-}
-.lead-capture-form label {
-  display: grid;
-  gap: 6px;
-  font-size: 14px;
-  color: var(--text-1);
-  font-weight: 500;
-}
-.lead-capture-form input,
-.lead-capture-form textarea {
-  padding: 12px 14px;
-  border: 1px solid var(--border, #d1d1d1);
-  border-radius: 6px;
-  font-size: 15px;
-  font-family: inherit;
-  background: var(--surface);
-  color: var(--text-1);
-}
-.lead-capture-form input:focus,
-.lead-capture-form textarea:focus {
-  outline: 2px solid #111827;
-  outline-offset: 1px;
-  border-color: #111827;
-}
-.lead-capture-success {
-  text-align: center;
-  padding: 40px 20px;
-}
-.lead-capture-success h3 { margin: 12px 0 6px; }
-
 /* Author block */
 .author-block {
   display: flex;
@@ -9799,9 +9736,6 @@ main, #main {
 }
 
 /* Responsive */
-@media (max-width: 900px) {
-  .lead-capture { grid-template-columns: 1fr; gap: 20px; padding: 24px; }
-}
 @media (max-width: 520px) {
   .blog-card, .dash-card, .compliance-card, .service-area-card, .partner-card {
     padding: 16px 10px 12px 10px;
@@ -9811,7 +9745,6 @@ main, #main {
   .cards-grid, .blog-grid, .compliance-grid {
     gap: 16px;
   }
-  .lead-capture { padding: 20px; }
 }
 
 
@@ -10408,39 +10341,6 @@ main, #main {
 [data-theme="dark"] .blog-convert-cta {
   background: #0F1217;
   border-color: #353B45;
-}
-
-/* ── City landing: local patterns (per-city diversification) ── */
-.local-patterns-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 18px;
-  margin-top: 32px;
-}
-.local-pattern-card {
-  padding: 22px 24px;
-  background: var(--surface, #fff);
-  border: 1px solid var(--border, #e5e7eb);
-  border-radius: 12px;
-  border-left: 3px solid var(--brand, #111827);
-}
-.local-pattern-card h3 {
-  margin: 0 0 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--brand, #111827);
-  letter-spacing: -0.01em;
-}
-.local-pattern-card p {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--text, #1a1a1a);
-}
-[data-theme="dark"] .local-pattern-card {
-  background: var(--surface, #1a1d23);
-  border-color: var(--border, #2a2d35);
-  border-left-color: var(--brand, #111827);
 }
 
 /* Home: Free-tools + Managed-service grids ─────────────── */
@@ -11622,7 +11522,6 @@ html { scroll-behavior: smooth; }
 .blog-card,
 .product-card,
 .stack-tool,
-.local-pattern-card,
 .solution-card,
 .compare-card {
   transition:
@@ -11635,7 +11534,6 @@ html { scroll-behavior: smooth; }
 .blog-card:hover,
 .product-card:hover,
 .stack-tool:hover,
-.local-pattern-card:hover,
 .solution-card:hover,
 .compare-card:hover {
   transform: translateY(-2px);
@@ -11718,7 +11616,7 @@ select:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .glossary-card, .blog-card, .product-card, .stack-tool,
-  .local-pattern-card, .solution-card, .compare-card,
+  .solution-card, .compare-card,
   .btn, .btn-primary, .btn-secondary,
   .reveal-up, .reveal-down, .reveal-left, .reveal-right,
   .reveal-fade, .reveal-scale {

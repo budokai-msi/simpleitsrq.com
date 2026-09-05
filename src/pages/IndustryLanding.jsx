@@ -307,15 +307,17 @@ export default function IndustryLanding() {
           local business owners to the research tool. */}
       <section className="section">
         <div className="container">
-          <div className="local-leadgen-cta">
-            <div>
-              <span className="eyebrow">Leadgen — local prospect research</span>
-              <h3 className="title-2">Build your own {industry.displayName.toLowerCase()} list in {city.city}</h3>
-              <p className="section-sub">
-                Leadgen scans public business records by ZIP code and industry, surfaces which prospects are worth contacting, and exports the ones you choose — no paid lists required.
-              </p>
+          <div className="card card-border bg-base-100">
+            <div className="card-body md:flex-row md:items-center md:justify-between md:gap-6">
+              <div className="flex-1 min-w-0">
+                <span className="eyebrow">Leadgen — local prospect research</span>
+                <h3 className="text-xl font-semibold my-1.5">Build your own {industry.displayName.toLowerCase()} list in {city.city}</h3>
+                <p className="text-sm text-base-content/70 leading-relaxed">
+                  Leadgen scans public business records by ZIP code and industry, surfaces which prospects are worth contacting, and exports the ones you choose — no paid lists required.
+                </p>
+              </div>
+              <Link to="/leadgen" className="btn btn-primary btn-lg shrink-0">Scan a ZIP code free <ArrowRight size={16} /></Link>
             </div>
-            <Link to="/leadgen" className="btn btn-primary btn-lg">Scan a ZIP code free <ArrowRight size={16} /></Link>
           </div>
         </div>
       </section>
