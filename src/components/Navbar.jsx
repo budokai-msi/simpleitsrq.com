@@ -138,6 +138,9 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
         <div className="nav-actions">
           {ThemeToggle && <ThemeToggle />}
           {portalCta}
+          <Link to="/leadgen" className="btn btn-secondary nav-leadgen-cta">
+            <Target size={15} /> Try Leadgen
+          </Link>
           <Link to="/book" className="btn btn-primary">Book a Call</Link>
         </div>
         <div className="nav-mobile-actions">
@@ -195,6 +198,9 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
             </Link>
             <Link to="/book" className="btn btn-primary mobile-menu-cta" onClick={() => setOpen(false)}>
               <Calendar size={16} /> Book a Call
+            </Link>
+            <Link to="/leadgen" className="btn btn-secondary mobile-menu-cta" onClick={() => setOpen(false)}>
+              <Target size={16} /> Try Leadgen
             </Link>
           </section>
         </nav>

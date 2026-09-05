@@ -768,6 +768,19 @@ main, #main {
 .nav-actions > *:not(:last-child) {
   margin-right: 2px;
 }
+/* Leadgen is the site's only product — give its nav CTA a brand-tinted
+   treatment so it reads as the flagship action, distinct from the plain
+   secondary buttons. */
+.nav-actions .nav-leadgen-cta {
+  color: var(--brand) !important;
+  border-color: var(--border-strong) !important;
+  background: var(--brand-subtle) !important;
+}
+.nav-actions .nav-leadgen-cta:hover,
+.nav-actions .nav-leadgen-cta:focus-visible {
+  background: var(--brand-glow) !important;
+  border-color: var(--brand) !important;
+}
 /* Header phone — the standard MSP trust signal. Tabular figures keep the
    number steady; hidden below 1180px where the nav gets tight (mobile has
    the bottom action-bar Call button instead). */
