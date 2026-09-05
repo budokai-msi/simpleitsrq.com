@@ -87,35 +87,22 @@ export default function NotFound() {
 
           {/* Suggestions grid - every link goes somewhere real and useful.
               Replaces the previous home/blog-only dead end. */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: 14,
-            marginTop: 8,
-          }}>
+          <div className="grid gap-3.5 mt-2 sm:grid-cols-2 lg:grid-cols-3">
             {SUGGESTIONS.map(({ to, Icon, title, desc }) => (
               <Link
                 key={to}
                 to={to}
-                style={{
-                  display: "block",
-                  padding: "18px 20px",
-                  borderRadius: 12,
-                  background: "var(--surface)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text-1)",
-                  textDecoration: "none",
-                  transition: "border-color 180ms ease",
-                }}
-                className="notfound-card"
+                className="card card-border bg-base-100 no-underline hover:border-primary"
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                  <Icon size={18} color="var(--brand)" aria-hidden="true" />
-                  <strong style={{ fontSize: 15 }}>{title}</strong>
+                <div className="card-body">
+                  <div className="flex items-center gap-2.5 mb-1.5">
+                    <Icon size={18} className="text-primary" aria-hidden="true" />
+                    <strong className="text-sm">{title}</strong>
+                  </div>
+                  <p className="m-0 text-xs text-base-content/70 leading-relaxed">
+                    {desc}
+                  </p>
                 </div>
-                <p style={{ margin: 0, fontSize: 13, color: "var(--text-2)", lineHeight: 1.5 }}>
-                  {desc}
-                </p>
               </Link>
             ))}
           </div>
@@ -129,11 +116,6 @@ export default function NotFound() {
           </p>
         </div>
       </section>
-      <style>{`
-        .notfound-card:hover {
-          border-color: var(--brand);
-        }
-      `}</style>
     </main>
   );
 }
