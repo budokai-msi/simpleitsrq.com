@@ -32,12 +32,10 @@ import { AutoAds } from "./components/AdSense.jsx";
 import LiveChat from "./components/LiveChat.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
-import "./App.css";
 // NOTE: leadgen.css is intentionally NOT imported here. It's ~97KB of
 // dashboard-only styles, so each lazy-loaded leadgen route (Leadgen,
 // LeadgenDashboard, AdminOps) imports it itself and Vite splits it into a
 // CSS chunk that only leadgen visitors download.
-import "./styles/leadgen-extras.css";
 
 // Lazy-load everything that isn't the homepage so the initial bundle stays
 // small. The homepage is the most-visited route and stays eager.

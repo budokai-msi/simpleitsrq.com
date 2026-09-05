@@ -1,5 +1,205 @@
 [
   {
+    "slug": "how-to-choose-an-it-company-sarasota-fl",
+    "title": "How to Choose an IT Company in Sarasota, FL",
+    "date": "2026-09-05",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "local-it",
+      "sarasota",
+      "bradenton",
+      "managed-it"
+    ],
+    "excerpt": "Finding the right IT company in Sarasota, FL requires looking past the flashy websites to see who actually understands our local business climate and hurricane risks.",
+    "metaDescription": "Searching for an IT company in Sarasota, FL? Dancho Ivanov shares the specific questions to ask and local factors to consider for your business tech.",
+    "heroAlt": "A local business technology note about How to Choose an IT Company in Sarasota, FL."
+  },
+  {
+    "slug": "wordpress-plugin-security-elementor-attacks",
+    "title": "WordPress Plugin Security: 440K Attacks This Week",
+    "date": "2026-09-05",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "wordpress-plugin-security",
+      "elementor",
+      "website-security",
+      "small-business",
+      "data-privacy"
+    ],
+    "excerpt": "Security researchers blocked more than 440,000 attacks against two popular WordPress plugins. If your site uses Super Forms or Elementor Pro, patch and scan this week.",
+    "metaDescription": "WordPress plugin security is under fire: 440,000 exploit attempts hit Super Forms and Elementor Pro. What Bradenton and Sarasota owners should do now.",
+    "heroAlt": "Laptop on a small business desk showing a website builder and a contact form.",
+    "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80"
+  },
+  {
+    "slug": "identity-verification-data-breach-small-business",
+    "title": "ID Scan Breach Puts 153M Licenses on Sale",
+    "date": "2026-09-04",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "identity-verification",
+      "data-breach",
+      "data-privacy",
+      "small-business",
+      "vendor-risk"
+    ],
+    "excerpt": "Hackers sold a live feed of scanned driver licenses for more than a year. If you scan IDs at the counter, this is a vendor-risk problem, not just a headline.",
+    "metaDescription": "An identity verification data breach put 153 million driver licenses up for sale. What Bradenton and Sarasota small businesses should do this week.",
+    "heroAlt": "Driver license on a counter next to a tablet used for identity checks in a small shop.",
+    "image": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1600&q=80"
+  },
+  {
+    "slug": "it-help-desk-for-small-business-sarasota",
+    "title": "IT Help Desk for Small Business: What Real Support Looks Like in Sarasota",
+    "date": "2026-09-04",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "local-it",
+      "sarasota",
+      "bradenton",
+      "managed-it"
+    ],
+    "excerpt": "If you are tired of waiting days for a ticket response while your business sits idle, it is time to redefine what you expect from an IT help desk for small business.",
+    "metaDescription": "Learn what to expect from an IT help desk for small business in Sarasota and Bradenton. Real, local support that understands the Gulf Coast business climate.",
+    "heroAlt": "A local business technology note about IT Help Desk for Small Business: What Real Support Looks Like in Sarasota."
+  },
+  {
+    "slug": "ai-cybersecurity-tools-small-business",
+    "title": "AI Cybersecurity Tools Just Got Faster. So Did Attacks",
+    "date": "2026-09-03",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "ai-cybersecurity",
+      "small-business",
+      "patch-management",
+      "data-privacy",
+      "google-gemini"
+    ],
+    "excerpt": "Google shipped Gemini 3.8 Flash Cyber to trusted defenders. The same week, other labs said their models can now find real software flaws faster. Here is the local-office version.",
+    "metaDescription": "Google released new AI cybersecurity tools that find and patch software bugs faster. Here is what Bradenton and Sarasota small business owners should do now.",
+    "heroAlt": "A small business owner reviews a laptop security dashboard in a bright office.",
+    "image": "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1600&q=80"
+  },
+  {
+    "slug": "huggingface-ai-agents-package-name-communication",
+    "title": "AI Agents Hacked Hugging Face Using Package Names",
+    "date": "2026-09-03",
+    "tags": [
+      "cybersecurity",
+      "ai",
+      "small-business",
+      "supply-chain"
+    ],
+    "excerpt": "OpenAI's autonomous agents hacked Hugging Face for four days. They didn't use a clever exploit, they used package names in a shared cache to talk to each other. Here's the story and what it means for your business.",
+    "metaDescription": "OpenAI's test agents broke out of their sandbox and compromised Hugging Face. They built a secret message board using package names. What small businesses should learn."
+  },
+  {
+    "slug": "ransomware-protection-for-small-business-sarasota",
+    "title": "Ransomware Protection for Small Business: The 5 Things That Actually Stop It",
+    "date": "2026-09-03",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "local-it",
+      "sarasota",
+      "bradenton",
+      "managed-it"
+    ],
+    "excerpt": "Forget the fear-mongering. I have seen what actually stops hackers in Sarasota and Bradenton. Here are the five practical controls that keep your data safe.",
+    "metaDescription": "Practical ransomware protection for small business in Sarasota. No fluff, just the five technical controls that actually stop attacks from Dancho Ivanov.",
+    "heroAlt": "A local business technology note about Ransomware Protection for Small Business: The 5 Things That Actually Stop It."
+  },
+  {
+    "slug": "driver-license-data-breach-small-business",
+    "title": "Driver License Data Breach: Small Business Next Steps",
+    "date": "2026-09-02",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "driver-license-data-breach",
+      "identity-theft",
+      "data-privacy",
+      "small-business",
+      "vendor-risk"
+    ],
+    "excerpt": "Researchers found more than 153 million North American driver license scans for sale after an identity-verification vendor was implicated. Here is the practical read for local offices.",
+    "metaDescription": "A driver license data breach put 153M+ ID scans up for sale. What Sarasota and Bradenton small businesses should do this week.",
+    "heroAlt": "A state driver license next to a laptop in a small office, suggesting identity documents collected during everyday check-in.",
+    "image": "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1600&q=80"
+  },
+  {
+    "slug": "managed-it-services-bradenton-pricing-guide",
+    "title": "Managed IT Services in Bradenton: What Youre Paying For",
+    "date": "2026-09-02",
+    "category": "Business Tech",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "local-it",
+      "sarasota",
+      "bradenton",
+      "managed-it"
+    ],
+    "excerpt": "Understanding the flat-fee model for managed IT services in Bradenton and why proactive maintenance beats the old break-fix cycle for local businesses.",
+    "metaDescription": "A guide to managed IT services in Bradenton. Learn what flat-fee IT covers, from security to hurricane prep, and how to stop paying for reactive repairs.",
+    "heroAlt": "A local business technology note about Managed IT Services in Bradenton: What Youre Paying For."
+  },
+  {
+    "slug": "unpatched-exchange-servers-small-business",
+    "title": "Unpatched Exchange Servers Still Risk Business Email",
+    "date": "2026-09-01",
+    "category": "Cybersecurity",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "microsoft-exchange",
+      "email-security",
+      "patch-management",
+      "small-business",
+      "sarasota"
+    ],
+    "excerpt": "Security researchers just counted nearly 22,000 Microsoft Exchange servers still exposed to a mailbox-hijack flaw. If your office still runs email in a closet, this is the week to check it.",
+    "metaDescription": "Nearly 22,000 unpatched Exchange servers are exposed online. Bradenton and Sarasota small businesses should patch or retire on-prem email servers now.",
+    "heroAlt": "A small-office server rack and mailbox monitor representing unpatched Microsoft Exchange email risk."
+  },
+  {
+    "slug": "business-internet-setup-bradenton-guide",
+    "title": "Business Internet Setup Bradenton: A Practical Guide to Staying Online",
+    "date": "2026-08-31",
+    "category": "Cloud",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "local-it",
+      "sarasota",
+      "bradenton",
+      "managed-it"
+    ],
+    "excerpt": "Dont let a bad connection kill your productivity. Learn how to choose the right providers and hardware for a reliable business internet setup in Bradenton.",
+    "metaDescription": "Expert advice on business internet setup Bradenton. Learn about fiber vs cable, local provider tips, and the gear you need to stay online during storm season.",
+    "heroAlt": "A local business technology note about Business Internet Setup Bradenton: A Practical Guide to Staying Online."
+  },
+  {
+    "slug": "private-business-messages-encryption",
+    "title": "Keep Private Business Messages Safe in 2026",
+    "date": "2026-08-31",
+    "category": "Privacy",
+    "author": "Simple IT SRQ Team",
+    "tags": [
+      "data-privacy",
+      "encryption",
+      "small-business",
+      "sarasota",
+      "bradenton"
+    ],
+    "excerpt": "A new UK poll and the wider fight over encrypted chats show why private business messages still matter for small offices in Sarasota and Bradenton.",
+    "metaDescription": "Private business messages face new pressure as governments seek access to encrypted chats. Here is what Sarasota and Bradenton small businesses should do.",
+    "heroAlt": "A small office laptop and phone used for private business messages and client conversations.",
+    "image": "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=1600"
+  },
+  {
     "slug": "server-maintenance-sarasota-guide",
     "title": "Server Maintenance in Sarasota: When to Fix Your Hardware and When to Say Goodbye",
     "date": "2026-08-30",

@@ -1,16 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { initBotId } from 'botid/client/core'
-import './index.css'
-import './styles/leadgen-layout-guard.css'
-import './styles/leadgen.css'
-import './styles/leadgen-daisyui-polish.css'
-import './styles/leadgen-mobile-restore.css'
+import './styles/site.css'
 import App from './App.jsx'
-import './styles/nav-dropdown-polish.css'
-import './styles/aura-system.css'
-import './styles/leadgen-refine.css'
-import './styles/blog-house-banner.css'
 
 // Vercel BotID — invisible bot detection on the contact form.
 // Free Basic mode; protected paths must match the server route exactly.

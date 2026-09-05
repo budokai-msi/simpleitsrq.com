@@ -5,7 +5,6 @@ import PricingSection from "../components/PricingSection";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { useSEO } from "../lib/seo";
 import { trackEvent } from "../lib/analytics";
-import "../styles/services-revenue.css";
 
 function ServiceCard({ svc }) {
   return (

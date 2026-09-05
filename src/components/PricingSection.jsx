@@ -1,7 +1,6 @@
 import { Link } from "../lib/Link";
 import { Check, ArrowRight } from "lucide-react";
 import { trackEvent } from "../lib/analytics";
-import "../styles/services-revenue.css";
 
 // Transparent pricing table — targets "how much does IT support cost" style
 // searches and pairs with /blog/what-managed-it-costs-sarasota-bradenton-2026.

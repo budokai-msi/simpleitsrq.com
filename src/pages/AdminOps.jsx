@@ -31,7 +31,6 @@ import { PanelLoader } from "../components/admin/AnimatedLoader";
 // Dashboard-only stylesheet, imported per-route (not in App.jsx) so it ships
 // in a lazy CSS chunk instead of the global render-blocking bundle. Vite
 // dedupes the import across the leadgen routes.
-import "../styles/leadgen.css";
 
 // Tab panels are split into per-tab chunks under components/admin and
 // lazily loaded so the main dashboard bundle stays small.
