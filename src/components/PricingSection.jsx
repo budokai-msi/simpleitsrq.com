@@ -71,41 +71,49 @@ export default function PricingSection() {
             <Link to="/blog/what-managed-it-costs-sarasota-bradenton-2026-pricing">our pricing guide</Link>.
           </p>
         </div>
-        <div className="pricing-grid">
+        <div className="grid gap-5 md:grid-cols-3 items-stretch">
           {PLANS.map((plan) => (
-            <article key={plan.name} className={`pricing-card${plan.best ? " pricing-card--best" : ""}`}>
-              {plan.best && <span className="pricing-badge">Most Sarasota offices pick this</span>}
-              <h3 className="pricing-name">{plan.name}</h3>
-              <p className="pricing-tagline">{plan.tagline}</p>
-              <p className="pricing-price">
-                <strong>{plan.price}</strong>
-                <span>{plan.unit}</span>
-              </p>
-              <ul className="pricing-features">
-                {plan.features.map((f) => (
-                  <li key={f}><Check size={14} color="var(--success)" /><span>{f}</span></li>
-                ))}
-              </ul>
-              <Link
-                to={`/book?topic=${plan.name === "Managed Security+" ? "security" : "managed-it"}`}
-                className="btn btn-primary svc-buy-btn"
-                onClick={() => trackEvent("generate_lead", { source: "services_pricing", plan: plan.name })}
-              >
-                Start with a free review <ArrowRight size={16} />
-              </Link>
+            <article key={plan.name} className={`card card-border bg-base-100${plan.best ? " border-primary" : ""}`}>
+              <div className="card-body">
+                {plan.best && <span className="badge badge-primary badge-sm self-start">Most Sarasota offices pick this</span>}
+                <h3 className="card-title text-lg">{plan.name}</h3>
+                <p className="text-sm text-base-content/70 min-h-[2.6em]">{plan.tagline}</p>
+                <p className="flex items-baseline gap-1">
+                  <strong className="text-3xl font-extrabold tracking-tight">{plan.price}</strong>
+                  <span className="text-sm text-base-content/60">{plan.unit}</span>
+                </p>
+                <ul className="flex flex-col gap-2 text-sm">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex gap-2 items-start"><Check size={14} className="text-success mt-0.5 shrink-0" /><span>{f}</span></li>
+                  ))}
+                </ul>
+                <div className="card-actions mt-auto pt-2">
+                  <Link
+                    to={`/book?topic=${plan.name === "Managed Security+" ? "security" : "managed-it"}`}
+                    className="btn btn-primary w-full"
+                    onClick={() => trackEvent("generate_lead", { source: "services_pricing", plan: plan.name })}
+                  >
+                    Start with a free review <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </div>
             </article>
           ))}
         </div>
-        <div className="pricing-onetime">
-          <h3 className="pricing-onetime-title">One-time projects</h3>
-          <table className="pricing-table">
-            <thead><tr><th>Project</th><th>Typical price</th><th>Notes</th></tr></thead>
-            <tbody>
-              {ONE_TIME.map(([name, price, note]) => (
-                <tr key={name}><td>{name}</td><td>{price}</td><td>{note}</td></tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mt-9">
+          <h3 className="text-lg font-extrabold mb-3">One-time projects</h3>
+          <div className="overflow-x-auto">
+            <table className="table table-zebra text-sm">
+              <thead>
+                <tr><th className="text-xs uppercase tracking-wider text-base-content/70">Project</th><th className="text-xs uppercase tracking-wider text-base-content/70">Typical price</th><th className="text-xs uppercase tracking-wider text-base-content/70">Notes</th></tr>
+              </thead>
+              <tbody>
+                {ONE_TIME.map(([name, price, note]) => (
+                  <tr key={name}><td>{name}</td><td>{price}</td><td>{note}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
