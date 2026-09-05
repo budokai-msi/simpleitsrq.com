@@ -40,53 +40,55 @@ export default function LeadCaptureCTA({
   };
 
   return (
-    <aside className="lead-cta" aria-labelledby="lead-cta-title">
-      <div className="lead-cta-body">
-        <span className="eyebrow">Free · No obligation</span>
-        <h3 id="lead-cta-title" className="lead-cta-title">{title}</h3>
-        <p className="lead-cta-sub">{subtitle}</p>
-        <ul className="lead-cta-checks">
-          <li><Check size={14} color="#107C10" /> Local Sarasota/Bradenton IT engineer</li>
-          <li><Check size={14} color="#107C10" /> No contract required</li>
-          <li><Check size={14} color="#107C10" /> Clear next-step recommendations</li>
-        </ul>
+    <aside className="card card-border bg-base-100 my-10" aria-labelledby="lead-cta-title">
+      <div className="card-body md:flex-row md:items-start md:gap-7">
+        <div className="flex-1">
+          <span className="eyebrow">Free · No obligation</span>
+          <h3 id="lead-cta-title" className="text-xl font-semibold my-1.5">{title}</h3>
+          <p className="text-sm text-base-content/70 leading-relaxed mb-3">{subtitle}</p>
+          <ul className="flex flex-col gap-1.5 text-sm text-base-content/70">
+            <li className="flex items-center gap-2"><Check size={14} className="text-success" /> Local Sarasota/Bradenton IT engineer</li>
+            <li className="flex items-center gap-2"><Check size={14} className="text-success" /> No contract required</li>
+            <li className="flex items-center gap-2"><Check size={14} className="text-success" /> Clear next-step recommendations</li>
+          </ul>
+        </div>
+        <form className="flex flex-col gap-2.5 md:w-80" onSubmit={submit} noValidate>
+          {sent ? (
+            <div className="flex items-center gap-2 text-success font-medium">
+              <Check size={24} className="text-success" />
+              <strong>Thanks — your request is in. We’ll follow up by email.</strong>
+            </div>
+          ) : (
+            <>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-base-content">
+                First name
+                <input
+                  className="input input-bordered w-full"
+                  placeholder="e.g. Sarah"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  required
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold text-base-content">
+                Work email
+                <input
+                  className="input input-bordered w-full"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                />
+              </label>
+              {error && <p className="text-sm text-error">{error}</p>}
+              <button type="submit" className="btn btn-primary">
+                Request My Free Assessment <ArrowRight size={14} />
+              </button>
+            </>
+          )}
+        </form>
       </div>
-      <form className="lead-cta-form" onSubmit={submit} noValidate>
-        {sent ? (
-          <div className="lead-cta-success">
-            <Check size={24} color="#107C10" />
-            <strong>Thanks — your request is in. We’ll follow up by email.</strong>
-          </div>
-        ) : (
-          <>
-            <label className="lead-cta-label">
-              First name
-              <input
-                className="lead-cta-input"
-                placeholder="e.g. Sarah"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-              />
-            </label>
-            <label className="lead-cta-label">
-              Work email
-              <input
-                className="lead-cta-input"
-                type="email"
-                placeholder="you@company.com"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                required
-              />
-            </label>
-            {error && <p className="lead-cta-error">{error}</p>}
-            <button type="submit" className="btn btn-primary">
-              Request My Free Assessment <ArrowRight size={14} />
-            </button>
-          </>
-        )}
-      </form>
     </aside>
   );
 }

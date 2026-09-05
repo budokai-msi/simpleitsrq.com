@@ -44,36 +44,39 @@ export default function Newsletter() {
   };
 
   return (
-    <aside className="newsletter" aria-labelledby="newsletter-title">
-      <div className="newsletter-icon"><Mail size={24} /></div>
-      <div className="newsletter-body">
-        <h3 id="newsletter-title" className="newsletter-title">The Simple IT Brief</h3>
-        <p className="newsletter-sub">
-          One email a month. Plain-English security, AI, and cloud news for Sarasota and Bradenton business owners. No spam, unsubscribe with one click.
-        </p>
-        {state === "done" ? (
-          <p className="newsletter-success">
-            <Check size={16} color="#107C10" /> Check your inbox - we sent a confirmation link. Click it and you&apos;re on the list.
+    <aside className="card card-border bg-base-100 my-8" aria-labelledby="newsletter-title">
+      <div className="card-body md:flex-row md:items-start md:gap-5">
+        <div className="grid place-items-center w-12 h-12 rounded-lg bg-base-200 text-base-content shrink-0"><Mail size={24} /></div>
+        <div className="flex-1">
+          <h3 id="newsletter-title" className="text-xl font-semibold mb-1.5">The Simple IT Brief</h3>
+          <p className="text-sm text-base-content/70 leading-relaxed mb-3.5">
+            One email a month. Plain-English security, AI, and cloud news for Sarasota and Bradenton business owners. No spam, unsubscribe with one click.
           </p>
-        ) : (
-          <form className="newsletter-form" onSubmit={submit} noValidate>
-            <input
-              type="email"
-              placeholder="you@yourcompany.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              aria-label="Email address"
-              disabled={state === "submitting"}
-            />
-            <button type="submit" className="btn btn-primary" disabled={state === "submitting"}>
-              {state === "submitting" ? <Loader2 size={14} className="spin" /> : "Subscribe"}
-            </button>
-            {state === "error" && (
-              <p className="newsletter-error" role="alert">Signup failed ({err}). Try again or email hello@simpleitsrq.com.</p>
-            )}
-          </form>
-        )}
+          {state === "done" ? (
+            <p className="flex items-center gap-2 text-success font-medium">
+              <Check size={16} className="text-success" /> Check your inbox - we sent a confirmation link. Click it and you&apos;re on the list.
+            </p>
+          ) : (
+            <form className="flex gap-3 mt-4" onSubmit={submit} noValidate>
+              <input
+                type="email"
+                className="input input-bordered flex-1"
+                placeholder="you@yourcompany.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                aria-label="Email address"
+                disabled={state === "submitting"}
+              />
+              <button type="submit" className="btn btn-primary" disabled={state === "submitting"}>
+                {state === "submitting" ? <Loader2 size={14} className="spin" /> : "Subscribe"}
+              </button>
+              {state === "error" && (
+                <p className="text-sm text-error" role="alert">Signup failed ({err}). Try again or email hello@simpleitsrq.com.</p>
+              )}
+            </form>
+          )}
+        </div>
       </div>
     </aside>
   );
