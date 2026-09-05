@@ -1,13 +1,13 @@
 import { Link } from "../lib/Link";
-import { ChevronRight, Home } from "lucide-react";
+import { Home } from "lucide-react";
 
 export default function Breadcrumbs({ items }) {
   if (!items || items.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="breadcrumbs">
-      <ol className="breadcrumb-list">
-        <li className="breadcrumb-item">
+    <nav aria-label="Breadcrumb" className="breadcrumbs text-sm mb-6">
+      <ul>
+        <li>
           <Link to="/" aria-label="Home">
             <Home size={14} />
           </Link>
@@ -15,10 +15,9 @@ export default function Breadcrumbs({ items }) {
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
-            <li key={index} className="breadcrumb-item">
-              <ChevronRight size={12} className="breadcrumb-separator" />
+            <li key={index}>
               {isLast ? (
-                <span className="breadcrumb-current" aria-current="page">
+                <span aria-current="page" className="text-base-content font-medium">
                   {item.name}
                 </span>
               ) : (
@@ -27,7 +26,7 @@ export default function Breadcrumbs({ items }) {
             </li>
           );
         })}
-      </ol>
+      </ul>
     </nav>
   );
 }
