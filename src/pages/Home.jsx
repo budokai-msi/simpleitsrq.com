@@ -31,12 +31,14 @@ function Hero() {
                       <li><Star size={15} /> 4.9★ on Google</li>
                     </ul>
         </div>
-        <aside className="home-hero__panel" aria-label="Choose the kind of help you need">
-          <div className="home-hero__panel-head"><span>Start here</span><strong>Choose what you need</strong></div>
-          <div className="home-hero__path-list">
-            <Link to="/services#computer-repair" className="home-hero__path"><span><strong>My computer is down</strong><small>PC and workstation diagnostics, storage, memory, thermal issues, Windows problems, upgrades, and repair guidance.</small></span><ArrowRight size={16}/></Link>
-                        <Link to="/services#managed-it" className="home-hero__path"><span><strong>I need managed IT</strong><small>Users, computers, Wi-Fi, Microsoft 365, vendors, documentation, and recurring support.</small></span><ArrowRight size={16}/></Link>
-                        <Link to="/leadgen" className="home-hero__path"><span><strong>Find local prospects</strong><small>Leadgen finds local businesses, organizes the market, surfaces useful signals, and helps you qualify the prospects worth contacting.</small></span><ArrowRight size={16}/></Link>
+        <aside className="card card-border bg-base-100" aria-label="Choose the kind of help you need">
+          <div className="card-body">
+            <div className="card-title"><span className="text-xs font-semibold uppercase tracking-wider text-primary">Start here</span><strong>Choose what you need</strong></div>
+            <div className="divide-y divide-base-300">
+              <Link to="/services#computer-repair" className="flex items-center justify-between gap-4 py-4 no-underline"><span><strong className="block text-sm">My computer is down</strong><small className="block text-xs text-base-content/70">PC and workstation diagnostics, storage, memory, thermal issues, Windows problems, upgrades, and repair guidance.</small></span><ArrowRight size={16} className="text-primary"/></Link>
+              <Link to="/services#managed-it" className="flex items-center justify-between gap-4 py-4 no-underline"><span><strong className="block text-sm">I need managed IT</strong><small className="block text-xs text-base-content/70">Users, computers, Wi-Fi, Microsoft 365, vendors, documentation, and recurring support.</small></span><ArrowRight size={16} className="text-primary"/></Link>
+              <Link to="/leadgen" className="flex items-center justify-between gap-4 py-4 no-underline"><span><strong className="block text-sm">Find local prospects</strong><small className="block text-xs text-base-content/70">Leadgen finds local businesses, organizes the market, surfaces useful signals, and helps you qualify the prospects worth contacting.</small></span><ArrowRight size={16} className="text-primary"/></Link>
+            </div>
           </div>
         </aside>
       </div>
