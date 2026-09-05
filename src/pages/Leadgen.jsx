@@ -440,6 +440,8 @@ function LeadgenScanApp() {
   const [geoHelpOpen, setGeoHelpOpen] = useState(false); // DaisyUI-style modal open state
   const geoDialogRef = useRef(null);
   const [niche, setNiche] = useState("All");
+  const [nicheOpen, setNicheOpen] = useState(false); // Industry dropdown menu open state
+  const nicheDdRef = useRef(null);
   const [scan, setScan] = useState(null);
   const [review, setReview] = useState({});
   const [busy, setBusy] = useState(false);
@@ -662,6 +664,23 @@ function LeadgenScanApp() {
       return Object.fromEntries(groupedRows.slice(0, 2).map((group) => [group.name, true]));
     });
   }, [scan, groupedRows]);
+
+  // Close the Industry dropdown on outside click / Escape.
+  useEffect(() => {
+    if (!nicheOpen) return;
+    const onDoc = (event) => {
+      if (nicheDdRef.current && !nicheDdRef.current.contains(event.target)) setNicheOpen(false);
+    };
+    const onEsc = (event) => {
+      if (event.key === "Escape") setNicheOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [nicheOpen]);
 
   const runScan = async () => {
     if (!validZip || busy) return;
@@ -888,12 +907,36 @@ function LeadgenScanApp() {
               <span className="sr-only">ZIP code</span>
               <input inputMode="numeric" value={zip} onChange={(event) => { setZip(event.target.value.replace(/\D/g, "").slice(0, 5)); setZipSource("manual"); }} placeholder="ZIP" aria-label="ZIP code" />
             </label>
-            <label className="leadgen-join__field leadgen-join__industry">
-              <span className="sr-only">Industry</span>
-              <select value={niche} onChange={(event) => setNiche(event.target.value)} aria-label="Industry">
-                {PUBLIC_NICHES.map((option) => <option key={option}>{option}</option>)}
-              </select>
-            </label>
+            <div className={`leadgen-join__field leadgen-join__industry leadgen-join__dd${nicheOpen ? " is-open" : ""}`} ref={nicheDdRef}>
+              <button
+                type="button"
+                className="leadgen-join__dd-toggle"
+                aria-haspopup="listbox"
+                aria-expanded={nicheOpen}
+                aria-label="Industry"
+                onClick={() => setNicheOpen((open) => !open)}
+              >
+                <span>{niche}</span>
+                <ChevronDown size={14} className="leadgen-join__dd-chevron" aria-hidden="true" />
+              </button>
+              {nicheOpen ? (
+                <ul className="leadgen-join__dd-menu" role="listbox" aria-label="Industry">
+                  {PUBLIC_NICHES.map((option) => (
+                    <li key={option}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={option === niche}
+                        className={`leadgen-join__dd-item${option === niche ? " is-selected" : ""}`}
+                        onClick={() => { setNiche(option); setNicheOpen(false); }}
+                      >
+                        {option}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
             <button type="button" className="leadgen-join__btn btn btn-primary" onClick={runScan} disabled={!validZip || busy}>
               {busy ? "…" : <><Search size={15} aria-hidden="true" /> <span>Search</span></>}
             </button>

@@ -489,7 +489,11 @@ html[data-theme="light"] .leadgen-product-upgrade {
   max-width: 640px;
   border: 1px solid var(--lg-border-soft);
   border-radius: 12px;
-  overflow: hidden;
+  /* overflow: visible so the daisyUI Industry dropdown menu can open
+     below the field without being clipped. Inner segments get their own
+     corner rounding (see .leadgen-join__zip / __btn) to preserve the
+     pill look now that the container no longer clips them. */
+  overflow: visible;
   background: var(--lg-panel);
   box-shadow: 0 1px 2px rgba(0,0,0,.04);
 }
@@ -499,7 +503,7 @@ html[data-theme="light"] .leadgen-product-upgrade {
   align-items: center;
   margin: 0;
 }
-.leadgen-join__zip { flex: 0 0 92px; }
+.leadgen-join__zip { flex: 0 0 92px; border-radius: 12px 0 0 12px; }
 .leadgen-join__industry { flex: 1 1 auto; min-width: 0; border-left: 1px solid var(--lg-border-soft); }
 .leadgen-join input,
 .leadgen-join select {
@@ -520,12 +524,88 @@ html[data-theme="light"] .leadgen-product-upgrade {
   flex: 0 0 auto;
   border: 0;
   border-left: 1px solid var(--lg-border-soft);
-  border-radius: 0 !important;
+  border-radius: 0 12px 12px 0 !important;
   min-height: 44px;
   min-width: 96px;
   font-size: .86rem !important;
 }
 .leadgen-join__btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── daisyUI Industry dropdown (custom, replaces native <select> so the
+   option list is DOM-painted and follows the --lg-* theme tokens in both
+   light and dark mode — native select popups are OS-painted and can make
+   options illegible in dark mode). ─────────────────────────────── */
+.leadgen-join__dd {
+  width: 100%;
+  position: relative;
+  height: 44px;
+}
+.leadgen-join__dd-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--lg-text);
+  font: inherit;
+  font-size: .9rem;
+  cursor: pointer;
+  text-align: left;
+}
+.leadgen-join__dd-toggle:focus-visible { outline: 2px solid var(--lg-blue); outline-offset: -2px; }
+.leadgen-join__dd-chevron {
+  flex: 0 0 auto;
+  opacity: .55;
+  transition: transform 160ms ease;
+}
+.leadgen-join__dd.is-open .leadgen-join__dd-chevron { transform: rotate(180deg); }
+.leadgen-join__dd-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 100%;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 60;
+  padding: 5px;
+  list-style: none;
+  border: 1px solid var(--lg-border-soft);
+  border-radius: 12px;
+  background: var(--lg-panel);
+  color: var(--lg-text);
+  box-shadow: 0 12px 32px rgba(0,0,0,.14);
+}
+.leadgen-join__dd-item {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--lg-text);
+  font: inherit;
+  font-size: .88rem;
+  text-align: left;
+  cursor: pointer;
+}
+.leadgen-join__dd-item:hover,
+.leadgen-join__dd-item:focus-visible { background: var(--lg-panel-soft); outline: none; }
+.leadgen-join__dd-item.is-selected { color: var(--lg-blue); font-weight: 600; }
+.leadgen-join__dd-item.is-selected:hover { background: var(--lg-panel-soft); }
+[data-theme="dark"] .leadgen-join__dd-menu {
+  background: var(--lg-panel);
+  border-color: var(--lg-border-soft);
+  box-shadow: 0 12px 32px rgba(0,0,0,.5);
+}
+[data-theme="dark"] .leadgen-join__dd-item { color: var(--lg-text); }
+[data-theme="dark"] .leadgen-join__dd-item:hover,
+[data-theme="dark"] .leadgen-join__dd-item:focus-visible { background: var(--lg-panel-soft); }
+[data-theme="dark"] .leadgen-join__dd-item.is-selected { color: var(--lg-blue); }
 
 /* Mobile: stack the join so each control gets full width. */
 @media (max-width: 640px) {
@@ -533,14 +613,19 @@ html[data-theme="light"] .leadgen-product-upgrade {
     flex-direction: column;
     border-radius: 10px;
   }
+  .leadgen-join__field {
+    width: 100%;
+  }
   .leadgen-join__zip,
   .leadgen-join__industry {
     border-left: 0;
     border-bottom: 1px solid var(--lg-border-soft);
   }
-  .leadgen-join__zip { flex: none; }
+  .leadgen-join__zip { flex: none; border-radius: 10px 10px 0 0; }
+  .leadgen-join__industry { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
   .leadgen-join__btn {
     border-left: 0;
+    border-radius: 0 0 10px 10px !important;
     min-height: 48px;
     width: 100%;
   }
