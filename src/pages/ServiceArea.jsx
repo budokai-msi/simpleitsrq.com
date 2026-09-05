@@ -202,15 +202,17 @@ export default function ServiceArea() {
           </p>
           <div className="service-area-cards">
             {COVERAGE.map((c) => (
-              <Link to={`/${c.slug}`} key={c.slug} className="service-area-card">
-                <div className="service-area-card-head">
-                  <MapPin size={18} />
-                  <h3 className="service-area-card-name">{c.name}</h3>
+              <Link to={`/${c.slug}`} key={c.slug} className="card card-border bg-base-100 no-underline">
+                <div className="card-body">
+                  <div className="flex items-center gap-2 mb-2 text-primary">
+                    <MapPin size={18} />
+                    <h3 className="text-lg font-semibold m-0 text-base-content flex-1">{c.name}</h3>
+                  </div>
+                  <p className="text-sm text-base-content/70 mb-2 leading-snug">{c.tag}</p>
+                  <span className="text-sm font-semibold text-primary">
+                    IT support in {c.name} <ArrowRight size={14} />
+                  </span>
                 </div>
-                <p className="service-area-card-tag">{c.tag}</p>
-                <span className="service-area-card-cta">
-                  IT support in {c.name} <ArrowRight size={14} />
-                </span>
               </Link>
             ))}
           </div>
