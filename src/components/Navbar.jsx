@@ -59,6 +59,14 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
     };
   }, [open]);
 
+  // Desktop dropdowns: close the open group on Escape (keyboard users).
+  useEffect(() => {
+    if (!openGroup) return undefined;
+    function onKeyDown(event) { if (event.key === "Escape") setOpenGroup(null); }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [openGroup]);
+
   const portalActive = location.pathname.startsWith("/portal");
   const portalItem = {
     id: "portal",
@@ -139,13 +147,13 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
         </nav>
 
         <div className="navbar-end gap-2">
+          <Link to="/book" className="btn btn-primary btn-sm">Book a Call</Link>
           {ThemeToggle && <ThemeToggle />}
           <div className="hidden lg:flex items-center gap-2">
             {portalLink}
             <Link to="/leadgen" className="btn btn-sm">
               <Target size={15} /> Try Leadgen
             </Link>
-            <Link to="/book" className="btn btn-primary btn-sm">Book a Call</Link>
           </div>
           <button
             ref={menuButtonRef}
