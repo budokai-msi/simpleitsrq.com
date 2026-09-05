@@ -1,0 +1,77 @@
+---
+slug: "wordpress-plugin-security-elementor-attacks"
+title: "WordPress Plugin Security: 440K Attacks This Week"
+metaDescription: "WordPress plugin security is under fire: 440,000 exploit attempts hit Super Forms and Elementor Pro. What Bradenton and Sarasota owners should do now."
+date: "2026-09-05"
+author: "Simple IT SRQ Team"
+category: "Cybersecurity"
+tags:
+  - wordpress-plugin-security
+  - elementor
+  - website-security
+  - small-business
+  - data-privacy
+excerpt: "Security researchers blocked more than 440,000 attacks against two popular WordPress plugins. If your site uses Super Forms or Elementor Pro, patch and scan this week."
+heroAlt: "Laptop on a small business desk showing a website builder and a contact form."
+image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1600&q=80"
+---
+
+WordPress plugin security is not a developer-only topic this week. Two widely used plugins — Super Forms and Elementor Pro — have critical holes that let strangers upload hostile files to a website and take it over. Security company Wordfence says it has already blocked more than 440,000 exploit attempts against those two flaws.
+
+If you run a small business site in Bradenton or Sarasota, this matters now because those plugins sit behind contact forms, quote requests, and file uploads. You do not need to have done anything wrong. An unpatched form widget is enough. Attackers are scanning the public internet and hitting every site they can find.
+
+## What happened
+
+The Hacker News reported on September 4, 2026 that threat actors are actively exploiting two critical bugs.
+
+The first is in Super Forms, a drag-and-drop form builder. Tracked as CVE-2026-14894, it scores 9.8 out of 10 on the common severity scale. The plugin did not check uploaded file types tightly enough. An attacker who never logged in could send a disguised file that was actually a program. Once that file sat on the server, they could run commands, create an administrator account, or steal customer data. The vendor fixed it in version 6.3.314.
+
+The second is in Elementor Pro, one of the most common page builders on small business sites. CVE-2026-32475 is rated 9.0 to 9.8. It also allows an unauthenticated attacker to upload a program file if the site has a published Elementor page with a Form widget that includes a File Upload field. The file lands in a forms folder under a random name with a .php extension. Requesting that file runs the attacker’s code. Elementor fixed this in version 4.2.2. Patchstack disclosed the Elementor issue last month; mass exploitation started August 19.
+
+Wordfence blocked more than 250,000 attempts against Super Forms and about 190,000 against Elementor Pro. Super Forms attacks were seen as early as July 14 and peaked above 40,000 requests on a single day in August. The payloads were not theoretical. Researchers described a fake image that was actually a file-uploader web shell, used as a doorway for more malware.
+
+This is not a WordPress core failure. It is a plugin failure. That distinction matters for owners: the dashboard can look healthy while a form plugin quietly accepts anything a stranger posts.
+
+## How it affects your business
+
+A taken-over website is not just an IT inconvenience. For a local shop it is the storefront, the intake form, and often the mailbox that receives new jobs.
+
+Once an attacker can run code on the server they can:
+
+- Deface the homepage or inject scam pages that Google then associates with your name.
+- Harvest every form submission sitting in the database — names, emails, phone numbers, uploaded IDs or insurance cards.
+- Plant hidden admin users so they can return after you “clean” the site.
+- Use your domain to send spam, which burns email reputation and lands real invoices in junk folders.
+- Hold the site for ransom or quietly redirect checkout to a look-alike page.
+
+Elementor Pro is everywhere on small business sites because it makes layout easy. Super Forms is less famous but common on sites that collect attachments. If a web designer set the site up two years ago and nobody has logged into plugins since, you may still be on a vulnerable build.
+
+Hosting dashboards do not always shout when a plugin is outdated. Shared hosts also mean a messy neighbor problem: if your site is used as a launch pad, the host may suspend the account first and ask questions later. That is a Friday afternoon you do not want.
+
+CISA’s [guidance for small and medium businesses](https://www.cisa.gov/cybersecurity-best-practices-small-and-medium-businesses) is blunt on this point: know what you run, patch what faces the internet, and keep a copy of the site you can restore. A contact form is internet-facing software. Treat it that way.
+
+## What to do
+
+You do not need to rebuild the site. You need a short, finished checklist.
+
+**1. Confirm what you actually use.** Log into WordPress. Open Plugins. Look for Super Forms and Elementor / Elementor Pro. Write down the version numbers. If you cannot log in, call the person who built the site or your host and get those versions today.
+
+**2. Update immediately if you are behind.** Super Forms needs 6.3.314 or later. Elementor Pro needs 4.2.2 or later. Update WordPress core and other plugins in the same sitting. Then delete plugins you no longer use. Unused plugins still get scanned.
+
+**3. Scan for leftovers.** Look in Media and in the file manager for unexpected .php files, especially under `wp-content/uploads/` and `wp-content/uploads/elementor/forms/`. New administrator accounts you did not create are a red flag. So are mystery scheduled tasks or odd outbound email.
+
+**4. Tighten the form.** If you do not need file uploads on a public page, turn that field off. If you do need uploads, restrict types to the documents you actually accept and keep the form behind spam protection. A public “upload anything” box is an invitation.
+
+**5. Lock the dashboard.** Unique passwords, multi-factor authentication on every admin login, and two admins at most. Designer accounts from 2023 should not still be administrators.
+
+**6. Keep a clean copy.** Back up files and the database to a place that is not the same server. Test that you can restore. If the site is already odd, restore from a backup dated before mid-July for Super Forms or before mid-August for Elementor Pro, then patch before you reconnect it to the world.
+
+**7. Watch search and email for a week.** Google your business name plus “login” or “claim.” Check that contact forms still arrive. If customers mention a strange page, take the site to maintenance mode and call for help rather than poking live.
+
+If this list feels like more than your team can own between jobs, that is useful information. Our [managed IT plans](/services) include the unglamorous work: patching, backups, and a human who will tell you when a plugin hole is being exploited in the wild. For a focused look at the site that brings you customers, [get in touch](/contact).
+
+WordPress plugin security is maintenance, not a one-time project. The 440,000 blocked attempts this cycle will be followed by another plugin next month. The shops that stay boringly current are the ones that keep their forms, their rankings, and their Saturday morning.
+
+---
+
+*Source: fallback from Hacker News (no qualifying story in the last 48 hours). Original reporting: [Over 440,000 Exploit Attempts Target Super Forms and Elementor Pro RCE Flaws](https://thehackernews.com/2026/09/over-440000-exploit-attempts-target.html) (The Hacker News, September 4, 2026), based on Wordfence research.*
