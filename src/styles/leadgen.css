@@ -16,6 +16,9 @@
   --lg-teal: #374151;
   --lg-violet: #6b7280;
   --lg-accent-glow: rgba(99, 102, 241, 0.15);
+  /* Render native form controls (selects, option dropdowns, scrollbars)
+     with the light palette so legacy dropdown text stays legible. */
+  color-scheme: light;
   background: var(--lg-page);
   color: var(--lg-text);
   overflow-x: clip;
@@ -39,6 +42,8 @@
   --lg-teal: #34d399;
   --lg-violet: #c084fc;
   --lg-accent-glow: rgba(99, 102, 241, 0.25);
+  /* Native dropdowns + scrollbars follow dark mode. */
+  color-scheme: dark;
 }
 
 /* Glassmorphic Scanner App Shell */

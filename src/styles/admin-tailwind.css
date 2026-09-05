@@ -17,7 +17,18 @@
   logs: false;
 }
 
-/* Brand-finetune daisyUI tokens to #0F6CBD accent. */
-@theme {
-  --color-primary: #0f6cbd;
+/* Brand-finetune daisyUI tokens to #0F6CBD accent.
+ *
+ * NOTE: this MUST live in @layer base with a :root selector, NOT @theme.
+ * daisyUI 5 emits its theme vars (--color-primary etc.) into @layer base
+ * under :where(:root) (zero specificity). @theme emits into @layer theme,
+ * which is declared BEFORE base, so base wins the cascade and the brand
+ * color would be shadowed by daisyUI's default. Putting our override in
+ * @layer base with :root (specificity 0,1,0) beats :where(:root) (0,0,0)
+ * within the same layer, so the brand blue actually applies.
+ */
+@layer base {
+  :root {
+    --color-primary: #0f6cbd;
+  }
 }
