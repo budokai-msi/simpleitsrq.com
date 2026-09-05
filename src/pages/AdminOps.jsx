@@ -176,8 +176,8 @@ function AdminOpsInner() {
 
   if (forbidden || (!authConfirmed && !loading)) {
     return (
-      <main id="main" className="container" style={{ padding: "80px 20px", maxWidth: 600, margin: "0 auto", textAlign: "center" }}>
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 36, boxShadow: "var(--shadow-md)" }}>
+      <main id="main" className="container" style={{ padding: "80px 20px", maxWidth: 600, margin: "0 auto" }}>
+        <div className="card card-border bg-base-100 p-8 text-center">
           <Shield size={40} color="var(--brand)" style={{ margin: "0 auto 16px" }} />
           <h1 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 12px" }}>Admin Cockpit & OpSec Console</h1>
           <p style={{ color: "var(--text-2)", fontSize: 15, lineHeight: 1.6, margin: "0 0 24px" }}>
