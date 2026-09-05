@@ -67,61 +67,35 @@ export default function IndustriesHub() {
               return (
                 <article
                   key={industry.slug}
-                  style={{
-                    padding: "24px 26px",
-                    borderRadius: 14,
-                    background: "var(--syn-surface, #f9fafb)",
-                    border: "1px solid var(--syn-border, #e5e7eb)",
-                    borderLeft: "4px solid #111827",
-                  }}
+                  className="card card-border bg-base-100 border-l-4 border-l-neutral"
                 >
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-                    <div style={{
-                      flexShrink: 0,
-                      width: 44, height: 44,
-                      borderRadius: 10,
-                      background: "rgba(17, 24, 39, 0.1)",
-                      display: "grid", placeItems: "center",
-                      color: "#111827",
-                    }}>
-                      <Icon size={22} aria-hidden="true" />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h2 className="title-2" style={{ marginTop: 0, marginBottom: 6, fontSize: "1.4rem" }}>
-                        {industry.displayName}
-                      </h2>
-                      <p style={{ margin: "0 0 14px", color: "var(--syn-text-muted, #4b5563)", lineHeight: 1.55 }}>
-                        {industry.intro.slice(0, 320)}{industry.intro.length > 320 ? "…" : ""}
-                      </p>
-
-                      <div style={{
-                        marginTop: 8, padding: "10px 14px", borderRadius: 8,
-                        background: "var(--syn-surface-2, #fff)",
-                        border: "1px solid var(--syn-border, #e5e7eb)",
-                      }}>
-                        <p style={{ margin: "0 0 8px", fontSize: 12, fontWeight: 600, color: "var(--syn-text-muted, #6b7280)" }}>
-                          {industry.displayName} IT support, by city
+                  <div className="card-body">
+                    <div className="flex items-start gap-4">
+                      <div className="grid place-items-center w-11 h-11 rounded-lg bg-neutral/10 text-neutral shrink-0">
+                        <Icon size={22} aria-hidden="true" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-xl font-semibold mt-0 mb-1.5">{industry.displayName}</h2>
+                        <p className="m-0 mb-3.5 text-sm text-base-content/70 leading-relaxed">
+                          {industry.intro.slice(0, 320)}{industry.intro.length > 320 ? "…" : ""}
                         </p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                          {liveCityPairs.map(({ cityKey, city }) => (
-                            <Link
-                              key={cityKey}
-                              to={`/${industry.slug}-${cityKey}`}
-                              className="chip"
-                              style={{
-                                padding: "6px 12px", borderRadius: 8,
-                                background: "rgba(17, 24, 39, 0.08)",
-                                color: "var(--text-1)",
-                                border: "1px solid rgba(17, 24, 39, 0.2)",
-                                fontSize: 13, fontWeight: 500,
-                                textDecoration: "none",
-                                display: "inline-flex", alignItems: "center", gap: 4,
-                              }}
-                            >
-                              <MapPin size={12} aria-hidden="true" />
-                              {city.city}
-                            </Link>
-                          ))}
+
+                        <div className="mt-2 p-2.5 rounded-lg bg-base-200 border border-base-300">
+                          <p className="m-0 mb-2 text-xs font-semibold text-base-content/60">
+                            {industry.displayName} IT support, by city
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {liveCityPairs.map(({ cityKey, city }) => (
+                              <Link
+                                key={cityKey}
+                                to={`/${industry.slug}-${cityKey}`}
+                                className="badge badge-outline badge-neutral gap-1 py-2 px-3 no-underline"
+                              >
+                                <MapPin size={12} aria-hidden="true" />
+                                {city.city}
+                              </Link>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -131,24 +105,22 @@ export default function IndustriesHub() {
             })}
           </div>
 
-          <div style={{
-            marginTop: 36, padding: "20px 24px", borderRadius: 12,
-            background: "var(--syn-surface, #f9fafb)",
-            border: "1px solid var(--syn-border, #e5e7eb)",
-          }}>
-            <h2 className="title-2" style={{ marginTop: 0, fontSize: "1.2rem" }}>Don't see your industry?</h2>
-            <p className="section-sub" style={{ marginBottom: 14 }}>
-              The page above lists the verticals we have city-specific
-              dedicated copy for. We also support most other small-business
-              types - accounting, marketing/PR, professional services,
-              property management, retail, light manufacturing, and similar.
-              The IT services and the engagement model are the same; the
-              compliance specifics shift. Tell us what you do and we'll
-              outline a fit on a free 30-minute call.
-            </p>
-            <Link to="/book" className="btn btn-primary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              Book a free consult <ArrowRight size={14} />
-            </Link>
+          <div className="card card-border bg-base-100 mt-9">
+            <div className="card-body">
+              <h2 className="text-xl font-semibold mt-0">Don't see your industry?</h2>
+              <p className="text-sm text-base-content/70 leading-relaxed mb-3.5">
+                The page above lists the verticals we have city-specific
+                dedicated copy for. We also support most other small-business
+                types - accounting, marketing/PR, professional services,
+                property management, retail, light manufacturing, and similar.
+                The IT services and the engagement model are the same; the
+                compliance specifics shift. Tell us what you do and we'll
+                outline a fit on a free 30-minute call.
+              </p>
+              <Link to="/book" className="btn btn-primary self-start">
+                Book a free consult <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
