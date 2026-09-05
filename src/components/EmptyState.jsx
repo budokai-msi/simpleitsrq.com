@@ -72,11 +72,11 @@ export default function EmptyState({
   action,
 }) {
   return (
-    <div className="empty-state" role="status">
-      <div className="empty-state__art">{ICONS[icon] || ICONS.inbox}</div>
-      <h3 className="empty-state__title">{title}</h3>
-      {body && <p className="empty-state__body">{body}</p>}
-      {action && <div className="empty-state__action">{action}</div>}
+    <div className="flex flex-col items-center justify-center gap-3 p-12 text-center text-base-content/60 border border-dashed border-base-300 rounded-xl bg-base-100" role="status">
+      <div className="opacity-90">{ICONS[icon] || ICONS.inbox}</div>
+      <h3 className="text-base font-bold text-base-content m-0">{title}</h3>
+      {body && <p className="text-sm max-w-[460px] m-0 leading-relaxed">{body}</p>}
+      {action && <div className="mt-1.5">{action}</div>}
     </div>
   );
 }
