@@ -183,7 +183,7 @@ function Footer() {
   return (
     <footer className="site-footer" role="contentinfo">
       <div className="container site-footer-grid">
-        <div>
+        <aside className="site-footer-brand">
           <Logo />
           <p className="site-footer-desc">Computer repair and practical business IT support for Sarasota and Bradenton, plus Leadgen for local prospect research. Clear scope, useful answers, and no oversized promises.</p>
           <div style={{ marginTop: 20 }}>
@@ -199,10 +199,10 @@ function Footer() {
               <Star size={16} color="var(--brand)" /> Leave a Google review
             </a>
           </div>
-        </div>
+        </aside>
         {FOOTER_COLUMNS.map((column) => (
-          <div key={column.title}>
-            <h4>{column.title}</h4>
+          <nav key={column.title}>
+            <h6 className="footer-title">{column.title}</h6>
             <ul>
               {column.items.map((item) => (
                 <li key={item.to}>
@@ -210,10 +210,10 @@ function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         ))}
-        <div hidden>
-          <h4>Resources</h4>
+        <nav>
+          <h6 className="footer-title">Resources</h6>
           <ul>
             <li><Link to="/blog">Blog</Link></li>
             <li><Link to="/glossary">Glossary</Link></li>
@@ -230,9 +230,9 @@ function Footer() {
             <li><Link to="/book">Book a Call</Link></li>
             <li><Link to="/support">Support</Link></li>
           </ul>
-        </div>
-        <div>
-          <h4>Service Area</h4>
+        </nav>
+        <nav>
+          <h6 className="footer-title">Service Area</h6>
           <ul className="site-footer-cities">
             {SERVICE_AREA_LINKS.map((item) => (
               <li key={item.id}>
@@ -247,7 +247,7 @@ function Footer() {
             <li><Link to="/service-area" className="site-footer-cities-all">View all markets →</Link></li>
           </ul>
           <p className="site-footer-area-note">Serving Southwest Florida - Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
-        </div>
+        </nav>
       </div>
       <div className="site-footer-bottom">
         <div className="container site-footer-bottom-inner">
@@ -384,7 +384,7 @@ function Layout({ children }) {
 
   return (
     <>
-      <a className="skip-link" href="#main">Skip to content</a>
+      <a className="skip-link btn btn-sm" href="#main">Skip to main content</a>
       {!isInternalOps && <Navbar />}
       <ScrollToHash />
       {!isInternalOps && <VisitorTracker />}
