@@ -211,7 +211,7 @@ export default function IndustryLanding() {
               <Link to="/book" className="btn btn-primary btn-lg">
                 Book a free 30-minute consult <ArrowRight size={16} />
               </Link>
-              <Link to={`/${city.slug}`} className="btn btn-secondary btn-lg">
+              <Link to={`/${city.slug}`} className="btn btn btn-lg">
                 See all {city.city} IT services
               </Link>
             </div>
@@ -290,14 +290,14 @@ export default function IndustryLanding() {
                 <Link
                   key={i.slug}
                   to={`/${i.slug}-${resolved.cityKey}`}
-                  className="btn btn-secondary"
+                  className="btn btn"
                   style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                 >
                   {i.displayName}
                   <ArrowRight size={14} />
                 </Link>
               ))}
-            <Link to={`/${city.slug}`} className="btn btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <Link to={`/${city.slug}`} className="btn btn" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               All {city.city} IT services <ArrowRight size={14} />
             </Link>
           </div>

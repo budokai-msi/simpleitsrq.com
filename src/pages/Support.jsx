@@ -385,7 +385,7 @@ export default function Support() {
                       <p>
                         A Simple IT SRQ engineer will reach out during business hours. For critical incidents, call <a href="tel:+18134343230">(813) 434-3230</a>.
                       </p>
-                      <button type="button" className="btn btn-secondary" onClick={reset}>
+                      <button type="button" className="btn btn" onClick={reset}>
                         File another ticket
                       </button>
                     </div>

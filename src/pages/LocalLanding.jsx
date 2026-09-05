@@ -239,7 +239,7 @@ export default function LocalLanding() {
             <p className="lede">{city.intro}</p>
             <div className="hero-ctas">
               <a href="#local-contact" className="btn btn-primary btn-lg">Get a Free IT Audit</a>
-              <Link to="/#solutions" className="btn btn-secondary btn-lg">Explore Solutions</Link>
+              <Link to="/#solutions" className="btn btn btn-lg">Explore Solutions</Link>
             </div>
             <ul className="trust-row" aria-label="Trust indicators">
               <li><Star size={14} fill="#F7630C" stroke="#F7630C" /> 5.0 Google rating</li>

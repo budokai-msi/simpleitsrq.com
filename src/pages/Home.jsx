@@ -21,8 +21,8 @@ function Hero() {
           <p className="lede">Bring us a slow workstation, failing drive, Wi-Fi issue, Microsoft 365 problem, or a business that needs ongoing IT ownership. We diagnose what is happening, explain the options, and handle the work we can deliver well.</p>
           <div className="home-hero__actions">
             <Link to="/services#computer-repair" className="btn btn-primary btn-lg">Get help now <ArrowRight size={16} /></Link>
-                        <Link to="/services#managed-it" className="btn btn-secondary btn-lg">See managed IT plans <ArrowRight size={16} /></Link>
-                        <Link to="/leadgen" className="btn btn-secondary btn-lg">Try the business scanner <ArrowRight size={16} /></Link>
+                        <Link to="/services#managed-it" className="btn btn btn-lg">See managed IT plans <ArrowRight size={16} /></Link>
+                        <Link to="/leadgen" className="btn btn btn-lg">Try the business scanner <ArrowRight size={16} /></Link>
           </div>
           <ul className="home-hero__proof" aria-label="Service area and focus">
                       <li><MapPin size={15} /> Sarasota & Bradenton</li>
@@ -54,7 +54,7 @@ const SERVICES = [
 ];
 
 function Services() {
-  return <section className="section" id="solutions"><div className="container"><div className="section-head"><span className="eyebrow">Computer & business IT services</span><h2 className="title-1">Help for broken computers and everyday business IT.</h2><p className="section-sub">You do not need to diagnose the problem before contacting us. Tell us what is happening, what has already been tried, and how much it is affecting the business. We will help narrow down the next step.</p></div><div className="solution-grid">{SERVICES.map(({Icon,title,body,to}) => <Link key={title} to={to} className="solution-card"><div className="solution-card-head"><span className="solution-card-icon"><Icon size={18}/></span><h3 className="solution-card-title">{title}</h3></div><p className="solution-card-desc">{body}</p><span className="solution-card-link">See what we handle <ArrowRight size={14}/></span></Link>)}</div></div></section>;
+  return <section className="section" id="solutions"><div className="container"><div className="section-head"><span className="eyebrow">Computer & business IT services</span><h2 className="title-1">Help for broken computers and everyday business IT.</h2><p className="section-sub">You do not need to diagnose the problem before contacting us. Tell us what is happening, what has already been tried, and how much it is affecting the business. We will help narrow down the next step.</p></div><div className="solution-grid">{SERVICES.map(({Icon,title,body,to}) => <Link key={title} to={to} className="card card-border bg-base-100 no-underline"><div className="card-body"><div className="card-title"><span className="grid place-items-center w-9 h-9 rounded-lg bg-primary/10 text-primary"><Icon size={18}/></span><h3 className="text-base">{title}</h3></div><p className="text-sm text-base-content/70">{body}</p><span className="text-sm font-semibold text-primary">See what we handle <ArrowRight size={14}/></span></div></Link>)}</div></div></section>;
 }
 
 function LeadgenStrip() {
@@ -63,7 +63,7 @@ function LeadgenStrip() {
 
 function BlogPreview() {
   const latest = [...posts].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
-  return <section className="section"><div className="container"><div className="section-head"><span className="eyebrow">Field notes & analysis</span><h2 className="title-1">Useful IT notes, not recycled headlines.</h2><p className="section-sub">We start with original sources, add our own technical context, and focus on what a small business owner or office manager can actually do next.</p></div><div className="blog-grid">{latest.map((p)=><article key={p.slug} className="blog-card"><Link to={`/blog/${p.slug}`} className="blog-card-img"><BlogCover post={p} variant="card"/></Link><div className="blog-card-body"><span className="blog-card-category">{p.category}</span><h3 className="blog-card-title"><Link to={`/blog/${p.slug}`}>{p.title}</Link></h3><p className="blog-card-excerpt">{p.excerpt}</p></div></article>)}</div><div className="blog-cta-row"><Link to="/blog" className="btn btn-secondary btn-lg">Browse all guides</Link></div></div></section>;
+  return <section className="section"><div className="container"><div className="section-head"><span className="eyebrow">Field notes & analysis</span><h2 className="title-1">Useful IT notes, not recycled headlines.</h2><p className="section-sub">We start with original sources, add our own technical context, and focus on what a small business owner or office manager can actually do next.</p></div><div className="blog-grid">{latest.map((p)=><article key={p.slug} className="blog-card"><Link to={`/blog/${p.slug}`} className="blog-card-img"><BlogCover post={p} variant="card"/></Link><div className="blog-card-body"><span className="blog-card-category">{p.category}</span><h3 className="blog-card-title"><Link to={`/blog/${p.slug}`}>{p.title}</Link></h3><p className="blog-card-excerpt">{p.excerpt}</p></div></article>)}</div><div className="blog-cta-row"><Link to="/blog" className="btn btn btn-lg">Browse all guides</Link></div></div></section>;
 }
 
 const ERROR_MESSAGES = { captcha_required:"Please complete the security check before sending.", network_error:"Network hiccup. Try again.", send_failed:"We couldn't send your message just now. Please try again." };

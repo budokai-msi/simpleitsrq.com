@@ -139,7 +139,7 @@ export function PrivacyPage() {
         controlled by the consent banner on first visit; your choice persists
         in your browser under <code>sirq_consent_v1</code>.
       </p>
-      <table className="table-polish">
+      <table className="legal-table">
         <thead>
           <tr>
             <th>Purpose</th>
@@ -193,7 +193,7 @@ export function PrivacyPage() {
         Data Processing Addendum where applicable. We review this list
         annually and when a processor changes.
       </p>
-      <table className="table-polish">
+      <table className="legal-table">
         <thead>
           <tr><th>Processor</th><th>Purpose</th><th>Data region</th></tr>
         </thead>

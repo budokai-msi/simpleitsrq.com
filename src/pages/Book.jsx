@@ -381,7 +381,7 @@ export default function Book() {
             </a>
             <Link
               to="/services"
-              className="btn btn-secondary btn-lg"
+              className="btn btn btn-lg"
               onClick={() => trackEvent("select_content", { content_type: "book_hero_view_services" })}
             >
               View service catalog <ArrowRight size={16} />

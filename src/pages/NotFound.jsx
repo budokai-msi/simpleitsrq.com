@@ -79,7 +79,7 @@ export default function NotFound() {
               <Link to="/" className="btn btn-primary btn-lg">
                 <ArrowLeft size={16} /> Back to home
               </Link>
-              <Link to="/blog" className="btn btn-secondary btn-lg">
+              <Link to="/blog" className="btn btn btn-lg">
                 Read the blog
               </Link>
             </div>

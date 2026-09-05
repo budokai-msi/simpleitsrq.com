@@ -592,7 +592,7 @@ body:has(dialog[open][data-blocking-modal]) {
      - Hero gradient mesh + grain overlay (.hero-mesh, .grain)
      - Display type scale (.display-1, .display-2, .display-3, .eyebrow)
      - Button variants (.btn-tonal, .btn-ghost) extending existing .btn
-     - Table polish (.table-polish — sticky header, zebra, row hover)
+     - Table polish (.legal-table — sticky header, zebra, row hover)
      - Numeric chip + kbd styles (.chip, kbd)
      - Soft glow utility for hero copy
    None of these names existed before, so this section can't collide.
@@ -753,14 +753,14 @@ body:has(dialog[open][data-blocking-modal]) {
 }
 .btn-tonal:active { transform: translateY(0) scale(0.985); }
 
-/* Table polish — opt in by adding .table-polish to the wrapper. */
-.table-polish {
+/* Table polish — opt in by adding .legal-table to the wrapper. */
+.legal-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
 }
-.table-polish thead th {
+.legal-table thead th {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -774,16 +774,16 @@ body:has(dialog[open][data-blocking-modal]) {
   padding: 10px 14px;
   border-bottom: 1px solid var(--border);
 }
-.table-polish tbody td {
+.legal-table tbody td {
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
   color: var(--text-1);
   vertical-align: middle;
 }
-.table-polish tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
-.table-polish tbody tr { transition: background-color 140ms var(--ease-out); }
-.table-polish tbody tr:hover { background: var(--brand-subtle); }
-.table-polish tbody tr:last-child td { border-bottom: 0; }
+.legal-table tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
+.legal-table tbody tr { transition: background-color 140ms var(--ease-out); }
+.legal-table tbody tr:hover { background: var(--brand-subtle); }
+.legal-table tbody tr:last-child td { border-bottom: 0; }
 
 /* Inline data chip — for IDs, statuses, counts. */
 .chip {
