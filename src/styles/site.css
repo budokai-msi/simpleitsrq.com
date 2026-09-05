@@ -52,9 +52,9 @@
   name: "dark";
   prefersdark: true;
   color-scheme: dark;
-  --color-base-100: #14171C;
-  --color-base-200: #1C1F26;
-  --color-base-300: #232830;
+  --color-base-100: #0D1117;
+  --color-base-200: #151B23;
+  --color-base-300: #1C232D;
   --color-base-content: #F4F5F7;
   --color-primary: #0F6CBD;
   --color-primary-content: #FFFFFF;
@@ -168,13 +168,15 @@
 }
 
 :root[data-theme="dark"] {
-  /* Surfaces — warm near-black, not pure #000 */
-  --bg: #0B0D10;
-  --bg-elevated: #14171C;
-  --surface: #14171C;
-  --surface-2: #1C1F26;
-  --surface-3: #232830;
-  --mica: rgba(20, 23, 28, 0.72);
+  /* Surfaces — ultra-black with a cool blue hue. Deeper than the old
+   * warm #0B0D10 so the page reads as true HDR black, with a subtle
+   * cool tint (not pure #000) so elevated surfaces still separate. */
+  --bg: #05070A;
+  --bg-elevated: #0D1117;
+  --surface: #0D1117;
+  --surface-2: #151B23;
+  --surface-3: #1C232D;
+  --mica: rgba(13, 17, 23, 0.72);
 
   /* Brand — slightly brightened for dark contrast */
   --brand: #E8EEF6;
@@ -185,7 +187,7 @@
   /* RGB triplets — track --brand / --surface so rgba(var(--brand-rgb), a)
    * resolves to a light tint in dark mode instead of near-black. */
   --brand-rgb: 232, 238, 246;
-  --surface-rgb: 20, 23, 28;
+  --surface-rgb: 13, 17, 23;
 
   /* Text */
   --text-1: #F4F5F7;
@@ -6635,11 +6637,6 @@ main, #main {
 .btn[aria-disabled="true"]:hover {
   transform: none;
   box-shadow: none;
-}
-[data-theme="dark"] .btn-primary,
-[data-theme="dark"] .btn-primary:hover,
-[data-theme="dark"] .btn-primary:active {
-  color: var(--text-on-accent);
 }
 [data-theme="dark"] .btn-secondary {
   background: var(--surface);
