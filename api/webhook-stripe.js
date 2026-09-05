@@ -71,31 +71,31 @@ export async function POST(request) {
       const ticketCode = `LG-OB-${Date.now().toString(36).toUpperCase()}`;
       const subject = `Leadgen Onboarding: ${name} (${details.tier || "Unknown"} ${details.cadence || ""})`;
       
-      const description = \`
+      const description = `
 New Leadgen purchase completed via Stripe!
 
-Customer: \${name}
-Email: \${email}
-Tier: \${details.tier || "Unknown"}
-Billing: \${details.cadence || "Unknown"}
-Target Zip: \${details.zip || "Not specified"}
-Target Niche: \${details.niche || "Not specified"}
-Stripe Session ID: \${session.id}
+Customer: ${name}
+Email: ${email}
+Tier: ${details.tier || "Unknown"}
+Billing: ${details.cadence || "Unknown"}
+Target Zip: ${details.zip || "Not specified"}
+Target Niche: ${details.niche || "Not specified"}
+Stripe Session ID: ${session.id}
 
 Please reach out to the customer to set up their workspace or execute their initial scan.
-      \`.trim();
+      `.trim();
 
       try {
-        await sql\`
+        await sql`
           INSERT INTO tickets (
             ticket_code, user_id, email, name, company, phone,
             priority, category, subject, description, status
           ) VALUES (
-            \${ticketCode}, NULL, \${email}, \${name}, '', '',
-            'high', 'support', \${subject}, \${description}, 'open'
+            ${ticketCode}, NULL, ${email}, ${name}, '', '',
+            'high', 'support', ${subject}, ${description}, 'open'
           )
-        \`;
-        console.log(\`[webhook-stripe] Created onboarding ticket \${ticketCode} for \${email}\`);
+        `;
+        console.log(`[webhook-stripe] Created onboarding ticket ${ticketCode} for ${email}`);
       } catch (e) {
         console.error("[webhook-stripe] Failed to create ticket:", e);
       }
