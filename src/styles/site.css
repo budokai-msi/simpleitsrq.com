@@ -409,7 +409,7 @@ svg { stroke-width: 1.75; }
   @keyframes vt-page-in {
     from { opacity: 0; transform: translateY(10px); }
   }
-  .footer .brand        { view-transition-name: footer-brand; }
+  .site-footer .brand        { view-transition-name: footer-brand; }
   .mobile-action-bar    { view-transition-name: mobile-bar; }
 
   /* Pinned shell elements get their own subtle morph instead
@@ -7864,31 +7864,31 @@ main, #main {
 .info-row strong { color: var(--text-1); font-weight: 600; }
 
 /* ============ Footer ============ */
-.footer {
+.site-footer {
   background: var(--surface-2);
   border-top: 1px solid var(--border);
   padding-top: 56px;
 }
-.footer-grid {
+.site-footer-grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
   gap: 40px;
   padding-bottom: 40px;
 }
-.footer-cities li a {
+.site-footer-cities li a {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 0;
   min-height: 28px;
 }
-.footer-cities svg {
+.site-footer-cities svg {
   color: var(--brand);
   opacity: 0.75;
   flex-shrink: 0;
 }
-.footer-cities li a:hover svg { opacity: 1; }
-.footer-area-note {
+.site-footer-cities li a:hover svg { opacity: 1; }
+.site-footer-area-note {
   font-size: 12px;
   color: var(--text-3, var(--text-2));
   line-height: 18px;
@@ -8116,7 +8116,7 @@ main, #main {
   padding-top: 48px;
   padding-bottom: 64px;
 }
-.footer-cities-all {
+.site-footer-cities-all {
   font-weight: 500;
   color: var(--brand) !important;
 }
@@ -8260,13 +8260,13 @@ main, #main {
   background: #E8EEF6;
   color: #0B0D10;
 }
-.footer h4 {
+.site-footer h4 {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-1);
   margin: 0 0 14px;
 }
-.footer ul {
+.site-footer ul {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -8274,25 +8274,25 @@ main, #main {
   flex-direction: column;
   gap: 10px;
 }
-.footer ul li, .footer ul li a {
+.site-footer ul li, .site-footer ul li a {
   font-size: 13px;
   color: var(--text-2);
 }
-.footer ul li a {
+.site-footer ul li a {
   display: inline-flex;
   align-items: center;
   padding: 4px 0;
   min-height: 28px;
 }
-.footer ul li a:hover { color: var(--brand); }
-.footer-desc {
+.site-footer ul li a:hover { color: var(--brand); }
+.site-footer-desc {
   font-size: 13px;
   color: var(--text-2);
   margin: 14px 0 16px;
   max-width: 320px;
   line-height: 20px;
 }
-.footer-email {
+.site-footer-email {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -8306,16 +8306,16 @@ main, #main {
   background: var(--bg-elevated);
   transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
 }
-.footer-email:hover {
+.site-footer-email:hover {
   color: var(--brand);
   border-color: var(--brand);
 }
-.footer-bottom {
+.site-footer-bottom {
   border-top: 1px solid var(--border);
   padding: 20px 0;
   background: var(--surface-3);
 }
-.footer-bottom-inner {
+.site-footer-bottom-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -8324,9 +8324,9 @@ main, #main {
   flex-wrap: wrap;
   gap: 12px;
 }
-.footer-bottom-inner a { color: var(--text-2); }
-.footer-bottom-inner a:hover { color: var(--brand); }
-.footer-cookie-prefs {
+.site-footer-bottom-inner a { color: var(--text-2); }
+.site-footer-bottom-inner a:hover { color: var(--brand); }
+.site-footer-cookie-prefs {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -8347,8 +8347,8 @@ main, #main {
     border-color 160ms var(--btn-ease),
     color 160ms var(--btn-ease);
 }
-.footer-cookie-prefs:hover,
-.footer-cookie-prefs:focus-visible {
+.site-footer-cookie-prefs:hover,
+.site-footer-cookie-prefs:focus-visible {
   background: var(--surface-2);
   border-color: var(--border);
   color: var(--brand);
@@ -8364,7 +8364,7 @@ main, #main {
   .compliance-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
   .steps { grid-template-columns: repeat(2, 1fr); gap: 40px 24px; }
   .steps::before { display: none; }
-  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .site-footer-grid { grid-template-columns: 1fr 1fr; }
   .contact-grid { grid-template-columns: 1fr; }
   /* Stack the two-up field rows (name/email etc.) on mobile. Without this
      the 1fr 1fr inputs hold the form-shell wider than the viewport, so its
@@ -8389,7 +8389,7 @@ main, #main {
   .hero { padding: 56px 0 48px; }
   .cards-grid { grid-template-columns: 1fr; }
   .situation-actions .btn { width: 100%; }
-  .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+  .site-footer-grid { grid-template-columns: 1fr; gap: 32px; }
   .row-2 { grid-template-columns: 1fr; }
   .container { padding: 0 20px; }
   .dash-card { transform: none; animation: none; }
@@ -12627,7 +12627,7 @@ select:focus-visible {
    as a plain WISP document. Hides nav, hero, upgrade card, newsletter,
    and any other marketing chrome. */
 @media print {
-  body { background: white; color: black; }.footer,
+  body { background: white; color: black; }.site-footer,
 .mobile-action-bar,
 .wisp-hero,
 .wisp-newsletter-wrap,
@@ -12764,17 +12764,6 @@ select:focus-visible {
 .empty-state__body { font-size: 0.92rem; max-width: 460px; margin: 0; line-height: 1.55; }
 .empty-state__action { margin-top: 6px; }
 [data-theme="dark"] .empty-state { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); }
-
-/* ---- Footer texture overlay ---- */
-.footer { position: relative; isolation: isolate; }
-.footer::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: -1; opacity: 0.6; background-image:
-  radial-gradient(circle at 12% 18%, rgba(124, 92, 216, 0.08), transparent 45%),
-  radial-gradient(circle at 88% 82%, rgba(14, 156, 149, 0.08), transparent 45%),
-  url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2740%27 height=%2740%27><path d=%27M40 0H0V40%27 fill=%27none%27 stroke=%27%230F6CBD%27 stroke-opacity=%270.05%27 stroke-width=%271%27/></svg>"); }
-[data-theme="dark"] .footer::before { opacity: 0.7; background-image:
-  radial-gradient(circle at 12% 18%, rgba(124, 92, 216, 0.14), transparent 45%),
-  radial-gradient(circle at 88% 82%, rgba(14, 156, 149, 0.12), transparent 45%),
-  url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2740%27 height=%2740%27><path d=%27M40 0H0V40%27 fill=%27none%27 stroke=%27%23ffffff%27 stroke-opacity=%270.04%27 stroke-width=%271%27/></svg>"); }
 
 /* =====================================================================
    CLIENT PORTAL — public-safe account shell

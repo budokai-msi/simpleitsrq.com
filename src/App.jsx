@@ -181,20 +181,20 @@ function Navbar() {
 
 function Footer() {
   return (
-    <footer className="footer" role="contentinfo">
-      <div className="container footer-grid">
+    <footer className="site-footer" role="contentinfo">
+      <div className="container site-footer-grid">
         <div>
           <Logo />
-          <p className="footer-desc">Computer repair and practical business IT support for Sarasota and Bradenton, plus Leadgen for local prospect research. Clear scope, useful answers, and no oversized promises.</p>
+          <p className="site-footer-desc">Computer repair and practical business IT support for Sarasota and Bradenton, plus Leadgen for local prospect research. Clear scope, useful answers, and no oversized promises.</p>
           <div style={{ marginTop: 20 }}>
-            <a className="footer-email" href="mailto:hello@simpleitsrq.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}>
+            <a className="site-footer-email" href="mailto:hello@simpleitsrq.com" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none' }}>
               <AtSign size={16} color="var(--brand)" /> hello@simpleitsrq.com
             </a>
             <a
               href="https://maps.app.goo.gl/TLXwRHgQSFnUMd3P6"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', marginTop: 10, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none', transition: 'all 0.2s ease' }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 20px', marginTop: 10, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '14px', fontWeight: '500', color: 'var(--text-1)', textDecoration: 'none' }}
             >
               <Star size={16} color="var(--brand)" /> Leave a Google review
             </a>
@@ -233,24 +233,24 @@ function Footer() {
         </div>
         <div>
           <h4>Service Area</h4>
-          <ul className="footer-cities">
+          <ul className="site-footer-cities">
             {SERVICE_AREA_LINKS.map((item) => (
               <li key={item.id}>
                 <Link
                   to={item.to}
-                  className={item.id === "service-area" ? "footer-cities-all" : undefined}
+                  className={item.id === "service-area" ? "site-footer-cities-all" : undefined}
                 >
                   <NavIcon name={item.icon} size={12} /> {item.label}
                 </Link>
               </li>
             ))}
-            <li><Link to="/service-area" className="footer-cities-all">View all markets →</Link></li>
+            <li><Link to="/service-area" className="site-footer-cities-all">View all markets →</Link></li>
           </ul>
-          <p className="footer-area-note">Serving Southwest Florida - Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
+          <p className="site-footer-area-note">Serving Southwest Florida - Sarasota and Manatee counties. Phone and email replies during business hours; on-site by scheduled appointment.</p>
         </div>
       </div>
-      <div className="footer-bottom">
-        <div className="container footer-bottom-inner">
+      <div className="site-footer-bottom">
+        <div className="container site-footer-bottom-inner">
           <span>(c) {new Date().getFullYear()} Simple IT SRQ. All rights reserved.</span>
           <span>
             <Link to="/privacy">Privacy</Link> &middot;{" "}
@@ -265,7 +265,7 @@ function Footer() {
                 language in our Privacy Policy §3 / §7. */}
             <button
               type="button"
-              className="footer-cookie-prefs"
+              className="site-footer-cookie-prefs"
               onClick={() => window.dispatchEvent(new CustomEvent("sirq:reopen-consent"))}
             >
               Cookie preferences
