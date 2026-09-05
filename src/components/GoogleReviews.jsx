@@ -79,24 +79,26 @@ export default function GoogleReviews() {
         </div>
         <div className="reviews-grid">
           {data.reviews.slice(0, 6).map((rev) => (
-            <article key={`${rev.author}-${rev.time}`} className="review-card">
-              <header className="review-card-head">
-                {rev.authorPhoto && (
-                  <img
-                    src={rev.authorPhoto}
-                    alt=""
-                    className="review-avatar"
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                  />
-                )}
-                <div className="review-meta">
-                  <strong>{rev.author}</strong>
-                  <Stars rating={rev.rating} />
-                  <span className="review-time">{rev.relative}</span>
-                </div>
-              </header>
-              <p className="review-text">{rev.text}</p>
+            <article key={`${rev.author}-${rev.time}`} className="card card-border bg-base-100">
+              <div className="card-body">
+                <header className="flex gap-3 items-start mb-3">
+                  {rev.authorPhoto && (
+                    <img
+                      src={rev.authorPhoto}
+                      alt=""
+                      className="w-9 h-9 rounded-full object-cover shrink-0"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                  <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                    <strong className="text-sm">{rev.author}</strong>
+                    <Stars rating={rev.rating} />
+                    <span className="text-xs text-base-content/60">{rev.relative}</span>
+                  </div>
+                </header>
+                <p className="text-sm leading-6 text-base-content line-clamp-5">{rev.text}</p>
+              </div>
             </article>
           ))}
         </div>
