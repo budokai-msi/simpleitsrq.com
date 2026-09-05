@@ -14028,50 +14028,6 @@ select:focus-visible {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* /book promo banner */
-.book-promo-banner {
-  background: linear-gradient(90deg, rgba(17,24,39,0.08) 0%, rgba(107,114,128,0.08) 100%);
-  border-bottom: 1px solid rgba(17,24,39,0.20);
-  padding: 14px 0;
-}
-.book-promo-banner__inner {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  font-size: 0.92rem;
-  color: var(--text-1, #111827);
-}
-.book-promo-banner__check {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: #111827;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.30);
-}
-.book-promo-banner__copy { line-height: 1.5; }
-.book-promo-banner__code {
-  background: #fff;
-  border: 1px solid rgba(17,24,39,0.30);
-  padding: 1px 8px;
-  border-radius: 6px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #111827;
-  letter-spacing: 0.04em;
-}
-[data-theme="dark"] .book-promo-banner {
-  background: linear-gradient(90deg, rgba(17,24,39,0.16) 0%, rgba(107,114,128,0.16) 100%);
-  border-bottom-color: rgba(17,24,39,0.30);
-}
-[data-theme="dark"] .book-promo-banner__copy { color: #E8EEF6; }
-[data-theme="dark"] .book-promo-banner__code { background: rgba(255,255,255,0.06); }
-
 /* ============================================================
    Lead intelligence + inbox polish (Hot Leads, funnel, sources,
    returning visitors, Leads inbox, public Chain/Local badges).

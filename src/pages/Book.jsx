@@ -444,16 +444,16 @@ function BookPromoBanner() {
     params.topic === "leadgen-trial"       ? "14-day trial" : "";
 
   return (
-    <div className="book-promo-banner" role="status" aria-live="polite">
-      <div className="container book-promo-banner__inner">
-        <span className="book-promo-banner__check" aria-hidden="true">
+    <div className="alert alert-info alert-soft rounded-none border-x-0 border-t-0" role="status" aria-live="polite">
+      <div className="container flex items-center flex-wrap gap-3.5 text-sm text-base-content">
+        <span className="grid place-items-center w-7 h-7 rounded-full bg-neutral text-neutral-content shrink-0" aria-hidden="true">
           <Check size={16} />
         </span>
-        <div className="book-promo-banner__copy">
+        <div className="leading-relaxed">
           {params.promo ? (
             <>
               <strong>Promo applied:</strong>{" "}
-              <code className="book-promo-banner__code">{params.promo}</code>{" "} - 20% off your first 3 months on any Leadgen plan.
+              <code className="bg-base-100 border border-base-300 px-2 py-0.5 rounded-md font-mono text-xs font-bold text-base-content tracking-wider">{params.promo}</code>{" "} - 20% off your first 3 months on any Leadgen plan.
             </>
           ) : (
             <>
