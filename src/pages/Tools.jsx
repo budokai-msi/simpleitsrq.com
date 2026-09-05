@@ -332,7 +332,7 @@ export default function Tools() {
   });
 
   return (
-    <main className="tools-page">
+    <main id="main" className="tools-page">
       <header className="tools-hero tools-hero--buyer">
         <div>
           <h1>Small-office gear we would actually install.</h1>
