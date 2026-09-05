@@ -11207,41 +11207,6 @@ select:focus-visible {
   align-items: center;
   gap: 6px;
 }
-.services-hero-actions {
-  margin-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-/* Tab filter row */
-.services-tabs-wrap { padding-top: 8px; padding-bottom: 8px; }
-.services-tabs {
-  display: inline-flex;
-  padding: 4px;
-  background: var(--surface-2);
-  border-radius: var(--r-md);
-  border: 1px solid var(--border);
-  gap: 2px;
-}
-.services-tab {
-  border: 0;
-  background: transparent;
-  color: var(--text-2);
-  padding: 8px 16px;
-  border-radius: 8px;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out);
-}
-.services-tab:hover { color: var(--text-1); }
-.services-tab.is-active {
-  background: var(--surface);
-  color: var(--text-1);
-  box-shadow: var(--shadow2);
-}
 
 /* Catalog grid */
 .services-grid {
@@ -11262,9 +11227,6 @@ select:focus-visible {
 
 @media (max-width: 720px) {
   .services-grid { grid-template-columns: 1fr; }
-  .services-tabs { width: 100%; }
-  .services-tab { flex: 1; }
-  .services-hero-actions .btn { width: 100%; }
   .book-hero-actions .btn { width: 100%; }
 }
 
@@ -11686,14 +11648,6 @@ select:focus-visible {
 
 [data-theme="dark"] .why-vs__th-sirq { background: rgba(17, 24, 39, 0.18); color: #7DB7E6; }
 [data-theme="dark"] .why-vs__cell-sirq { background: rgba(17, 24, 39, 0.10); }
-
-/* ---- Services hero stat band ---- */
-.services-stat-band { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 24px; padding: 18px 0; border-top: 1px solid var(--syn-border, #e5e7eb); border-bottom: 1px solid var(--syn-border, #e5e7eb); }
-.services-stat { display: flex; flex-direction: column; gap: 2px; }
-.services-stat__num { font-size: 1.6rem; font-weight: 700; line-height: 1.1; color: #111827; letter-spacing: -0.01em; }
-.services-stat__label { font-size: 0.82rem; color: var(--text-muted, #6b7280); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
-@media (max-width: 720px) { .services-stat-band { grid-template-columns: repeat(2, 1fr); } }
-[data-theme="dark"] .services-stat__num { color: #7DB7E6; }
 
 /* =====================================================================
    CLIENT PORTAL — public-safe account shell
