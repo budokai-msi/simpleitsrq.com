@@ -114,7 +114,7 @@ export default function LeadsInboxTab({ data, error, reload }) {
 
   return (
     <div className="ops-grid">
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head">
           <h2>Email & Lead Dispatcher Inbox</h2>
           <SignalPill state={(counts.new || 0) ? "good" : "neutral"}>
@@ -141,7 +141,7 @@ export default function LeadsInboxTab({ data, error, reload }) {
           <div className="admin-leadgen-inbox-grid" style={{ marginTop: 16 }}>
             {/* Left Column: Lead List */}
             <div style={{ overflowX: "auto" }}>
-              <table className="admin-aff-table ops-table">
+              <table className="table table-zebra">
                 <thead>
                   <tr>
                     <th style={{ width: 36 }}>

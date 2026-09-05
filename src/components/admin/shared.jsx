@@ -82,22 +82,23 @@ export async function postJson(action, body = {}) {
 }
 
 export function SignalPill({ state, children }) {
-  return <span className={`ops-pill ops-pill--${state || "neutral"}`}>{children}</span>;
+  const cls = state === "good" ? "badge-success" : state === "warn" ? "badge-warning" : state === "bad" ? "badge-error" : "badge-ghost";
+  return <span className={`badge badge-sm ${cls}`}>{children}</span>;
 }
 
 export function Metric({ label, value, hint, state }) {
   return (
-    <article className="ops-metric">
-      <span className="ops-metric__label">{label}</span>
-      <strong>{value ?? "-"}</strong>
-      {hint ? <span className={`ops-metric__hint${state ? ` is-${state}` : ""}`}>{hint}</span> : null}
-    </article>
+    <div className="stat">
+      <div className="stat-title">{label}</div>
+      <div className="stat-value text-2xl">{value ?? "-"}</div>
+      {hint ? <div className={`stat-desc${state ? ` text-${state}` : ""}`}>{hint}</div> : null}
+    </div>
   );
 }
 
 export function EmptyState({ children }) {
   return (
-    <div className="ops-empty">
+    <div className="alert alert-soft" role="status">
       <AlertTriangle size={16} />
       <span>{children}</span>
     </div>
@@ -107,8 +108,8 @@ export function EmptyState({ children }) {
 export function Table({ columns, rows, empty, emptyNode, renderRow }) {
   if (!rows?.length) return emptyNode || <EmptyState>{empty || "No records yet."}</EmptyState>;
   return (
-    <div className="ops-table-wrap">
-      <table className="admin-aff-table ops-table">
+    <div className="overflow-x-auto">
+      <table className="table table-zebra">
         <thead>
           <tr>{columns.map((col) => <th key={col}>{col}</th>)}</tr>
         </thead>
@@ -238,7 +239,7 @@ export function StatusChip({ status }) {
 export function HotLeadsPanel({ hotLeads, error }) {
   const leads = hotLeads?.leads || [];
   return (
-    <section className="admin-aff-card ops-panel ops-panel--wide">
+    <section className="card card-border bg-base-100 col-span-full p-4">
       <div className="ops-panel__head">
         <h2>🔥 Hot leads</h2>
         <SignalPill state={hotLeads?.local_count ? "good" : "neutral"}>
@@ -315,7 +316,7 @@ export function LeadIntelPanels({ leadIntel, error }) {
   const sources = leadIntel?.sources || [];
   return (
     <>
-      <section className="admin-aff-card ops-panel">
+      <section className="card card-border bg-base-100 p-4">
         <div className="ops-panel__head"><h2>Conversion funnel</h2><SignalPill state={funnel.sessions ? "good" : "neutral"}>14 days</SignalPill></div>
         {error ? <EmptyState>{error}</EmptyState> : null}
         <FunnelBar label="Visitors (sessions)" value={funnel.sessions} pct={100} />
@@ -324,41 +325,45 @@ export function LeadIntelPanels({ leadIntel, error }) {
         <FunnelBar label="Reached booking / contact" value={funnel.reached_booking} pct={funnel.reached_booking_pct} green />
       </section>
 
-      <section className="admin-aff-card ops-panel">
+      <section className="card card-border bg-base-100 p-4">
         <div className="ops-panel__head"><h2>Traffic sources</h2><SignalPill state={sources.length ? "good" : "neutral"}>14 days</SignalPill></div>
         {error ? <EmptyState>{error}</EmptyState> : null}
         {!error && sources.length === 0 ? <EmptyState>No source data yet.</EmptyState> : null}
         {sources.length ? (
-          <table className="admin-aff-table ops-table">
-            <thead><tr><th>Source</th><th style={{ textAlign: "right" }}>Sessions</th><th style={{ textAlign: "right" }}>Engaged</th></tr></thead>
-            <tbody>
-              {sources.map((s) => (
-                <tr key={s.source}><td>{s.source}</td><td style={{ textAlign: "right" }}>{fmtNumber(s.sessions)}</td><td style={{ textAlign: "right" }}>{s.engaged_pct}%</td></tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="table table-zebra">
+              <thead><tr><th>Source</th><th className="text-right">Sessions</th><th className="text-right">Engaged</th></tr></thead>
+              <tbody>
+                {sources.map((s) => (
+                  <tr key={s.source}><td>{s.source}</td><td className="text-right">{fmtNumber(s.sessions)}</td><td className="text-right">{s.engaged_pct}%</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : null}
       </section>
 
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Returning visitors</h2><SignalPill state={returning.length ? "good" : "neutral"}>{fmtNumber(returning.length)} watching · 30d</SignalPill></div>
         {error ? <EmptyState>{error}</EmptyState> : null}
         {!error && returning.length === 0 ? <EmptyState>No repeat visitors yet - they show up here after a second visit.</EmptyState> : null}
         {returning.length ? (
-          <table className="admin-aff-table ops-table">
-            <thead><tr><th>Location</th><th style={{ textAlign: "right" }}>Visits</th><th style={{ textAlign: "right" }}>Days</th><th style={{ textAlign: "right" }}>Pages</th><th>Engaged</th></tr></thead>
-            <tbody>
-              {returning.map((r) => (
-                <tr key={r.anon_id}>
-                  <td>{r.location}</td>
-                  <td style={{ textAlign: "right" }}>{fmtNumber(r.sessions)}</td>
-                  <td style={{ textAlign: "right" }}>{fmtNumber(r.days)}</td>
-                  <td style={{ textAlign: "right" }}>{fmtNumber(r.total_pages)}</td>
-                  <td>{r.ever_engaged ? "✓" : " - "}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="table table-zebra">
+              <thead><tr><th>Location</th><th className="text-right">Visits</th><th className="text-right">Days</th><th className="text-right">Pages</th><th>Engaged</th></tr></thead>
+              <tbody>
+                {returning.map((r) => (
+                  <tr key={r.anon_id}>
+                    <td>{r.location}</td>
+                    <td className="text-right">{fmtNumber(r.sessions)}</td>
+                    <td className="text-right">{fmtNumber(r.days)}</td>
+                    <td className="text-right">{fmtNumber(r.total_pages)}</td>
+                    <td>{r.ever_engaged ? "✓" : " - "}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : null}
       </section>
     </>

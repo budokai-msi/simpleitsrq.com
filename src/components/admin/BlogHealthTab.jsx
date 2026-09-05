@@ -52,7 +52,7 @@ export default function BlogHealthTab({ data, busy, runAction }) {
 
   return (
     <div className="ops-grid">
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2>Blog engine health</h2>
           <button
@@ -65,7 +65,7 @@ export default function BlogHealthTab({ data, busy, runAction }) {
           </button>
         </div>
         {banner}
-        <div className="ops-metric-grid">
+        <div className="stats stats-vertical sm:stats-horizontal">
           <Metric label="Drafts pending" value={fmtNumber(health.draftsPending)} />
           <Metric label="Published" value={fmtNumber(health.publishedCount)} />
           <Metric
@@ -76,7 +76,7 @@ export default function BlogHealthTab({ data, busy, runAction }) {
         </div>
       </section>
 
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Recent cron runs</h2></div>
         <Table
           columns={["Date", "Status", "Error code", "Source URL", "Retried"]}

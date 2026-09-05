@@ -13,7 +13,7 @@ import { SignalPill } from "./shared";
 export function HumanReviewDisclosure({ context }) {
   return (
     <div
-      className="admin-aff-card ops-panel"
+      className="card card-border bg-base-100 p-4"
       style={{
         display: "flex",
         alignItems: "flex-start",
@@ -60,7 +60,7 @@ export function HumanReviewDisclosure({ context }) {
 export function ZeroState({ title, description, icon: Icon = Inbox, action, disclosures }) {
   return (
     <div
-      className="admin-aff-card ops-panel"
+      className="card card-border bg-base-100 p-4"
       style={{ textAlign: "center", padding: "40px 24px" }}
     >
       <div

@@ -177,7 +177,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
 
   return (
     <div className="ops-grid">
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Campaign builder</h2></div>
 
         <div className="ops-wizard-steps" style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
@@ -333,7 +333,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
         )}
       </section>
 
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Existing campaigns</h2></div>
         {campaignsError ? <div className="ops-notice">{campaignsError}</div> : null}
         <Table
@@ -364,7 +364,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
         />
       </section>
 
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Deliverability</h2></div>
         {deliverabilityError ? <div className="ops-notice">{deliverabilityError}</div> : null}
         {deliverability ? (
@@ -402,7 +402,7 @@ export default function CampaignBuilderTab({ data, busy, runAction }) {
         ) : null}
       </section>
 
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Duplicate detection</h2></div>
         <p className="ops-panel__copy">
           Finds likely duplicate businesses before the first campaign launches so we never email the

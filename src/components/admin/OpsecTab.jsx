@@ -18,7 +18,7 @@ export default function OpsecTab({ data, busy, runAction }) {
 
   return (
     <div className="ops-grid">
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head">
           <h2>Hunt brief</h2>
           <SignalPill state={hunt?.level === "critical" ? "bad" : hunt?.level === "elevated" ? "warn" : "good"}>
@@ -26,7 +26,7 @@ export default function OpsecTab({ data, busy, runAction }) {
           </SignalPill>
         </div>
         <p className="ops-panel__copy">{hunt?.headline || "Building defensive brief from recent security telemetry."}</p>
-        <div className="ops-metric-grid">
+        <div className="stats stats-vertical sm:stats-horizontal">
           <Metric label="24h threats" value={fmtNumber(hunt?.metrics?.threats24h)} hint={`${fmtNumber(hunt?.metrics?.threatIps24h)} IPs`} />
           <Metric label="Campaigns" value={fmtNumber(hunt?.campaigns?.length)} hint="rotating fingerprints" />
           <Metric label="Exploit events" value={fmtNumber(hunt?.metrics?.exploitEvents24h)} />
@@ -35,7 +35,7 @@ export default function OpsecTab({ data, busy, runAction }) {
           <Metric label="Active IOCs" value={fmtNumber(hunt?.metrics?.activeIocs)} />
         </div>
       </section>
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head">
           <h2>Watched-domain cert health</h2>
           <button
@@ -77,7 +77,7 @@ export default function OpsecTab({ data, busy, runAction }) {
           )}
         />
       </section>
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Action queue</h2><Shield size={16} /></div>
         <Table
           columns={["Priority", "Action", "Reason"]}
@@ -92,7 +92,7 @@ export default function OpsecTab({ data, busy, runAction }) {
           )}
         />
       </section>
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Top attackers</h2><RadioTower size={16} /></div>
         <Table
           columns={["IP", "Hits", "Country", "Classes", "Last seen"]}
@@ -109,14 +109,14 @@ export default function OpsecTab({ data, busy, runAction }) {
           )}
         />
       </section>
-      <section className="admin-aff-card ops-panel">
+      <section className="card card-border bg-base-100 p-4">
         <div className="ops-panel__head"><h2>Add watch</h2><Eye size={16} /></div>
         <div className="ops-form-row">
           <input className="admin-leadgen-input" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="domain.com" />
           <button className="btn btn-primary btn-sm" disabled={busy === "opsec-domain-add"} onClick={() => runAction("opsec-domain-add", { domain }, "Domain added to watch list.").then((ok) => { if (ok) setDomain(""); })}>Add</button>
         </div>
       </section>
-      <section className="admin-aff-card ops-panel">
+      <section className="card card-border bg-base-100 p-4">
         <div className="ops-panel__head"><h2>Add IOC</h2><RadioTower size={16} /></div>
         <div className="ops-form-grid">
           <select className="admin-leadgen-input" value={ioc.ioc_type} onChange={(e) => setIoc({ ...ioc, ioc_type: e.target.value })}>
@@ -129,7 +129,7 @@ export default function OpsecTab({ data, busy, runAction }) {
           <button className="btn btn-primary btn-sm ops-form-grid__full" disabled={busy === "opsec-ioc-add"} onClick={() => runAction("opsec-ioc-add", ioc, "IOC saved.").then((ok) => { if (ok) setIoc({ ...ioc, value: "" }); })}>Save IOC</button>
         </div>
       </section>
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Watched domains</h2></div>
         <Table
           columns={["Domain", "Label", "Active", "Last scanned"]}
@@ -156,7 +156,7 @@ export default function OpsecTab({ data, busy, runAction }) {
           )}
         />
       </section>
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Indicators</h2></div>
         <Table
           columns={["Type", "Value", "Severity", "Source", "Last seen"]}
@@ -173,7 +173,7 @@ export default function OpsecTab({ data, busy, runAction }) {
           )}
         />
       </section>
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head"><h2>Notes</h2><Search size={16} /></div>
         <div className="ops-note-editor">
           <input className="admin-leadgen-input" value={note.title} onChange={(e) => setNote({ ...note, title: e.target.value })} placeholder="Title" />

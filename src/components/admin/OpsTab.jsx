@@ -43,12 +43,12 @@ function CountUp({ value, format = (n) => fmtNumber(n), duration = 0.8 }) {
 function Panel({ children, delay = 0, wide = false }) {
   return (
     <motion.section
-      className={`admin-aff-card ops-panel${wide ? " ops-panel--wide" : ""}`}
+      className={`card card-border bg-base-100${wide ? " col-span-full" : ""}`}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay, ease: "easeOut" }}
     >
-      {children}
+      <div className="card-body p-4">{children}</div>
     </motion.section>
   );
 }
@@ -252,7 +252,7 @@ function RevenuePanel({ data }) {
   return (
     <Panel>
       <div className="ops-panel__head"><h2>Revenue</h2></div>
-      <div className="ops-metric-grid">
+      <div className="stats stats-vertical sm:stats-horizontal">
         <Metric label="30-day Stripe" value={configured ? <CountUp value={paidTotal} format={fmtMoney} /> : "Not configured"} />
         <Metric label="MRR" value={configured ? <CountUp value={mrr} format={fmtMoney} /> : "-"} />
         <Metric label="Paid invoices" value={configured ? <CountUp value={paidCount} /> : "-"} />
@@ -305,11 +305,11 @@ function RecentJobsPanel({ data, errors }) {
       </div>
 
       {/* Summary chips */}
-      <div className="ops-job-summary" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-        <span className="ops-job-chip"><Activity size={13} /> {fmtNumber(total)} total</span>
-        <span className="ops-job-chip ops-job-chip--good"><CheckCircle2 size={13} /> {fmtNumber(done)} done</span>
-        {failed > 0 ? <span className="ops-job-chip ops-job-chip--bad"><XCircle size={13} /> {fmtNumber(failed)} failed</span> : null}
-        {running > 0 ? <span className="ops-job-chip ops-job-chip--warn"><AlertTriangle size={13} /> {fmtNumber(running)} running</span> : null}
+      <div className="flex gap-2 flex-wrap mb-3">
+        <span className="badge badge-ghost gap-1"><Activity size={13} /> {fmtNumber(total)} total</span>
+        <span className="badge badge-success gap-1"><CheckCircle2 size={13} /> {fmtNumber(done)} done</span>
+        {failed > 0 ? <span className="badge badge-error gap-1"><XCircle size={13} /> {fmtNumber(failed)} failed</span> : null}
+        {running > 0 ? <span className="badge badge-warning gap-1"><AlertTriangle size={13} /> {fmtNumber(running)} running</span> : null}
       </div>
 
       {/* DaisyUI-style kind filter */}
@@ -330,7 +330,7 @@ function RecentJobsPanel({ data, errors }) {
           <tr key={row.id || row.error} style={row.status === "failed" ? { background: "color-mix(in srgb, #dc2626 6%, transparent)" } : undefined}>
             <td>{row.id || "-"}</td>
             <td>
-              <span className="ops-kind-badge">{KIND_LABELS[row.kind] || row.kind || "-"}</span>
+              <span className="badge badge-ghost badge-sm">{KIND_LABELS[row.kind] || row.kind || "-"}</span>
             </td>
             <td><SignalPill state={row.status === "failed" ? "bad" : row.status === "done" ? "good" : "neutral"}>{row.status || "-"}</SignalPill></td>
             <td>{formatJobProgress(row)}</td>

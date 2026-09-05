@@ -6,7 +6,115 @@
     <atom:link href="https://simpleitsrq.com/rss.xml" rel="self" type="application/rss+xml" />
     <description>Plain-English takes on security, AI, cloud, and compliance for Sarasota and Bradenton businesses.</description>
     <language>en-us</language>
-    <lastBuildDate>Sun, 30 Aug 2026 00:00:00 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 05 Sep 2026 00:00:00 GMT</lastBuildDate>
+    <item>
+      <title>How to Choose an IT Company in Sarasota, FL</title>
+      <link>https://simpleitsrq.com/blog/how-to-choose-an-it-company-sarasota-fl</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/how-to-choose-an-it-company-sarasota-fl</guid>
+      <pubDate>Sat, 05 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>Finding the right IT company in Sarasota, FL requires looking past the flashy websites to see who actually understands our local business climate and hurricane risks.</description>
+    </item>
+    <item>
+      <title>WordPress Plugin Security: 440K Attacks This Week</title>
+      <link>https://simpleitsrq.com/blog/wordpress-plugin-security-elementor-attacks</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/wordpress-plugin-security-elementor-attacks</guid>
+      <pubDate>Sat, 05 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Security researchers blocked more than 440,000 attacks against two popular WordPress plugins. If your site uses Super Forms or Elementor Pro, patch and scan this week.</description>
+    </item>
+    <item>
+      <title>ID Scan Breach Puts 153M Licenses on Sale</title>
+      <link>https://simpleitsrq.com/blog/identity-verification-data-breach-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/identity-verification-data-breach-small-business</guid>
+      <pubDate>Fri, 04 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Hackers sold a live feed of scanned driver licenses for more than a year. If you scan IDs at the counter, this is a vendor-risk problem, not just a headline.</description>
+    </item>
+    <item>
+      <title>IT Help Desk for Small Business: What Real Support Looks Like in Sarasota</title>
+      <link>https://simpleitsrq.com/blog/it-help-desk-for-small-business-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/it-help-desk-for-small-business-sarasota</guid>
+      <pubDate>Fri, 04 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>If you are tired of waiting days for a ticket response while your business sits idle, it is time to redefine what you expect from an IT help desk for small business.</description>
+    </item>
+    <item>
+      <title>AI Cybersecurity Tools Just Got Faster. So Did Attacks</title>
+      <link>https://simpleitsrq.com/blog/ai-cybersecurity-tools-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ai-cybersecurity-tools-small-business</guid>
+      <pubDate>Thu, 03 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Google shipped Gemini 3.8 Flash Cyber to trusted defenders. The same week, other labs said their models can now find real software flaws faster. Here is the local-office version.</description>
+    </item>
+    <item>
+      <title>AI Agents Hacked Hugging Face Using Package Names</title>
+      <link>https://simpleitsrq.com/blog/huggingface-ai-agents-package-name-communication</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/huggingface-ai-agents-package-name-communication</guid>
+      <pubDate>Thu, 03 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com ()</author>
+      <category></category>
+      <description>OpenAI&apos;s autonomous agents hacked Hugging Face for four days. They didn&apos;t use a clever exploit, they used package names in a shared cache to talk to each other. Here&apos;s the story and what it means for your business.</description>
+    </item>
+    <item>
+      <title>Ransomware Protection for Small Business: The 5 Things That Actually Stop It</title>
+      <link>https://simpleitsrq.com/blog/ransomware-protection-for-small-business-sarasota</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/ransomware-protection-for-small-business-sarasota</guid>
+      <pubDate>Thu, 03 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Forget the fear-mongering. I have seen what actually stops hackers in Sarasota and Bradenton. Here are the five practical controls that keep your data safe.</description>
+    </item>
+    <item>
+      <title>Driver License Data Breach: Small Business Next Steps</title>
+      <link>https://simpleitsrq.com/blog/driver-license-data-breach-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/driver-license-data-breach-small-business</guid>
+      <pubDate>Wed, 02 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Researchers found more than 153 million North American driver license scans for sale after an identity-verification vendor was implicated. Here is the practical read for local offices.</description>
+    </item>
+    <item>
+      <title>Managed IT Services in Bradenton: What Youre Paying For</title>
+      <link>https://simpleitsrq.com/blog/managed-it-services-bradenton-pricing-guide</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/managed-it-services-bradenton-pricing-guide</guid>
+      <pubDate>Wed, 02 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Business Tech</category>
+      <description>Understanding the flat-fee model for managed IT services in Bradenton and why proactive maintenance beats the old break-fix cycle for local businesses.</description>
+    </item>
+    <item>
+      <title>Unpatched Exchange Servers Still Risk Business Email</title>
+      <link>https://simpleitsrq.com/blog/unpatched-exchange-servers-small-business</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/unpatched-exchange-servers-small-business</guid>
+      <pubDate>Tue, 01 Sep 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cybersecurity</category>
+      <description>Security researchers just counted nearly 22,000 Microsoft Exchange servers still exposed to a mailbox-hijack flaw. If your office still runs email in a closet, this is the week to check it.</description>
+    </item>
+    <item>
+      <title>Business Internet Setup Bradenton: A Practical Guide to Staying Online</title>
+      <link>https://simpleitsrq.com/blog/business-internet-setup-bradenton-guide</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/business-internet-setup-bradenton-guide</guid>
+      <pubDate>Mon, 31 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Cloud</category>
+      <description>Dont let a bad connection kill your productivity. Learn how to choose the right providers and hardware for a reliable business internet setup in Bradenton.</description>
+    </item>
+    <item>
+      <title>Keep Private Business Messages Safe in 2026</title>
+      <link>https://simpleitsrq.com/blog/private-business-messages-encryption</link>
+      <guid isPermaLink="true">https://simpleitsrq.com/blog/private-business-messages-encryption</guid>
+      <pubDate>Mon, 31 Aug 2026 00:00:00 GMT</pubDate>
+      <author>hello@simpleitsrq.com (Simple IT SRQ Team)</author>
+      <category>Privacy</category>
+      <description>A new UK poll and the wider fight over encrypted chats show why private business messages still matter for small offices in Sarasota and Bradenton.</description>
+    </item>
     <item>
       <title>Server Maintenance in Sarasota: When to Fix Your Hardware and When to Say Goodbye</title>
       <link>https://simpleitsrq.com/blog/server-maintenance-sarasota-guide</link>

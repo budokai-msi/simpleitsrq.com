@@ -242,46 +242,40 @@ function AdminOpsInner() {
         </header>
 
         {/* Master Operations Unified KPI Header */}
-        <div className="admin-aff-grid" style={{ marginBottom: 24 }}>
-          <div className="admin-aff-stat">
-            <div className="admin-aff-stat-head">
-              <span className="admin-aff-stat-label">Local IT & Repair Leads</span>
-              <Ticket size={16} className="admin-aff-stat-icon" />
-            </div>
-            <div className="admin-aff-stat-value">{fmtNumber(data["admin-status"]?.counts?.leads || 0)}</div>
-            <div className="admin-aff-stat-sub">Sarasota & Bradenton Queue</div>
+        <div className="stats stats-vertical sm:stats-horizontal shadow-sm border border-base-300 mb-6">
+          <div className="stat">
+            <div className="stat-figure text-primary"><Ticket size={20} /></div>
+            <div className="stat-title">Local IT & Repair Leads</div>
+            <div className="stat-value">{fmtNumber(data["admin-status"]?.counts?.leads || 0)}</div>
+            <div className="stat-desc">Sarasota & Bradenton Queue</div>
           </div>
-          <div className="admin-aff-stat">
-            <div className="admin-aff-stat-head">
-              <span className="admin-aff-stat-label">B2B Leadgen Pipeline</span>
-              <Target size={16} className="admin-aff-stat-icon" />
-            </div>
-            <div className="admin-aff-stat-value">{fmtNumber(data["leadgen-status"]?.counts?.discovered || 0)}</div>
-            <div className="admin-aff-stat-sub">{fmtNumber(data["leadgen-status"]?.counts?.emails || 0)} Verified Emails</div>
+          <div className="stat">
+            <div className="stat-figure text-primary"><Target size={20} /></div>
+            <div className="stat-title">B2B Leadgen Pipeline</div>
+            <div className="stat-value">{fmtNumber(data["leadgen-status"]?.counts?.discovered || 0)}</div>
+            <div className="stat-desc">{fmtNumber(data["leadgen-status"]?.counts?.emails || 0)} Verified Emails</div>
           </div>
-          <div className="admin-aff-stat">
-            <div className="admin-aff-stat-head">
-              <span className="admin-aff-stat-label">Gemma Local Blog Engine</span>
-              <BookOpen size={16} className="admin-aff-stat-icon" />
-            </div>
-            <div className="admin-aff-stat-value">{fmtNumber(data.drafts?.publishedCount || 77)}</div>
-            <div className="admin-aff-stat-sub">{fmtNumber((data.drafts?.drafts || []).length)} Drafts Pending</div>
+          <div className="stat">
+            <div className="stat-figure text-primary"><BookOpen size={20} /></div>
+            <div className="stat-title">Gemma Local Blog Engine</div>
+            <div className="stat-value">{fmtNumber(data.drafts?.publishedCount || 77)}</div>
+            <div className="stat-desc">{fmtNumber((data.drafts?.drafts || []).length)} Drafts Pending</div>
           </div>
-          <div className="admin-aff-stat">
-            <div className="admin-aff-stat-head">
-              <span className="admin-aff-stat-label">Affiliate Traffic (30d)</span>
-              <DollarSign size={16} className="admin-aff-stat-icon" />
-            </div>
-            <div className="admin-aff-stat-value">{fmtNumber(data["affiliate-stats"]?.total_clicks || 0)}</div>
-            <div className="admin-aff-stat-sub">Active Revenue Links</div>
+          <div className="stat">
+            <div className="stat-figure text-primary"><DollarSign size={20} /></div>
+            <div className="stat-title">Affiliate Traffic (30d)</div>
+            <div className="stat-value">{fmtNumber(data["affiliate-stats"]?.total_clicks || 0)}</div>
+            <div className="stat-desc">Active Revenue Links</div>
           </div>
         </div>
 
-        <nav className="admin-leadgen-tabs ops-tabs" aria-label="Admin ops sections">
+        <nav className="tabs tabs-border" role="tablist" aria-label="Admin ops sections">
           {TABS.map(([key, label, Icon, hint]) => (
             <button
               key={key}
-              className={`admin-leadgen-tab${tab === key ? " is-active" : ""}`}
+              role="tab"
+              aria-selected={tab === key}
+              className={`tab tab-lg gap-2${tab === key ? " tab-active" : ""}`}
               type="button"
               onClick={() => setTab(key)}
               data-tip={hint}

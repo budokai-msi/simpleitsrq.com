@@ -141,13 +141,13 @@ export default function ProductFinderTab() {
         </button>
       </div>
 
-      <div className="ops-metric-grid" style={{ gridColumn: "1 / -1" }}>
+      <div className="stats stats-vertical sm:stats-horizontal" style={{ gridColumn: "1 / -1" }}>
         <Metric label="Active businesses" value={fmtNumber(totalBusinesses)} hint="in matched segments" />
         <Metric label="Sellable products" value={fmtNumber(products.length)} hint="affiliate catalog" />
         <Metric label="Top trend" value={topTrend ? topTrend.keyword : "-"} hint={topTrend ? `score ${Number(topTrend.score).toFixed(0)}` : "no signals yet"} />
       </div>
 
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head">
           <h2>Local market segments</h2>
           <SignalPill state={segments.length ? "good" : "neutral"}>{fmtNumber(segments.length)} segments</SignalPill>
@@ -178,7 +178,7 @@ export default function ProductFinderTab() {
         ) : null}
       </section>
 
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head">
           <h2>Products you can sell</h2>
           <SignalPill state={productRows.length ? "good" : "neutral"}>{fmtNumber(productRows.length)} products</SignalPill>
@@ -216,7 +216,7 @@ export default function ProductFinderTab() {
         ) : null}
       </section>
 
-      <section className="admin-aff-card ops-panel ops-panel--wide">
+      <section className="card card-border bg-base-100 col-span-full p-4">
         <div className="ops-panel__head">
           <h2>What's trending</h2>
           <SignalPill state={trends.length ? "good" : "neutral"}>{fmtNumber(trends.length)} signals</SignalPill>
