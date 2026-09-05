@@ -196,7 +196,7 @@ export default function ExitIntentModal() {
   return (
     <dialog
       ref={dialogRef}
-      className="exit-intent-modal"
+      className="modal"
       data-blocking-modal
       aria-labelledby={titleId}
       aria-describedby={descId}
@@ -209,10 +209,10 @@ export default function ExitIntentModal() {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="exit-intent-modal-inner">
+      <div className="modal-box max-w-[540px]">
         <button
           type="button"
-          className="exit-intent-close"
+          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
           aria-label="Close"
           onClick={close}
         >
@@ -220,17 +220,17 @@ export default function ExitIntentModal() {
         </button>
 
         {status === "sent" ? (
-          <div className="exit-intent-body exit-intent-success">
-            <div className="exit-intent-success-icon">
+          <div className="flex flex-col items-center text-center gap-3">
+            <div className="grid place-items-center w-14 h-14 rounded-full bg-success/10 text-success">
               <Check size={28} aria-hidden="true" />
             </div>
-            <h2 id={titleId} className="exit-intent-title">Thanks - check your inbox.</h2>
-            <p id={descId} className="exit-intent-sub">
+            <h2 id={titleId} className="text-2xl font-bold">Thanks - check your inbox.</h2>
+            <p id={descId} className="text-sm text-base-content/70">
               We'll be in touch within one business day from hello@simpleitsrq.com.
             </p>
             <button
               type="button"
-              className="btn btn-primary exit-intent-submit"
+              className="btn btn-primary"
               onClick={close}
               ref={firstFocusRef}
             >
@@ -238,31 +238,31 @@ export default function ExitIntentModal() {
             </button>
           </div>
         ) : !picked ? (
-          <div className="exit-intent-body">
-            <span className="exit-intent-eyebrow">One last thing</span>
-            <h2 id={titleId} className="exit-intent-title">
+          <div className="flex flex-col gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">One last thing</span>
+            <h2 id={titleId} className="text-2xl font-bold">
               Before you go - renewal coming up?
             </h2>
-            <p id={descId} className="exit-intent-sub">
+            <p id={descId} className="text-sm text-base-content/70">
               Pick whichever is more useful. One quick email, no phone tree.
             </p>
-            <div className="exit-intent-choices" role="group" aria-label="Pick an offer">
+            <div className="flex flex-col gap-2.5 mt-1" role="group" aria-label="Pick an offer">
               {Object.values(CHOICES).map((opt, i) => {
                 const Icon = opt.icon;
                 return (
                   <button
                     key={opt.id}
                     type="button"
-                    className="exit-intent-choice"
+                    className="grid grid-cols-[auto_1fr_auto] gap-3.5 items-center text-left p-3.5 border border-base-300 rounded-xl bg-base-100 cursor-pointer hover:border-primary"
                     onClick={() => setChoice(opt.id)}
                     ref={i === 0 ? firstFocusRef : null}
                   >
-                    <span className="exit-intent-choice-icon" aria-hidden="true">
+                    <span className="grid place-items-center w-10 h-10 rounded-lg bg-primary/10 text-primary" aria-hidden="true">
                       <Icon size={20} />
                     </span>
-                    <span className="exit-intent-choice-text">
-                      <strong>{opt.headline}</strong>
-                      <span>{opt.body}</span>
+                    <span className="flex flex-col gap-0.5 min-w-0">
+                      <strong className="text-sm">{opt.headline}</strong>
+                      <span className="text-xs text-base-content/70 leading-snug">{opt.body}</span>
                     </span>
                     <ArrowRight size={16} aria-hidden="true" />
                   </button>
@@ -271,32 +271,32 @@ export default function ExitIntentModal() {
             </div>
             <button
               type="button"
-              className="exit-intent-dismiss"
+              className="self-center mt-1 p-2 text-xs text-base-content/60 underline cursor-pointer"
               onClick={close}
             >
               No thanks, I'm just browsing
             </button>
           </div>
         ) : (
-          <form className="exit-intent-body" onSubmit={submit} noValidate>
+          <form className="flex flex-col gap-3" onSubmit={submit} noValidate>
             <button
               type="button"
-              className="exit-intent-back"
+              className="self-start p-1 -ml-2 text-xs text-base-content/60 cursor-pointer rounded-md hover:text-primary"
               onClick={() => { setChoice(null); setError(""); }}
             >
               ← Back
             </button>
-            <span className="exit-intent-eyebrow">
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
               Compliance Library
             </span>
-            <h2 id={titleId} className="exit-intent-title">{picked.headline}</h2>
-            <p id={descId} className="exit-intent-sub">{picked.body}</p>
-            <label className="exit-intent-label">
+            <h2 id={titleId} className="text-2xl font-bold">{picked.headline}</h2>
+            <p id={descId} className="text-sm text-base-content/70">{picked.body}</p>
+            <label className="flex flex-col gap-1.5 text-xs font-semibold text-base-content/70 mt-1">
               Work email
               <input
                 ref={firstFocusRef}
                 type="email"
-                className="exit-intent-input"
+                className="input input-bordered w-full"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
@@ -304,16 +304,16 @@ export default function ExitIntentModal() {
                 required
               />
             </label>
-            {error && <p className="exit-intent-error" role="alert">{error}</p>}
+            {error && <p className="text-sm text-error" role="alert">{error}</p>}
             <button
               type="submit"
-              className="btn btn-primary exit-intent-submit"
+              className="btn btn-primary mt-1"
               disabled={status === "sending"}
             >
               {status === "sending" ? "Sending…" : picked.cta}
               <ArrowRight size={14} aria-hidden="true" />
             </button>
-            <p className="exit-intent-fineprint">
+            <p className="mt-1.5 text-xs text-base-content/60 text-center">
               We'll only use your email to send what you asked for. No spam.
             </p>
           </form>

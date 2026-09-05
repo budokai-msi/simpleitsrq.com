@@ -64,35 +64,35 @@ export default function CookieConsent() {
 
   return (
     <div
-      className="cookie-consent"
+      className="fixed left-4 right-4 bottom-4 z-[60] max-w-[720px] mx-auto bg-base-100 text-base-content border border-base-300 rounded-xl p-4 sm:p-5 grid sm:grid-cols-[1fr_auto] gap-4 items-center shadow-lg"
       role="dialog"
       aria-labelledby="cookie-consent-title"
       aria-describedby="cookie-consent-body"
     >
-      <div className="cookie-consent__body" id="cookie-consent-body">
-        <strong id="cookie-consent-title">Cookie settings</strong>
+      <div className="text-sm leading-relaxed" id="cookie-consent-body">
+        <strong id="cookie-consent-title" className="block text-sm mb-1">Cookie settings</strong>
         Essential cookies keep forms working. Analytics and marketing stay off
         unless accepted. <Link to="/privacy">Privacy Policy</Link>. CA may{" "}
         <button
           type="button"
-          className="cookie-consent__link-btn"
+          className="underline underline-offset-2 cursor-pointer"
           onClick={rejectNonEssential}
         >
           opt out
         </button>
         .
       </div>
-      <div className="cookie-consent__actions">
+      <div className="flex gap-2 items-center flex-wrap justify-end">
         <button
           type="button"
-          className="cookie-consent__btn"
+          className="btn btn-sm"
           onClick={rejectNonEssential}
         >
           Reject
         </button>
         <button
           type="button"
-          className="cookie-consent__btn cookie-consent__btn--primary"
+          className="btn btn-sm btn-primary"
           onClick={acceptAll}
         >
           Accept
