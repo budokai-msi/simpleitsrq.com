@@ -11777,46 +11777,6 @@ select:focus-visible {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
 }
-.solution-card {
-  padding: 32px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  transition: all 300ms var(--ease-out);
-  position: relative;
-  overflow: hidden;
-}
-.solution-card:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--brand) 30%, transparent);
-  box-shadow: var(--shadow-luminate), var(--shadow16);
-}
-.solution-card h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 16px 0 10px;
-  color: var(--text-1);
-}
-.solution-card p {
-  font-size: 14px;
-  line-height: 22px;
-  color: var(--text-2);
-  margin: 0;
-}
-.solution-card::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100px;
-  height: 100px;
-  background: radial-gradient(circle at top right, var(--brand-glow), transparent 70%);
-  opacity: 0;
-  transition: opacity 300ms ease;
-}
-.solution-card:hover::after {
-  opacity: 1;
-}
 .wisp-section p {
   font-size: 14px;
   line-height: 22px;

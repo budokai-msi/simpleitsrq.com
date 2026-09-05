@@ -251,10 +251,12 @@ export default function IndustryLanding() {
           </div>
           <div className="solutions-grid">
             {SERVICES.map(({ Icon, title, desc }) => (
-              <div key={title} className="solution-card">
-                <div className="solution-icon"><Icon size={22} /></div>
-                <h3 className="solution-title">{title}</h3>
-                <p className="solution-desc">{desc}</p>
+              <div key={title} className="card card-border bg-base-100">
+                <div className="card-body">
+                  <div className="grid place-items-center w-11 h-11 rounded-lg bg-primary/10 text-primary"><Icon size={22} /></div>
+                  <h3 className="text-lg font-semibold mt-4 mb-2.5">{title}</h3>
+                  <p className="text-sm text-base-content/70 leading-relaxed">{desc}</p>
+                </div>
               </div>
             ))}
           </div>
