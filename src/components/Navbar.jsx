@@ -1,39 +1,33 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { 
-  LayoutGrid, ShoppingBag, Briefcase, MapPin, Shield, 
-  Target, BookOpen, ShieldAlert, Lock, Info, Search, Phone, 
-  Menu, X, LogIn, User as UserIcon, Calendar, ChevronDown 
+import {
+  LayoutGrid, ShoppingBag, Briefcase, MapPin, Shield, Wrench,
+  Target, BookOpen, ShieldAlert, Lock, Info, Search, Phone,
+  Menu, X, LogIn, User as UserIcon, Calendar,
 } from "lucide-react";
 import { PRIMARY_NAV, isNavSectionActive, isNavItemActive } from "../data/navigation";
 import { useAuth } from "../lib/authContext.js";
 
 const NAV_ICONS = {
-  LayoutGrid, ShoppingBag, Briefcase, MapPin, Shield, Target,
+  LayoutGrid, ShoppingBag, Briefcase, MapPin, Shield, Wrench, Target,
   BookOpen, ShieldAlert, Lock, Info, Search, Phone,
-  UserIcon, LogIn, Calendar
+  UserIcon, LogIn, Calendar,
 };
 
-function NavIcon({ name, size = 16 }) {
+function NavIcon({ name, size = 16, className }) {
   const Icon = NAV_ICONS[name] || Info;
-  return <Icon size={size} aria-hidden="true" />;
+  return <Icon size={size} aria-hidden="true" className={className} />;
 }
 
+// Site header. daisyUI navbar + menu + dropdown (details/summary) + btn.
+// Desktop groups open on hover or click; mobile uses a single stacked menu.
 export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState(null);
-  const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef(null);
   const menuButtonRef = useRef(null);
   const { user, loading } = useAuth();
-
-  useEffect(() => {
-    function onScroll() { setScrolled(window.scrollY > 8); }
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     const id = window.setTimeout(() => {
@@ -72,140 +66,163 @@ export function Navbar({ logo: Logo, themeToggle: ThemeToggle }) {
     to: "/portal",
     icon: user ? "UserIcon" : "LogIn",
     description: user ? "Tickets, leadgen, opsec, and account tools." : "Access the client portal.",
-    activePrefixes: ["/portal"],
   };
 
-  const portalCta = loading ? null : user ? (
+  const portalLink = loading ? null : (
     <Link
       to="/portal"
-      className={`link-btn nav-user${portalActive ? " is-active" : ""}`}
-      title={`Signed in as ${user.email}`}
+      className={`btn btn-ghost btn-sm${portalActive ? " btn-active" : ""}`}
+      title={user ? `Signed in as ${user.email}` : undefined}
       aria-current={portalActive ? "page" : undefined}
     >
-      {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="nav-avatar" /> : <UserIcon size={16} />}
-      <span>{user.name ? user.name.split(" ")[0] : "Portal"}</span>
-    </Link>
-  ) : (
-    <Link to="/portal" className={`link-btn${portalActive ? " is-active" : ""}`} aria-current={portalActive ? "page" : undefined}>
-      <LogIn size={16} style={{ marginRight: 6 }} /> Sign In
+      {user?.avatarUrl
+        ? <img src={user.avatarUrl} alt="" className="w-5 h-5 rounded-full" />
+        : user ? <UserIcon size={16} /> : <LogIn size={16} />}
+      <span>{user ? (user.name ? user.name.split(" ")[0] : "Portal") : "Sign in"}</span>
     </Link>
   );
 
   return (
-    <header className={`navbar${scrolled ? " navbar--scrolled" : ""}${open ? " navbar--menu-open" : ""}`} role="banner">
-      <div className="container nav-inner">
-        {Logo && <Logo />}
-        <nav className="nav-links" aria-label="Primary" onMouseLeave={() => setOpenGroup(null)}>
-          {PRIMARY_NAV.map((section) => (
-            <div key={section.id} className="nav-group" onMouseEnter={() => setOpenGroup(section.id)}>
-              {section.items ? (
-                <button
-                  type="button"
-                  className={`nav-link nav-group-btn${isNavSectionActive(section, location) ? " is-active" : ""}${openGroup === section.id ? " is-open" : ""}`}
-                  aria-expanded={openGroup === section.id}
-                  onClick={() => setOpenGroup(openGroup === section.id ? null : section.id)}
-                >
-                  <NavIcon name={section.icon} size={15} />
-                  <span>{section.label}</span>
-                  <ChevronDown size={14} className="nav-chevron" />
-                </button>
-              ) : (
-                <Link to={section.to} className={`nav-link${isNavSectionActive(section, location) ? " is-active" : ""}`}>
-                  <NavIcon name={section.icon} size={15} />
-                  <span>{section.label}</span>
-                </Link>
-              )}
-              {section.items && (
-                <div className={`nav-dropdown ${openGroup === section.id ? "is-visible" : ""}`}>
-                  <div className="nav-dropdown-grid">
-                    {section.items.map((item) => (
-                      <Link key={item.id} to={item.to} className={`nav-dropdown-item${isNavItemActive(item, location) ? " is-active" : ""}`}>
-                        <div className="nav-dropdown-item-icon">
-                          <NavIcon name={item.icon} size={20} />
-                        </div>
-                        <div className="nav-dropdown-item-content">
-                          <strong className="nav-dropdown-item-title">{item.label}</strong>
-                          <span className="nav-dropdown-item-desc">{item.description}</span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </nav>
-        <div className="nav-actions">
-          {ThemeToggle && <ThemeToggle />}
-          {portalCta}
-          <Link to="/leadgen" className="btn btn-secondary nav-leadgen-cta">
-            <Target size={15} /> Try Leadgen
-          </Link>
-          <Link to="/book" className="btn btn-primary">Book a Call</Link>
+    <header className="sticky top-0 z-50 bg-base-100 border-b border-base-300" role="banner">
+      <div className="navbar container min-h-14 py-0 px-0">
+        <div className="navbar-start gap-2">
+          {Logo && <Logo />}
         </div>
-        <div className="nav-mobile-actions">
+
+        <nav className="navbar-center hidden lg:flex" aria-label="Primary" onMouseLeave={() => setOpenGroup(null)}>
+          <ul className="menu menu-horizontal px-0 gap-1">
+            {PRIMARY_NAV.map((section) => {
+              const active = isNavSectionActive(section, location);
+              if (!section.items) {
+                return (
+                  <li key={section.id}>
+                    <Link to={section.to} className={active ? "menu-active" : undefined} aria-current={active ? "page" : undefined}>
+                      <NavIcon name={section.icon} size={15} />
+                      {section.label}
+                    </Link>
+                  </li>
+                );
+              }
+              const isOpen = openGroup === section.id;
+              return (
+                <li key={section.id} onMouseEnter={() => setOpenGroup(section.id)}>
+                  <details
+                    className="dropdown"
+                    open={isOpen}
+                    onToggle={(e) => setOpenGroup(e.currentTarget.open ? section.id : (isOpen ? null : openGroup))}
+                  >
+                    <summary className={active ? "menu-active" : undefined}>
+                      <NavIcon name={section.icon} size={15} />
+                      {section.label}
+                    </summary>
+                    <ul className="menu dropdown-content bg-base-100 border border-base-300 w-72 p-2 z-50 mt-2">
+                      {section.items.map((item) => {
+                        const itemActive = isNavItemActive(item, location);
+                        return (
+                          <li key={item.id}>
+                            <Link to={item.to} className={itemActive ? "menu-active" : undefined} aria-current={itemActive ? "page" : undefined}>
+                              <NavIcon name={item.icon} size={18} className="shrink-0" />
+                              <span className="flex flex-col">
+                                <span className="font-semibold">{item.label}</span>
+                                <span className="text-xs opacity-70">{item.description}</span>
+                              </span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </details>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="navbar-end gap-2">
           {ThemeToggle && <ThemeToggle />}
-          {!loading && (user ? (
-            <Link to="/portal" className={`nav-mobile-cta nav-mobile-cta--user${portalActive ? " is-active" : ""}`}>
-              {user.avatarUrl ? <img src={user.avatarUrl} alt="" className="nav-avatar" /> : <UserIcon size={16} />}
+          <div className="hidden lg:flex items-center gap-2">
+            {portalLink}
+            <Link to="/leadgen" className="btn btn-sm">
+              <Target size={15} /> Try Leadgen
             </Link>
-          ) : (
-            <Link to="/portal" className={`nav-mobile-cta${portalActive ? " is-active" : ""}`}>
-              <LogIn size={14} /><span>Sign in</span>
-            </Link>
-          ))}
-          <button ref={menuButtonRef} className="menu-btn" type="button" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open}>
+            <Link to="/book" className="btn btn-primary btn-sm">Book a Call</Link>
+          </div>
+          <button
+            ref={menuButtonRef}
+            className="btn btn-ghost btn-square lg:hidden"
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="mobile-primary-menu"
+          >
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
+
       {open && (
-        <nav id="mobile-primary-menu" ref={menuRef} className="mobile-menu" aria-label="Mobile primary">
-          {PRIMARY_NAV.map((section) => (
-            <div key={section.id} className="mobile-nav-group">
-              {section.items ? (
-                <>
-                  <div className="mobile-nav-header"><NavIcon name={section.icon} size={14} /> <span>{section.label}</span></div>
-                  {section.items.map((item) => (
-                    <Link key={item.id} to={item.to} className={`mobile-nav-link${isNavItemActive(item, location) ? " is-active" : ""}`} onClick={() => setOpen(false)}>
-                      <NavIcon name={item.icon} size={18} />
-                      <div className="mobile-nav-link-content">
-                        <strong>{item.label}</strong>
-                        <span>{item.description}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </>
+        <nav
+          id="mobile-primary-menu"
+          ref={menuRef}
+          className="lg:hidden absolute inset-x-0 top-full max-h-[calc(100dvh-3.5rem)] overflow-y-auto bg-base-100 border-b border-base-300"
+          aria-label="Mobile primary"
+        >
+          <ul className="menu w-full p-3">
+            {PRIMARY_NAV.map((section) => (
+              section.items ? (
+                <li key={section.id}>
+                  <h2 className="menu-title flex items-center gap-2">
+                    <NavIcon name={section.icon} size={14} /> {section.label}
+                  </h2>
+                  <ul>
+                    {section.items.map((item) => (
+                      <li key={item.id}>
+                        <Link to={item.to} className={isNavItemActive(item, location) ? "menu-active" : undefined} onClick={() => setOpen(false)}>
+                          <NavIcon name={item.icon} size={18} />
+                          <span className="flex flex-col">
+                            <span className="font-semibold">{item.label}</span>
+                            <span className="text-xs opacity-70">{item.description}</span>
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </li>
               ) : (
-                <Link to={section.to} className={`mobile-nav-link${isNavItemActive(section, location) ? " is-active" : ""}`} onClick={() => setOpen(false)}>
-                  <NavIcon name={section.icon} size={18} />
-                  <div className="mobile-nav-link-content">
-                    <strong>{section.label}</strong>
-                  </div>
-                </Link>
-              )}
-            </div>
-          ))}
-          <div className="mobile-nav-divider" />
-          <section className="mobile-nav-section mobile-nav-section--account">
-            <div className="mobile-nav-header"><UserIcon size={14} /> <span>Account</span></div>
-            <Link to={portalItem.to} className="mobile-nav-link" onClick={() => setOpen(false)}>
-              <NavIcon name={portalItem.icon} size={18} />
-              <div className="mobile-nav-link-content">
-                <strong>{portalItem.label}</strong>
-                <span>{portalItem.description}</span>
-              </div>
-            </Link>
-            <Link to="/book" className="btn btn-primary mobile-menu-cta" onClick={() => setOpen(false)}>
+                <li key={section.id}>
+                  <Link to={section.to} className={isNavItemActive(section, location) ? "menu-active" : undefined} onClick={() => setOpen(false)}>
+                    <NavIcon name={section.icon} size={18} />
+                    <span className="font-semibold">{section.label}</span>
+                  </Link>
+                </li>
+              )
+            ))}
+            <li>
+              <h2 className="menu-title flex items-center gap-2"><UserIcon size={14} /> Account</h2>
+              <ul>
+                <li>
+                  <Link to={portalItem.to} onClick={() => setOpen(false)}>
+                    <NavIcon name={portalItem.icon} size={18} />
+                    <span className="flex flex-col">
+                      <span className="font-semibold">{portalItem.label}</span>
+                      <span className="text-xs opacity-70">{portalItem.description}</span>
+                    </span>
+                  </Link>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <div className="flex flex-col gap-2 p-3 pt-0">
+            <Link to="/book" className="btn btn-primary" onClick={() => setOpen(false)}>
               <Calendar size={16} /> Book a Call
             </Link>
-            <Link to="/leadgen" className="btn btn-secondary mobile-menu-cta" onClick={() => setOpen(false)}>
+            <Link to="/leadgen" className="btn" onClick={() => setOpen(false)}>
               <Target size={16} /> Try Leadgen
             </Link>
-          </section>
+          </div>
         </nav>
       )}
     </header>
   );
 }
-

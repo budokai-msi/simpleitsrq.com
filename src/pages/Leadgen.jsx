@@ -980,7 +980,7 @@ function LeadgenScanApp() {
           {zipSource === "geo" && validZip ? (
             <p className="leadgen-zip-source" aria-live="polite">
               <MapPin size={13} aria-hidden="true" /> Using your location ({zip}) —
-              <button type="button" className="link-btn" onClick={() => { setZip(""); setZipSource(null); }}>change</button>
+              <button type="button" className="btn btn-link btn-xs px-0" onClick={() => { setZip(""); setZipSource(null); }}>change</button>
             </p>
           ) : null}
           {zipSource !== "geo" && geoState === "asking" ? (
@@ -989,11 +989,11 @@ function LeadgenScanApp() {
           {zipSource !== "geo" && (geoState === "denied" || geoState === "unavailable" || geoState === "error") && !zip ? (
             <p className="leadgen-zip-source">
               {geoState === "denied" ? (
-                <button type="button" className="link-btn" onClick={() => setGeoHelpOpen(true)}>
+                <button type="button" className="btn btn-link btn-xs px-0" onClick={() => setGeoHelpOpen(true)}>
                   <MapPin size={13} aria-hidden="true" /> How to allow location
                 </button>
               ) : (
-                <button type="button" className="link-btn" onClick={requestGeolocation}>
+                <button type="button" className="btn btn-link btn-xs px-0" onClick={requestGeolocation}>
                   <MapPin size={13} aria-hidden="true" /> Use my location
                 </button>
               )}
@@ -1001,7 +1001,7 @@ function LeadgenScanApp() {
           ) : null}
           {geoHelp && geoState !== "denied" ? (
             <p className="leadgen-zip-source">
-              <button type="button" className="link-btn" onClick={() => setGeoHelpOpen(true)}>
+              <button type="button" className="btn btn-link btn-xs px-0" onClick={() => setGeoHelpOpen(true)}>
                 <MapPin size={13} aria-hidden="true" /> How to allow location
               </button>
             </p>
