@@ -16,7 +16,7 @@ const MAX_PUSH_LEADS = 100;
 
 function safeError(error) {
   return String(error?.message || error || "Integration failed")
-    .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+/gi, "Bearer [redacted]")
+    .replace(/Bearer\s+[A-Za-z0-9._~+/-]+/gi, "Bearer [redacted]")
     .replace(/([?&](?:api[_-]?key|token|secret|access_token)=)[^&\s]+/gi, "$1[redacted]")
     .slice(0, 220);
 }

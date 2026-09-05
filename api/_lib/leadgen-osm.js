@@ -89,7 +89,7 @@ export async function discoverBusinessesByZip(zip) {
   let box=null;
   try { box=await bboxForZip(zip); } catch(e) { console.warn("[leadgen-osm] Nominatim zip lookup failed",e); }
   if (!box?.bbox) return { ok:false, error:"zip_not_found", businesses:[], bbox:null, centroid:null };
-  let elements=[];
+  let elements;
   try { elements=await overpassBusinessesResilient(box.bbox); }
   catch(e) { console.warn("[leadgen-osm] Overpass query failed",e); return { ok:false, error:"upstream_unavailable", businesses:[], bbox:box.bbox, centroid:box.centroid }; }
   const businesses=elements.map(normalizeOsmElement).filter(Boolean).map((b)=>({...b,zip:b.zip||zip}));

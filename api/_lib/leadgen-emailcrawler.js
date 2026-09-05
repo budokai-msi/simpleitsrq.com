@@ -131,7 +131,7 @@ async function readBytesCapped(res, cap, { truncate = false } = {}) {
     if (!value) continue;
     if (total + value.length > cap) {
       if (!truncate) {
-        try { await reader.cancel(); } catch {}
+        try { await reader.cancel(); } catch { /* reader already closed/errored — nothing to cancel */ }
         throw new Error("asset_too_large");
       }
       const remaining = cap - total;
@@ -139,13 +139,13 @@ async function readBytesCapped(res, cap, { truncate = false } = {}) {
         chunks.push(value.slice(0, remaining));
         total += remaining;
       }
-      try { await reader.cancel(); } catch {}
+      try { await reader.cancel(); } catch { /* reader already closed/errored — nothing to cancel */ }
       break;
     }
     chunks.push(value);
     total += value.length;
     if (truncate && total >= cap) {
-      try { await reader.cancel(); } catch {}
+      try { await reader.cancel(); } catch { /* reader already closed/errored — nothing to cancel */ }
       break;
     }
   }
@@ -204,7 +204,7 @@ function extractEmails(body, pageUrl) {
   const mailtoRe = /href\s*=\s*["']mailto:([^"'?#]+)/gi;
   let match;
   while ((match = mailtoRe.exec(body)) !== null) {
-    let raw = "";
+    let raw;
     try { raw = decodeURIComponent(match[1]).trim().toLowerCase(); } catch { raw = match[1].trim().toLowerCase(); }
     if (!raw || isJunkEmail(raw)) continue;
     found.set(raw, { email: raw, source: "website_mailto", source_url: pageUrl, context_snippet: snippet(body, match.index, match[0].length), confidence: 1.0 });
@@ -259,7 +259,7 @@ function brandCandidates($, pageUrl) {
       const parsed = JSON.parse($(el).text());
       const logo = walkLogo(parsed);
       if (logo) add(logo, "structured-logo", 0.9);
-    } catch {}
+    } catch { /* malformed or non-object JSON-LD — skip this block, keep scanning */ }
   });
 
   $('img[src]').each((_, el) => {
@@ -291,7 +291,7 @@ function extractDocumentSignals(body, finalUrl) {
       for (const [key, pattern] of Object.entries(socialPatterns)) {
         if (!social[key] && pattern.test(host)) social[key] = href;
       }
-    } catch {}
+    } catch { /* relative or malformed href — not a social link, ignore */ }
   });
 
   const hasContactForm = $("form").toArray().some((el) => {
@@ -340,7 +340,7 @@ async function resolveBrandAsset(candidates) {
         bytes: bytes.length,
         data_uri: `data:${contentType};base64,${Buffer.from(bytes).toString("base64")}`,
       };
-    } catch {}
+    } catch { /* candidate fetch failed — try the next candidate, return null if none */ }
   }
   return null;
 }

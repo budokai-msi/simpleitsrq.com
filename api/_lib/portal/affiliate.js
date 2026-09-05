@@ -83,7 +83,7 @@ export async function handleAffiliateSetup(session) {
  * GET /api/portal?action=affiliate-dashboard-summary
  * Returns top trends, top products, total clicks/commissions for today
  */
-export async function handleAffiliateDashboardSummary(session, url) {
+export async function handleAffiliateDashboardSummary() {
   const today = new Date().toISOString().split("T")[0];
 
   // Top trends today (top 10 by score)
@@ -565,7 +565,7 @@ export async function handleAffiliateStats(session, url) {
 /**
  * GET /api/portal?action=affiliate-networks
  */
-export async function handleAffiliateNetworks(session) {
+export async function handleAffiliateNetworks() {
   const networks = await sql`
     SELECT
       an.id,
@@ -652,7 +652,7 @@ export async function handleAffiliateSync(session, request) {
  * POST /api/portal?action=affiliate-ingest
  * Manually trigger product ingestion (seed catalog + eBay if keys set).
  */
-export async function handleAffiliateIngest(session) {
+export async function handleAffiliateIngest() {
   try {
     const summary = await ingestAffiliateProducts();
     return json(200, { ok: true, summary });

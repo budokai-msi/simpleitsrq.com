@@ -63,24 +63,9 @@ function getStoredZipPref() {
 }
 function setStoredZipPref(state) {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem("leadgen.zipPref", state); } catch {}
-}
-
-// Detect the browser's actual geolocation permission state via the Permissions
-// API. Returns "granted" | "denied" | "prompt" | "unsupported". This is the
-// key to the "Try location again" problem: once a user denies geolocation, the
-// browser will NOT re-prompt (permission is sticky). So we must detect the
-// sticky "denied" state and guide the user to re-enable it in browser settings
-// instead of silently calling getCurrentPosition (which just fires the error
-// callback with code 1 and shows no prompt).
-async function queryGeoPermission() {
-  try {
-    if (typeof navigator === "undefined" || !navigator.permissions?.query) return "unsupported";
-    const status = await navigator.permissions.query({ name: "geolocation" });
-    return status.state; // "granted" | "denied" | "prompt"
-  } catch {
-    return "unsupported";
-  }
+  // Best-effort: localStorage can throw in private mode / quota-exceeded, and
+  // the zip preference is a convenience, not a requirement — ignore failures.
+  try { window.localStorage.setItem("leadgen.zipPref", state); } catch { /* intentionally ignored — see above */ }
 }
 
 // Human, per-platform instructions for re-enabling geolocation after a sticky

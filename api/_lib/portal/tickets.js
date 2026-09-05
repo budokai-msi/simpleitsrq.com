@@ -126,7 +126,7 @@ export async function handleTickets(session, url) {
   const userEmail = session?.user?.email ? String(session.user.email).toLowerCase() : "";
   const userId = session?.user?.id || null;
 
-  let rows = [];
+  let rows;
   try {
     rows = admin
       ? (like

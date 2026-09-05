@@ -443,13 +443,13 @@ async function dispatchAuthed(request, method, url, action, session) {
     if (action === "analytics"           && method === "GET")  return handleAnalytics(session, url);
 
     // Affiliate Dashboard actions. All admin-only; read + sync via admin token.
-    if (action === "affiliate-dashboard-summary" && method === "GET") return handleAffiliateDashboardSummary(session, url);
+    if (action === "affiliate-dashboard-summary" && method === "GET") return handleAffiliateDashboardSummary();
     if (action === "trends"                   && method === "GET")  return handleTrends(session, url);
     if (action === "affiliate-products"       && method === "GET")  return handleAffiliateProducts(session, url);
     if (action === "affiliate-stats"          && method === "GET")  return handleAffiliateStats(session, url);
-    if (action === "affiliate-networks"       && method === "GET")  return handleAffiliateNetworks(session);
+    if (action === "affiliate-networks"       && method === "GET")  return handleAffiliateNetworks();
     if (action === "affiliate-sync"           && method === "POST") return handleAffiliateSync(session, request);
-    if (action === "affiliate-ingest"         && method === "POST") return handleAffiliateIngest(session);
+    if (action === "affiliate-ingest"         && method === "POST") return handleAffiliateIngest();
     if (action === "affiliate-setup"          && method === "GET")  return handleAffiliateSetup(session);
 
     // Product Finder — read-only revenue planning (admin only)

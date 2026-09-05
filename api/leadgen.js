@@ -125,8 +125,10 @@ function industryCounts(rows) {
     groups.set(key, current);
   }
   return Array.from(groups.values())
-    .map((x) => ({ ...x, avg_score: x.count ? Math.round(x.score_total / x.count) : 0 }))
-    .map(({ score_total, ...x }) => x)
+    .map((x) => {
+      const { score_total, ...rest } = x;
+      return { ...rest, avg_score: x.count ? Math.round(score_total / x.count) : 0 };
+    })
     .sort((a, b) => b.count - a.count || a.industry.localeCompare(b.industry));
 }
 
@@ -340,7 +342,7 @@ async function upsertBusinessesLegacy(businesses) {
 async function upsertBusinesses(businesses) {
   const clean = (businesses || []).filter((b) => b?.name && b?.source_id);
   if (!clean.length) return;
-  let idRows = [];
+  let idRows;
   try {
     const payload = JSON.stringify(clean.map((b) => ({
       name: b.name, legal_name: b.legal_name || null, address: b.address || null, city: b.city || null,
