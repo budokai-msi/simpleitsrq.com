@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, BarChart3, CalendarClock, RefreshCw, ShieldBan, Sparkles, Target, Users } from "lucide-react";
 
 async function getJson(url) {
@@ -20,9 +20,8 @@ export default function LeadgenWorkspace() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (isPublicLeadgen) return;
-    setBusy(true); setError("");
     try {
       const [o, s, c] = await Promise.all([
         getJson("/api/leadgen-workspace?action=overview"),
@@ -30,13 +29,14 @@ export default function LeadgenWorkspace() {
         getJson("/api/leadgen-workspace?action=changes"),
       ]);
       setOverview(o); setScores(s.leads || []); setChanges(c.changes || []);
+      setError("");
     } catch (e) { setError(e.message || "Workspace unavailable"); }
     finally { setBusy(false); }
-  };
+  }, [isPublicLeadgen]);
 
   useEffect(() => {
-    if (!isPublicLeadgen) load();
-  }, [isPublicLeadgen]);
+    if (!isPublicLeadgen) (async () => { await load(); })();
+  }, [isPublicLeadgen, load]);
 
   const pipelineValue = useMemo(() => (overview?.attribution || []).reduce((sum, row) => sum + Number(row.value_cents || 0), 0), [overview]);
   const healthy = (overview?.health || []).filter((h) => h.status === "healthy").length;
@@ -50,7 +50,7 @@ export default function LeadgenWorkspace() {
     <section className="lgx" aria-label="Leadgen intelligence workspace">
       <header className="lgx-head">
         <div><span className="eyebrow">Revenue intelligence</span><h2>{overview.workspace?.name || "Leadgen workspace"}</h2></div>
-        <button className="btn btn-secondary btn-sm" type="button" onClick={load} disabled={busy}><RefreshCw size={15} /> {busy ? "Refreshing…" : "Refresh"}</button>
+        <button className="btn btn-secondary btn-sm" type="button" onClick={() => { setBusy(true); load(); }} disabled={busy}><RefreshCw size={15} /> {busy ? "Refreshing…" : "Refresh"}</button>
       </header>
 
       <div className="lgx-kpis">

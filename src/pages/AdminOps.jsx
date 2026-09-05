@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
@@ -90,7 +90,7 @@ function AdminOpsInner() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     const entries = await Promise.all(CORE_ACTIONS.map(async (action) => {
       try {
@@ -108,7 +108,7 @@ function AdminOpsInner() {
     setData(nextData);
     setErrors(nextErrors);
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -116,12 +116,10 @@ function AdminOpsInner() {
     run();
     const timer = setInterval(run, 60_000);
     return () => { alive = false; clearInterval(timer); };
-  }, []);
+  }, [load]);
 
   // Keyboard shortcuts: 1-4 switch tabs, r refreshes, g then o/l/s navigates.
   // Ignored while typing in an input/textarea/select.
-  const loadRef = useRef(load);
-  loadRef.current = load;
   useEffect(() => {
     let gPending = false;
     let gTimer = null;
@@ -143,7 +141,7 @@ function AdminOpsInner() {
         if (key === "s") { window.location.href = "/portal/opsec"; return; }
         return;
       }
-      if (key === "r") { loadRef.current(); return; }
+      if (key === "r") { load(); return; }
       const idx = Number(key);
       if (idx >= 1 && idx <= TABS.length) {
         const t = TABS[idx - 1];
@@ -155,7 +153,7 @@ function AdminOpsInner() {
       window.removeEventListener("keydown", onKey);
       if (gTimer) clearTimeout(gTimer);
     };
-  }, [setTab]);
+  }, [load, setTab]);
 
   const forbidden = Object.values(errors).some((e) => /401|403|forbidden|unauthorized/i.test(e));
   const intel = useMemo(() => deriveIntel(data), [data]);

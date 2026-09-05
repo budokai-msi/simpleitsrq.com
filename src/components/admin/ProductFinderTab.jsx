@@ -89,7 +89,7 @@ export default function ProductFinderTab() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { (async () => { await load(); })(); }, [load]);
 
   const segments = data?.segments || [];
   const products = data?.products || [];
