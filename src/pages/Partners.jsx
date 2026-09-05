@@ -66,20 +66,22 @@ const STACK = [
 function StackCard({ vendor }) {
   const { Icon } = vendor;
   return (
-    <article className="partner-card">
-      <div className="partner-card-head">
-        <span className="partner-card-icon" aria-hidden="true"><Icon size={22} /></span>
-        <div className="partner-card-heading">
-          <span className="partner-card-category">{vendor.categoryLabel}</span>
-          <h3 className="partner-card-name">{vendor.name}</h3>
-          <p className="partner-card-tagline">{vendor.tagline}</p>
+    <article className="card card-border bg-base-100">
+      <div className="card-body">
+        <div className="flex gap-3.5 items-start">
+          <span className="grid place-items-center w-11 h-11 rounded-lg bg-primary/10 text-primary shrink-0" aria-hidden="true"><Icon size={22} /></span>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">{vendor.categoryLabel}</span>
+            <h3 className="text-lg font-semibold leading-snug text-base-content">{vendor.name}</h3>
+            <p className="text-sm text-base-content/70 leading-snug m-0">{vendor.tagline}</p>
+          </div>
         </div>
-      </div>
-      <div className="partner-card-body">
-        <p className="partner-card-section-label">Why we chose it</p>
-        <p className="partner-card-text">{vendor.why}</p>
-        <p className="partner-card-section-label">What it means for you</p>
-        <p className="partner-card-text">{vendor.clientBenefit}</p>
+        <div className="flex flex-col gap-2.5 mt-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-base-content/60">Why we chose it</p>
+          <p className="text-sm text-base-content/80 leading-relaxed m-0">{vendor.why}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-base-content/60">What it means for you</p>
+          <p className="text-sm text-base-content/80 leading-relaxed m-0">{vendor.clientBenefit}</p>
+        </div>
       </div>
     </article>
   );
