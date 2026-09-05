@@ -1343,7 +1343,7 @@ function LeadgenScanApp() {
 
 export default function Leadgen() {
   useSEO({
-    title: "Local Business Lead Research & Enrichment | Leadgen",
+    title: "Leadgen: Find Local Business Prospects by ZIP & Industry | Simple IT SRQ",
     description: "Research local businesses by ZIP code and industry, compare records, find public contact details, and export only the prospects you choose.",
     canonical: `${SITE_URL}/leadgen`,
     image: `${SITE_URL}/og-image.png`,

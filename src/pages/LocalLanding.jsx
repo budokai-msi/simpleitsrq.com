@@ -282,6 +282,16 @@ export default function LocalLanding() {
               </article>
             ))}
           </div>
+          <div className="local-leadgen-cta">
+            <div>
+              <span className="eyebrow">Leadgen — our local prospect research tool</span>
+              <h3 className="title-2">Find new {city.city} businesses, ZIP by ZIP.</h3>
+              <p className="section-sub">
+                Building your own list? Leadgen scans public business records by ZIP code and industry, surfaces which prospects are worth contacting, and lets you export the ones you choose.
+              </p>
+            </div>
+            <Link to="/leadgen" className="btn btn-primary btn-lg">Scan a ZIP code free <ArrowRight size={16} /></Link>
+          </div>
         </div>
       </section>
 

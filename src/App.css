@@ -3586,6 +3586,25 @@ main, #main {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
 }
+/* Cross-promote Leadgen (the site's only product) from city landing pages —
+   gives Google a crawl path from the high-intent local pages to /leadgen and
+   funnels local-visiting users to the research tool. */
+.local-leadgen-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+}
+.local-leadgen-cta > div { flex: 1 1 360px; min-width: 0; }
+.local-leadgen-cta .title-2 { margin: 6px 0 10px; }
+.local-leadgen-cta .btn { flex: 0 0 auto; white-space: nowrap; }
+
 .solution-card {
   display: flex;
   flex-direction: column;
